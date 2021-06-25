@@ -116,7 +116,7 @@ function Add-LabAzureSubscription
     if (-not $resources)
     {
         Write-ScreenInfo -Message "No Azure context available. Please login to your Azure account in the next step."
-        $null = Connect-AzAccount -ErrorAction SilentlyContinue
+        $null = Connect-AzAccount -UseDeviceAuthentication -ErrorAction SilentlyContinue
     }
 
     # Select the proper subscription before saving the profile
@@ -642,13 +642,13 @@ function Set-LabAzureDefaultLocation
 
     Update-LabAzureSettings
 
-    if ($Name -notin $script:lab.AzureSettings.Locations.DisplayName)
+    if (-not ($Name -in $script:lab.AzureSettings.Locations.DisplayName -or $Name -in $script:lab.AzureSettings.Locations.Location))
     {
         Microsoft.PowerShell.Utility\Write-Error "Invalid location. Please specify one of the following locations: $($script:lab.AzureSettings.Locations.DisplayName -join ', ')"
         return
     }
 
-    $script:lab.AzureSettings.DefaultLocation = $script:lab.AzureSettings.Locations | Where-Object DisplayName -eq $Name
+    $script:lab.AzureSettings.DefaultLocation = $script:lab.AzureSettings.Locations | Where-Object {$_.DisplayName -eq $Name -or $_.Location -eq $Name}
 
     Write-LogFunctionExit
 }
@@ -1450,7 +1450,7 @@ function Get-LabAzureAvailableRoleSize
 
     if (-not (Get-AzContext -ErrorAction SilentlyContinue))
     {
-        [void] (Connect-AzAccount)
+        [void] (Connect-AzAccount -UseDeviceAuthentication)
     }
 
     $azLocation = Get-AzLocation | Where-Object -Property DisplayName -eq $Location

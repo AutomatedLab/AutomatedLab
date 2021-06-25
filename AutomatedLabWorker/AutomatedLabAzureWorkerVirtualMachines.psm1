@@ -248,7 +248,7 @@
                 }
             }
 
-            $dnsLabel = "azbastion$((1..10 | ForEach-Object { [char[]](97..122) | Get-Random }) -join '')"
+            $dnsLabel = "[concat('azbastion', uniqueString(resourceGroup().id))]"
             Write-ScreenInfo -Type Verbose -Message ('Adding Azure bastion public static IP with DNS label {0} to template' -f $dnsLabel)
             $template.resources +=
             @{
@@ -332,7 +332,7 @@
         #endregion
 
         #region Public Ip
-        $dnsLabel = "$((1..10 | ForEach-Object { [char[]](97..122) | Get-Random }) -join '')"
+        $dnsLabel = "[concat('al-', uniqueString(resourceGroup().id))]"
 
         if ($network.AzureDnsLabel)
         {
