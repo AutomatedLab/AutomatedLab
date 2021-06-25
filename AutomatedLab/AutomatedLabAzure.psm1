@@ -116,7 +116,7 @@ function Add-LabAzureSubscription
     if (-not $resources)
     {
         Write-ScreenInfo -Message "No Azure context available. Please login to your Azure account in the next step."
-        $null = Connect-AzAccount -UseDeviceAuthentication -ErrorAction SilentlyContinue
+        $null = Connect-AzAccount -UseDeviceAuthentication -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
     }
 
     # Select the proper subscription before saving the profile
@@ -1450,7 +1450,7 @@ function Get-LabAzureAvailableRoleSize
 
     if (-not (Get-AzContext -ErrorAction SilentlyContinue))
     {
-        [void] (Connect-AzAccount -UseDeviceAuthentication)
+        [void] (Connect-AzAccount -UseDeviceAuthentication -WarningAction SilentlyContinue)
     }
 
     $azLocation = Get-AzLocation | Where-Object -Property DisplayName -eq $Location

@@ -3734,7 +3734,7 @@ function Get-LabConfigurationItem
 
     if ($Name)
     {
-        $setting = (Get-PSFConfig -Module AutomatedLab -Name $Name).Value
+        $setting = (Get-PSFConfig -Module AutomatedLab -Name $Name -Force).Value
         if (-not $setting -and $Default)
         {
             return $Default
