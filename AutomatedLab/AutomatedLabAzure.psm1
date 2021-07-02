@@ -112,8 +112,7 @@ function Add-LabAzureSubscription
     Write-ScreenInfo -Message 'Adding Azure subscription data' -Type Info -TaskStart
 
     # Try to access Azure RM cmdlets. If credentials are expired, an exception will be raised
-    $resources = Get-AzResourceProvider -ErrorAction SilentlyContinue
-    if (-not $resources)
+    if (-not (Get-AzContext))
     {
         Write-ScreenInfo -Message "No Azure context available. Please login to your Azure account in the next step."
         $null = Connect-AzAccount -UseDeviceAuthentication -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
@@ -1475,7 +1474,9 @@ function Get-LabAzureAvailableSku
     Test-LabHostConnected -Throw -Quiet
 
     # Server
-    Get-AzVMImagePublisher -Location $Location |
+    $publishers = Get-AzVMImagePublisher -Location $Location
+    
+    $publishers |
     Where-Object PublisherName -eq 'MicrosoftWindowsServer' |
     Get-AzVMImageOffer |
     Get-AzVMImageSku |
@@ -1484,7 +1485,7 @@ function Get-LabAzureAvailableSku
     ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
 
     # Desktop
-    Get-AzVMImagePublisher -Location $Location |
+    $publishers |
     Where-Object PublisherName -eq 'MicrosoftWindowsDesktop' |
     Get-AzVMImageOffer |
     Get-AzVMImageSku |
@@ -1493,7 +1494,7 @@ function Get-LabAzureAvailableSku
     ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
 
     # SQL
-    Get-AzVMImagePublisher -Location $Location |
+    $publishers |
     Where-Object PublisherName -eq 'MicrosoftSQLServer' |
     Get-AzVMImageOffer |
     Get-AzVMImageSku |
@@ -1503,7 +1504,7 @@ function Get-LabAzureAvailableSku
     ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
 
     # VisualStudio
-    Get-AzVMImagePublisher -Location $Location |
+    $publishers |
     Where-Object PublisherName -eq 'MicrosoftVisualStudio' |
     Get-AzVMImageOffer |
     Get-AzVMImageSku |
@@ -1513,7 +1514,7 @@ function Get-LabAzureAvailableSku
     ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
 
     # Client OS
-    Get-AzVMImagePublisher -Location $Location |
+    $publishers |
     Where-Object PublisherName -eq 'MicrosoftVisualStudio' |
     Get-AzVMImageOffer |
     Get-AzVMImageSku |
@@ -1523,7 +1524,7 @@ function Get-LabAzureAvailableSku
     ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
 
     # Sharepoint 2013 and 2016
-    Get-AzVMImagePublisher -Location $Location |
+    $publishers |
     Where-Object PublisherName -eq 'MicrosoftSharePoint' |
     Get-AzVMImageOffer |
     Get-AzVMImageSku |
