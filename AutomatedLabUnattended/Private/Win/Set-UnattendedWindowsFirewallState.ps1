@@ -10,14 +10,14 @@
 	Select-Object -ExpandProperty Node
 
 	$WindowsFirewallStateNode = $script:un.CreateElement('DomainProfile_EnableFirewall')
-	$WindowsFirewallStateNode.InnerText = [string]$State
+	$WindowsFirewallStateNode.InnerText = ([string]$State).ToLower()
 	[Void]$setupNode.AppendChild($WindowsFirewallStateNode)
 
 	$WindowsFirewallStateNode = $script:un.CreateElement('PrivateProfile_EnableFirewall')
-	$WindowsFirewallStateNode.InnerText = [string]$State
+	$WindowsFirewallStateNode.InnerText = ([string]$State).ToLower()
 	[Void]$setupNode.AppendChild($WindowsFirewallStateNode)
 
 	$WindowsFirewallStateNode = $script:un.CreateElement('PublicProfile_EnableFirewall')
-	$WindowsFirewallStateNode.InnerText = [string]$State
+	$WindowsFirewallStateNode.InnerText = ([string]$State).ToLower()
 	[Void]$setupNode.AppendChild($WindowsFirewallStateNode)
 }

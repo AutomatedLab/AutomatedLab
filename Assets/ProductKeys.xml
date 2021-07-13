@@ -108,14 +108,14 @@
   <ProductKey OperatingSystemName="Windows Server SERVERDATACENTERACORE" Key="6NMRW-2C8FM-D24W7-TQWMY-CWH2D" Version="10.0.17763.107" />
 
   <!--2022-->
-  <ProductKey OperatingSystemName="Windows Server 2022 Standard" Key="MFY9F-XBN2F-TYFMP-CCV49-RMYVH" Version="10.0.17763.107" />
-  <ProductKey OperatingSystemName="Windows Server 2022 Standard (Desktop Experience)" Key="MFY9F-XBN2F-TYFMP-CCV49-RMYVH" Version="10.0.17763.107" />
-  <ProductKey OperatingSystemName="Windows Server 2022 Standard Evaluation" Key="MFY9F-XBN2F-TYFMP-CCV49-RMYVH" Version="10.0.17763.107" />
-  <ProductKey OperatingSystemName="Windows Server 2022 Standard Evaluation (Desktop Experience)" Key="MFY9F-XBN2F-TYFMP-CCV49-RMYVH" Version="10.0.17763.107" />
-  <ProductKey OperatingSystemName="Windows Server 2022 Datacenter" Key="2KNJJ-33Y9H-2GXGX-KMQWH-G6H67" Version="10.0.17763.107" />
-  <ProductKey OperatingSystemName="Windows Server 2022 Datacenter (Desktop Experience)" Key="2KNJJ-33Y9H-2GXGX-KMQWH-G6H67" Version="10.0.17763.107" />
-  <ProductKey OperatingSystemName="Windows Server 2022 Datacenter Evaluation" Key="2KNJJ-33Y9H-2GXGX-KMQWH-G6H67" Version="10.0.17763.107" />
-  <ProductKey OperatingSystemName="Windows Server 2022 Datacenter Evaluation (Desktop Experience)" Key="2KNJJ-33Y9H-2GXGX-KMQWH-G6H67" Version="10.0.17763.107" />
+  <ProductKey OperatingSystemName="Windows Server 2022 Standard" Key="VDYBN-27WPP-V4HQT-9VMD4-VMK7H" Version="10.0.17763.107" />
+  <ProductKey OperatingSystemName="Windows Server 2022 Standard (Desktop Experience)" Key="VDYBN-27WPP-V4HQT-9VMD4-VMK7H" Version="10.0.17763.107" />
+  <ProductKey OperatingSystemName="Windows Server 2022 Standard Evaluation" Key="VDYBN-27WPP-V4HQT-9VMD4-VMK7H" Version="10.0.17763.107" />
+  <ProductKey OperatingSystemName="Windows Server 2022 Standard Evaluation (Desktop Experience)" Key="VDYBN-27WPP-V4HQT-9VMD4-VMK7H" Version="10.0.17763.107" />
+  <ProductKey OperatingSystemName="Windows Server 2022 Datacenter" Key="WX4NM-KYWYW-QJJR4-XV3QB-6VM33" Version="10.0.17763.107" />
+  <ProductKey OperatingSystemName="Windows Server 2022 Datacenter (Desktop Experience)" Key="WX4NM-KYWYW-QJJR4-XV3QB-6VM33" Version="10.0.17763.107" />
+  <ProductKey OperatingSystemName="Windows Server 2022 Datacenter Evaluation" Key="WX4NM-KYWYW-QJJR4-XV3QB-6VM33" Version="10.0.17763.107" />
+  <ProductKey OperatingSystemName="Windows Server 2022 Datacenter Evaluation (Desktop Experience)" Key="WX4NM-KYWYW-QJJR4-XV3QB-6VM33" Version="10.0.17763.107" />
   
   
 </ListXmlStoreOfProductKey>
