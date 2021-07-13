@@ -13,7 +13,7 @@ $unattendedXmlDefaultContent2012 = @'
   <settings pass="specialize">
     <component name="Microsoft-Windows-UnattendedJoin" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State">
       <Identification>
-        <JoinWorkgroup xmlns="">NET</JoinWorkgroup>
+        <JoinWorkgroup >NET</JoinWorkgroup>
       </Identification>
     </component>
     <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State">
@@ -198,7 +198,6 @@ $unattendedXmlDefaultContent2012 = @'
       </UserAccounts>
       <OOBE>
         <HideEULAPage>true</HideEULAPage>
-        <NetworkLocation>Work</NetworkLocation>
         <ProtectYourPC>3</ProtectYourPC>
         <HideOnlineAccountScreens>true</HideOnlineAccountScreens>
         <HideLocalAccountScreen>true</HideLocalAccountScreen>
@@ -231,7 +230,7 @@ $unattendedXmlDefaultContent2008 = @'
   <settings pass="specialize">
     <component name="Microsoft-Windows-UnattendedJoin" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State">
       <Identification>
-        <JoinWorkgroup xmlns="">NET</JoinWorkgroup>
+        <JoinWorkgroup >NET</JoinWorkgroup>
       </Identification>
     </component>
     <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State">
