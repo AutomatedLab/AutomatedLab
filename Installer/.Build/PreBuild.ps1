@@ -4,11 +4,11 @@
 
     [Parameter()]
     [string[]]
-    $ExternalDependency = @('PSFramework', 'newtonsoft.json', 'SHiPS', 'AutomatedLab.Common','xPSDesiredStateConfiguration', 'xDscDiagnostics', 'xWebAdministration'),
+    $ExternalDependency = @('Pester', 'PSFramework', 'newtonsoft.json', 'SHiPS', 'AutomatedLab.Common', 'xPSDesiredStateConfiguration', 'xDscDiagnostics', 'xWebAdministration'),
 
     [Parameter()]
     [string[]]
-    $InternalModules = @('AutomatedLab','AutomatedLab.Recipe', 'AutomatedLab.Ships','AutomatedLabDefinition','AutomatedLabNotifications','AutomatedLabTest','AutomatedLabUnattended','AutomatedLabWorker','HostsFile','PSFileTransfer','PSLog')
+    $InternalModules = @('AutomatedLab', 'AutomatedLab.Recipe', 'AutomatedLab.Ships', 'AutomatedLabDefinition', 'AutomatedLabNotifications', 'AutomatedLabTest', 'AutomatedLabUnattended', 'AutomatedLabWorker', 'HostsFile', 'PSFileTransfer', 'PSLog')
 )
 
 Write-Host "Init task - compiling help for Installer"
@@ -45,7 +45,7 @@ Generic help about the role system of AutomatedLab
 # LONG DESCRIPTION
 
 '@ | Set-Content -Path (Join-Path $SolutionDir -ChildPath Help/AutomatedLab/en-us/about_AutomatedLabRoles.md)
-$roleContent = Get-Content -Path (Join-Path $SolutionDir -ChildPath Help/Wiki/Roles/roles.md) | ForEach-Object {if($_.StartsWith('#')){$_.Insert(0, '#')} else {$_}}
+$roleContent = Get-Content -Path (Join-Path $SolutionDir -ChildPath Help/Wiki/Roles/roles.md) | ForEach-Object { if ($_.StartsWith('#')) { $_.Insert(0, '#') } else { $_ } }
 $roleContent | Add-Content -Path (Join-Path $SolutionDir -ChildPath Help/AutomatedLab/en-us/about_AutomatedLabRoles.md)
 
 $helpFiles = Get-ChildItem -Path (Join-Path $SolutionDir -ChildPath Help/Wiki/Roles) -Exclude roles.md
@@ -120,7 +120,7 @@ foreach ($moduleName in (Get-ChildItem -Path $SolutionDir\Help -Directory))
     Write-Host "Building help for module '$moduleName'"
     foreach ($language in ($moduleName | Get-ChildItem -Directory))
     {
-        $ci = try { [cultureinfo]$language.BaseName} catch { }
+        $ci = try { [cultureinfo]$language.BaseName } catch { }
         if (-not $ci) { continue }
 
         $opPath = Join-Path -Path $SolutionDir -ChildPath "$($moduleName.BaseName)\$($language.BaseName)"
@@ -162,28 +162,54 @@ foreach ($mod in $InternalModules)
 # Save external modules to tmp
 Save-Module -Name $ExternalDependency -Path $scratch -Force -Repository PSGallery
 
+# Sample Scripts insertion
+foreach ($sampleFile in (Get-ChildItem $SolutionDir\LabSources\SampleScripts -File -Filter *.ps1 -Recurse))
+{
+    $theNode = $xmlContent.Wix.Product.Directory.Directory.Where( { $_.Id -eq 'LABSOURCESVOLUME' }).Directory.Directory.Directory.Where( { $_.Name -eq $sampleFile.Directory.Name }).Component
+    if (-not $theNode) 
+    {
+        PowerShell.Utility\Write-Host "No folder in product.xml called $($sampleFile.Directory.Name)"
+        continue
+    }
+    $rootNode = $xmlContent.CreateNode([System.Xml.XmlNodeType]::Element, 'File', 'http://schemas.microsoft.com/wix/2006/wi')
+    $idAttrib = $xmlContent.CreateAttribute('Id')
+    $idAttrib.Value = (New-Guid).Guid
+    $nameAttrib = $xmlContent.CreateAttribute('Name')
+    $nameAttrib.Value = $sampleFile.Name
+    $diskIdAttrib = $xmlContent.CreateAttribute('DiskId')
+    $diskIdAttrib.Value = 1
+    $sourceAttrib = $xmlContent.CreateAttribute('Source')
+    $sourceAttrib.Value = '$(var.SolutionDir)LabSources\SampleScripts\{0}\{1}' -f $sampleFile.Directory.Name, $sampleFile.Name
+
+    $null = $rootNode.Attributes.Append($nameAttrib)
+    $null = $rootNode.Attributes.Append($diskIdAttrib)
+    $null = $rootNode.Attributes.Append($sourceAttrib)
+    $null = $rootNode.Attributes.Append($idAttrib)
+    $null = $theNode.AppendChild($rootNode)
+}
+
 # Dependent modules insertion
 foreach ($depp in ($ExternalDependency + $internalModules))
 {
     Microsoft.PowerShell.Utility\Write-Host "Dynamically adding $depp to product.wxs"
     $modPath = Join-Path -Path $scratch -ChildPath $depp
-    $folders, $files = (Get-ChildItem -Path $modPath -Recurse -Force).Where({$_.PSIsContainer},'Split')
+    $folders, $files = (Get-ChildItem -Path $modPath -Recurse -Force).Where( { $_.PSIsContainer }, 'Split')
     $nodeHash = @{}
 
     $rootNode = $xmlContent.CreateNode([System.Xml.XmlNodeType]::Element, 'Directory', 'http://schemas.microsoft.com/wix/2006/wi')
-    $idAttrib =$xmlContent.CreateAttribute('Id')
+    $idAttrib = $xmlContent.CreateAttribute('Id')
     $idAttrib.Value = "$($depp -replace '\.|\\')Root"
     $nameAttrib = $xmlContent.CreateAttribute('Name')
     $nameAttrib.Value = $depp
     $null = $rootNode.Attributes.Append($idAttrib)
     $null = $rootNode.Attributes.Append($nameAttrib)
-    $nodeHash.Add("$($depp -replace '\.|\\')Root", @{Node = $rootNode; Component = $false})
+    $nodeHash.Add("$($depp -replace '\.|\\')Root", @{Node = $rootNode; Component = $false })
 
     foreach ($folder in $folders)
     {
         $parentNodeName = ($folder.Parent.FullName).Replace($scratch, '') -replace '\W'
         $dirNode = $xmlContent.CreateNode([System.Xml.XmlNodeType]::Element, 'Directory', 'http://schemas.microsoft.com/wix/2006/wi')
-        $idAttrib =$xmlContent.CreateAttribute('Id')
+        $idAttrib = $xmlContent.CreateAttribute('Id')
         $idAttrib.Value = $folder.FullName.Replace($scratch, '') -replace '\W'
         $nameAttrib = $xmlContent.CreateAttribute('Name')
         $nameAttrib.Value = $folder.Name
@@ -192,7 +218,7 @@ foreach ($depp in ($ExternalDependency + $internalModules))
 
         # Parent node lokalisieren, wenn nicht vorhanden, programFilesNode
         $parentNode = $nodeHash[$parentNodeName].Node
-        $nodeHash.Add($idAttrib.Value, @{Node = $dirNode; Component = $false})
+        $nodeHash.Add($idAttrib.Value, @{Node = $dirNode; Component = $false })
 
         if ($null -eq $parentNode)
         {
@@ -225,7 +251,7 @@ foreach ($depp in ($ExternalDependency + $internalModules))
         if (-not $componentCreated)
         {
             $compNode = $xmlContent.CreateNode([System.Xml.XmlNodeType]::Element, 'Component', 'http://schemas.microsoft.com/wix/2006/wi')
-            $idAttrib =$xmlContent.CreateAttribute('Id')
+            $idAttrib = $xmlContent.CreateAttribute('Id')
             $idAttrib.Value = "$($parentNodeName)Component"
             $guidAttrib = $xmlContent.CreateAttribute('Guid')
             $guidAttrib.Value = (New-Guid).Guid
@@ -235,7 +261,7 @@ foreach ($depp in ($ExternalDependency + $internalModules))
 
             # add ref
             $refNode = $xmlContent.CreateNode([System.Xml.XmlNodeType]::Element, 'ComponentRef', 'http://schemas.microsoft.com/wix/2006/wi')
-            $refIdAttrib =$xmlContent.CreateAttribute('Id')
+            $refIdAttrib = $xmlContent.CreateAttribute('Id')
             $refIdAttrib.Value = $idAttrib.Value
             $null = $refNode.Attributes.Append($refIdAttrib)
             $null = $componentRefNode.AppendChild($refNode)
@@ -247,7 +273,7 @@ foreach ($depp in ($ExternalDependency + $internalModules))
         $fileSource.Value = $file.FullName
         $fileId = $xmlContent.CreateAttribute('Id')
         $rnd = 71
-        $fileId.Value = -join [char[]]$(1..$rnd | ForEach-Object {Get-Random -Minimum 97 -Maximum 122})
+        $fileId.Value = -join [char[]]$(1..$rnd | ForEach-Object { Get-Random -Minimum 97 -Maximum 122 })
         $null = $fileNode.Attributes.Append($fileSource)
         $null = $fileNode.Attributes.Append($fileId)
         $null = $nodeHash[$parentNodeName].Component.AppendChild($fileNode)
