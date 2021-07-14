@@ -8,6 +8,8 @@
 - ARM login using device authentication for headless scenarios as well as Linux
 - Azure location name can now be specified either as Display Name or Location Name
 - SCOM role now takes care of multiple management servers (thanks @mlinowski !)
+- Installer now auto-includes sample scripts
+  - New folders are not picked up automatically and are added in Product.xml
 
 ### Bugs
 
