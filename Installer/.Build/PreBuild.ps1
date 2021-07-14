@@ -173,7 +173,7 @@ foreach ($sampleFile in (Get-ChildItem $SolutionDir\LabSources\SampleScripts -Fi
     }
     $rootNode = $xmlContent.CreateNode([System.Xml.XmlNodeType]::Element, 'File', 'http://schemas.microsoft.com/wix/2006/wi')
     $idAttrib = $xmlContent.CreateAttribute('Id')
-    $idAttrib.Value = (New-Guid).Guid
+    $idAttrib.Value = 'sample_{0}' -f ((New-Guid).Guid -replace '\W')
     $nameAttrib = $xmlContent.CreateAttribute('Name')
     $nameAttrib.Value = $sampleFile.Name
     $diskIdAttrib = $xmlContent.CreateAttribute('DiskId')
