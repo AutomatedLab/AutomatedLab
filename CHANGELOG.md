@@ -4,7 +4,7 @@
 
 ### Enhancements
 - Exchange links updated
-
+- NuGet custom role distributes nuget.exe on lab VMs and registers repository
 ### Bugs
 
 ## 5.38.0 (2021-07-14)
