@@ -168,7 +168,7 @@ foreach ($sampleFile in (Get-ChildItem $SolutionDir\LabSources\SampleScripts -Fi
     $theNode = $xmlContent.Wix.Product.Directory.Directory.Where( { $_.Id -eq 'LABSOURCESVOLUME' }).Directory.Directory.Directory.Where( { $_.Name -eq $sampleFile.Directory.Name }).Component
     if (-not $theNode) 
     {
-        PowerShell.Utility\Write-Host "No folder in product.xml called $($sampleFile.Directory.Name)"
+        Microsoft.PowerShell.Utility\Write-Host "No folder in product.xml called $($sampleFile.Directory.Name)"
         continue
     }
     $rootNode = $xmlContent.CreateNode([System.Xml.XmlNodeType]::Element, 'File', 'http://schemas.microsoft.com/wix/2006/wi')

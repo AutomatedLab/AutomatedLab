@@ -60,8 +60,6 @@
             <Directory Id="SamplesAzureDir" Name="Azure">
               <Component Id='SamplesAzureComponent' Guid='2904ea2b-6964-47ba-b912-f4c47b1cd6a4'>
                 <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="SamplesAzureComponent"/>
-                <File Id='Sample_MultiForestLab12012R2Azure' Name='MultiForestLab 2012R2.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Azure\MultiForestLab 2012R2.ps1' />
-                <File Id='VpnConnectedLab' Name='VpnConnectedLab.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Azure\VpnConnectedLab.ps1' />
                 <RemoveFolder Id="RemoveFolderSamplesAzureDir" Directory="SamplesAzureDir" On="both"/>
               </Component>
             </Directory>
