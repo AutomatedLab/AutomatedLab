@@ -4,6 +4,12 @@
 
 ### Enhancements
 
+### Bugs
+
+## 5.38.0 (2021-07-14)
+
+### Enhancements
+
 - ARM templates redeployability improved by using uniqueString function
 - ARM login using device authentication for headless scenarios as well as Linux
 - Azure location name can now be specified either as Display Name or Location Name
