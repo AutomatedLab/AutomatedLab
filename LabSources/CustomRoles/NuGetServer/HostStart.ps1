@@ -122,12 +122,13 @@ else
 
 Copy-LabFileItem -Path "$PSScriptRoot/publish/Modules/PackageManagement","$PSScriptRoot/publish/Modules/PowerShellGet" -DestinationFolderPath 'C:\Program Files\WindowsPowerShell\Modules' -Recurse -ComputerName (Get-LabVm -Filter {$_.Name -ne $ComputerName})
 
+$prefix = if ($UseSsl) { 'https' } else { 'http' }
+
 Invoke-LabCommand -ComputerName (Get-LabVm -Filter {$_.Name -ne $ComputerName}) -ScriptBlock {
     $uri = '{0}://{1}:{2}/nuget' -f $prefix,$nugetHost.FQDN,$Port
     Register-PSRepository -Name AutomatedLabFeed -SourceLocation $uri -PublishLocation $uri -InstallationPolicy Trusted
-}
+} -Variable (Get-Variable prefix, nugetHost,Port)
 
-$prefix = if ($UseSsl) { 'https' } else { 'http' }
 Write-ScreenInfo ("Use your new feed:
 Register-PSRepository -Name AutomatedLabFeed -SourceLocation '{0}://{1}:{2}/nuget' -PublishLocation '{0}://{1}:{2}/nuget' -InstallationPolicy Trusted
 " -f $prefix,$nugetHost.FQDN,$Port)
