@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Enhancements
+- Exchange links updated
 
 ### Bugs
 
