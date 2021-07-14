@@ -2,6 +2,26 @@
 
 ## Unreleased
 
+### Enhancements
+
+### Bugs
+
+## 5.38.0 (2021-07-14)
+
+### Enhancements
+
+- ARM templates redeployability improved by using uniqueString function
+- ARM login using device authentication for headless scenarios as well as Linux
+- Azure location name can now be specified either as Display Name or Location Name
+- SCOM role now takes care of multiple management servers (thanks @mlinowski !)
+- Installer now auto-includes sample scripts
+  - New folders are not picked up automatically and are added in Product.xml
+
+### Bugs
+
+- Fixed bug in CA deployment: NETBIOS domain name was disregarded if one was explicitly configured
+- Fixing multiple bugs in DSC Pull Server DB deployment
+
 ## 5.37.0 (2021-05-31)
 
 ### Enhancements
@@ -14,7 +34,7 @@
 - Fixed issue where custom role properties did not deserialise (issue #1164)
 - Fixing issue when `Install-Lab -BaseImages` or `-NetworkSwitches` was used
 - Azure DevOps installation 'failed' with success code 3010 (reboot required).
-
+- Fixed 'PasswordNeverExpires' when there is only DCs in the lab.
 ## 5.36.0 (2021-04-27)
 
 ### Enhancements

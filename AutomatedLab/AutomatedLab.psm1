@@ -571,7 +571,7 @@ function Import-Lab
             -Credential ([System.Management.Automation.PSSerializer]::Deserialize($Script:data.VMWareSettings.Credential))
         }
 
-        if (-not ($IsLinux -or $IsMacOs))
+        if (-not ($IsLinux -or $IsMacOs) -and (Get-LabConfigurationItem -Name OverridePowerPlan))
         {
             $powerSchemeBackup = (powercfg.exe -GETACTIVESCHEME).Split(':')[1].Trim().Split()[0]
             powercfg.exe -setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c
@@ -886,6 +886,15 @@ function Install-Lab
         Write-ScreenInfo -Message "Machines with RootDC role to be installed: '$((Get-LabVM -Role RootDC).Name -join ', ')'"
         Install-LabRootDcs -CreateCheckPoints:$CreateCheckPoints
 
+        # Set account expiration for builtin account and lab domain account
+        foreach ($machine in (Get-LabVM -Role RootDC -ErrorAction SilentlyContinue))
+        {
+            $userName = (Get-Lab).Domains.Where({ $_.Name -eq $machine.DomainName }).Administrator.UserName
+            Invoke-LabCommand -ActivityName 'Setting PasswordNeverExpires for deployment accounts in AD' -ComputerName $machine -ScriptBlock {
+                Set-ADUser -Identity $userName -PasswordNeverExpires $true -Confirm:$false
+            } -Variable (Get-Variable userName) -NoDisplay
+        }
+
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
@@ -954,16 +963,6 @@ function Install-Lab
                 Write-ScreenInfo -Message 'Creating a snapshot of all domain controllers'
                 Checkpoint-LabVM -ComputerName $allDcVMs -SnapshotName 'Post Forest Setup'
             }
-        }
-
-        # Set account expiration for builtin account and lab domain account
-        foreach ($machine in (Get-LabVM -Role ADDS -ErrorAction SilentlyContinue | Group-Object DomainName))
-        {
-            $anyDc = $machine.Group | Select -First 1
-            $userName = (Get-Lab).Domains.Where({$_.Name -eq $machine.Name}).Administrator.Username
-            Invoke-LabCommand -ComputerName $anyDc -ScriptBlock {
-                Set-ADUser -Identity $userName -PasswordNeverExpires $true -Confirm:$false
-            } -Variable (Get-Variable userName)
         }
 
         Write-ScreenInfo -Message 'Done' -TaskEnd
@@ -1258,7 +1257,7 @@ function Install-Lab
                 AutomatedLab will not be able to reach your VMs, as PowerShell will not be installed.
 
                 The timeout to wait for VMs to be accessible via PowerShell was reduced from 60 to 15
-                minutes."
+            minutes."
         }
 
         if (-not $DelayBetweenComputers)
@@ -1281,10 +1280,13 @@ function Install-Lab
         Start-LabVM -All -DelayBetweenComputers $DelayBetweenComputers -ProgressIndicator 30 -TimeoutInMinutes $timeoutRemaining -Wait
 
         $userName = (Get-Lab).DefaultInstallationCredential.UserName
-        Invoke-LabCommand -ComputerName (Get-LabVM -Filter {$_.Roles.Name -notcontains 'RootDc' -and $_.RolesName -notcontains 'DC' -and $_.RolesName -notcontains 'FirstChildDc'}) -ScriptBlock {
-            # Still supporting ANCIENT server 2008 R2 with it's lack of CIM cmdlets :'(
-            Get-WmiObject -Query "Select * from Win32_UserAccount where name = '$userName' and localaccount='true'"  | Set-WmiInstance -Arguments @{PasswordExpires=$False}
-        } -Variable (Get-Variable userName)
+        $nonDomainControllers = Get-LabVM -Filter { $_.Roles.Name -notcontains 'RootDc' -and $_.RolesName -notcontains 'DC' -and $_.RolesName -notcontains 'FirstChildDc' }
+        if ($nonDomainControllers) {
+            Invoke-LabCommand -ActivityName 'Setting PasswordNeverExpires for local deployment accounts' -ComputerName $nonDomainControllers -ScriptBlock {
+                # Still supporting ANCIENT server 2008 R2 with it's lack of CIM cmdlets :'(
+                Get-WmiObject -Query "Select * from Win32_UserAccount where name = '$userName' and localaccount='true'" | Set-WmiInstance -Arguments @{ PasswordExpires = $false}
+            } -Variable (Get-Variable userName) -NoDisplay
+        }
 
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
@@ -3679,10 +3681,10 @@ catch
 }
 
 if (-not (
-    (Test-Path Env:\AUTOMATEDLAB_TELEMETRY_OPTIN) -or `
+        (Test-Path Env:\AUTOMATEDLAB_TELEMETRY_OPTIN) -or `
     (Test-Path -Path "$((Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot))/telemetry.enabled")) -and `
     (Get-Date) -ge $nextCheck
-    )
+)
 {
     $choice = Read-Choice -ChoiceList '&Yes','&No','&Ask later' -Caption 'Opt in to telemetry?' -Message $telemetryChoice -Default 0
 
@@ -3732,7 +3734,7 @@ function Get-LabConfigurationItem
 
     if ($Name)
     {
-        $setting = (Get-PSFConfig -Module AutomatedLab -Name $Name).Value
+        $setting = (Get-PSFConfig -Module AutomatedLab -Name $Name -Force).Value
         if (-not $setting -and $Default)
         {
             return $Default

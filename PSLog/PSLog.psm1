@@ -12,7 +12,7 @@ function Write-LogFunctionEntry
 
     $caller = (Get-PSCallStack)[1]
     $callerFunctionName = $caller.Command
-    if ($callerFunctionName)
+    if ((Get-LabConfigurationItem -Name SendFunctionTelemetry) -and $callerFunctionName)
     {
         try
         {

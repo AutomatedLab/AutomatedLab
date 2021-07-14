@@ -13,7 +13,7 @@ $unattendedXmlDefaultContent2012 = @'
   <settings pass="specialize">
     <component name="Microsoft-Windows-UnattendedJoin" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State">
       <Identification>
-        <JoinWorkgroup xmlns="">NET</JoinWorkgroup>
+        <JoinWorkgroup >NET</JoinWorkgroup>
       </Identification>
     </component>
     <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State">
@@ -198,7 +198,6 @@ $unattendedXmlDefaultContent2012 = @'
       </UserAccounts>
       <OOBE>
         <HideEULAPage>true</HideEULAPage>
-        <NetworkLocation>Work</NetworkLocation>
         <ProtectYourPC>3</ProtectYourPC>
         <HideOnlineAccountScreens>true</HideOnlineAccountScreens>
         <HideLocalAccountScreen>true</HideLocalAccountScreen>
@@ -231,7 +230,7 @@ $unattendedXmlDefaultContent2008 = @'
   <settings pass="specialize">
     <component name="Microsoft-Windows-UnattendedJoin" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State">
       <Identification>
-        <JoinWorkgroup xmlns="">NET</JoinWorkgroup>
+        <JoinWorkgroup >NET</JoinWorkgroup>
       </Identification>
     </component>
     <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State">
@@ -3671,7 +3670,7 @@ function Import-LabDefinition
             -Credential ([System.Management.Automation.PSSerializer]::Deserialize($Script:lab.VMWareSettings.Credential))
         }
 
-        if (-not ($IsLinux -or $IsMacOs))
+        if (-not ($IsLinux -or $IsMacOs) -and (Get-LabConfigurationItem -Name OverridePowerPlan))
         {
             $powerSchemeBackup = (powercfg.exe -GETACTIVESCHEME).Split(':')[1].Trim().Split()[0]
             powercfg.exe -setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c
