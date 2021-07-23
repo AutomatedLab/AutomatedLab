@@ -3,9 +3,14 @@
 ## Unreleased
 
 ### Enhancements
+
 - Exchange links updated
 - NuGet custom role distributes nuget.exe on lab VMs and registers repository
+- No more validating non-deployed roles
+
 ### Bugs
+
+- When Az credentials were expired, lab resources were not removed
 
 ## 5.38.0 (2021-07-14)
 
