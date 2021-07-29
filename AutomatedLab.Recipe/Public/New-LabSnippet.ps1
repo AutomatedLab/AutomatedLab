@@ -35,6 +35,7 @@
     )
 
     $existingSnippet = Get-LabSnippet -Name $Name
+    try { [AutomatedLab.LabTelemetry]::Instance.FunctionCalled($PSCmdlet.MyInvocation.InvocationName) } catch {}
 
     if ($existingSnippet -and -not $Force)
     {
