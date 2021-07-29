@@ -77,8 +77,8 @@
         }
 
         $blobs = [System.Collections.ArrayList]::new()
-        try { $blobs.AddRange((Get-AzStorageBlob -Blob snippet/*.ps*1 -Container $container -Context (Get-AzStorageAccount -ResourceGroupName $rg -Name $account).Context)) } catch {}
-        try { $blobs.AddRange((Get-AzStorageBlob -Blob sample/*.ps*1 -Container $container -Context (Get-AzStorageAccount -ResourceGroupName $rg -Name $account).Context)) } catch {}
+        try { $blobs.AddRange((Get-AzStorageBlob -Blob [sS]nippet/*.ps*1 -Container $container -Context (Get-AzStorageAccount -ResourceGroupName $rg -Name $account).Context)) } catch {}
+        try { $blobs.AddRange((Get-AzStorageBlob -Blob [sS]ample/*.ps*1 -Container $container -Context (Get-AzStorageAccount -ResourceGroupName $rg -Name $account).Context)) } catch {}
 
         if ($blobs.Count -eq 0) { return }
         Push-Location # Super ugly...
@@ -91,7 +91,7 @@
     }
 
     if (-not (Test-Path -Path $location)) { return }
-    foreach ($meta in (Get-ChildItem -Path $location -Filter AutomatedLab.*.*.psd1))
+    foreach ($meta in (Get-ChildItem -Path $location -File -Recurse -Filter AutomatedLab.*.*.psd1))
     {
         $metadata = Import-PowerShellDataFile -Path $meta.FullName -ErrorAction SilentlyContinue
         $scriptfile = [IO.Path]::ChangeExtension($meta.FullName, 'ps1')
