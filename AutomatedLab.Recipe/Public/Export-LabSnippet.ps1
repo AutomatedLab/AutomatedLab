@@ -23,16 +23,44 @@
         $filePath = Join-Path -Path $location -ChildPath "$($schnippet.Name).ps1"
         $metaPath = Join-Path -Path $location -ChildPath "$($schnippet.Name).psd1"
         
-        if ($useAzure -and -not (Get-Command -Name Set-AzStorageBlobContent -ErrorAction SilentlyContinue))
-        {                
-            Write-ScreenInfo -Type Error -Message "Az.Storage is missing. To use Azure, ensure that the module Az is installed."
-            return
-        }
-        
-        if ($useAzure -and -not (Get-AzContext))
-        {                
-            Write-ScreenInfo -Type Error -Message "No Azure context. Please follow the on-screen instructions to log in."
-            $null = Connect-AzAccount -UseDeviceAuthentication
+
+        if ($useAzure)
+        {
+            if (-not (Get-Command -Name Set-AzStorageBlobContent -ErrorAction SilentlyContinue))
+            {                
+                Write-ScreenInfo -Type Error -Message "Az.Storage is missing. To use Azure, ensure that the module Az is installed."
+                return
+            }
+
+            if (-not (Get-AzContext))
+            {
+                Write-ScreenInfo -Type Error -Message "No Azure context. Please follow the on-screen instructions to log in."
+                $null = Connect-AzAccount -UseDeviceAuthentication
+            }
+
+            $account = Get-PSFConfigValue -FullName AutomatedLab.Recipe.AzureBlobStorage.AccountName
+            $rg = Get-PSFConfigValue -FullName AutomatedLab.Recipe.AzureBlobStorage.ResourceGroupName
+            $container = Get-PSFConfigValue -FullName AutomatedLab.Recipe.AzureBlobStorage.ContainerName
+            
+            if (-not $account -or -not $rg -or -not $container)
+            {
+                Write-ScreenInfo -Type Error -Message "Unable to upload to storage account, parameters missing. You provided AzureBlobStorage.AccountName as '$account', AzureBlobStorage.ResourceGroupName as '$rg' and AzureBlobStorage.ContainerName as '$container'"
+                return
+            }
+            
+            $ctx = (Get-AzStorageAccount -ResourceGroupName $rg -Name $account -ErrorAction SilentlyContinue).Context
+
+            if (-not $ctx)
+            {
+                Write-ScreenInfo -Type Error -Message "Unable to establish storage context with account $account. Does it exist?"
+                return
+            }
+
+            
+            if (-not (Get-AzStorageContainer -Name $container -Context $ctx))
+            {
+                $null = New-AzStorageContainer -Name $container -Context $ctx
+            }
         }
 
         if (-not $useAzure -and -not (Test-Path -Path $location))
@@ -47,18 +75,9 @@
         
         if ($useAzure -and -not $MetaData.IsPresent)
         {
-            $account = Get-PSFConfigValue -FullName AutomatedLab.Recipe.AzureBlobStorage.AccountName
-            $rg = Get-PSFConfigValue -FullName AutomatedLab.Recipe.AzureBlobStorage.ResourceGroupName
-            $container = Get-PSFConfigValue -FullName AutomatedLab.Recipe.AzureBlobStorage.ContainerName
-            if (-not $account -or -not $rg -or -not $container)
-            {
-                Write-ScreenInfo -Type Error -Message "Unable to upload to storage account, parameters missing. You provided AzureBlobStorage.AccountName as '$account', AzureBlobStorage.ResourceGroupName as '$rg' and AzureBlobStorage.ContainerName as '$container'"
-                return
-            }
-
             $tmpFile = New-TemporaryFile
             Set-Content -Path $tmpFile.FullName -Value $schnippet.ScriptBlock.ToString() -Encoding Unicode -Force
-            $null = Set-AzStorageBlobContent -File $tmpFile.FullName -Container $container -Blob "$($type)/$($schnippet.Name).ps1" -Context (Get-AzStorageAccount -ResourceGroupName $rg -Name $account).Context
+            $null = Set-AzStorageBlobContent -File $tmpFile.FullName -Container $container -Blob "$($type)/$($schnippet.Name).ps1" -Context $ctx
             $tmpFile | Remove-Item
         }
 
@@ -77,16 +96,7 @@
 "@ 
 
         if ($useAzure)
-        {            
-            $account = Get-PSFConfigValue -FullName AutomatedLab.Recipe.AzureBlobStorage.AccountName
-            $rg = Get-PSFConfigValue -FullName AutomatedLab.Recipe.AzureBlobStorage.ResourceGroupName
-            $container = Get-PSFConfigValue -FullName AutomatedLab.Recipe.AzureBlobStorage.ContainerName
-            if (-not $account -or -not $rg -or -not $container)
-            {
-                Write-ScreenInfo -Type Error -Message "Unable to upload to storage account, parameters missing. You provided AzureBlobStorage.AccountName as '$account', AzureBlobStorage.ResourceGroupName as '$rg' and AzureBlobStorage.ContainerName as '$container'"
-                return
-            }
-
+        {
             $tmpFile = New-TemporaryFile
             Set-Content -Path $tmpFile.FullName -Value $metaContent -Encoding Unicode -Force
             $null = Set-AzStorageBlobContent -File $tmpFile.FullName -Container $container -Blob "$($type)/$($schnippet.Name).psd1" -Context (Get-AzStorageAccount -ResourceGroupName $rg -Name $account).Context
