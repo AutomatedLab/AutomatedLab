@@ -1880,6 +1880,14 @@ function Get-LabVM
         {
             $result
         }
+        
+        foreach ($machine in $result)
+        {
+            if ($machine.Disks.Count -gt 1)
+            {
+                $machine.Disks = Get-LabVHDX -Name $machine.Disks.Name
+            }
+        }
 
         if ($Filter)
         {
