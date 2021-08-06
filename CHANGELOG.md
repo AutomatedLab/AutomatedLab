@@ -7,7 +7,7 @@
 - Exchange links updated
 - NuGet custom role distributes nuget.exe on lab VMs and registers repository
 - No more validating non-deployed roles
-- The VHDx files for additional disks are not stored in the VM's path and no longer in the
+- The VHDx files for additional disks are now stored in the VM's path and no longer in the
   disks folder.
 
 ### Bugs
