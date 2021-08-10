@@ -5,9 +5,9 @@ function Install-LabFailoverCluster
     param ( )
 
     $failoverNodes = Get-LabVm -Role FailoverNode -ErrorAction SilentlyContinue
-    $clusters = $failoverNodes | Group-Object { ($PSItem.Roles | Where-Object -Property Name -eq 'FailoverNode').Properties['ClusterName'] }
+    $clusters = $failoverNodes | Group-Object { ($_.Roles | Where-Object -Property Name -eq 'FailoverNode').Properties['ClusterName'] }
     $useDiskWitness = $false
-    Start-LabVm -Wait -ComputerName $failoverNodes
+    Start-LabVM -Wait -ComputerName $failoverNodes
 
     Install-LabWindowsFeature -ComputerName $failoverNodes -FeatureName Failover-Clustering, RSAT-Clustering -IncludeAllSubFeature
 
@@ -322,7 +322,7 @@ function Install-LabFailoverStorage
                 }
             } -Variable (Get-Variable -Name clusters, disk, driveletter) -ErrorAction Stop
 
-            Invoke-LabCommand -ActivityName 'Connecting iSCSI target' -ComputerName (Get-LabVM -Role FailoverNode) -ScriptBlock {
+            Invoke-LabCommand -ActivityName "Connecting iSCSI target - storage node '$storageNode' - disk '$disk'" -ComputerName (Get-LabVM -Role FailoverNode) -ScriptBlock {
                 $targetAddress = $storageMapping[$env:COMPUTERNAME]
                 if (-not (Get-Command New-IscsiTargetPortal -ErrorAction SilentlyContinue))
                 {

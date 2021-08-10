@@ -7,6 +7,8 @@
 - Exchange links updated
 - NuGet custom role distributes nuget.exe on lab VMs and registers repository
 - No more validating non-deployed roles
+- Support for multiple storage nodes, controlled by new role property
+  'StorageTarget' for role 'FailoverNode'
 
 ### Bugs
 
