@@ -239,7 +239,14 @@ function Install-LabFailoverStorage
     
         $role = $failoverNode.Roles | Where-Object Name -eq 'FailoverNode'
         $name = $role.Properties['ClusterName']
-        $storageMapping."$($failoverNode.Name)" = $role.Properties['StorageTarget']
+        $storageMapping."$($failoverNode.Name)" = if ($role.Properties.ContainsKey('StorageTarget'))
+        {
+            $role.Properties['StorageTarget']
+        }
+        else
+        {
+            $storageNodes.Name
+        }
 
         if (-not $name)
         {
