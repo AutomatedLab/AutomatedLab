@@ -9,6 +9,8 @@
 - No more validating non-deployed roles
 - Support for multiple storage nodes, controlled by new role property
   'StorageTarget' for role 'FailoverNode'
+- The VHDx files for additional disks are now stored in the VM's path and no longer in the
+  disks folder.
 
 ### Bugs
 
