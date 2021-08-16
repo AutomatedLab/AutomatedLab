@@ -240,11 +240,11 @@ function New-LabVHDX
 
     if ($Name)
     {
-        $disks = $lab.Disks | Where-Object Name -in $Name
+        $disks = Get-LabVHDX -Name $Name
     }
     else
     {
-        $disks = $lab.Disks
+        $disks = Get-LabVHDX -All
     }
 
     if (-not $disks)
@@ -254,16 +254,29 @@ function New-LabVHDX
         return
     }
 
-    $disksPath = Join-Path -Path $lab.Target.Path -ChildPath Disks
+    $createOnlyReferencedDisks = Get-LabConfigurationItem -Name CreateOnlyReferencedDisks
+    
+    $param = @{
+        ReferenceObject  = $disks
+        DifferenceObject = (Get-LabVM | Where-Object { -not $_.SkipDeployment }).Disks
+        ExcludeDifferent = $true
+        IncludeEqual     = $true
+    }
+    $referencedDisks = (Compare-Object @param).InputObject
+    if ($createOnlyReferencedDisks)
+    {
+        Write-ScreenInfo "There are $($disks.Count - $referencedDisks.Count) disks defined that are not referenced by any machine. These disks won't be created." -Type Warning
+        $disks = $referencedDisks
+    }
 
     foreach ($disk in $disks)
     {
         Write-ScreenInfo -Message "Creating disk '$($disk.Name)'" -TaskStart -NoNewLine
-        $diskPath = Join-Path -Path $disksPath -ChildPath ($disk.Name + '.vhdx')
-        if (-not (Test-Path -Path $diskPath))
+        
+        if (-not (Test-Path -Path $disk.Path))
         {
             $params = @{
-                VhdxPath = $diskPath
+                VhdxPath = $disk.Path
                 SizeInGB = $disk.DiskSize
                 SkipInitialize = $disk.SkipInitialization
                 Label = $disk.Label
@@ -279,7 +292,7 @@ function New-LabVHDX
         }
         else
         {
-            Write-ScreenInfo "The disk '$diskPath' does already exist, no new disk is created." -Type Warning -TaskEnd
+            Write-ScreenInfo "The disk '$($disk.Path)' does already exist, no new disk is created." -Type Warning -TaskEnd
         }
     }
 
@@ -314,27 +327,32 @@ function Get-LabVHDX
 
     if ($PSCmdlet.ParameterSetName -eq 'ByName')
     {
-        $results = $lab.Disks | Where-Object -FilterScript {
-            $_.Name -in $Name
-        }
+        $disks = $lab.Disks | Where-Object Name -In $Name
     }
 
     if ($PSCmdlet.ParameterSetName -eq 'All')
     {
-        $results = $lab.Disks
+        $disks = $lab.Disks
     }
 
-    if ($results)
+    if ($disks)
     {
-        $diskPath = Join-Path -Path $lab.Target.Path -ChildPath Disks
-        foreach ($result in $results)
+        foreach ($disk in $disks)
         {
-            $result.Path = Join-Path -Path $diskPath -ChildPath ($result.Name + '.vhdx')
+            if ($vm = Get-LabMachineDefinition | Where-Object { $_.Disks.Name -contains $disk.Name })
+            {
+                $disk.Path = Join-Path -Path $lab.Target.Path -ChildPath $vm.Name
+            }
+            else
+            {
+                $disk.Path = Join-Path -Path $lab.Target.Path -ChildPath Disks
+            }
+            $disk.Path = Join-Path -Path $disk.Path -ChildPath ($disk.Name + '.vhdx')
         }
 
-        Write-LogFunctionExit -ReturnValue $results.ToString()
+        Write-LogFunctionExit -ReturnValue $disks.ToString()
 
-        return $results
+        return $disks
     }
     else
     {

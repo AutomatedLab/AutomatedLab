@@ -144,6 +144,9 @@ Set-PSFConfig -Module 'AutomatedLab' -Name SetLocalIntranetSites -Value 'All'  -
 #Hyper-V Network settings
 Set-PSFConfig -Module 'AutomatedLab' -Name MacAddressPrefix -Value '0017FB' -Initialize -Validation string -Description 'The MAC address prefix for Hyper-V labs'
 
+#Hyper-V Disk Settings
+Set-PSFConfig -Module 'AutomatedLab' -Name CreateOnlyReferencedDisks -Value $true -Initialize -Validation bool -Description 'Disks that are not references by a VM will not be created'
+
 #Admin Center
 Set-PSFConfig -Module 'AutomatedLab' -Name WacDownloadUrl -Value 'http://aka.ms/WACDownload' -Validation string -Initialize -Description 'Windows Admin Center Download URL'
 
@@ -767,7 +770,7 @@ Register-PSFTeppScriptblock -Name 'AutomatedLab-Subscription' -ScriptBlock {
 }
 
 Register-PSFTeppScriptblock -Name 'AutomatedLab-CustomRole' -ScriptBlock {
-(Get-ChildItem -Path (Join-Path -Path (Get-LabSourcesLocationInternal -Local) -ChildPath 'CustomRoles' -ErrorAction SilentlyContinue) -Directory -ErrorAction SilentlyContinue).Name
+    (Get-ChildItem -Path (Join-Path -Path (Get-LabSourcesLocationInternal -Local) -ChildPath 'CustomRoles' -ErrorAction SilentlyContinue) -Directory -ErrorAction SilentlyContinue).Name
 }
 
 Register-PSFTeppScriptblock -Name 'AutomatedLab-AzureRoleSize' -ScriptBlock {
