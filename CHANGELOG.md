@@ -15,6 +15,8 @@
 ### Bugs
 
 - When Az credentials were expired, lab resources were not removed
+- When calculating the required free space on disk for labs on Hyper-V, also VMs
+  that are enabled for SkipDeployment were taken into account. This is now fixed.
 
 ## 5.38.0 (2021-07-14)
 
