@@ -1115,7 +1115,7 @@ function Export-LabDefinition
 
     if (Get-LabMachineDefinition | Where-Object HostType -eq HyperV)
     {
-        $hypervMachines = Get-LabMachineDefinition | Where-Object HostType -eq HyperV
+        $hypervMachines = Get-LabMachineDefinition | Where-Object { $_.HostType -eq 'HyperV' -and -not $_.SkipDeployment }
         $hypervUsedOperatingSystems = Get-LabAvailableOperatingSystem -NoDisplay | Where-Object OperatingSystemImageName -in $hypervMachines.OperatingSystem.OperatingSystemName
 
         $spaceNeededBaseDisks = ($hypervUsedOperatingSystems | Measure-Object -Property Size -Sum).Sum

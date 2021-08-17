@@ -8,10 +8,16 @@
 - NuGet custom role distributes nuget.exe on lab VMs and registers repository
 - No more validating non-deployed roles
 - AutomatedLab.Recipe can now also use an Azure Storage account to store snippets and samples. No custom roles at the moment though.
+- Support for multiple storage nodes, controlled by new role property
+  'StorageTarget' for role 'FailoverNode'
+- The VHDx files for additional disks are now stored in the VM's path and no longer in the
+  disks folder.
 
 ### Bugs
 
 - When Az credentials were expired, lab resources were not removed
+- When calculating the required free space on disk for labs on Hyper-V, also VMs
+  that are enabled for SkipDeployment were taken into account. This is now fixed.
 
 ## 5.38.0 (2021-07-14)
 
