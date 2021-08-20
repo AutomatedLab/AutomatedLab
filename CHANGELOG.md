@@ -1,6 +1,12 @@
 # Changelog
 
-## Unreleased
+## Unreleased (yyyy-MM-dd)
+
+### Enhancements
+
+### Bugs
+
+## 5.39.0 (2021-08-20)
 
 ### Enhancements
 
