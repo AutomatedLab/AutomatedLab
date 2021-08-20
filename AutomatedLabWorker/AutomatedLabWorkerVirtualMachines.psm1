@@ -976,8 +976,7 @@ function Start-LWHypervVM
         {
             Start-VM -Name $Name.ResourceName -ErrorAction Stop
 
-            if ($machine.NetworkAdapters.Count -gt 1 -and
-            ($machineMetadata.InitState -band [AutomatedLab.LabVMInitState]::NetworkAdapterBindingCorrected) -ne [AutomatedLab.LabVMInitState]::NetworkAdapterBindingCorrected)
+            if (($machineMetadata.InitState -band [AutomatedLab.LabVMInitState]::NetworkAdapterBindingCorrected) -ne [AutomatedLab.LabVMInitState]::NetworkAdapterBindingCorrected)
             {
                 Repair-LWHypervNetworkConfig -ComputerName $Name
                 $machineMetadata.InitState = [AutomatedLab.LabVMInitState]::NetworkAdapterBindingCorrected

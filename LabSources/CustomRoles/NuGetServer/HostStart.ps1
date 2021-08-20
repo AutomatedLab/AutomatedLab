@@ -89,6 +89,7 @@ else
 
 & $buildScript @buildParam
 
+Copy-LabFileItem -Path $PSScriptRoot/publish/nuget.exe -ComputerName (Get-LabVm) -DestinationFolderPath 'C:\ProgramData\Microsoft\Windows\PowerShell\PowerShellGet'
 Copy-Item -ToSession (New-LabPSSession -ComputerName $ComputerName) -Path $PSScriptRoot\publish\BuildOutput.zip -Destination C:\BuildOutput.zip
 Wait-LWLabJob -Job $jobs -ProgressIndicator 30 -NoDisplay
 Restart-LabVM -ComputerName $ComputerName -Wait
@@ -119,7 +120,15 @@ else
     Write-ScreenInfo -Message "NuGet deployment seems to have failed on $ComputerName. Pester reports $($result.FailedCount)/$($result.TotalCount) failed tests"
 }
 
+Copy-LabFileItem -Path "$PSScriptRoot/publish/Modules/PackageManagement","$PSScriptRoot/publish/Modules/PowerShellGet" -DestinationFolderPath 'C:\Program Files\WindowsPowerShell\Modules' -Recurse -ComputerName (Get-LabVm -Filter {$_.Name -ne $ComputerName})
+
 $prefix = if ($UseSsl) { 'https' } else { 'http' }
+
+Invoke-LabCommand -ComputerName (Get-LabVm -Filter {$_.Name -ne $ComputerName}) -ScriptBlock {
+    $uri = '{0}://{1}:{2}/nuget' -f $prefix,$nugetHost.FQDN,$Port
+    Register-PSRepository -Name AutomatedLabFeed -SourceLocation $uri -PublishLocation $uri -InstallationPolicy Trusted
+} -Variable (Get-Variable prefix, nugetHost,Port)
+
 Write-ScreenInfo ("Use your new feed:
 Register-PSRepository -Name AutomatedLabFeed -SourceLocation '{0}://{1}:{2}/nuget' -PublishLocation '{0}://{1}:{2}/nuget' -InstallationPolicy Trusted
 " -f $prefix,$nugetHost.FQDN,$Port)

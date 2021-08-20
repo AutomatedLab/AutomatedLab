@@ -14,6 +14,7 @@
     begin
     {
         $scriptBlockOrder = @{}
+        try { [AutomatedLab.LabTelemetry]::Instance.FunctionCalled($PSCmdlet.MyInvocation.InvocationName) } catch {}
     }
 
     process

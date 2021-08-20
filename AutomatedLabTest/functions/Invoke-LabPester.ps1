@@ -28,6 +28,8 @@
             $Lab = Import-Lab -Name $LabName -ErrorAction Stop -NoDisplay -NoValidation -PassThru
         }
 
+        if (($Lab.Machines.Roles).Count -eq 0) { return }
+
         $global:pesterLab = $Lab # No parameters in Pester v5 yet
         $configuration = [PesterConfiguration]::Default
         $configuration.Run.Path = Join-Path -Path $PSCmdlet.MyInvocation.MyCommand.Module.ModuleBase -ChildPath 'internal/tests'

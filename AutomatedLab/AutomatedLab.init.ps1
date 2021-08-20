@@ -144,6 +144,9 @@ Set-PSFConfig -Module 'AutomatedLab' -Name SetLocalIntranetSites -Value 'All'  -
 #Hyper-V Network settings
 Set-PSFConfig -Module 'AutomatedLab' -Name MacAddressPrefix -Value '0017FB' -Initialize -Validation string -Description 'The MAC address prefix for Hyper-V labs'
 
+#Hyper-V Disk Settings
+Set-PSFConfig -Module 'AutomatedLab' -Name CreateOnlyReferencedDisks -Value $true -Initialize -Validation bool -Description 'Disks that are not references by a VM will not be created'
+
 #Admin Center
 Set-PSFConfig -Module 'AutomatedLab' -Name WacDownloadUrl -Value 'http://aka.ms/WACDownload' -Validation string -Initialize -Description 'Windows Admin Center Download URL'
 
@@ -315,8 +318,8 @@ Set-PSFConfig -Module AutomatedLab -Name Dynamics365Uri -Value 'https://download
 
 # Exchange Server
 Set-PSFConfig -Module AutomatedLab -Name Exchange2013DownloadUrl -Value 'https://download.microsoft.com/download/7/F/D/7FDCC96C-26C0-4D49-B5DB-5A8B36935903/Exchange2013-x64-cu23.exe'
-Set-PSFConfig -Module AutomatedLab -Name Exchange2016DownloadUrl -Value 'https://download.microsoft.com/download/0/b/7/0b702b8b-03ab-4553-9e2c-c73bb0c8535f/ExchangeServer2016-x64-CU20.ISO'
-Set-PSFConfig -Module AutomatedLab -Name Exchange2019DownloadUrl -Value 'https://download.microsoft.com/download/d/7/b/d7bcf78a-00d2-4a46-a3d2-7d506116bcd2/ExchangeServer2019-x64-CU9.ISO'
+Set-PSFConfig -Module AutomatedLab -Name Exchange2016DownloadUrl -Value 'https://download.microsoft.com/download/7/d/5/7d5c319b-510b-4a2c-a77a-099c6f30ab54/ExchangeServer2016-x64-CU21.ISO'
+Set-PSFConfig -Module AutomatedLab -Name Exchange2019DownloadUrl -Value 'https://download.microsoft.com/download/7/3/f/73f75f9e-e7fd-4cb0-a2fc-405cbb800f2d/ExchangeServer2019-x64-CU10.ISO'
 
 # Validation
 Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
@@ -767,7 +770,7 @@ Register-PSFTeppScriptblock -Name 'AutomatedLab-Subscription' -ScriptBlock {
 }
 
 Register-PSFTeppScriptblock -Name 'AutomatedLab-CustomRole' -ScriptBlock {
-(Get-ChildItem -Path (Join-Path -Path (Get-LabSourcesLocationInternal -Local) -ChildPath 'CustomRoles' -ErrorAction SilentlyContinue) -Directory -ErrorAction SilentlyContinue).Name
+    (Get-ChildItem -Path (Join-Path -Path (Get-LabSourcesLocationInternal -Local) -ChildPath 'CustomRoles' -ErrorAction SilentlyContinue) -Directory -ErrorAction SilentlyContinue).Name
 }
 
 Register-PSFTeppScriptblock -Name 'AutomatedLab-AzureRoleSize' -ScriptBlock {

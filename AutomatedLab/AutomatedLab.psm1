@@ -548,6 +548,7 @@ function Import-Lab
         try
         {
             $Script:data.Disks = $importMethodInfo.Invoke($null, $Script:data.DiskDefinitionFiles[0].Path)
+            $Script:data.Disks = Get-LabVHDX -All
 
             if ($Script:data.DiskDefinitionFiles.Count -gt 1)
             {
@@ -1405,6 +1406,11 @@ function Remove-Lab
     if($pscmdlet.ShouldProcess((Get-Lab).Name, 'Remove the lab completely'))
     {
         Write-ScreenInfo -Message "Removing lab '$($Script:data.Name)'" -Type Warning -TaskStart
+        if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure' -and -not (Get-AzContext))
+        {
+            Write-ScreenInfo -Type Info -Message "Your Azure session is expired. Please log in to remove your resource group"
+            Connect-AzAccount -UseDeviceAuthentication
+        }
 
         try
         {
@@ -1481,7 +1487,7 @@ function Remove-Lab
                         }
                         else
                         {
-                            Write-ScreenInfo "Disk '$($disk.Path)' does not exist"
+                            Write-ScreenInfo "Disk '$($disk.Path)' does not exist" -Type Verbose
                         }
                     }
                 }
