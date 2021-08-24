@@ -3267,7 +3267,7 @@ function Show-LabDeploymentSummary
         }
 
         Write-ScreenInfo -Message '------------------------- Virtual Machine Summary -------------------------'
-        $vmInfo = Get-LabVM -IncludeLinux | Format-Table -Property Name, DomainName, IpAddress, Roles, OperatingSystem,
+        $vmInfo = Get-LabVM -IncludeLinux | Format-Table -Property Name, DomainName, IpV4Address, Roles, OperatingSystem,
         @{ Name = 'Local Admin'; Expression = { $_.InstallationUser.UserName } },
         @{ Name = 'Password'; Expression = { $_.InstallationUser.Password } } -AutoSize |
         Out-String

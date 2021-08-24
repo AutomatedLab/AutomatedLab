@@ -6,6 +6,8 @@
 
 ### Bugs
 
+- Fixed a display bug. When no IP address space was added to a virtual network, 0.0.0.0 was shown instead of the actual IP.
+
 ## 5.39.0 (2021-08-20)
 
 ### Enhancements
