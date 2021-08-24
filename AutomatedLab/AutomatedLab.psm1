@@ -886,6 +886,8 @@ function Install-Lab
 
         Write-ScreenInfo -Message "Machines with RootDC role to be installed: '$((Get-LabVM -Role RootDC).Name -join ', ')'"
         Install-LabRootDcs -CreateCheckPoints:$CreateCheckPoints
+        
+        New-LabADSubnet
 
         # Set account expiration for builtin account and lab domain account
         foreach ($machine in (Get-LabVM -Role RootDC -ErrorAction SilentlyContinue))
