@@ -2024,7 +2024,18 @@ function New-LabADSubnet
     foreach ($machine in $machines)
     {
         $ipAddress = ($machine.IpAddress -split '/')[0]
-        $subnetMask = ($machine.IpAddress -split '/')[1] | ConvertTo-Mask
+        
+        if ($ipAddress -eq '0.0.0.0') {
+            $ipAddress = Get-NetIPAddress -AddressFamily IPv4 | Where-Object InterfaceAlias -eq "vEthernet ($($machine.Network))"
+        }
+        $ipPrefix = ($machine.IpAddress -split '/')[1]
+        $subnetMask = if ([int]$ipPrefix) {        
+            $ipPrefix | ConvertTo-Mask
+        }
+        else {
+            $ipAddress.PrefixLength | ConvertTo-Mask
+            $ipAddress = $ipAddress.IPAddress
+        }
 
         $networkInfo = Get-NetworkSummary -IPAddress $ipAddress -SubnetMask $subnetMask
         Write-PSFMessage -Message "Creating subnet '$($networkInfo.Network)' with mask '$($networkInfo.MaskLength)' on machine '$($machine.Name)'"

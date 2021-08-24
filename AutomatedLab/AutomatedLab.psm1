@@ -886,6 +886,8 @@ function Install-Lab
 
         Write-ScreenInfo -Message "Machines with RootDC role to be installed: '$((Get-LabVM -Role RootDC).Name -join ', ')'"
         Install-LabRootDcs -CreateCheckPoints:$CreateCheckPoints
+        
+        New-LabADSubnet
 
         # Set account expiration for builtin account and lab domain account
         foreach ($machine in (Get-LabVM -Role RootDC -ErrorAction SilentlyContinue))
@@ -3267,7 +3269,7 @@ function Show-LabDeploymentSummary
         }
 
         Write-ScreenInfo -Message '------------------------- Virtual Machine Summary -------------------------'
-        $vmInfo = Get-LabVM -IncludeLinux | Format-Table -Property Name, DomainName, IpAddress, Roles, OperatingSystem,
+        $vmInfo = Get-LabVM -IncludeLinux | Format-Table -Property Name, DomainName, IpV4Address, Roles, OperatingSystem,
         @{ Name = 'Local Admin'; Expression = { $_.InstallationUser.UserName } },
         @{ Name = 'Password'; Expression = { $_.InstallationUser.Password } } -AutoSize |
         Out-String

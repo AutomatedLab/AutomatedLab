@@ -9,7 +9,9 @@
 - Enable/Disable-LabMachineAutoShutdown now work more intuitively
   - with or without computers passed as arguments
   - With TimeZone auto completion and defaulting to current time zone as before
-
+- Fixed a display bug. When no IP address space was added to a virtual network, 0.0.0.0 was shown instead of the actual IP.
+- New-LabADSubnet threw 'Cannot convert this format' when DCs are only connected to an external adapter.
+- New-LabADSubnet was not called if there is only a RootDC defined.
 
 ## 5.39.0 (2021-08-20)
 
