@@ -7,6 +7,7 @@
 ### Bugs
 
 - New-LabADSubnet threw 'Cannot convert this format' when DCs are only connected to an external adapter.
+- New-LabADSubnet was not called if there is only a RootDC defined.
 
 ## 5.39.0 (2021-08-20)
 
