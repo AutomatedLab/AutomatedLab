@@ -2526,15 +2526,19 @@ function Enable-LWAzureAutoShutdown
         [timespan]
         $Time,
 
-        [TimeZoneInfo]
-        $TimeZone = (Get-TimeZone),
+        [string]
+        $TimeZone = (Get-TimeZone).Id,
 
         [switch]
         $Wait
     )
 
     $lab = Get-Lab -ErrorAction Stop
-    $labVms = Get-AzVm -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName | Where-Object Name -in $ComputerName
+    $labVms = Get-AzVm -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName
+    if ($ComputerName)
+    {
+        $labVms = $labVms | Where-Object Name -in $ComputerName
+    }
     $resourceIdString = '{0}/providers/microsoft.devtestlab/schedules/shutdown-computevm-' -f $lab.AzureSettings.DefaultResourceGroup.ResourceId
 
     $jobs = foreach ($vm in $labVms)
@@ -2543,7 +2547,7 @@ function Enable-LWAzureAutoShutdown
             status = 'Enabled'
             taskType = 'ComputeVmShutdownTask'
             dailyRecurrence = @{time = $Time.ToString('hhmm') }
-            timeZoneId = $TimeZone.Id
+            timeZoneId = $TimeZone
             targetResourceId = $vm.Id
         }
 
@@ -2568,7 +2572,11 @@ function Disable-LWAzureAutoShutdown
     )
 
     $lab = Get-Lab -ErrorAction Stop
-    $labVms = Get-AzVm -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName | Where-Object Name -in $ComputerName
+    $labVms = Get-AzVm -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName
+    if ($ComputerName)
+    {
+        $labVms = $labVms | Where-Object Name -in $ComputerName
+    }
     $resourceIdString = '{0}/providers/microsoft.devtestlab/schedules/shutdown-computevm-' -f $lab.AzureSettings.DefaultResourceGroup.ResourceId
 
     $jobs = foreach ($vm in $labVms)

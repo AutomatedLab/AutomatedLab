@@ -2361,14 +2361,22 @@ function Enable-LabMachineAutoShutdown
     [CmdletBinding()]
     param
     (
-        [AutomatedLab.Machine]
+        [string[]]
         $ComputerName,
 
+        [Parameter(Mandatory)]
         [TimeSpan]
-        $Time
+        $Time,
+
+        [string]
+        $TimeZone = (Get-TimeZone)
     )
 
     $lab = Get-Lab -ErrorAction Stop
+    if ($ComputerName.Count -eq 0)
+    {
+        $ComputerName = Get-LabVm | Where-Object SkipDeployment -eq $false
+    }
 
     switch ($lab.DefaultVirtualizationEngine)
     {
@@ -2383,14 +2391,15 @@ function Disable-LabMachineAutoShutdown
     [CmdletBinding()]
     param
     (
-        [AutomatedLab.Machine]
-        $ComputerName,
-
-        [TimeSpan]
-        $Time
+        [string[]]
+        $ComputerName
     )
 
     $lab = Get-Lab -ErrorAction Stop
+    if ($ComputerName.Count -eq 0)
+    {
+        $ComputerName = Get-LabVm | Where-Object SkipDeployment -eq $false
+    }
 
     switch ($lab.DefaultVirtualizationEngine)
     {
