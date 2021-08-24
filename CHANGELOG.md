@@ -6,6 +6,8 @@
 
 ### Bugs
 
+- New-LabADSubnet threw 'Cannot convert this format' when DCs are only connected to an external adapter.
+
 ## 5.39.0 (2021-08-20)
 
 ### Enhancements
