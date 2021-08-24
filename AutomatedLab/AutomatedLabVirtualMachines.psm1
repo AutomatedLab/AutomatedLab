@@ -2369,7 +2369,7 @@ function Enable-LabMachineAutoShutdown
         $Time,
 
         [string]
-        $TimeZone = (Get-TimeZone)
+        $TimeZone = (Get-TimeZone).Id
     )
 
     $lab = Get-Lab -ErrorAction Stop
