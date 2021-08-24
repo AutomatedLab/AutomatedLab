@@ -6,6 +6,11 @@
 
 ### Bugs
 
+- Enable/Disable-LabMachineAutoShutdown now work more intuitively
+  - with or without computers passed as arguments
+  - With TimeZone auto completion and defaulting to current time zone as before
+
+
 ## 5.39.0 (2021-08-20)
 
 ### Enhancements
