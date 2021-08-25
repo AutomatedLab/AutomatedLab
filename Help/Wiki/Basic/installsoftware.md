@@ -22,7 +22,7 @@ Install-LabSoftwarePackage offers the switch AsScheduledJob to be able to start 
 The next example shows how to install .net 4.5.2 on a VM, restart the VM and then install the Windows Management Framework 5.1.
 
 ``` PowerShell
-Install-LabSoftwarePackage -Path $labSources\SoftwarePackages\NDP452-KB2901907-x86-x64-AllOS-ENU.exe -CommandLine '/q /log c:\dotnet452.txt' -ComputerName Client7 -AsScheduledJob -UseShellExecute
+Install-LabSoftwarePackage -Path $labSources\SoftwarePackages\NDP452-KB2901907-x86-x64-AllOS-ENU.exe -CommandLine '/q /norestart /log c:\dotnet452.txt' -ComputerName Client7 -AsScheduledJob -UseShellExecute
 Restart-LabVM -ComputerName Client7 -Wait
 
 Install-LabSoftwarePackage -Path $labSources\V5\Win7AndW2K8R2-KB3134760-x64.msu -ComputerName Client7
