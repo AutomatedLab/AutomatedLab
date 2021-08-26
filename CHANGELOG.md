@@ -6,6 +6,7 @@
 
 - Restart-LabVm stability on Azure improved
   - Does not check event log any longer but uses CIM instead to check if the reboot was successfully executed
+- Azure managed disks now actually support all the parameters that Add-LabDiskDefinition exposes
 
 ### Bugs
 

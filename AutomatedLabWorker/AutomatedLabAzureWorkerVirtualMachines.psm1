@@ -1182,8 +1182,8 @@ function Initialize-LWAzureVM
             [string]
             $TimeZoneId,
 
-            [int]
-            $DiskCount,
+            [string]
+            $Disks,
 
             [string]
             $LabSourcesPath,
@@ -1347,40 +1347,25 @@ function Initialize-LWAzureVM
             Set-DnsClientServerAddress -InterfaceIndex $idx -ServerAddresses $DnsServers
         }
 
-        Write-Verbose -Message "Disk count for $computerName`: $DiskCount"
-        if ($DiskCount -gt 0)
+        if (-not $Disks) { return }
+        Write-Verbose -Message "Disk count for $computerName`: $($Disks.Count)"
+        # Azure InvokeRunAsCommand is not very clever, so we sent the stuff as JSON
+        $Disks | Set-Content -Path C:\AL\disks.json
+        foreach ($diskObject in $($Disks | ConvertFrom-Json).Where({-not $_.SkipInitialization}))
         {
-            $diskpartCmd = 'LIST DISK'
-
-            $disks = $diskpartCmd | diskpart.exe
-
-            foreach ($line in $disks)
+            $disk = Get-Disk | Where-Object Location -like "*LUN $($diskObject.LUN)"
+            $disk | Set-Disk -IsReadOnly $false
+            $disk | Set-Disk -IsOffline $false
+            $disk | Initialize-Disk -PartitionStyle GPT
+            $party = if ($diskObject.DriveLetter)
             {
-                if ($line -match 'Disk (?<DiskNumber>\d{1,3}) \s+(?<State>Online|Offline)\s+(?<Size>\d+) (KB|MB|GB|TB)\s+(?<Free>\d+) (B|KB|MB|GB|TB)')
-                {
-                    $nextDriveLetter = [char[]](67..90) |
-                        Where-Object { (Get-WmiObject -Class Win32_LogicalDisk |
-                                Select-Object -ExpandProperty DeviceID) -notcontains "$($_):"} |
-                        Select-Object -First 1
-
-                    $diskNumber = $Matches.DiskNumber
-
-                    $diskpartCmd = "@
-                        SELECT DISK $diskNumber
-                        ATTRIBUTES DISK CLEAR READONLY
-                        ONLINE DISK
-                        CREATE PARTITION PRIMARY
-                        ASSIGN LETTER=$nextDriveLetter
-                        EXIT
-                    @"
-                    $diskpartCmd | diskpart.exe | Out-Null
-
-                    Start-Sleep -Seconds 2
-
-                    cmd.exe /c "echo y | format $($nextDriveLetter): /q /v:DataDisk$diskNumber"
-                }
-
+                $disk | New-Partition -UseMaximumSize -DriveLetter $diskObject.DriveLetter
             }
+            else
+            {
+                $disk | New-Partition -UseMaximumSize -AssignDriveLetter
+            }
+            $party | Format-Volume -Force -UseLargeFRS:$diskObject.UseLargeFRS -AllocationUnitSize $diskObject.AllocationUnitSize -NewFileSystemLabel $diskObject.Label
         }
     }
 
@@ -1413,10 +1398,18 @@ function Initialize-LWAzureVM
     $jobs = foreach ($m in $Machine)
     {
         [string[]]$DnsServers = ($m.NetworkAdapters | Where-Object {$_.VirtualSwitch.Name -eq $Lab.Name}).Ipv4DnsServers.AddressAsString
+        $azVmDisks = (Get-AzVm -Name $m.ResourceName -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName).StorageProfile.DataDisks
+        foreach ($machDisk in $m.Disks)
+        {
+            $machDisk.Lun = $azVmDisks.Where({$_.Name -eq $machDisk.Name}).Lun
+        }
+        
+        $diskJson = $m.disks | ConvertTo-Json -Compress
+
         $scriptParam = @{
             UserLocale                          = $m.UserLocale
             TimeZoneId                          = $m.TimeZone
-            DiskCount                           = $m.Disks.Count
+            Disks                               = $diskJson
             LabSourcesPath                      = $labsourcesStorage.Path
             StorageAccountName                  = $labsourcesStorage.StorageAccountName
             StorageAccountKey                   = $labsourcesStorage.StorageAccountKey
