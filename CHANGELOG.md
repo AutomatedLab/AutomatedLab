@@ -4,6 +4,9 @@
 
 ### Enhancements
 
+- Restart-LabVm stability on Azure improved
+  - Does not check event log any longer but uses CIM instead to check if the reboot was successfully executed
+
 ### Bugs
 
 - Enable/Disable-LabMachineAutoShutdown now work more intuitively
@@ -12,6 +15,7 @@
 - Fixed a display bug. When no IP address space was added to a virtual network, 0.0.0.0 was shown instead of the actual IP.
 - New-LabADSubnet threw 'Cannot convert this format' when DCs are only connected to an external adapter.
 - New-LabADSubnet was not called if there is only a RootDC defined.
+- Handling SQL inis when on Azure now actually working by referring to
 
 ## 5.39.0 (2021-08-20)
 

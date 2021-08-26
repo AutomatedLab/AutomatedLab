@@ -1393,7 +1393,7 @@ function Initialize-LWAzureVM
         $time = $lab.AzureSettings.AutoShutdownTime
         $tz = if (-not $lab.AzureSettings.AutoShutdownTimeZone) {Get-TimeZone} else {Get-TimeZone -Id $lab.AzureSettings.AutoShutdownTimeZone}
         Write-ScreenInfo -Message "Configuring auto-shutdown of all VMs daily at $($time) in timezone $($tz.Id)"
-        Enable-LWAzureAutoShutdown -ComputerName (Get-LabVm | Where-Object Name -notin $machineSpecific.Name) -Time $time -TimeZone $tz -Wait
+        Enable-LWAzureAutoShutdown -ComputerName (Get-LabVm | Where-Object Name -notin $machineSpecific.Name) -Time $time -TimeZone $tz.Id -Wait
     }
 
     $machineSpecific = Get-LabVm -SkipConnectionInfo | Where-Object {
@@ -1405,7 +1405,7 @@ function Initialize-LWAzureVM
         $time = $machine.AzureProperties.AutoShutdownTime
         $tz = if (-not $machine.AzureProperties.AutoShutdownTimezoneId) {Get-TimeZone} else {Get-TimeZone -Id $machine.AzureProperties.AutoShutdownTimezoneId}
         Write-ScreenInfo -Message "Configure shutdown of $machine daily at $($time) in timezone $($tz.Id)"
-        Enable-LWAzureAutoShutdown -ComputerName $machine -Time $time -TimeZone $tz -Wait
+        Enable-LWAzureAutoShutdown -ComputerName $machine -Time $time -TimeZone $tz.Id -Wait
     }
 
     Write-ScreenInfo -Message 'Configuring localization and additional disks' -TaskStart -NoNewLine
@@ -1735,9 +1735,7 @@ function Wait-LWAzureRestartVM
 
         $Start = $Start.ToLocalTime()
 
-        $events = Get-EventLog -LogName System -InstanceId 2147489653 -After $Start -Before $Start.AddMinutes(40)
-
-        $events
+        (Get-CimInstance -ClassName Win32_OperatingSystem).LastBootupTime -ge $Start
     }
 
     $ProgressIndicatorTimer = (Get-Date)
@@ -1752,14 +1750,14 @@ function Wait-LWAzureRestartVM
                 $ProgressIndicatorTimer = (Get-Date)
             }
 
-            $events = Invoke-LabCommand -ComputerName $machine -ActivityName WaitForRestartEvent -ScriptBlock $cmd -ArgumentList $start.Ticks -UseLocalCredential -DoNotUseCredSsp:$DoNotUseCredSsp -PassThru -Verbose:$false -NoDisplay -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+            $hasRestarted = Invoke-LabCommand -ComputerName $machine -ActivityName WaitForRestartEvent -ScriptBlock $cmd -ArgumentList $start.Ticks -UseLocalCredential -DoNotUseCredSsp:$DoNotUseCredSsp -PassThru -Verbose:$false -NoDisplay -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
 
-            if (-not $events)
+            if (-not $hasRestarted)
             {
                 $events = Invoke-LabCommand -ComputerName $machine -ActivityName WaitForRestartEvent -ScriptBlock $cmd -ArgumentList $start.Ticks -DoNotUseCredSsp:$DoNotUseCredSsp -PassThru -Verbose:$false -NoDisplay -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
             }
 
-            if ($events)
+            if ($hasRestarted)
             {
                 Write-PSFMessage -Message "VM '$machine' has been restarted"
             }

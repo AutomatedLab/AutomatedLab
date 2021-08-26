@@ -798,6 +798,7 @@ Register-PSFTeppArgumentCompleter -Command Add-LabAzureSubscription -Parameter S
 Register-PSFTeppArgumentCompleter -Command Get-LabPostInstallationActivity -Parameter CustomRole -Name 'AutomatedLab-CustomRole'
 Register-PSFTeppArgumentCompleter -Command Add-LabMachineDefinition -Parameter AzureRoleSize -Name 'AutomatedLab-AzureRoleSize'
 Register-PSFTeppArgumentCompleter -Command Add-LabMachineDefinition, Enable-LabMachineAutoShutdown -Parameter TimeZone -Name 'AutomatedLab-TimeZone'
+Register-PSFTeppArgumentCompleter -Command Add-LabAzureSubscription -Parameter AutoShutdownTimeZone -Name 'AutomatedLab-TimeZone'
 Register-PSFTeppArgumentCompleter -Command Add-LabMachineDefinition -Parameter RhelPackage -Name 'AutomatedLab-RhelPackage'
 Register-PSFTeppArgumentCompleter -Command Add-LabMachineDefinition -Parameter SusePackage -Name 'AutomatedLab-SusePackage'
 #endregion
