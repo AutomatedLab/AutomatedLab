@@ -716,7 +716,6 @@ function Install-Lab
         [switch]$CA,
         [switch]$ADFS,
         [switch]$DSCPullServer,
-        [switch]$ConfigManager2012R2,
         [switch]$VisualStudio,
         [switch]$Office2013,
         [switch]$Office2016,
@@ -731,6 +730,7 @@ function Install-Lab
         [switch]$Scom,
         [switch]$Dynamics,
         [switch]$RemoteDesktop,
+        [switch]$ConfigurationManager,
         [switch]$StartRemainingMachines,
         [switch]$CreateCheckPoints,
         [switch]$InstallRdsCertificates,
@@ -1065,6 +1065,15 @@ function Install-Lab
         if (Get-LabVM -Role SQLServer2019)   { Write-ScreenInfo -Message "Machines to have SQL Server 2019 installed: '$((Get-LabVM -Role SQLServer2019).Name -join ', ')'" }
         Install-LabSqlServers -CreateCheckPoints:$CreateCheckPoints
 
+        Write-ScreenInfo -Message 'Done' -TaskEnd
+    }
+
+    if (($ConfigurationManager -or $performAll) -and (Get-LabVm -Role ConfigurationManager -Filter {-not $_.SkipDeployment}))
+    {
+        Write-ScreenInfo -Message 'Deploying System Center Configuration Manager' -TaskStart
+        $jobs = Invoke-LabCommand -PreInstallationActivity -ActivityName 'Pre-installation' -ComputerName $(Get-LabVM -Role ConfigurationManager | Where-Object { -not $_.SkipDeployment }) -PassThru -NoDisplay
+        $jobs | Where-Object { $_ -is [System.Management.Automation.Job] } | Wait-Job | Out-Null
+        Install-LabConfigurationManager
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 

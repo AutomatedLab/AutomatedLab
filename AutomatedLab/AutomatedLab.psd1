@@ -54,7 +54,8 @@
         'AutomatedLabScvmm.psm1',
         'AutomatedLabScom.psm1'
         'AutomatedLabDynamics.psm1',
-        'AutomatedLabRds.psm1'
+        'AutomatedLabRds.psm1',
+        'AutomtedLabConfigurationManager.psm1'
     )
 
     RequiredModules        = @(
@@ -158,7 +159,8 @@
         'Install-LabWindowsAdminCenter',
         'Install-LabScom',
         'Install-LabDynamics',
-        'Install-LabRemoteDesktopServices'
+        'Install-LabRemoteDesktopServices',
+        'Install-LabConfigurationManager',
         'Add-LabWacManagedNode',
         'Invoke-LabCommand',
         'Invoke-LabDscConfiguration',
