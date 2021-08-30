@@ -88,7 +88,7 @@ function Add-LabAzureSubscription
         [timespan]
         $AutoShutdownTime,
 
-        [TimeZoneInfo]
+        [string]
         $AutoShutdownTimeZone,
 
         [switch]$PassThru,

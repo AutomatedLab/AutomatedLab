@@ -615,7 +615,19 @@ function Export-Lab
     Remove-Item -Path $lab.DiskDefinitionFiles[0].Path
 
     $lab.Machines.Export($lab.MachineDefinitionFiles[0].Path)
-    $lab.Disks.Export($lab.DiskDefinitionFiles[0].Path)
+    try
+    {
+        $lab.Disks.Export($lab.DiskDefinitionFiles[0].Path)
+    }
+    catch
+    {
+        $tmpList = [AutomatedLab.ListXmlStore[AutomatedLab.Disk]]::new()
+        foreach ($d in $lab.Disks)
+        {
+            $tmpList.Add($d)
+        }
+        $tmpList.Export($lab.DiskDefinitionFiles[0].Path)
+    }
     $lab.Machines.Clear()
     $lab.Disks.Clear()
 
