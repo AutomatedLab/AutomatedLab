@@ -715,6 +715,16 @@ Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
         RemoteDesktopLicensing = @(
             'Mode'
         )
+        ConfigurationManager = @(
+            'Version'
+            'Branch'
+            'Roles'
+            'SiteName'
+            'SiteCode'
+            'SqlServerName'
+            'DatabaseName'
+            'WsusContentPath'
+        )
     }
     MandatoryRoleProperties = @{
         ADFSProxy = @(

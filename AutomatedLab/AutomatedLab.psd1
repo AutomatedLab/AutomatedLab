@@ -55,7 +55,7 @@
         'AutomatedLabScom.psm1'
         'AutomatedLabDynamics.psm1',
         'AutomatedLabRds.psm1',
-        'AutomtedLabConfigurationManager.psm1'
+        'AutomatedLabConfigurationManager.psm1'
     )
 
     RequiredModules        = @(
