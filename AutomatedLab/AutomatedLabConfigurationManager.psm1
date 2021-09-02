@@ -33,7 +33,7 @@
 }
 
 $AVExcludedPaths = @(
-    $VMInstallDirectory
+    'C:\Install'
     'C:\Install\ADK\adksetup.exe'
     'C:\Install\WinPE\adkwinpesetup.exe'
     'C:\InstallCM\SMSSETUP\BIN\X64\setup.exe'
@@ -99,10 +99,10 @@ function Install-LabConfigurationManager
     }
     else
     {
-        Start-Process -FilePath $adkFile.FullName -ArgumentList "/quiet /layout $(Join-Path $labSources Tools/ADKoffline)" -Wait -NoNewWindow
-        Start-Process -FilePath $adkpeFile.FullName -ArgumentList " /quiet /layout $(Join-Path $labSources Tools/ADKPEoffline)" -Wait -NoNewWindow
-        Copy-LabFileItem -Path (Join-Path $labSources Tools/ADKoffline) -ComputerName $vms
-        Copy-LabFileItem -Path (Join-Path $labSources Tools/ADKPEoffline) -ComputerName $vms
+        Start-Process -FilePath $adkFile.FullName -ArgumentList "/quiet /layout $(Join-Path $labSources SoftwarePackages/ADKoffline)" -Wait -NoNewWindow
+        Start-Process -FilePath $adkpeFile.FullName -ArgumentList " /quiet /layout $(Join-Path $labSources SoftwarePackages/ADKPEoffline)" -Wait -NoNewWindow
+        Copy-LabFileItem -Path (Join-Path $labSources SoftwarePackages/ADKoffline) -ComputerName $vms
+        Copy-LabFileItem -Path (Join-Path $labSources SoftwarePackages/ADKPEoffline) -ComputerName $vms
     }
     
     Install-LabSoftwarePackage -LocalPath C:\ADKOffline\adksetup.exe -ComputerName $vms -CommandLine '/norestart /q /ceip off /features OptionId.DeploymentTools OptionId.UserStateMigrationTool OptionId.ImagingAndConfigurationDesigner' -NoDisplay
@@ -284,13 +284,13 @@ function Install-LabConfigurationManager
         )
         if ($role.Properties.ContainsKey('Roles'))
         {
-            $siteParameter.CMRoles = if ($role.Properties.Roles -contains 'None')
+            $siteParameter.CMRoles = if ($role.Properties.Roles.Split(',') -contains 'None')
             {
                 'None'
             }
             else
             {
-                $role.Properties.Roles | Where-Object { $_ -in $validRoles } | Sort-Object -Unique
+                $role.Properties.Roles.Split(',') | Where-Object { $_ -in $validRoles } | Sort-Object -Unique
             }
         }
 
@@ -322,6 +322,11 @@ function Install-LabConfigurationManager
             $siteParameter.DatabaseName = $role.Properties.DatabaseName
         }
 
+        if ($role.Properties.ContainsKey('AdminUser'))
+        {
+            $siteParameter.AdminUser = $role.Properties.AdminUser
+        }
+
         if ($role.Properties.ContainsKey('WsusContentPath'))
         {
             $siteParameter.WsusContentPath = $role.Properties.WsusContentPath
@@ -330,8 +335,13 @@ function Install-LabConfigurationManager
 
         Restart-LabVM -ComputerName $vm
 
-        $updateParameter = Sync-Parameter -Command (Get-Command Update-CMSite) -Parameters $siteParameter
-        Update-CMSite @updateParameter
+        if (Test-LabMachineInternetConnectivity -ComputerName $vm)
+        {
+            Write-ScreenInfo -Type Verbose -Message "$vm is connected, beginning update process"
+            $updateParameter = Sync-Parameter -Command (Get-Command Update-CMSite) -Parameters $siteParameter
+            $updateParameter
+            Update-CMSite @updateParameter
+        }
     }
     #endregion
 }
@@ -371,7 +381,10 @@ function Install-CMSite
         [string] $DatabaseName = 'ALCMDB',
 
         [Parameter()]
-        [string] $WsusContentPath = 'C:\WsusContent'
+        [string] $WsusContentPath = 'C:\WsusContent',
+
+        [Parameter()]
+        [string] $AdminUser
     )
 
     #region Initialise
@@ -380,12 +393,29 @@ function Install-CMSite
     $DCServerName = Get-LabVM -Role RootDC | Where-Object { $_.DomainName -eq $CMServer.DomainName } | Select-Object -ExpandProperty Name
     $downloadTargetDirectory = "{0}\SoftwarePackages" -f $(Get-LabSourcesLocation -Local)
     $VMInstallDirectory = "C:\Install"
-    $LabVirtualNetwork = (Get-Lab).VirtualNetworks.Where( { $_.ResourceName -eq $CMServer.Network }, 'First', 1).AddressSpace
+    $LabVirtualNetwork = (Get-Lab).VirtualNetworks.Where( { $_.SwitchType -ne 'External' -and $_.ResourceName -in $CMServer.Network }, 'First', 1).AddressSpace
     $CMBoundaryIPRange = "{0}-{1}" -f $LabVirtualNetwork.FirstUsable.AddressAsString, $LabVirtualNetwork.LastUsable.AddressAsString
     $VMCMBinariesDirectory = "C:\Install\CM"
     $VMCMPreReqsDirectory = "C:\Install\CM-Prereqs"
     $CMComputerAccount = '{0}\{1}$' -f $CMServer.DomainName.Substring(0, $CMServer.DomainName.IndexOf('.')), $CMServerName
     $CMSetupConfig = $configurationContent.Clone()
+    $labCred = $CMServer.GetCredential((Get-Lab))
+    if (-not $AdminUser)
+    {
+        $AdminUser = $labCred.UserName.Split('\')[1]
+    }
+
+    Invoke-LabCommand -ComputerName $DCServerName -Variable (Get-Variable labCred, AdminUser) -ScriptBlock {
+        try
+        {
+            $usr = Get-ADUser -Identity $AdminUser -ErrorAction Stop
+        }
+        catch { }
+
+        if ($usr) { return }
+
+        New-ADUser -SamAccountName $AdminUser -Name $AdminUser -AccountPassword $labCred.Password -PasswordNeverExpires $true -ChangePasswordAtLogon $false -Enabled $true
+    }
 
     $CMSetupConfig['[Options]'].SDKServer = $CMServer.FQDN
     $CMSetupConfig['[CloudConnectorOptions]'].CloudConnectorServer = $CMServer.FQDN
@@ -483,64 +513,48 @@ function Install-CMSite
     )
     foreach ($p in $paths) { $AVExcludedPaths += $p }
     Write-ScreenInfo -Message "Adding Windows Defender exclusions" -TaskStart
-    $job = Invoke-LabCommand -ComputerName $CMServer -ActivityName "Adding Windows Defender exclusions" -Variable (Get-Variable "AVExcludedPaths", "AVExcludedProcesses") -ScriptBlock {
-        Add-MpPreference -ExclusionPath $AVExcludedPaths -ExclusionProcess $AVExcludedProcesses -ErrorAction "Stop"
-        Set-MpPreference -RealTimeScanDirection "Incoming" -ErrorAction "Stop"
-    }
-    Wait-LWLabJob -Job $job
+
     try
     {
-        $result = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
+        $result = Invoke-LabCommand -ComputerName $CMServer -ActivityName "Adding Windows Defender exclusions" -Variable (Get-Variable "AVExcludedPaths", "AVExcludedProcesses") -ScriptBlock {
+            Add-MpPreference -ExclusionPath $AVExcludedPaths -ExclusionProcess $AVExcludedProcesses -ErrorAction "Stop"
+            Set-MpPreference -RealTimeScanDirection "Incoming" -ErrorAction "Stop"
+        } -ErrorAction Stop
     }
     catch
     {
-        Write-ScreenInfo -Message ("Failed to add Windows Defender exclusions ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message) -Type "Error" -TaskEnd
-        throw $ReceiveJobErr
+        Write-ScreenInfo -Message ("Failed to add Windows Defender exclusions ({0})" -f $_.Exception.Message) -Type "Error" -TaskEnd
+        throw $_
     }
     Write-ScreenInfo -Message "Activity done" -TaskEnd
     #endregion
 
     #region Bringing online additional disks
     Write-ScreenInfo -Message "Bringing online additional disks" -TaskStart
-    #Bringing all available disks online (this is to cater for the secondary drive)
-    #For some reason, cant make the disk online and RW in the one command, need to perform two seperate actions
-    
-    $job = Invoke-LabCommand -ComputerName $CMServer -ActivityName "Bringing online additional online" -ScriptBlock {
-        $dataVolume = Get-Disk -ErrorAction "Stop" | Where-Object -Property OperationalStatus -eq Offline
-        $dataVolume | Set-Disk -IsOffline $false -ErrorAction "Stop"
-        $dataVolume | Set-Disk -IsReadOnly $false -ErrorAction "Stop"
-    }
-    Wait-LWLabJob -Job $job
     try
     {
-        $result = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
+        $result = Invoke-LabCommand -ComputerName $CMServer -ActivityName "Bringing online additional online" -ScriptBlock {
+            $dataVolume = Get-Disk -ErrorAction "Stop" | Where-Object -Property OperationalStatus -eq Offline
+            $dataVolume | Set-Disk -IsOffline $false -ErrorAction "Stop"
+            $dataVolume | Set-Disk -IsReadOnly $false -ErrorAction "Stop"
+        } -ErrorAction Stop
     }
     catch
     {
-        Write-ScreenInfo -Message ("Failed to bring disks online ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message) -Type "Error" -TaskEnd
-        throw $ReceiveJobErr
+        Write-ScreenInfo -Message ("Failed to bring disks online ({0})" -f $_.Exception.Message) -Type "Error" -TaskEnd
+        throw $_
     }
     Write-ScreenInfo -Message "Activity done" -TaskEnd
     #endregion
 
     #region Saving NO_SMS_ON_DRIVE.SMS file on C: and F:
-    $job = Invoke-LabCommand -ComputerName $CMServer -Variable (Get-Variable WsusContentPath) -ActivityName "Place NO_SMS_ON_DRIVE.SMS file" -ScriptBlock {
+    Invoke-LabCommand -ComputerName $CMServer -Variable (Get-Variable WsusContentPath) -ActivityName "Place NO_SMS_ON_DRIVE.SMS file" -ScriptBlock {
         [char]$root = [IO.Path]::GetPathRoot($WsusContentPath).Substring(0, 1)
         foreach ($volume in (Get-Volume | Where-Object { $_.DriveLetter -and $_.DriveLetter -ne $root }))
         {
             $Path = "{0}:\NO_SMS_ON_DRIVE.SMS" -f $volume.DriveLetter
             New-Item -Path $Path -ItemType "File" -ErrorAction "Stop" -Force
         }
-    }
-    Wait-LWLabJob -Job $job
-    try
-    {
-        $result = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
-    }
-    catch
-    {
-        Write-ScreenInfo -Message ("Failed to create NO_SMS_ON_DRIVE.SMS ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message) -Type "Error" -TaskEnd
-        throw $ReceiveJobErr
     }
     #endregion
 
@@ -549,19 +563,8 @@ function Install-CMSite
     if ($CMRoles -contains "Software Update Point")
     {
         $job = Invoke-LabCommand -ComputerName $CMServer -ActivityName "Creating directory for WSUS" -Variable (Get-Variable -Name "CMComputerAccount", WsusContentPath) -ScriptBlock {
-            New-Item -Path $WsusContentPath -ItemType Directory -Force -ErrorAction "Stop" | Out-Null
+            $null = New-Item -Path $WsusContentPath -Force
         }
-        Wait-LWLabJob -Job $job
-        try
-        {
-            $result = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
-        }
-        catch
-        {
-            Write-ScreenInfo -Message ("Failed to create directory for WSUS ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message) -Type "Error" -TaskEnd
-            throw $ReceiveJobErr
-        }
-        Write-ScreenInfo -Message "Activity done" -TaskEnd
     }
     else
     {
@@ -579,20 +582,7 @@ function Install-CMSite
 
     #region Extend the AD Schema
     Write-ScreenInfo -Message "Extending the AD Schema" -TaskStart
-    $job = Invoke-LabCommand -ComputerName $CMServer -ActivityName "Extending the AD Schema" -Variable (Get-Variable -Name "VMCMBinariesDirectory") -ScriptBlock {
-        $Path = "{0}\SMSSETUP\BIN\X64\extadsch.exe" -f $VMCMBinariesDirectory
-        Start-Process $Path -Wait -PassThru -ErrorAction "Stop"
-    }
-    Wait-LWLabJob -Job $job
-    try
-    {
-        $result = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
-    }
-    catch
-    {
-        Write-ScreenInfo -Message ("Failed to extend the AD Schema ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message) -Type "Error" -TaskEnd
-        throw $ReceiveJobErr
-    }
+    Install-LabSoftwarePackage -LocalPath "$VMCMBinariesDirectory\SMSSETUP\BIN\X64\extadsch.exe" -ComputerName $CMServerName
     Write-ScreenInfo -Message "Activity done" -TaskEnd
     #endregion
 
@@ -600,7 +590,7 @@ function Install-CMSite
     #Need to execute this command on the Domain Controller, since it has the AD Powershell cmdlets available
     #Create the Necessary OU and permissions for the CM container in AD
     Write-ScreenInfo -Message "Configuring CM Systems Management Container" -TaskStart
-    $job = Invoke-LabCommand -ComputerName $DCServerName -ActivityName "Configuring CM Systems Management Container" -ArgumentList $CMServerName -ScriptBlock {
+    Invoke-LabCommand -ComputerName $DCServerName -ActivityName "Configuring CM Systems Management Container" -ArgumentList $CMServerName -ScriptBlock {
         Param (
             [Parameter(Mandatory)]
             [String]$CMServerName
@@ -641,16 +631,6 @@ function Install-CMSite
         $acl.AddAccessRule($ace)
         Set-ACL -AclObject $acl "ad:CN=System Management,CN=System,$rootDomainNc"
     }
-    Wait-LWLabJob -Job $job
-    try
-    {
-        $result = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
-    }
-    catch
-    {
-        Write-ScreenInfo -Message ("Failed to configure the Systems Management Container" -f $ReceiveJobErr.ErrorRecord.Exception.Message) -Type "Error" -TaskEnd
-        throw $ReceiveJobErr
-    }
     Write-ScreenInfo -Message "Activity done" -TaskEnd
     #endregion
 
@@ -658,17 +638,7 @@ function Install-CMSite
     Write-ScreenInfo -Message "Installing WSUS" -TaskStart
     if ($CMRoles -contains "Software Update Point")
     {
-        $job = Install-LabWindowsFeature -FeatureName "UpdateServices-Services,UpdateServices-DB" -IncludeManagementTools -ComputerName $CMServer
-        Wait-LWLabJob -Job $job
-        try
-        {
-            $result = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
-        }
-        catch
-        {
-            Write-ScreenInfo -Message ("Failed installing WSUS ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message) -Type "Error" -TaskEnd
-            throw $ReceiveJobErr
-        }
+        Install-LabWindowsFeature -FeatureName "UpdateServices-Services,UpdateServices-DB" -IncludeManagementTools -ComputerName $CMServer
         Write-ScreenInfo -Message "Activity done" -TaskEnd
     }
     else
@@ -681,18 +651,8 @@ function Install-CMSite
     Write-ScreenInfo -Message "Running WSUS post configuration tasks" -TaskStart
     if ($CMRoles -contains "Software Update Point")
     {
-        $job = Invoke-LabCommand -ComputerName $CMServer -ActivityName "Running WSUS post configuration tasks" -Variable (Get-Variable "SqlServerName", WsusContentPath) -ScriptBlock {
+        Invoke-LabCommand -ComputerName $CMServer -ActivityName "Running WSUS post configuration tasks" -Variable (Get-Variable "SqlServerName", WsusContentPath) -ScriptBlock {
             Start-Process -FilePath "C:\Program Files\Update Services\Tools\wsusutil.exe" -ArgumentList "postinstall", "SQL_INSTANCE_NAME=`"$SqlServerName`"", "CONTENT_DIR=`"$WsusContentPath`"" -Wait -ErrorAction "Stop"
-        }
-        Wait-LWLabJob -Job $job
-        try
-        {
-            $result = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
-        }
-        catch
-        {
-            Write-ScreenInfo -Message ("Failed running WSUS post configuration tasks ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message) -Type "Error" -TaskEnd
-            throw $ReceiveJobErr
         }
         Write-ScreenInfo -Message "Activity done" -TaskEnd
     }
@@ -704,31 +664,11 @@ function Install-CMSite
 
     #region Install additional features
     Write-ScreenInfo -Message "Installing additional features (1/2)" -TaskStart
-    $job = Install-LabWindowsFeature -ComputerName $CMServer -FeatureName "FS-FileServer,Web-Mgmt-Tools,Web-Mgmt-Console,Web-Mgmt-Compat,Web-Metabase,Web-WMI,Web-WebServer,Web-Common-Http,Web-Default-Doc,Web-Dir-Browsing,Web-Http-Errors,Web-Static-Content,Web-Http-Redirect,Web-Health,Web-Http-Logging,Web-Log-Libraries,Web-Request-Monitor,Web-Http-Tracing,Web-Performance,Web-Stat-Compression,Web-Dyn-Compression,Web-Security,Web-Filtering,Web-Windows-Auth,Web-App-Dev,Web-Net-Ext,Web-Net-Ext45,Web-Asp-Net,Web-Asp-Net45,Web-ISAPI-Ext,Web-ISAPI-Filter"
-    Wait-LWLabJob -Job $job
-    try
-    {
-        $result = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
-    }
-    catch
-    {
-        Write-ScreenInfo -Message ("Failed installing additional features (1/2) ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message) -Type "Error" -TaskEnd
-        throw $ReceiveJobErr
-    }
+    Install-LabWindowsFeature -ComputerName $CMServer -FeatureName "FS-FileServer,Web-Mgmt-Tools,Web-Mgmt-Console,Web-Mgmt-Compat,Web-Metabase,Web-WMI,Web-WebServer,Web-Common-Http,Web-Default-Doc,Web-Dir-Browsing,Web-Http-Errors,Web-Static-Content,Web-Http-Redirect,Web-Health,Web-Http-Logging,Web-Log-Libraries,Web-Request-Monitor,Web-Http-Tracing,Web-Performance,Web-Stat-Compression,Web-Dyn-Compression,Web-Security,Web-Filtering,Web-Windows-Auth,Web-App-Dev,Web-Net-Ext,Web-Net-Ext45,Web-Asp-Net,Web-Asp-Net45,Web-ISAPI-Ext,Web-ISAPI-Filter"
     Write-ScreenInfo -Message "Activity done" -TaskEnd
     
     Write-ScreenInfo -Message "Installing additional features (2/2)" -TaskStart
-    $job = Install-LabWindowsFeature -ComputerName $CMServer -FeatureName "NET-HTTP-Activation,NET-Non-HTTP-Activ,NET-Framework-45-ASPNET,NET-WCF-HTTP-Activation45,BITS,RDC"
-    Wait-LWLabJob -Job $job
-    try
-    {
-        $result = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
-    }
-    catch
-    {
-        Write-ScreenInfo -Message ("Failed installing additional features (2/2) ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message) -Type "Error" -TaskEnd
-        throw $ReceiveJobErr
-    }
+    Install-LabWindowsFeature -ComputerName $CMServer -FeatureName "NET-HTTP-Activation,NET-Non-HTTP-Activ,NET-Framework-45-ASPNET,NET-WCF-HTTP-Activation45,BITS,RDC"
     Write-ScreenInfo -Message "Activity done" -TaskEnd
     #endregion
 
@@ -743,17 +683,7 @@ function Install-CMSite
     $exePath = "{0}\SMSSETUP\BIN\X64\setup.exe" -f $VMCMBinariesDirectory
     $iniPath = "C:\Install\ConfigurationFile-CM-$CMServer.ini"
     $cmd = "/Script `"{0}`" /NoUserInput" -f $iniPath
-    $job = Install-LabSoftwarePackage -LocalPath $exePath -CommandLine $cmd -ProgressIndicator 2 -ExpectedReturnCodes 0 -ComputerName $CMServer
-    Wait-LWLabJob -Job $job
-    try
-    {
-        $result = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
-    }
-    catch
-    {
-        Write-ScreenInfo -Message ("Failed to install Configuration Manager ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message) -Type "Error" -TaskEnd
-        throw $ReceiveJobErr
-    }
+    Install-LabSoftwarePackage -LocalPath $exePath -CommandLine $cmd -ProgressIndicator 2 -ExpectedReturnCodes 0 -ComputerName $CMServer -Timeout 30
     Write-ScreenInfo -Message "Activity done" -TaskEnd
     #endregion
 
@@ -786,35 +716,14 @@ function Install-CMSite
     Write-ScreenInfo -Message "Installing PXE Responder" -TaskStart
     if ($CMRoles -contains "Distribution Point")
     {
-        New-LoopAction -LoopTimeout 15 -LoopTimeoutType "Minutes" -LoopDelay 60 -ScriptBlock {
-            $job = Invoke-LabCommand -ComputerName $CMServer -ActivityName "Installing PXE Responder" -Variable (Get-Variable "CMServerFqdn", "CMServerName") -Function (Get-Command "Import-CMModule") -ScriptBlock {
-                Import-CMModule -ComputerName $CMServerName -SiteCode $CMSiteCode -ErrorAction "Stop"
-                Set-CMDistributionPoint -SiteSystemServerName $CMServerFqdn -AllowPxeResponse $true -EnablePxe $true -EnableNonWdsPxe $true -ErrorAction "Stop"
-                do
-                {
-                    Start-Sleep -Seconds 5
-                } while ((Get-Service).Name -notcontains "SccmPxe")
-                Write-Output "Installed"
-            }
-            Wait-LWLabJob -Job $job
-            try
+        Invoke-LabCommand -ComputerName $CMServer -ActivityName "Installing PXE Responder" -Variable (Get-Variable CMSiteCode, CMServerFqdn, CMServerName) -Function (Get-Command "Import-CMModule") -ScriptBlock {
+            Import-CMModule -ComputerName $CMServerName -SiteCode $CMSiteCode -ErrorAction "Stop"
+            Set-CMDistributionPoint -SiteSystemServerName $CMServerFqdn -AllowPxeResponse $true -EnablePxe $true -EnableNonWdsPxe $true -ErrorAction "Stop"
+            $start = Get-Date
+            do
             {
-                $result = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
-            }
-            catch
-            {
-                $Message = "Failed to install PXE Responder ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message
-                Write-ScreenInfo -Message $Message -Type "Error" -TaskEnd
-                throw $ReceiveJobErr
-            }
-        } -IfTimeoutScript {
-            $Message = "Timed out waiting for PXE Responder to install"
-            Write-ScreenInfo -Message $Message -Type "Error" -TaskEnd
-            throw $Message
-        } -ExitCondition {
-            $result -eq "Installed"
-        } -IfSucceedScript {
-            Write-ScreenInfo -Message "Activity done" -TaskEnd
+                Start-Sleep -Seconds 5
+            } while (-not (Get-Service -Name SccmPxe -ErrorAction SilentlyContinue) -and ((Get-Date) - $start) -lt '00:10:00')
         }
     }
     else
@@ -827,21 +736,10 @@ function Install-CMSite
     Write-ScreenInfo -Message "Configuring Distribution Point group" -TaskStart
     if ($CMRoles -contains "Distribution Point")
     {
-        $job = Invoke-LabCommand -ComputerName $CMServer -ActivityName "Configuring boundary and boundary group" -Variable (Get-Variable "CMServerFqdn", "CMServerName", "CMSiteCode") -ScriptBlock {
+        Invoke-LabCommand -ComputerName $CMServer -ActivityName "Configuring boundary and boundary group" -Variable (Get-Variable "CMServerFqdn", "CMServerName", "CMSiteCode") -ScriptBlock {
             Import-CMModule -ComputerName $CMServerName -SiteCode $CMSiteCode -ErrorAction "Stop"
             $DPGroup = New-CMDistributionPointGroup -Name "All DPs" -ErrorAction "Stop"
             Add-CMDistributionPointToGroup -DistributionPointGroupId $DPGroup.GroupId -DistributionPointName $CMServerFqdn -ErrorAction "Stop"
-        }
-        Wait-LWLabJob -Job $job
-        try
-        {
-            $result = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
-        }
-        catch
-        {
-            $Message = "Failed while configuring Distribution Point group ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message
-            Write-ScreenInfo -Message $Message -Type "Error" -TaskEnd
-            throw $ReceiveJobErr
         }
         Write-ScreenInfo -Message "Activity done" -TaskEnd
     }
@@ -855,20 +753,9 @@ function Install-CMSite
     Write-ScreenInfo -Message "Installing Software Update Point" -TaskStart
     if ($CMRoles -contains "Software Update Point")
     {
-        $job = Invoke-LabCommand -ComputerName $CMServer -ActivityName "Installing Software Update Point" -Variable (Get-Variable "CMServerFqdn", "CMServerName", "CMSiteCode") -Function (Get-Command "Import-CMModule") -ScriptBlock {
+        Invoke-LabCommand -ComputerName $CMServer -ActivityName "Installing Software Update Point" -Variable (Get-Variable "CMServerFqdn", "CMServerName", "CMSiteCode") -Function (Get-Command "Import-CMModule") -ScriptBlock {
             Import-CMModule -ComputerName $CMServerName -SiteCode $CMSiteCode -ErrorAction "Stop"
             Add-CMSoftwareUpdatePoint -WsusIisPort 8530 -WsusIisSslPort 8531 -SiteSystemServerName $CMServerFqdn -SiteCode $CMSiteCode -ErrorAction "Stop"
-        }
-        Wait-LWLabJob -Job $job
-        try
-        {
-            $result = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
-        }
-        catch
-        {
-            $Message = "Failed to install Software Update Point ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message
-            Write-ScreenInfo -Message $Message -Type "Error" -TaskEnd
-            throw $ReceiveJobErr
         }
         Write-ScreenInfo -Message "Activity done" -TaskEnd
     }
@@ -882,22 +769,11 @@ function Install-CMSite
     Write-ScreenInfo -Message ("Adding new CM account '{0}' to use for Reporting Service Point" -f $AdminUser) -TaskStart
     if ($CMRoles -contains "Reporting Services Point")
     {
-        $job = Invoke-LabCommand -ComputerName $CMServer -ActivityName ("Adding new CM account '{0}' to use for Reporting Service Point" -f $AdminUser) -Variable (Get-Variable "CMServerName", "CMSiteCode", "AdminUser", "AdminPass") -Function (Get-Command "Import-CMModule") -ScriptBlock {
+        Invoke-LabCommand -ComputerName $CMServer -ActivityName ("Adding new CM account '{0}' to use for Reporting Service Point" -f $AdminUser) -Variable (Get-Variable "CMServerName", "CMSiteCode", "AdminUser", "AdminPass") -Function (Get-Command "Import-CMModule") -ScriptBlock {
             Import-CMModule -ComputerName $CMServerName -SiteCode $CMSiteCode -ErrorAction "Stop"
             $Account = "{0}\{1}" -f $env:USERDOMAIN, $AdminUser
             $Secure = ConvertTo-SecureString -String $AdminPass -AsPlainText -Force
             New-CMAccount -Name $Account -Password $Secure -SiteCode $CMSiteCode -ErrorAction "Stop"
-        }
-        Wait-LWLabJob -Job $job
-        try
-        {
-            $result = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
-        }
-        catch
-        {
-            $Message = "Failed to add new CM account ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message
-            Write-ScreenInfo -Message $Message -Type "Error" -TaskEnd
-            throw $ReceiveJobErr
         }
         Write-ScreenInfo -Message "Activity done" -TaskEnd
     }
@@ -911,21 +787,10 @@ function Install-CMSite
     Write-ScreenInfo -Message "Installing Reporting Service Point" -TaskStart
     if ($CMRoles -contains "Reporting Services Point")
     {
-        $job = Invoke-LabCommand -ComputerName $CMServer -ActivityName "Installing Reporting Service Point" -Variable (Get-Variable "CMServerFqdn", "CMServerName", "CMSiteCode", "AdminUser") -Function (Get-Command "Import-CMModule") -ScriptBlock {
+        Invoke-LabCommand -ComputerName $CMServer -ActivityName "Installing Reporting Service Point" -Variable (Get-Variable "CMServerFqdn", "CMServerName", "CMSiteCode", "AdminUser") -Function (Get-Command "Import-CMModule") -ScriptBlock {
             Import-CMModule -ComputerName $CMServerName -SiteCode $CMSiteCode -ErrorAction "Stop"
             $Account = "{0}\{1}" -f $env:USERDOMAIN, $AdminUser
             Add-CMReportingServicePoint -SiteCode $CMSiteCode -SiteSystemServerName $CMServerFqdn -ReportServerInstance "SSRS" -UserName $Account -ErrorAction "Stop"
-        }
-        Wait-LWLabJob -Job $job
-        try
-        {
-            $result = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
-        }
-        catch
-        {
-            $Message = "Failed to install Reporting Service Point ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message
-            Write-ScreenInfo -Message $Message -Type "Error" -TaskEnd
-            throw $ReceiveJobErr
         }
         Write-ScreenInfo -Message "Activity done" -TaskEnd
     }
@@ -939,20 +804,9 @@ function Install-CMSite
     Write-ScreenInfo -Message "Installing Endpoint Protection Point" -TaskStart
     if ($CMRoles -contains "Endpoint Protection Point")
     {
-        $job = Invoke-LabCommand -ComputerName $CMServer -ActivityName "Installing Endpoint Protection Point" -Variable (Get-Variable "CMServerFqdn", "CMServerName", "CMSiteCode") -ScriptBlock {
+        Invoke-LabCommand -ComputerName $CMServer -ActivityName "Installing Endpoint Protection Point" -Variable (Get-Variable "CMServerFqdn", "CMServerName", "CMSiteCode") -ScriptBlock {
             Import-CMModule -ComputerName $CMServerName -SiteCode $CMSiteCode -ErrorAction "Stop"
             Add-CMEndpointProtectionPoint -ProtectionService "DoNotJoinMaps" -SiteCode $CMSiteCode -SiteSystemServerName $CMServerFqdn -ErrorAction "Stop"
-        }
-        Wait-LWLabJob -Job $job
-        try
-        {
-            $result = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
-        }
-        catch
-        {
-            $Message = "Failed to install Endpoint Protection Point ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message
-            Write-ScreenInfo -Message $Message -Type "Error" -TaskEnd
-            throw $ReceiveJobErr
         }
         Write-ScreenInfo -Message "Activity done" -TaskEnd
     }
@@ -964,22 +818,11 @@ function Install-CMSite
 
     #region Configure boundary and boundary group
     Write-ScreenInfo -Message "Configuring boundary and boundary group" -TaskStart
-    $job = Invoke-LabCommand -ComputerName $CMServer -ActivityName "Configuring boundary and boundary group" -Variable (Get-Variable "CMServerFqdn", "CMServerName", "CMSiteCode", "CMSiteName", "CMBoundaryIPRange") -ScriptBlock {
+    Invoke-LabCommand -ComputerName $CMServer -ActivityName "Configuring boundary and boundary group" -Variable (Get-Variable "CMServerFqdn", "CMServerName", "CMSiteCode", "CMSiteName", "CMBoundaryIPRange") -ScriptBlock {
         Import-CMModule -ComputerName $CMServerName -SiteCode $CMSiteCode -ErrorAction "Stop"
         $Boundary = New-CMBoundary -DisplayName $CMSiteName -Type "IPRange" -Value $CMBoundaryIPRange -ErrorAction "Stop"
         $BoundaryGroup = New-CMBoundaryGroup -Name $CMSiteName -AddSiteSystemServerName $CMServerFqdn -ErrorAction "Stop"
         Add-CMBoundaryToGroup -BoundaryGroupId $BoundaryGroup.GroupId -BoundaryId $Boundary.BoundaryId -ErrorAction "Stop"
-    }
-    Wait-LWLabJob -Job $job
-    try
-    {
-        $result = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
-    }
-    catch
-    {
-        $Message = "Failed configuring boundary and boundary group ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message
-        Write-ScreenInfo -Message $Message -Type "Error" -TaskEnd
-        throw $ReceiveJobErr
     }
     Write-ScreenInfo -Message "Activity done" -TaskEnd
     #endregion
@@ -993,10 +836,7 @@ function Update-CMSite
         [String]$CMSiteCode,
 
         [Parameter(Mandatory)]
-        [String]$CMServerName,
-
-        [Parameter(Mandatory)]
-        [String]$Version
+        [String]$CMServerName
     )
 
     #region Initialise
@@ -1017,274 +857,79 @@ function Update-CMSite
 
     #region Ensuring CONFIGURATION_MANAGER_UPDATE service is running
     Write-ScreenInfo -Message "Ensuring CONFIGURATION_MANAGER_UPDATE service is running" -TaskStart
-    $job = Invoke-LabCommand -ActivityName "Ensuring CONFIGURATION_MANAGER_UPDATE service is running" -ScriptBlock {
+    Invoke-LabCommand -ComputerName $CMServerName -ActivityName "Ensuring CONFIGURATION_MANAGER_UPDATE service is running" -ScriptBlock {
         $service = "CONFIGURATION_MANAGER_UPDATE"
         if ((Get-Service $service | Select-Object -ExpandProperty Status) -ne "Running")
         {
             Start-Service "CONFIGURATION_MANAGER_UPDATE" -ErrorAction "Stop"
         }
     }
-    Wait-LWLabJob -Job $job
-    try
-    {
-        $result = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
-    }
-    catch
-    {
-        Write-ScreenInfo -Message ("Could not start CONFIGURATION_MANAGER_UPDATE service ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message) -TaskEnd -Type "Error" -TaskEnd
-        throw $ReceiveJobErr
-    }
     Write-ScreenInfo -Message "Activity done" -TaskEnd
     #endregion
 
     #region Finding update for target version
     Write-ScreenInfo -Message "Waiting for updates to appear in console" -TaskStart
-    $Update = New-LoopAction -LoopTimeout 30 -LoopTimeoutType "Minutes" -LoopDelay 60 -LoopDelayType "Seconds" -ExitCondition {
-        $Update
-    } -IfTimeoutScript {
-        # Writing dot because of -NoNewLine in Wait-LWLabJob
-        Write-ScreenInfo -Message "."
-        Write-ScreenInfo -Message "No updates available" -TaskEnd
-        # Exit rather than throw, so we can resume with whatever else is in HostStart.ps1
-        exit
-    } -IfSucceedScript {
-        return $Update
-    } -ScriptBlock {
-        $cim = New-LabCimSession -ComputerName $CMServer
-        $Query = "SELECT * FROM SMS_CM_UpdatePackages WHERE Impact = '31'"
-            
-        try
-        {
-            $Update = Get-CimInstance -Namespace "ROOT/SMS/site_$CMSiteCode" -Query $Query -ErrorAction "Stop" -ErrorVariable ReceiveJobErr -CimSession $cim | Sort-object -Property FullVersion -Descending
-        }
-        catch
-        {
-            Write-ScreenInfo -Message ("Could not query SMS_CM_UpdatePackages to find latest update ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message) -TaskEnd -Type "Error"
-            throw $ReceiveJobErr
-        }
+    $cim = New-LabCimSession -ComputerName $CMServerName
+    $Query = "SELECT * FROM SMS_CM_UpdatePackages WHERE Impact = '31'"
+    $Update = Get-CimInstance -Namespace "ROOT/SMS/site_$CMSiteCode" -Query $Query -ErrorAction SilentlyContinue -CimSession $cim | Sort-object -Property FullVersion -Descending
+    $start = Get-Date
+    while (-not $Update -and ((Get-Date) - $start) -lt '00:30:00')
+    {
+        $Update = Get-CimInstance -Namespace "ROOT/SMS/site_$CMSiteCode" -Query $Query -ErrorAction SilentlyContinue -CimSession $cim | Sort-object -Property FullVersion -Descending
     }
+
+    # https://github.com/PowerShell/PowerShell/issues/9185
+    $Update = $Update[0]
     
-    if ($Version -eq "Latest")
-    {
-        # https://github.com/PowerShell/PowerShell/issues/9185
-        $Update = $Update[0]
-    }
-    else
-    {
-        $Update = $Update | Where-Object { $_.Name -like "*$Version*" }
-    }
-
-    # Writing dot because of -NoNewLine in Wait-LWLabJob
-    Write-ScreenInfo -Message "."
-    Write-ScreenInfo -Message ("Found update: '{0}' {1} ({2})" -f $Update.Name, $Update.FullVersion, $Update.PackageGuid)
-    $UpdatePackageGuid = $Update.PackageGuid
-    Write-ScreenInfo -Message "Activity done" -TaskEnd
-    #endregion
-
-    #region Initiate download and wait for state to change to Downloading
-    if ($Update.State -eq [SMS_CM_UpdatePackages_State]::AvailableToDownload)
-    {
-
-        Write-ScreenInfo -Message "Initiating download" -TaskStart
-        if ($Update.State -eq [SMS_CM_UpdatePackages_State]::AvailableToDownload)
-        {
-            $job = Invoke-LabCommand -ActivityName "Initiating download" -Variable (Get-Variable -Name "Update") -ScriptBlock {
-                Invoke-CimMethod -InputObject $Update -MethodName "SetPackageToBeDownloaded" -ErrorAction "Stop"
-            }
-            Wait-LWLabJob -Job $job
-            try
-            {
-                $result = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
-            }
-            catch
-            {
-                Write-ScreenInfo -Message ("Failed to initiate download ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message) -TaskEnd -Type "Error"
-                throw $ReceiveJobErr
-            }
-        }
-        Write-ScreenInfo -Message "Activity done" -TaskEnd
-
-        # If State doesn't change after 15 minutes, restart SMS_EXECUTIVE service and repeat this 3 times, otherwise quit.
-        Write-ScreenInfo -Message "Verifying update download initiated OK" -TaskStart
-        $Update = New-LoopAction -Iterations 3 -LoopDelay 1 -ExitCondition {
-            [SMS_CM_UpdatePackages_State]::Downloading, [SMS_CM_UpdatePackages_State]::ReadyToInstall -contains $Update.State
-        } -IfTimeoutScript {
-            $Message = "Could not initiate download (timed out)"
-            Write-ScreenInfo -Message $Message -TaskEnd -Type "Error"
-            throw $Message
-        } -IfSucceedScript {
-            return $Update
-        } -ScriptBlock {
-            $Update = New-LoopAction -LoopTimeout 15 -LoopTimeoutType "Minutes" -LoopDelay 5 -LoopDelayType "Seconds" -ExitCondition {
-                [SMS_CM_UpdatePackages_State]::Downloading, [SMS_CM_UpdatePackages_State]::ReadyToInstall -contains $Update.State
-            } -IfSucceedScript {
-                return $Update
-            } -IfTimeoutScript {
-                # Writing dot because of -NoNewLine in Wait-LWLabJob
-                Write-ScreenInfo -Message "."
-                Write-ScreenInfo -Message "Download did not start, restarting SMS_EXECUTIVE" -TaskStart -Type "Warning"
-                try
-                {
-                    Restart-ServiceResilient -ComputerName $CMServerName -ServiceName "SMS_EXECUTIVE" -ErrorAction "Stop" -ErrorVariable "RestartServiceResilientErr"
-                }
-                catch
-                {
-                    $Message = "Could not restart SMS_EXECUTIVE ({0})" -f $RestartServiceResilientErr.ErrorRecord.Exception.Message
-                    Write-ScreenInfo -Message $Message -TaskEnd -Type "Error"
-                    throw $Message
-                }
-                Write-ScreenInfo -Message "Activity done" -TaskEnd
-            } -ScriptBlock {
-                $cim = New-LabCimSession -ComputerName $CMServer
-                $Query = "SELECT * FROM SMS_CM_UPDATEPACKAGES WHERE PACKAGEGUID = '{0}'" -f $UpdatePackageGuid
-                    
-                try
-                {
-                    $Update = Get-CimInstance -Namespace "ROOT/SMS/site_$CMSiteCode" -Query $Query -ErrorAction "Stop" -ErrorVariable ReceiveJobErr -CimSession $cim
-                }
-                catch
-                {
-                    Write-ScreenInfo -Message ("Failed to query SMS_CM_UpdatePackages after initiating download (2) ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message) -TaskEnd -Type "Error"
-                    throw $ReceiveJobErr
-                }
-            }
-        }
-        # Writing dot because of -NoNewLine in Wait-LWLabJob
-        Write-ScreenInfo -Message "."
-        Write-ScreenInfo -Message "Activity done" -TaskEnd
-
-    }
-    #endregion
-    
-    #region Wait for update to finish download
-    if ($Update.State -eq [SMS_CM_UpdatePackages_State]::Downloading)
-    {
-
-        Write-ScreenInfo -Message "Waiting for update to finish downloading" -TaskStart
-        $Update = New-LoopAction -LoopTimeout 604800 -LoopTimeoutType "Seconds" -LoopDelay 15 -LoopDelayType "Seconds" -ExitCondition {
-            $Update.State -eq [SMS_CM_UpdatePackages_State]::ReadyToInstall
-        } -IfTimeoutScript {
-            # Writing dot because of -NoNewLine in Wait-LWLabJob
-            Write-ScreenInfo -Message "."
-            $Message = "Download timed out"
-            Write-ScreenInfo -Message $Message -TaskEnd -Type "Error"
-            throw $Message
-        } -IfSucceedScript {
-            # Writing dot because of -NoNewLine in Wait-LWLabJob
-            Write-ScreenInfo -Message "."
-            return $Update
-        } -ScriptBlock {
-            $cim = New-LabCimSession -ComputerName $CMServer
-            $Query = "SELECT * FROM SMS_CM_UPDATEPACKAGES WHERE PACKAGEGUID = '{0}'" -f $Update.PackageGuid
-                
-            try
-            {
-                $Update = Get-CimInstance -Namespace "ROOT/SMS/site_$CMSiteCode" -Query $Query -ErrorAction "Stop" -ErrorVariable ReceiveJobErr -CimSession $cim
-            }
-            catch
-            {
-                Write-ScreenInfo -Message ("Failed to query SMS_CM_UpdatePackages waiting for download to complete ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message) -TaskEnd -Type "Error"
-                throw $ReceiveJobErr
-            }
-        }
-        Write-ScreenInfo -Message "Activity done" -TaskEnd
-
-    }
-    #endregion
-    
-    #region Initiate update install and wait for state to change to Installed
+    # On some occasions, the update was already "ready to install"
     if ($Update.State -eq [SMS_CM_UpdatePackages_State]::ReadyToInstall)
     {
-
-        Write-ScreenInfo -Message "Waiting for SMS_SITE_COMPONENT_MANAGER to enter an idle state" -TaskStart
-        $ServiceState = New-LoopAction -LoopTimeout 30 -LoopTimeoutType "Minutes" -LoopDelay 1 -LoopDelayType "Minutes" -ExitCondition {
-            $sitecomplog -match '^Waiting for changes' -as [bool] -eq $true
-        } -IfTimeoutScript {
-            # Writing dot because of -NoNewLine in Wait-LWLabJob
-            Write-ScreenInfo -Message "."
-            $Message = "Timed out waiting for SMS_SITE_COMPONENT_MANAGER"
-            Write-ScreenInfo -Message $Message -TaskEnd -Type "Error"
-            throw $Message
-        } -IfSucceedScript {
-            # Writing dot because of -NoNewLine in Wait-LWLabJob
-            Write-ScreenInfo -Message "."
-            return $Update
-        } -ScriptBlock {
-            $job = Invoke-LabCommand -ActivityName "Reading sitecomp.log to determine SMS_SITE_COMPONENT_MANAGER state" -ScriptBlock {
-                Get-Content -Path "C:\Program Files\Microsoft Configuration Manager\Logs\sitecomp.log" -Tail 2 -ErrorAction "Stop"
-            }
-            Wait-LWLabJob -Job $job -NoNewLine
-            try
-            {
-                $sitecomplog = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
-            }
-            catch
-            {
-                Write-ScreenInfo -Message ("Failed to read sitecomp.log to ({0})" -f $ReceiveJobErr.ErrorRecord.ExceptionMessage) -TaskEnd -Type "Error"
-                throw $ReceiveJobErr
-            }
-        }
-        Write-ScreenInfo -Message "Activity done" -TaskEnd
-
-        Write-ScreenInfo -Message "Initiating update" -TaskStart
-        $job = Invoke-LabCommand -ActivityName "Initiating update" -Variable (Get-Variable -Name "Update") -ScriptBlock {
-            Invoke-CimMethod -InputObject $Update -MethodName "InitiateUpgrade" -Arguments @{PrereqFlag = 2 }
-        }
-        Wait-LWLabJob -Job $job
-        try
-        {
-            $result = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
-        }
-        catch
-        {
-            Write-ScreenInfo -Message ("Could not initiate update ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message) -TaskEnd -Type "Error"
-            throw $ReceiveJobErr
-        }
-        Write-ScreenInfo -Message "Activity done" -TaskEnd
-
-        Write-ScreenInfo -Message "Waiting for update to finish installing" -TaskStart
-        $Update = New-LoopAction -LoopTimeout 43200 -LoopTimeoutType "Seconds" -LoopDelay 5 -LoopDelayType "Seconds" -ExitCondition {
-            $Update.State -eq [SMS_CM_UpdatePackages_State]::Installed
-        } -IfTimeoutScript {
-            # Writing dot because of -NoNewLine in Wait-LWLabJob
-            Write-ScreenInfo -Message "."
-            $Message = "Install timed out"
-            Write-ScreenInfo -Message $Message -TaskEnd -Type "Error"
-            throw $Message
-        } -IfSucceedScript {
-            return $Update
-        } -ScriptBlock {
-            # No error handling since WMI can become unavailabile with "generic error" exception multiple times throughout the update. Not ideal
-            $cim = New-LabCimSession -ComputerName $CMServer
-            $Query = "SELECT * FROM SMS_CM_UPDATEPACKAGES WHERE PACKAGEGUID = '{0}'" -f $UpdatePackageGuid
-            $Update = Get-CimInstance -Namespace "ROOT/SMS/site_$CMSiteCode" -Query $Query -ErrorAction SilentlyContinue -CimSession $cim
-
-            if ($Update.State -eq [SMS_CM_UpdatePackages_State]::Failed)
-            {
-                Write-ScreenInfo -Message "."
-                $Message = "Update failed, check CMUpdate.log"
-                Write-ScreenInfo -Message $Message -TaskEnd -Type "Error"
-                throw $Message
-            }
-        }
-        # Writing dot because of -NoNewLine in Wait-LWLabJob
-        Write-ScreenInfo -Message "."
-        Write-ScreenInfo -Message "Activity done" -TaskEnd
-        
+        Invoke-CimMethod -InputObject $Update -MethodName "InitiateUpgrade" -Arguments @{PrereqFlag = 2 }
     }
-    #endregion
+
+    if ($Update.State -eq [SMS_CM_UpdatePackages_State]::AvailableToDownload)
+    {
+        Invoke-CimMethod -InputObject $Update -MethodName "SetPackageToBeDownloaded"
+
+        $Query = "SELECT * FROM SMS_CM_UpdatePackages WHERE PACKAGEGUID = '{0}'" -f $Update.PackageGuid
+        $Update = Get-CimInstance -Namespace "ROOT/SMS/site_$CMSiteCode" -Query $Query -ErrorAction SilentlyContinue -CimSession $cim
+
+        while ($Update.State -eq [SMS_CM_UpdatePackages_State]::Downloading)
+        {
+            Start-Sleep -Seconds 5
+            $Update = Get-CimInstance -Namespace "ROOT/SMS/site_$CMSiteCode" -Query $Query -ErrorAction SilentlyContinue -CimSession $cim
+        }
+
+        $Update = Get-CimInstance -Namespace "ROOT/SMS/site_$CMSiteCode" -Query $Query -ErrorAction SilentlyContinue -CimSession $cim
+
+        while (-not ($Update.State -eq [SMS_CM_UpdatePackages_State]::ReadyToInstall))
+        {
+            Start-Sleep -Seconds 5
+            $Update = Get-CimInstance -Namespace "ROOT/SMS/site_$CMSiteCode" -Query $Query -ErrorAction SilentlyContinue -CimSession $cim
+        }
+    }
+
+    # Wait for installation to finish
+    $Update = Get-CimInstance -Namespace "ROOT/SMS/site_$CMSiteCode" -Query $Query -ErrorAction SilentlyContinue -CimSession $cim
+    $start = Get-Date
+    while ($Update.State -ne [SMS_CM_UpdatePackages_State]::Installed -and ((Get-Date) - $start) -lt '00:30:00')
+    {
+        Start-Sleep -Seconds 10
+        $Update = Get-CimInstance -Namespace "ROOT/SMS/site_$CMSiteCode" -Query $Query -ErrorAction SilentlyContinue -CimSession $cim
+    }
 
     #region Validate update
     Write-ScreenInfo -Message "Validating update" -TaskStart
-    $cim = New-LabCimSession -ComputerName $CMServer
+    $Update = Get-CimInstance -Namespace "ROOT/SMS/site_$CMSiteCode" -Query $Query -ErrorAction SilentlyContinue -CimSession $cim
+    $cim = New-LabCimSession -ComputerName $CMServerName
     try
     {
         $InstalledSite = Get-CimInstance -Namespace "ROOT/SMS/site_$($CMSiteCode)" -ClassName "SMS_Site" -ErrorAction "Stop" -CimSession $cim
     }
     catch
     {
-        Write-ScreenInfo -Message ("Could not query SMS_Site to validate update install ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message) -TaskEnd -Type "Error"
-        throw $ReceiveJobErr
+        Write-ScreenInfo -Message ("Could not query SMS_Site to validate update install ({0})" -f $_.ErrorRecord.Exception.Message) -TaskEnd -Type "Error"
+        throw $_
     }
     if ($InstalledSite.Version -ne $Update.FullVersion)
     {
@@ -1298,7 +943,7 @@ function Update-CMSite
     #region Update console
     Write-ScreenInfo -Message "Updating console" -TaskStart
     $cmd = "/q TargetDir=`"C:\Program Files (x86)\Microsoft Configuration Manager\AdminConsole`" DefaultSiteServerName={0}" -f $CMServerFqdn
-    $job = Install-LabSoftwarePackage -ComputerName $CMServer -LocalPath "C:\Program Files\Microsoft Configuration Manager\tools\ConsoleSetup\ConsoleSetup.exe" -CommandLine $cmd -ExpectedReturnCodes 0 -ErrorAction "Stop" -ErrorVariable "InstallLabSoftwarePackageErr"
+    $job = Install-LabSoftwarePackage -ComputerName $CMServerName -LocalPath "C:\Program Files\Microsoft Configuration Manager\tools\ConsoleSetup\ConsoleSetup.exe" -CommandLine $cmd -ExpectedReturnCodes 0 -ErrorAction "Stop" -ErrorVariable "InstallLabSoftwarePackageErr"
     Wait-LWLabJob -Job $job
     try
     {
@@ -1310,4 +955,39 @@ function Update-CMSite
     }
     Write-ScreenInfo -Message "Activity done" -TaskEnd
     #endregion
+}
+
+function Import-CMModule
+{
+    Param(
+        [String]$ComputerName,
+        [String]$SiteCode
+    )
+    if (-not(Get-Module ConfigurationManager))
+    {
+        try
+        {
+            Import-Module ("{0}\..\ConfigurationManager.psd1" -f $ENV:SMS_ADMIN_UI_PATH) -ErrorAction "Stop" -ErrorVariable "ImportModuleError"
+        }
+        catch
+        {
+            throw ("Failed to import ConfigMgr module: {0}" -f $ImportModuleError.ErrorRecord.Exception.Message)
+        }
+    }
+    try
+    {
+        if (-not(Get-PSDrive -Name $SiteCode -PSProvider "CMSite" -ErrorAction "SilentlyContinue"))
+        {
+            New-PSDrive -Name $SiteCode -PSProvider "CMSite" -Root $ComputerName -Scope "Script" -ErrorAction "Stop" | Out-Null
+        }
+        Set-Location ("{0}:\" -f $SiteCode) -ErrorAction "Stop"    
+    } 
+    catch
+    {
+        if (Get-PSDrive -Name $SiteCode -PSProvider "CMSite" -ErrorAction "SilentlyContinue")
+        {
+            Remove-PSDrive -Name $SiteCode -Force
+        }
+        throw ("Failed to create New-PSDrive with site code `"{0}`" and server `"{1}`"" -f $SiteCode, $ComputerName)
+    }
 }

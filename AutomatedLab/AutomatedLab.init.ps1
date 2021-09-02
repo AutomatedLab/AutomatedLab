@@ -724,6 +724,7 @@ Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
             'SqlServerName'
             'DatabaseName'
             'WsusContentPath'
+            'AdminUser'
         )
     }
     MandatoryRoleProperties = @{
