@@ -339,7 +339,6 @@ function Install-LabConfigurationManager
         {
             Write-ScreenInfo -Type Verbose -Message "$vm is connected, beginning update process"
             $updateParameter = Sync-Parameter -Command (Get-Command Update-CMSite) -Parameters $siteParameter
-            $updateParameter
             Update-CMSite @updateParameter
         }
     }
@@ -884,12 +883,12 @@ function Update-CMSite
     # On some occasions, the update was already "ready to install"
     if ($Update.State -eq [SMS_CM_UpdatePackages_State]::ReadyToInstall)
     {
-        Invoke-CimMethod -InputObject $Update -MethodName "InitiateUpgrade" -Arguments @{PrereqFlag = 2 }
+        $null = Invoke-CimMethod -InputObject $Update -MethodName "InitiateUpgrade" -Arguments @{PrereqFlag = 2 }
     }
 
     if ($Update.State -eq [SMS_CM_UpdatePackages_State]::AvailableToDownload)
     {
-        Invoke-CimMethod -InputObject $Update -MethodName "SetPackageToBeDownloaded"
+        $null = Invoke-CimMethod -InputObject $Update -MethodName "SetPackageToBeDownloaded"
 
         $Query = "SELECT * FROM SMS_CM_UpdatePackages WHERE PACKAGEGUID = '{0}'" -f $Update.PackageGuid
         $Update = Get-CimInstance -Namespace "ROOT/SMS/site_$CMSiteCode" -Query $Query -ErrorAction SilentlyContinue -CimSession $cim
@@ -907,6 +906,8 @@ function Update-CMSite
             Start-Sleep -Seconds 5
             $Update = Get-CimInstance -Namespace "ROOT/SMS/site_$CMSiteCode" -Query $Query -ErrorAction SilentlyContinue -CimSession $cim
         }
+
+        $null = Invoke-CimMethod -InputObject $Update -MethodName "InitiateUpgrade" -Arguments @{PrereqFlag = 2 }
     }
 
     # Wait for installation to finish
@@ -933,7 +934,7 @@ function Update-CMSite
     }
     if ($InstalledSite.Version -ne $Update.FullVersion)
     {
-        $Message = "Update validation failed, installed version is '{0}' and the expected version is '{1}'" -f $InstalledSite.Version, $Update.FullVersion
+        $Message = "Update validation failed, installed version is '{0}' and the expected version is '{1}'. Try running Install-LabConfigurationManager a second time" -f $InstalledSite.Version, $Update.FullVersion
         Write-ScreenInfo -Message $Message -Type "Error" -TaskEnd
         throw $Message
     }
@@ -943,16 +944,7 @@ function Update-CMSite
     #region Update console
     Write-ScreenInfo -Message "Updating console" -TaskStart
     $cmd = "/q TargetDir=`"C:\Program Files (x86)\Microsoft Configuration Manager\AdminConsole`" DefaultSiteServerName={0}" -f $CMServerFqdn
-    $job = Install-LabSoftwarePackage -ComputerName $CMServerName -LocalPath "C:\Program Files\Microsoft Configuration Manager\tools\ConsoleSetup\ConsoleSetup.exe" -CommandLine $cmd -ExpectedReturnCodes 0 -ErrorAction "Stop" -ErrorVariable "InstallLabSoftwarePackageErr"
-    Wait-LWLabJob -Job $job
-    try
-    {
-        $result = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
-    }
-    catch
-    {
-        Write-ScreenInfo -Message ("Console update failed ({0}) " -f $ReceiveJobErr.ErrorRecord.Exception.Message) -Type "Warning"
-    }
+    $job = Install-LabSoftwarePackage -ComputerName $CMServerName -LocalPath "C:\Program Files\Microsoft Configuration Manager\tools\ConsoleSetup\ConsoleSetup.exe" -CommandLine $cmd
     Write-ScreenInfo -Message "Activity done" -TaskEnd
     #endregion
 }
