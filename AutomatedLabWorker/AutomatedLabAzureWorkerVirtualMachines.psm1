@@ -1351,7 +1351,7 @@ function Initialize-LWAzureVM
         Write-Verbose -Message "Disk count for $computerName`: $($Disks.Count)"
         # Azure InvokeRunAsCommand is not very clever, so we sent the stuff as JSON
         $Disks | Set-Content -Path C:\AL\disks.json
-        foreach ($diskObject in $($Disks | ConvertFrom-Json).Where({-not $_.SkipInitialization}))
+        foreach ($diskObject in $([object[]]($Disks | ConvertFrom-Json)).Where({-not $_.SkipInitialization}))
         {
             $disk = Get-Disk | Where-Object Location -like "*LUN $($diskObject.LUN)"
             $disk | Set-Disk -IsReadOnly $false
