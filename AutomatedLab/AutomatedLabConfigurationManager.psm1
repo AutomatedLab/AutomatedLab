@@ -528,28 +528,10 @@ function Install-CMSite
     Write-ScreenInfo -Message "Activity done" -TaskEnd
     #endregion
 
-    #region Bringing online additional disks
-    Write-ScreenInfo -Message "Bringing online additional disks" -TaskStart
-    try
-    {
-        $result = Invoke-LabCommand -ComputerName $CMServer -ActivityName "Bringing online additional online" -ScriptBlock {
-            $dataVolume = Get-Disk -ErrorAction "Stop" | Where-Object -Property OperationalStatus -eq Offline
-            $dataVolume | Set-Disk -IsOffline $false -ErrorAction "Stop"
-            $dataVolume | Set-Disk -IsReadOnly $false -ErrorAction "Stop"
-        } -ErrorAction Stop
-    }
-    catch
-    {
-        Write-ScreenInfo -Message ("Failed to bring disks online ({0})" -f $_.Exception.Message) -Type "Error" -TaskEnd
-        throw $_
-    }
-    Write-ScreenInfo -Message "Activity done" -TaskEnd
-    #endregion
-
     #region Saving NO_SMS_ON_DRIVE.SMS file on C: and F:
     Invoke-LabCommand -ComputerName $CMServer -Variable (Get-Variable WsusContentPath) -ActivityName "Place NO_SMS_ON_DRIVE.SMS file" -ScriptBlock {
         [char]$root = [IO.Path]::GetPathRoot($WsusContentPath).Substring(0, 1)
-        foreach ($volume in (Get-Volume | Where-Object { $_.DriveLetter -and $_.DriveLetter -ne $root }))
+        foreach ($volume in (Get-Volume | Where-Object { $_.DriveType -eq 'Fixed' -and $_.DriveLetter -and $_.DriveLetter -ne $root }))
         {
             $Path = "{0}:\NO_SMS_ON_DRIVE.SMS" -f $volume.DriveLetter
             New-Item -Path $Path -ItemType "File" -ErrorAction "Stop" -Force
@@ -682,7 +664,9 @@ function Install-CMSite
     $exePath = "{0}\SMSSETUP\BIN\X64\setup.exe" -f $VMCMBinariesDirectory
     $iniPath = "C:\Install\ConfigurationFile-CM-$CMServer.ini"
     $cmd = "/Script `"{0}`" /NoUserInput" -f $iniPath
-    Install-LabSoftwarePackage -LocalPath $exePath -CommandLine $cmd -ProgressIndicator 2 -ExpectedReturnCodes 0 -ComputerName $CMServer -Timeout 30
+    $timeout = 30
+    if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure') { $timeout = 60 } # Thanks for nothing, cloud :(
+    Install-LabSoftwarePackage -LocalPath $exePath -CommandLine $cmd -ProgressIndicator 2 -ExpectedReturnCodes 0 -ComputerName $CMServer -Timeout $timeout
     Write-ScreenInfo -Message "Activity done" -TaskEnd
     #endregion
 
@@ -921,8 +905,10 @@ function Update-CMSite
 
     #region Validate update
     Write-ScreenInfo -Message "Validating update" -TaskStart
-    $Update = Get-CimInstance -Namespace "ROOT/SMS/site_$CMSiteCode" -Query $Query -ErrorAction SilentlyContinue -CimSession $cim
     $cim = New-LabCimSession -ComputerName $CMServerName
+    $Query = "SELECT * FROM SMS_CM_UpdatePackages WHERE PACKAGEGUID = '{0}'" -f $Update.PackageGuid
+    $Update = Get-CimInstance -Namespace "ROOT/SMS/site_$CMSiteCode" -Query $Query -ErrorAction SilentlyContinue -CimSession $cim
+
     try
     {
         $InstalledSite = Get-CimInstance -Namespace "ROOT/SMS/site_$($CMSiteCode)" -ClassName "SMS_Site" -ErrorAction "Stop" -CimSession $cim
