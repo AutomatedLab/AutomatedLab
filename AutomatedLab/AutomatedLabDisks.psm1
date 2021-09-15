@@ -335,11 +335,13 @@ function Get-LabVHDX
         $disks = $lab.Disks
     }
 
+    $machines = if (Get-LabMachineDefinition -ErrorAction SilentlyContinue) { Get-LabMachineDefinition } else { Get-LabVm -IncludeLinux }
+
     if ($disks)
     {
         foreach ($disk in $disks)
         {
-            if ($vm = Get-LabMachineDefinition | Where-Object { $_.Disks.Name -contains $disk.Name })
+            if ($vm = $machines | Where-Object { $_.Disks.Name -contains $disk.Name })
             {
                 $disk.Path = Join-Path -Path $lab.Target.Path -ChildPath $vm.Name
             }
