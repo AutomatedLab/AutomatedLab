@@ -335,6 +335,12 @@ function Get-LabVHDX
         $disks = $lab.Disks
     }
 
+    if (-not (Get-LabMachineDefinition -ErrorAction SilentlyContinue))
+    {
+        Import-LabDefinition -Name $lab.Name
+        Import-Lab -Name $lab.Name -NoDisplay -NoValidation
+    }
+
     if ($disks)
     {
         foreach ($disk in $disks)
