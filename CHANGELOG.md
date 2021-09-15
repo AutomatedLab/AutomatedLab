@@ -18,6 +18,7 @@
 - New-LabADSubnet was not called if there is only a RootDC defined.
 - Handling SQL inis when on Azure now actually working by referring to
 - Fixed typos and added SkipDeployment to the filter
+- Output of Get-LabVhdx fixed, was reporting wrong path
 
 ## 5.39.0 (2021-08-20)
 
