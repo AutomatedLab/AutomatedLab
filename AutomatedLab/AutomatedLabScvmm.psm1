@@ -64,10 +64,10 @@ function Install-LabScvmm
     }
     else
     {
-        Start-Process -FilePath $adkFile.FullName -ArgumentList "/quiet /layout $(Join-Path (Get-LabSourcesLocation -Local) Tools/ADKoffline)" -Wait -NoNewWindow
-        Start-Process -FilePath $adkpeFile.FullName -ArgumentList " /quiet /layout $(Join-Path (Get-LabSourcesLocation -Local) Tools/ADKPEoffline)" -Wait -NoNewWindow
-        Copy-LabFileItem -Path (Join-Path (Get-LabSourcesLocation -Local) Tools/ADKoffline) -ComputerName $all
-        Copy-LabFileItem -Path (Join-Path (Get-LabSourcesLocation -Local) Tools/ADKPEoffline) -ComputerName $all
+        Start-Process -FilePath $adkFile.FullName -ArgumentList "/quiet /layout $(Join-Path (Get-LabSourcesLocation -Local) SoftwarePackages/ADKoffline)" -Wait -NoNewWindow
+        Start-Process -FilePath $adkpeFile.FullName -ArgumentList " /quiet /layout $(Join-Path (Get-LabSourcesLocation -Local) SoftwarePackages/ADKPEoffline)" -Wait -NoNewWindow
+        Copy-LabFileItem -Path (Join-Path (Get-LabSourcesLocation -Local) SoftwarePackages/ADKoffline) -ComputerName $all
+        Copy-LabFileItem -Path (Join-Path (Get-LabSourcesLocation -Local) SoftwarePackages/ADKPEoffline) -ComputerName $all
     }
 
     Install-LabSoftwarePackage -LocalPath C:\ADKOffline\adksetup.exe -ComputerName $all -CommandLine '/quiet /installpath C:\ADK'

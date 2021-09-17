@@ -1283,7 +1283,7 @@ function Get-LabVMRdpFile
 
         if ($machine.HostType -eq 'Azure')
         {
-            $cn = Get-LWAzureVMConnectionInfo -ComputerName $machine.Name
+            $cn = Get-LWAzureVMConnectionInfo -ComputerName $machine
             $cmd = 'cmdkey.exe /add:"TERMSRV/{0}" /user:"{1}" /pass:"{2}"' -f $cn.DnsName, $cred.UserName, $cred.GetNetworkCredential().Password
             Invoke-Expression $cmd | Out-Null
 

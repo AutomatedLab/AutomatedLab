@@ -7,6 +7,8 @@
 - Restart-LabVm stability on Azure improved
   - Does not check event log any longer but uses CIM instead to check if the reboot was successfully executed
 - Azure managed disks now actually support all the parameters that Add-LabDiskDefinition exposes
+- Configuration Manager custom role(s) converted to built-in role
+  -  Thanks to the excellent work of @codaamok we were able to include Configuration Manager in our built-in roles
 
 ### Bugs
 
