@@ -9,6 +9,7 @@
 - Azure managed disks now actually support all the parameters that Add-LabDiskDefinition exposes
 - Configuration Manager custom role(s) converted to built-in role
   -  Thanks to the excellent work of @codaamok we were able to include Configuration Manager in our built-in roles
+- Deployment validation now really includes hook for Custom Roles
 
 ### Bugs
 
