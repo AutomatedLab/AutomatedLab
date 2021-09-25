@@ -330,7 +330,7 @@ GO
                 }
 
                 $installMachines = $machinesBatch | Where-Object { -not $_.SqlAlreadyInstalled }
-                Wait-LWLabJob -Job $jobs -Timeout 20 -NoDisplay -ProgressIndicator 15 -NoNewLine
+                Wait-LWLabJob -Job $jobs -Timeout 40 -NoDisplay -ProgressIndicator 15 -NoNewLine
                 Dismount-LabIsoImage -ComputerName $machinesBatch -SupressOutput
                 Restart-LabVM -ComputerName $installMachines -NoDisplay
 
