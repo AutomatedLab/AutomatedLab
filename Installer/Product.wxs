@@ -38,6 +38,7 @@
           <Directory Id="InstallFolder_ProgramDataAssets" Name="Assets">
             <Component Id="AutomatedLabAssets" Guid="d3d29a38-766a-4a81-9a11-285d8764d89d">
               <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="ALAssets"/>
+              <File Source="$(var.SolutionDir)Assets\Automated-Lab_icon512.png" />
               <File Source="$(var.SolutionDir)Assets\ProductKeys.xml" />
               <RemoveFolder Id="RemoveFolderAssets" Directory="InstallFolder_ProgramDataAssets" On="both"/>
             </Component>

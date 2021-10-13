@@ -6,6 +6,30 @@
 
 ### Bugs
 
+## 5.40.0 (2021-10-13)
+
+### Enhancements
+
+- Restart-LabVm stability on Azure improved
+  - Does not check event log any longer but uses CIM instead to check if the reboot was successfully executed
+- Azure managed disks now actually support all the parameters that Add-LabDiskDefinition exposes
+- Configuration Manager custom role(s) converted to built-in role
+  -  Thanks to the excellent work of @codaamok we were able to include Configuration Manager in our built-in roles
+- Deployment validation now really includes hook for Custom Roles
+- Windows 11 GLVM keys added
+
+### Bugs
+
+- Enable/Disable-LabMachineAutoShutdown now work more intuitively
+  - with or without computers passed as arguments
+  - With TimeZone auto completion and defaulting to current time zone as before
+- Fixed a display bug. When no IP address space was added to a virtual network, 0.0.0.0 was shown instead of the actual IP.
+- New-LabADSubnet threw 'Cannot convert this format' when DCs are only connected to an external adapter.
+- New-LabADSubnet was not called if there is only a RootDC defined.
+- Handling SQL inis when on Azure now actually working by referring to
+- Fixed typos and added SkipDeployment to the filter
+- Output of Get-LabVhdx fixed, was reporting wrong path
+
 ## 5.39.0 (2021-08-20)
 
 ### Enhancements

@@ -171,7 +171,18 @@ GO
                 {
                     $global:setupArguments = ''
                     $fileName = Join-Path -Path 'C:\' -ChildPath (Split-Path -Path $role.Properties.ConfigurationFile -Leaf)
-                    $configurationFileContent = Get-Content $role.Properties.ConfigurationFile | ConvertFrom-String -Delimiter = -PropertyNames Key, Value
+                    $confPath = if ($lab.DefaultVirtualizationEngine -eq 'Azure' -and (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $role.Properties.ConfigurationFile))
+                    {
+                        $blob = Get-LabAzureLabSourcesContent -Path $role.Properties.ConfigurationFile.Replace($labSources,'')
+                        $null = Get-AzStorageFileContent -File $blob -Destination (Join-Path $env:TEMP azsql.ini) -Force
+                        Join-Path $env:TEMP azsql.ini
+                    }
+                    elseif ($lab.DefaultVirtualizationEngine -ne 'Azure' -or ($lab.DefaultVirtualizationEngine -eq 'Azure' -and -not (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $role.Properties.ConfigurationFile)))
+                    {
+                        $role.Properties.ConfigurationFile
+                    }
+
+                    $configurationFileContent = Get-Content $confPath | ConvertFrom-String -Delimiter = -PropertyNames Key, Value
                     Write-PSFMessage -Message ($configurationFileContent | Out-String)
                     try
                     {
@@ -319,7 +330,7 @@ GO
                 }
 
                 $installMachines = $machinesBatch | Where-Object { -not $_.SqlAlreadyInstalled }
-                Wait-LWLabJob -Job $jobs -Timeout 20 -NoDisplay -ProgressIndicator 15 -NoNewLine
+                Wait-LWLabJob -Job $jobs -Timeout 40 -NoDisplay -ProgressIndicator 15 -NoNewLine
                 Dismount-LabIsoImage -ComputerName $machinesBatch -SupressOutput
                 Restart-LabVM -ComputerName $installMachines -NoDisplay
 
@@ -703,9 +714,19 @@ function New-LabSqlAccount
     }
 
     if ($RoleProperties.ContainsKey('ConfigurationFile'))
-    {
-        $config = Get-Content -Path $RoleProperties.ConfigurationFile | Where-Object -FilterScript {-not $_.StartsWith('#') -and $_.Contains('=')}
-        $config = $config -replace '\\', '\\' | ConvertFrom-StringData
+    {        
+        $confPath = if ($lab.DefaultVirtualizationEngine -eq 'Azure' -and (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $RoleProperties.ConfigurationFile))
+        {
+            $blob = Get-LabAzureLabSourcesContent -Path $RoleProperties.ConfigurationFile.Replace($labSources,'')
+            $null = Get-AzStorageFileContent -File $blob -Destination (Join-Path $env:TEMP azsql.ini) -Force
+            Join-Path $env:TEMP azsql.ini
+        }
+        elseif ($lab.DefaultVirtualizationEngine -ne 'Azure' -or ($lab.DefaultVirtualizationEngine -eq 'Azure' -and -not (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $RoleProperties.ConfigurationFile)))
+        {
+            $RoleProperties.ConfigurationFile
+        }
+
+        $config = (Get-Content -Path $confPath) -replace '\\', '\\' | ConvertFrom-String -Delimiter = -PropertyNames Key, Value
 
         if (($config | Where-Object Key -eq SQLSvcAccount) -and ($config | Where-Object Key -eq SQLSvcPassword))
         {

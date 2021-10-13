@@ -1182,8 +1182,8 @@ function Initialize-LWAzureVM
             [string]
             $TimeZoneId,
 
-            [int]
-            $DiskCount,
+            [string]
+            $Disks,
 
             [string]
             $LabSourcesPath,
@@ -1347,40 +1347,27 @@ function Initialize-LWAzureVM
             Set-DnsClientServerAddress -InterfaceIndex $idx -ServerAddresses $DnsServers
         }
 
-        Write-Verbose -Message "Disk count for $computerName`: $DiskCount"
-        if ($DiskCount -gt 0)
+        if (-not $Disks) { return }
+        
+        # Azure InvokeRunAsCommand is not very clever, so we sent the stuff as JSON
+        $Disks | Set-Content -Path C:\AL\disks.json
+        [object[]] $diskObjects = $Disks | ConvertFrom-Json
+        Write-Verbose -Message "Disk count for $env:COMPUTERNAME`: $($diskObjects.Count)"
+        foreach ($diskObject in $diskObjects.Where({-not $_.SkipInitialization}))
         {
-            $diskpartCmd = 'LIST DISK'
-
-            $disks = $diskpartCmd | diskpart.exe
-
-            foreach ($line in $disks)
+            $disk = Get-Disk | Where-Object Location -like "*LUN $($diskObject.LUN)"
+            $disk | Set-Disk -IsReadOnly $false
+            $disk | Set-Disk -IsOffline $false
+            $disk | Initialize-Disk -PartitionStyle GPT
+            $party = if ($diskObject.DriveLetter)
             {
-                if ($line -match 'Disk (?<DiskNumber>\d{1,3}) \s+(?<State>Online|Offline)\s+(?<Size>\d+) (KB|MB|GB|TB)\s+(?<Free>\d+) (B|KB|MB|GB|TB)')
-                {
-                    $nextDriveLetter = [char[]](67..90) |
-                        Where-Object { (Get-WmiObject -Class Win32_LogicalDisk |
-                                Select-Object -ExpandProperty DeviceID) -notcontains "$($_):"} |
-                        Select-Object -First 1
-
-                    $diskNumber = $Matches.DiskNumber
-
-                    $diskpartCmd = "@
-                        SELECT DISK $diskNumber
-                        ATTRIBUTES DISK CLEAR READONLY
-                        ONLINE DISK
-                        CREATE PARTITION PRIMARY
-                        ASSIGN LETTER=$nextDriveLetter
-                        EXIT
-                    @"
-                    $diskpartCmd | diskpart.exe | Out-Null
-
-                    Start-Sleep -Seconds 2
-
-                    cmd.exe /c "echo y | format $($nextDriveLetter): /q /v:DataDisk$diskNumber"
-                }
-
+                $disk | New-Partition -UseMaximumSize -DriveLetter $diskObject.DriveLetter
             }
+            else
+            {
+                $disk | New-Partition -UseMaximumSize -AssignDriveLetter
+            }
+            $party | Format-Volume -Force -UseLargeFRS:$diskObject.UseLargeFRS -AllocationUnitSize $diskObject.AllocationUnitSize -NewFileSystemLabel $diskObject.Label
         }
     }
 
@@ -1393,7 +1380,7 @@ function Initialize-LWAzureVM
         $time = $lab.AzureSettings.AutoShutdownTime
         $tz = if (-not $lab.AzureSettings.AutoShutdownTimeZone) {Get-TimeZone} else {Get-TimeZone -Id $lab.AzureSettings.AutoShutdownTimeZone}
         Write-ScreenInfo -Message "Configuring auto-shutdown of all VMs daily at $($time) in timezone $($tz.Id)"
-        Enable-LWAzureAutoShutdown -ComputerName (Get-LabVm | Where-Object Name -notin $machineSpecific.Name) -Time $time -TimeZone $tz -Wait
+        Enable-LWAzureAutoShutdown -ComputerName (Get-LabVm | Where-Object Name -notin $machineSpecific.Name) -Time $time -TimeZone $tz.Id -Wait
     }
 
     $machineSpecific = Get-LabVm -SkipConnectionInfo | Where-Object {
@@ -1405,7 +1392,7 @@ function Initialize-LWAzureVM
         $time = $machine.AzureProperties.AutoShutdownTime
         $tz = if (-not $machine.AzureProperties.AutoShutdownTimezoneId) {Get-TimeZone} else {Get-TimeZone -Id $machine.AzureProperties.AutoShutdownTimezoneId}
         Write-ScreenInfo -Message "Configure shutdown of $machine daily at $($time) in timezone $($tz.Id)"
-        Enable-LWAzureAutoShutdown -ComputerName $machine -Time $time -TimeZone $tz -Wait
+        Enable-LWAzureAutoShutdown -ComputerName $machine -Time $time -TimeZone $tz.Id -Wait
     }
 
     Write-ScreenInfo -Message 'Configuring localization and additional disks' -TaskStart -NoNewLine
@@ -1413,10 +1400,18 @@ function Initialize-LWAzureVM
     $jobs = foreach ($m in $Machine)
     {
         [string[]]$DnsServers = ($m.NetworkAdapters | Where-Object {$_.VirtualSwitch.Name -eq $Lab.Name}).Ipv4DnsServers.AddressAsString
+        $azVmDisks = (Get-AzVm -Name $m.ResourceName -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName).StorageProfile.DataDisks
+        foreach ($machDisk in $m.Disks)
+        {
+            $machDisk.Lun = $azVmDisks.Where({$_.Name -eq $machDisk.Name}).Lun
+        }
+        
+        $diskJson = $m.disks | ConvertTo-Json -Compress
+
         $scriptParam = @{
             UserLocale                          = $m.UserLocale
             TimeZoneId                          = $m.TimeZone
-            DiskCount                           = $m.Disks.Count
+            Disks                               = $diskJson
             LabSourcesPath                      = $labsourcesStorage.Path
             StorageAccountName                  = $labsourcesStorage.StorageAccountName
             StorageAccountKey                   = $labsourcesStorage.StorageAccountKey
@@ -1735,9 +1730,7 @@ function Wait-LWAzureRestartVM
 
         $Start = $Start.ToLocalTime()
 
-        $events = Get-EventLog -LogName System -InstanceId 2147489653 -After $Start -Before $Start.AddMinutes(40)
-
-        $events
+        (Get-CimInstance -ClassName Win32_OperatingSystem).LastBootupTime -ge $Start
     }
 
     $ProgressIndicatorTimer = (Get-Date)
@@ -1752,14 +1745,14 @@ function Wait-LWAzureRestartVM
                 $ProgressIndicatorTimer = (Get-Date)
             }
 
-            $events = Invoke-LabCommand -ComputerName $machine -ActivityName WaitForRestartEvent -ScriptBlock $cmd -ArgumentList $start.Ticks -UseLocalCredential -DoNotUseCredSsp:$DoNotUseCredSsp -PassThru -Verbose:$false -NoDisplay -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+            $hasRestarted = Invoke-LabCommand -ComputerName $machine -ActivityName WaitForRestartEvent -ScriptBlock $cmd -ArgumentList $start.Ticks -UseLocalCredential -DoNotUseCredSsp:$DoNotUseCredSsp -PassThru -Verbose:$false -NoDisplay -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
 
-            if (-not $events)
+            if (-not $hasRestarted)
             {
                 $events = Invoke-LabCommand -ComputerName $machine -ActivityName WaitForRestartEvent -ScriptBlock $cmd -ArgumentList $start.Ticks -DoNotUseCredSsp:$DoNotUseCredSsp -PassThru -Verbose:$false -NoDisplay -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
             }
 
-            if ($events)
+            if ($hasRestarted)
             {
                 Write-PSFMessage -Message "VM '$machine' has been restarted"
             }
@@ -2526,15 +2519,19 @@ function Enable-LWAzureAutoShutdown
         [timespan]
         $Time,
 
-        [TimeZoneInfo]
-        $TimeZone = (Get-TimeZone),
+        [string]
+        $TimeZone = (Get-TimeZone).Id,
 
         [switch]
         $Wait
     )
 
     $lab = Get-Lab -ErrorAction Stop
-    $labVms = Get-AzVm -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName | Where-Object Name -in $ComputerName
+    $labVms = Get-AzVm -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName
+    if ($ComputerName)
+    {
+        $labVms = $labVms | Where-Object Name -in $ComputerName
+    }
     $resourceIdString = '{0}/providers/microsoft.devtestlab/schedules/shutdown-computevm-' -f $lab.AzureSettings.DefaultResourceGroup.ResourceId
 
     $jobs = foreach ($vm in $labVms)
@@ -2543,7 +2540,7 @@ function Enable-LWAzureAutoShutdown
             status = 'Enabled'
             taskType = 'ComputeVmShutdownTask'
             dailyRecurrence = @{time = $Time.ToString('hhmm') }
-            timeZoneId = $TimeZone.Id
+            timeZoneId = $TimeZone
             targetResourceId = $vm.Id
         }
 
@@ -2568,7 +2565,11 @@ function Disable-LWAzureAutoShutdown
     )
 
     $lab = Get-Lab -ErrorAction Stop
-    $labVms = Get-AzVm -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName | Where-Object Name -in $ComputerName
+    $labVms = Get-AzVm -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName
+    if ($ComputerName)
+    {
+        $labVms = $labVms | Where-Object Name -in $ComputerName
+    }
     $resourceIdString = '{0}/providers/microsoft.devtestlab/schedules/shutdown-computevm-' -f $lab.AzureSettings.DefaultResourceGroup.ResourceId
 
     $jobs = foreach ($vm in $labVms)

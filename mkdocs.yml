@@ -26,6 +26,7 @@ nav:
   - Lab Builder REST API: Wiki/Roles/restapi.md
   - Dynamics 365: Wiki/Roles/dynamics365.md
   - SCVMM: Wiki/Roles/scvmm.md
+  - SCCM/MEMCM: Wiki/Roles/configurationmanager.md
   - Custom roles: Wiki/Advanced/customroles.md
 - Customizing your lab:
   - Installing Windows features: Wiki/Basic/installwindowsfeatures.md

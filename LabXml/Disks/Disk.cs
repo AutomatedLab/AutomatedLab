@@ -18,6 +18,9 @@
 
         public char DriveLetter { get; set; }
 
+        // Specifically used on Azure to properly assign drive letters and partition/format
+        public int Lun { get; set; }
+
         public string FileName
         {
             get

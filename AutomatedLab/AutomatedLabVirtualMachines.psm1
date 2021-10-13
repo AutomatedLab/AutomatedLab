@@ -1283,7 +1283,7 @@ function Get-LabVMRdpFile
 
         if ($machine.HostType -eq 'Azure')
         {
-            $cn = Get-LWAzureVMConnectionInfo -ComputerName $machine.Name
+            $cn = Get-LWAzureVMConnectionInfo -ComputerName $machine
             $cmd = 'cmdkey.exe /add:"TERMSRV/{0}" /user:"{1}" /pass:"{2}"' -f $cn.DnsName, $cred.UserName, $cred.GetNetworkCredential().Password
             Invoke-Expression $cmd | Out-Null
 
@@ -2361,14 +2361,22 @@ function Enable-LabMachineAutoShutdown
     [CmdletBinding()]
     param
     (
-        [AutomatedLab.Machine]
+        [string[]]
         $ComputerName,
 
+        [Parameter(Mandatory)]
         [TimeSpan]
-        $Time
+        $Time,
+
+        [string]
+        $TimeZone = (Get-TimeZone).Id
     )
 
     $lab = Get-Lab -ErrorAction Stop
+    if ($ComputerName.Count -eq 0)
+    {
+        $ComputerName = Get-LabVm | Where-Object SkipDeployment -eq $false
+    }
 
     switch ($lab.DefaultVirtualizationEngine)
     {
@@ -2383,14 +2391,15 @@ function Disable-LabMachineAutoShutdown
     [CmdletBinding()]
     param
     (
-        [AutomatedLab.Machine]
-        $ComputerName,
-
-        [TimeSpan]
-        $Time
+        [string[]]
+        $ComputerName
     )
 
     $lab = Get-Lab -ErrorAction Stop
+    if ($ComputerName.Count -eq 0)
+    {
+        $ComputerName = Get-LabVm | Where-Object SkipDeployment -eq $false
+    }
 
     switch ($lab.DefaultVirtualizationEngine)
     {

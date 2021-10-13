@@ -20,7 +20,7 @@
     {
         $line = if ($IsCustomRole.IsPresent)
         {
-            "(Get-LabVM).Where({`$_.PostInstallationActivity.Where({`$_.IsCustomRole}).RoleName -contains '$r'})"
+            "(Get-LabVM).Where({`$_.PreInstallationActivity.Where({`$_.IsCustomRole}).RoleName -contains '$r' -or `$_.PostInstallationActivity.Where({`$_.IsCustomRole}).RoleName -contains '$r'})"
         }
         else
         {

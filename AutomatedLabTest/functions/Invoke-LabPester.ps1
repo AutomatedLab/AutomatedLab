@@ -34,7 +34,17 @@
         $configuration = [PesterConfiguration]::Default
         $configuration.Run.Path = Join-Path -Path $PSCmdlet.MyInvocation.MyCommand.Module.ModuleBase -ChildPath 'internal/tests'
         $configuration.Run.PassThru = $PassThru.IsPresent
-        $configuration.Filter.Tag = [string[]]($Lab.Machines.Roles).Name
+        $tags = [string[]]($Lab.Machines.Roles).Name
+        if ($Lab.Machines.PostInstallationActivity | Where-Object IsCustomRole)
+        {
+            $tags += ($Lab.Machines.PostInstallationActivity | Where-Object IsCustomRole).RoleName
+        }
+        if ($Lab.Machines.PreInstallationActivity | Where-Object IsCustomRole)
+        {
+            $tags += ($Lab.Machines.PreInstallationActivity | Where-Object IsCustomRole).RoleName
+        }
+
+        $configuration.Filter.Tag = $tags
         $configuration.Should.ErrorAction = 'Continue'
         $configuration.TestResult.Enabled = $true
         if ($OutputFile)

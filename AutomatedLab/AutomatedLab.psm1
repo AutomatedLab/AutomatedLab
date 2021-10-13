@@ -615,7 +615,19 @@ function Export-Lab
     Remove-Item -Path $lab.DiskDefinitionFiles[0].Path
 
     $lab.Machines.Export($lab.MachineDefinitionFiles[0].Path)
-    $lab.Disks.Export($lab.DiskDefinitionFiles[0].Path)
+    try
+    {
+        $lab.Disks.Export($lab.DiskDefinitionFiles[0].Path)
+    }
+    catch
+    {
+        $tmpList = [AutomatedLab.ListXmlStore[AutomatedLab.Disk]]::new()
+        foreach ($d in $lab.Disks)
+        {
+            $tmpList.Add($d)
+        }
+        $tmpList.Export($lab.DiskDefinitionFiles[0].Path)
+    }
     $lab.Machines.Clear()
     $lab.Disks.Clear()
 
@@ -704,7 +716,6 @@ function Install-Lab
         [switch]$CA,
         [switch]$ADFS,
         [switch]$DSCPullServer,
-        [switch]$ConfigManager2012R2,
         [switch]$VisualStudio,
         [switch]$Office2013,
         [switch]$Office2016,
@@ -719,6 +730,7 @@ function Install-Lab
         [switch]$Scom,
         [switch]$Dynamics,
         [switch]$RemoteDesktop,
+        [switch]$ConfigurationManager,
         [switch]$StartRemainingMachines,
         [switch]$CreateCheckPoints,
         [switch]$InstallRdsCertificates,
@@ -886,6 +898,8 @@ function Install-Lab
 
         Write-ScreenInfo -Message "Machines with RootDC role to be installed: '$((Get-LabVM -Role RootDC).Name -join ', ')'"
         Install-LabRootDcs -CreateCheckPoints:$CreateCheckPoints
+        
+        New-LabADSubnet
 
         # Set account expiration for builtin account and lab domain account
         foreach ($machine in (Get-LabVM -Role RootDC -ErrorAction SilentlyContinue))
@@ -1051,6 +1065,15 @@ function Install-Lab
         if (Get-LabVM -Role SQLServer2019)   { Write-ScreenInfo -Message "Machines to have SQL Server 2019 installed: '$((Get-LabVM -Role SQLServer2019).Name -join ', ')'" }
         Install-LabSqlServers -CreateCheckPoints:$CreateCheckPoints
 
+        Write-ScreenInfo -Message 'Done' -TaskEnd
+    }
+
+    if (($ConfigurationManager -or $performAll) -and (Get-LabVm -Role ConfigurationManager -Filter {-not $_.SkipDeployment}))
+    {
+        Write-ScreenInfo -Message 'Deploying System Center Configuration Manager' -TaskStart
+        $jobs = Invoke-LabCommand -PreInstallationActivity -ActivityName 'Pre-installation' -ComputerName $(Get-LabVM -Role ConfigurationManager | Where-Object { -not $_.SkipDeployment }) -PassThru -NoDisplay
+        $jobs | Where-Object { $_ -is [System.Management.Automation.Job] } | Wait-Job | Out-Null
+        Install-LabConfigurationManager
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
@@ -1281,7 +1304,7 @@ function Install-Lab
         Start-LabVM -All -DelayBetweenComputers $DelayBetweenComputers -ProgressIndicator 30 -TimeoutInMinutes $timeoutRemaining -Wait
 
         $userName = (Get-Lab).DefaultInstallationCredential.UserName
-        $nonDomainControllers = Get-LabVM -Filter { $_.Roles.Name -notcontains 'RootDc' -and $_.RolesName -notcontains 'DC' -and $_.RolesName -notcontains 'FirstChildDc' }
+        $nonDomainControllers = Get-LabVM -Filter { $_.Roles.Name -notcontains 'RootDc' -and $_.Roles.Name -notcontains 'DC' -and $_.Roles.Name -notcontains 'FirstChildDc' -and -not $_.SkipDeployment }
         if ($nonDomainControllers) {
             Invoke-LabCommand -ActivityName 'Setting PasswordNeverExpires for local deployment accounts' -ComputerName $nonDomainControllers -ScriptBlock {
                 # Still supporting ANCIENT server 2008 R2 with it's lack of CIM cmdlets :'(
@@ -3267,7 +3290,7 @@ function Show-LabDeploymentSummary
         }
 
         Write-ScreenInfo -Message '------------------------- Virtual Machine Summary -------------------------'
-        $vmInfo = Get-LabVM -IncludeLinux | Format-Table -Property Name, DomainName, IpAddress, Roles, OperatingSystem,
+        $vmInfo = Get-LabVM -IncludeLinux | Format-Table -Property Name, DomainName, IpV4Address, Roles, OperatingSystem,
         @{ Name = 'Local Admin'; Expression = { $_.InstallationUser.UserName } },
         @{ Name = 'Password'; Expression = { $_.InstallationUser.Password } } -AutoSize |
         Out-String
