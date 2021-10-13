@@ -10,6 +10,7 @@
 - Configuration Manager custom role(s) converted to built-in role
   -  Thanks to the excellent work of @codaamok we were able to include Configuration Manager in our built-in roles
 - Deployment validation now really includes hook for Custom Roles
+- Windows 11 GLVM keys added
 
 ### Bugs
 
