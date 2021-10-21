@@ -242,7 +242,7 @@ function Start-ExchangeInstallation
     {
         $disk = Mount-LabIsoImage -ComputerName $prepMachine -IsoPath $exchangeInstallFile.FullName -PassThru -SupressOutput
 
-        $commandLine = '/InstallWindowsComponents /PrepareSchema /IAcceptExchangeServerLicenseTerms'
+        $commandLine = '/InstallWindowsComponents /PrepareSchema /IAcceptExchangeServerLicenseTerms_DiagnosticDataON'
         $result = Start-ExchangeInstallSequence -Activity 'Exchange PrepareSchema' -ComputerName $prepMachine -CommandLine $commandLine -ErrorAction Stop
         Set-Variable -Name "AL_Result_PrepareSchema_$prepMachine" -Scope Global -Value $result -Force
 
@@ -254,7 +254,7 @@ function Start-ExchangeInstallation
     {
         $disk = Mount-LabIsoImage -ComputerName $prepMachine -IsoPath $exchangeInstallFile.FullName -PassThru -SupressOutput
 
-        $commandLine = '/PrepareAD /OrganizationName:"{0}" /IAcceptExchangeServerLicenseTerms' -f $OrganizationName
+        $commandLine = '/PrepareAD /OrganizationName:"{0}" /IAcceptExchangeServerLicenseTerms_DiagnosticDataON' -f $OrganizationName
         $result = Start-ExchangeInstallSequence -Activity 'Exchange PrepareAD' -ComputerName $prepMachine -CommandLine $commandLine -ErrorAction Stop
         Set-Variable -Name "AL_Result_PrepareAD_$prepMachine" -Scope Global -Value $result -Force
 
@@ -266,7 +266,7 @@ function Start-ExchangeInstallation
     {
         $disk = Mount-LabIsoImage -ComputerName $prepMachine -IsoPath $exchangeInstallFile.FullName -PassThru -SupressOutput
 
-        $commandLine = '/PrepareAllDomains /IAcceptExchangeServerLicenseTerms'
+        $commandLine = '/PrepareAllDomains /IAcceptExchangeServerLicenseTerms_DiagnosticDataON'
         $result = Start-ExchangeInstallSequence -Activity 'Exchange PrepareAllDomains' -ComputerName $prepMachine -CommandLine $commandLine -ErrorAction Stop
         Set-Variable -Name "AL_Result_AL_Result_PrepareAllDomains_$prepMachine" -Scope Global -Value $result -Force
 
@@ -293,7 +293,7 @@ function Start-ExchangeInstallation
         $disk = Mount-LabIsoImage -ComputerName $prepMachine -IsoPath $exchangeInstallFile.FullName -PassThru -SupressOutput
 
         #Actual Exchange Installaton
-        $commandLine = '/Mode:Install /Roles:mb,mt /InstallWindowsComponents /OrganizationName:"{0}" /IAcceptExchangeServerLicenseTerms' -f $OrganizationName
+        $commandLine = '/Mode:Install /Roles:mb,mt /InstallWindowsComponents /OrganizationName:"{0}" /IAcceptExchangeServerLicenseTerms_DiagnosticDataON' -f $OrganizationName
         $result = Start-ExchangeInstallSequence -Activity 'Exchange Components' -ComputerName $vm -CommandLine $commandLine -ErrorAction Stop
         Set-Variable -Name "AL_Result_ExchangeInstall_$vm" -Value $result -Scope Global
 
