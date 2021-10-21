@@ -1881,11 +1881,11 @@ function Get-LabVM
             $result
         }
         
-        foreach ($machine in $result)
+        foreach ($machine in ($result | Where-Object HostType -eq 'HyperV'))
         {
             if ($machine.Disks.Count -gt 1)
             {
-                $machine.Disks = Get-LabVHDX -Name $machine.Disks.Name
+                $machine.Disks = Get-LabVHDX -Name $machine.Disks.Name -ErrorAction SilentlyContinue
             }
         }
 
