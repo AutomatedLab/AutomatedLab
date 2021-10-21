@@ -24,6 +24,9 @@ function Download-ExchangeSources
     $script:cppredist642013InstallFile = Get-LabInternetFile -Uri $cppredist642013DownloadLink -Path $downloadTargetFolder -FileName vcredist_x64_2013.exe -PassThru -ErrorAction Stop
     $script:cppredist322013InstallFile = Get-LabInternetFile -Uri $cppredist322013DownloadLink -Path $downloadTargetFolder -FileName vcredist_x86_2013.exe -PassThru -ErrorAction Stop
 
+    Write-ScreenInfo -Message "Downloading IIS URL Rewrite module from '$iisUrlRewriteDownloadlink'"
+    $script:iisUrlRewriteInstallFile = Get-LabInternetFile -Uri $iisUrlRewriteDownloadlink -Path $downloadTargetFolder -PassThru -ErrorAction Stop
+
     Write-ScreenInfo 'finished' -TaskEnd
 }
 
@@ -71,6 +74,9 @@ function Install-ExchangeRequirements
 
     $jobs = @()
     $jobs += Install-LabSoftwarePackage -ComputerName $vm -Path $ucmaInstallFile.FullName -CommandLine '/Quiet /Log C:\DeployDebug\ucma.log' -AsJob -PassThru -NoDisplay
+    Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator 20 -NoNewLine
+
+    $jobs += Install-LabSoftwarePackage -ComputerName $vm -Path $iisUrlRewriteInstallFile.FullName -CommandLine '/Quiet /Log C:\DeployDebug\IisurlRewrite.log' -AsJob -PassThru -NoDisplay
     Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator 20 -NoNewLine
 
     foreach ($machine in $machines)
@@ -139,7 +145,7 @@ function Start-ExchangeInstallSequence
 
             try
             {
-                Write-ScreenInfo "Calling activity '$Activity' agian."
+                Write-ScreenInfo "Calling activity '$Activity' again."
                 $job = Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath "$($disk.DriveLetter)\setup.exe" -CommandLine $CommandLine `
                     -ExpectedReturnCodes 1 -AsJob -NoDisplay -PassThru -ErrorAction Stop -ErrorVariable exchangeError
                 $result = Wait-LWLabJob -Job $job -NoDisplay -NoNewLine -ProgressIndicator 15 -PassThru -ErrorVariable jobError
@@ -289,6 +295,7 @@ $exchangeDownloadLink = Get-LabConfigurationItem -Name Exchange2016DownloadUrl
 $dotnetDownloadLink = Get-LabConfigurationItem -Name dotnet48DownloadLink
 $cppredist642013DownloadLink = Get-LabConfigurationItem -Name cppredist64_2013
 $cppredist322013DownloadLink = Get-LabConfigurationItem -Name cppredist32_2013
+$iisUrlRewriteDownloadlink = Get-LabConfigurationItem -Name IisUrlRewriteDownloadUrl
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------
 

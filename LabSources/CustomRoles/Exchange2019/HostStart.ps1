@@ -24,6 +24,9 @@ function Download-ExchangeSources
     Write-ScreenInfo -Message "Downloading the Visual C++ 2013 Redistributable Package from '$VC2013RedristroDownloadLink'"
     $script:vc2013InstallFile = Get-LabInternetFile -Uri $VC2013RedristroDownloadLink -Path $downloadTargetFolder -FileName vcredist_x64_2013.exe -PassThru -ErrorAction Stop
 
+    Write-ScreenInfo -Message "Downloading IIS URL Rewrite module from '$iisUrlRewriteDownloadlink'"
+    $script:iisUrlRewriteInstallFile = Get-LabInternetFile -Uri $iisUrlRewriteDownloadlink -Path $downloadTargetFolder -PassThru -ErrorAction Stop
+
     Write-ScreenInfo 'finished' -TaskEnd
 }
 
@@ -106,6 +109,9 @@ function Install-ExchangeRequirements
             Write-ScreenInfo 'Visual C++ 2012 & 2013 redistributed files installed'
         }
 
+        Write-ScreenInfo "Installing IIS URL Rewrite module on '$machine'" -Type Verbose
+        $jobs += Install-LabSoftwarePackage -ComputerName $machine -Path $iisUrlRewriteInstallFile.FullName -CommandLine '/Quiet /Log C:\DeployDebug\IisurlRewrite.log' -AsJob -PassThru -NoDisplay
+        Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator 20 -NoNewLine
     }
 
     Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator 20 -NoNewLine
@@ -304,6 +310,8 @@ $exchangeDownloadLink = Get-LabConfigurationItem -Name Exchange2019DownloadUrl
 $dotnet48DownloadLink = Get-LabConfigurationItem -Name dotnet48DownloadLink
 $VC2013RedristroDownloadLink = Get-LabConfigurationItem -Name cppredist64_2013
 $VC2012RedristroDownloadLink = Get-LabConfigurationItem -Name cppredist64_2012
+$iisUrlRewriteDownloadlink = Get-LabConfigurationItem -Name IisUrlRewriteDownloadUrl
+
 #----------------------------------------------------------------------------------------------------------------------------------------------------
 
 $lab = Import-Lab -Name $data.Name -NoValidation -NoDisplay -PassThru
