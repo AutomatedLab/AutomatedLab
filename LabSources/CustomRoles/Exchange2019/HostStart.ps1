@@ -53,9 +53,9 @@ function Add-ExchangeAdRights
 
 function Install-ExchangeWindowsFeature
 {
-    Write-ScreenInfo "Installing Windows Features Server-Media-Foundation on '$vm'"  -TaskStart -NoNewLine
+    Write-ScreenInfo "Installing Windows Features Web-Server, Web-Mgmt-Service, Server-Media-Foundation and RSAT on '$vm'"  -TaskStart -NoNewLine
 
-    $jobs += Install-LabWindowsFeature -ComputerName $vm -FeatureName Server-Media-Foundation, RSAT -UseLocalCredential -AsJob -PassThru -NoDisplay
+    $jobs += Install-LabWindowsFeature -ComputerName $vm -FeatureName Web-Server, Web-Mgmt-Service, Server-Media-Foundation, RSAT -UseLocalCredential -AsJob -PassThru -NoDisplay
     Wait-LWLabJob -Job $jobs -NoDisplay
     Restart-LabVM -ComputerName $vm -Wait
 
@@ -83,6 +83,10 @@ function Install-ExchangeRequirements
         Dismount-LabIsoImage -ComputerName $vm
     }
 
+    Write-ScreenInfo "Installing IIS URL Rewrite module on '$machine'" -Type Verbose
+    $jobs += Install-LabSoftwarePackage -ComputerName $machine -Path $iisUrlRewriteInstallFile.FullName -CommandLine '/Quiet /Log C:\DeployDebug\IisurlRewrite.log' -AsScheduledJob -UseExplicitCredentialsForScheduledJob -UseShellExecute -PassThru
+    Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator 20 -NoNewLine
+
     foreach ($machine in $machines)
     {
         $dotnetFrameworkVersion = Get-LabVMDotNetFrameworkVersion -ComputerName $machine #-NoDisplay
@@ -108,10 +112,6 @@ function Install-ExchangeRequirements
         {
             Write-ScreenInfo 'Visual C++ 2012 & 2013 redistributed files installed'
         }
-
-        Write-ScreenInfo "Installing IIS URL Rewrite module on '$machine'" -Type Verbose
-        $jobs += Install-LabSoftwarePackage -ComputerName $machine -Path $iisUrlRewriteInstallFile.FullName -CommandLine '/Quiet /Log C:\DeployDebug\IisurlRewrite.log' -AsScheduledJob -UseExplicitCredentialsForScheduledJob -UseShellExecute -PassThru
-        Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator 20 -NoNewLine
     }
 
     Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator 20 -NoNewLine

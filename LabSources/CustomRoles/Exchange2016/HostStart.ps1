@@ -53,8 +53,8 @@ function Add-ExchangeAdRights
 
 function Install-ExchangeWindowsFeature
 {
-    Write-ScreenInfo "Installing Windows Features Server-Media-Foundation, RSAT on '$vm'"  -TaskStart -NoNewLine
-    $jobs += Install-LabWindowsFeature -ComputerName $vm -FeatureName Server-Media-Foundation, RSAT -UseLocalCredential -AsJob -PassThru -NoDisplay
+    Write-ScreenInfo "Installing Windows Features Web-Server, Web-Mgmt-Service, Server-Media-Foundation, RSAT on '$vm'"  -TaskStart -NoNewLine
+    $jobs += Install-LabWindowsFeature -ComputerName $vm -FeatureName Web-Server, Web-Mgmt-Service, Server-Media-Foundation, RSAT -UseLocalCredential -AsJob -PassThru -NoDisplay
     Wait-LWLabJob -Job $jobs -NoDisplay
     Restart-LabVM -ComputerName $vm -Wait
     Write-ScreenInfo 'finished' -TaskEnd
