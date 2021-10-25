@@ -24,6 +24,9 @@ function Download-ExchangeSources
     Write-ScreenInfo -Message "Downloading the Visual C++ 2013 Redistributable Package from '$VC2013RedristroDownloadLink'"
     $script:vc2013InstallFile = Get-LabInternetFile -Uri $VC2013RedristroDownloadLink -Path $downloadTargetFolder -FileName vcredist_x64_2013.exe -PassThru -ErrorAction Stop
 
+    Write-ScreenInfo -Message "Downloading IIS URL Rewrite module from '$iisUrlRewriteDownloadlink'"
+    $script:iisUrlRewriteInstallFile = Get-LabInternetFile -Uri $iisUrlRewriteDownloadlink -Path $downloadTargetFolder -PassThru -ErrorAction Stop
+
     Write-ScreenInfo 'finished' -TaskEnd
 }
 
@@ -50,9 +53,9 @@ function Add-ExchangeAdRights
 
 function Install-ExchangeWindowsFeature
 {
-    Write-ScreenInfo "Installing Windows Features Server-Media-Foundation on '$vm'"  -TaskStart -NoNewLine
+    Write-ScreenInfo "Installing Windows Features Web-Server, Web-Mgmt-Service, Server-Media-Foundation and RSAT on '$vm'"  -TaskStart -NoNewLine
 
-    $jobs += Install-LabWindowsFeature -ComputerName $vm -FeatureName Server-Media-Foundation, RSAT -UseLocalCredential -AsJob -PassThru -NoDisplay
+    $jobs += Install-LabWindowsFeature -ComputerName $vm -FeatureName Web-Server, Web-Mgmt-Service, Server-Media-Foundation, RSAT -UseLocalCredential -AsJob -PassThru -NoDisplay
     Wait-LWLabJob -Job $jobs -NoDisplay
     Restart-LabVM -ComputerName $vm -Wait
 
@@ -80,6 +83,10 @@ function Install-ExchangeRequirements
         Dismount-LabIsoImage -ComputerName $vm
     }
 
+    Write-ScreenInfo "Installing IIS URL Rewrite module on '$machine'" -Type Verbose
+    $jobs += Install-LabSoftwarePackage -ComputerName $machine -Path $iisUrlRewriteInstallFile.FullName -CommandLine '/Quiet /Log C:\DeployDebug\IisurlRewrite.log' -AsScheduledJob -UseExplicitCredentialsForScheduledJob -UseShellExecute -PassThru
+    Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator 20 -NoNewLine
+
     foreach ($machine in $machines)
     {
         $dotnetFrameworkVersion = Get-LabVMDotNetFrameworkVersion -ComputerName $machine #-NoDisplay
@@ -105,7 +112,6 @@ function Install-ExchangeRequirements
         {
             Write-ScreenInfo 'Visual C++ 2012 & 2013 redistributed files installed'
         }
-
     }
 
     Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator 20 -NoNewLine
@@ -236,7 +242,7 @@ function Start-ExchangeInstallation
     {
         $disk = Mount-LabIsoImage -ComputerName $prepMachine -IsoPath $exchangeInstallFile.FullName -PassThru -SupressOutput
 
-        $commandLine = '/InstallWindowsComponents /PrepareSchema /IAcceptExchangeServerLicenseTerms'
+        $commandLine = '/InstallWindowsComponents /PrepareSchema /IAcceptExchangeServerLicenseTerms_DiagnosticDataON'
         $result = Start-ExchangeInstallSequence -Activity 'Exchange PrepareSchema' -ComputerName $prepMachine -CommandLine $commandLine -ErrorAction Stop
         Set-Variable -Name "AL_Result_PrepareSchema_$prepMachine" -Scope Global -Value $result -Force
 
@@ -248,7 +254,7 @@ function Start-ExchangeInstallation
     {
         $disk = Mount-LabIsoImage -ComputerName $prepMachine -IsoPath $exchangeInstallFile.FullName -PassThru -SupressOutput
 
-        $commandLine = '/PrepareAD /OrganizationName:"{0}" /IAcceptExchangeServerLicenseTerms' -f $OrganizationName
+        $commandLine = '/PrepareAD /OrganizationName:"{0}" /IAcceptExchangeServerLicenseTerms_DiagnosticDataON' -f $OrganizationName
         $result = Start-ExchangeInstallSequence -Activity 'Exchange PrepareAD' -ComputerName $prepMachine -CommandLine $commandLine -ErrorAction Stop
         Set-Variable -Name "AL_Result_PrepareAD_$prepMachine" -Scope Global -Value $result -Force
 
@@ -260,7 +266,7 @@ function Start-ExchangeInstallation
     {
         $disk = Mount-LabIsoImage -ComputerName $prepMachine -IsoPath $exchangeInstallFile.FullName -PassThru -SupressOutput
 
-        $commandLine = '/PrepareAllDomains /IAcceptExchangeServerLicenseTerms'
+        $commandLine = '/PrepareAllDomains /IAcceptExchangeServerLicenseTerms_DiagnosticDataON'
         $result = Start-ExchangeInstallSequence -Activity 'Exchange PrepareAllDomains' -ComputerName $prepMachine -CommandLine $commandLine -ErrorAction Stop
         Set-Variable -Name "AL_Result_AL_Result_PrepareAllDomains_$prepMachine" -Scope Global -Value $result -Force
 
@@ -287,7 +293,7 @@ function Start-ExchangeInstallation
         $disk = Mount-LabIsoImage -ComputerName $prepMachine -IsoPath $exchangeInstallFile.FullName -PassThru -SupressOutput
 
         #Actual Exchange Installaton
-        $commandLine = '/Mode:Install /Roles:mb,mt /InstallWindowsComponents /OrganizationName:"{0}" /IAcceptExchangeServerLicenseTerms' -f $OrganizationName
+        $commandLine = '/Mode:Install /Roles:mb,mt /InstallWindowsComponents /OrganizationName:"{0}" /IAcceptExchangeServerLicenseTerms_DiagnosticDataON' -f $OrganizationName
         $result = Start-ExchangeInstallSequence -Activity 'Exchange Components' -ComputerName $vm -CommandLine $commandLine -ErrorAction Stop
         Set-Variable -Name "AL_Result_ExchangeInstall_$vm" -Value $result -Scope Global
 
@@ -304,6 +310,8 @@ $exchangeDownloadLink = Get-LabConfigurationItem -Name Exchange2019DownloadUrl
 $dotnet48DownloadLink = Get-LabConfigurationItem -Name dotnet48DownloadLink
 $VC2013RedristroDownloadLink = Get-LabConfigurationItem -Name cppredist64_2013
 $VC2012RedristroDownloadLink = Get-LabConfigurationItem -Name cppredist64_2012
+$iisUrlRewriteDownloadlink = Get-LabConfigurationItem -Name IisUrlRewriteDownloadUrl
+
 #----------------------------------------------------------------------------------------------------------------------------------------------------
 
 $lab = Import-Lab -Name $data.Name -NoValidation -NoDisplay -PassThru
