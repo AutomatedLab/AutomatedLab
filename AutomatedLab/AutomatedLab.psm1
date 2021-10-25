@@ -629,7 +629,10 @@ function Export-Lab
         $tmpList.Export($lab.DiskDefinitionFiles[0].Path)
     }
     $lab.Machines.Clear()
-    $lab.Disks.Clear()
+    if ($lab.Disks)
+    {
+        $lab.Disks.Clear()
+    }
 
     $lab.Export($lab.LabFilePath)
 
