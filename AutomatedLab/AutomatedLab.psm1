@@ -548,7 +548,7 @@ function Import-Lab
         try
         {
             $Script:data.Disks = $importMethodInfo.Invoke($null, $Script:data.DiskDefinitionFiles[0].Path)
-            $Script:data.Disks = Get-LabVHDX -All
+            if ($script:lab.DefaultVirtualizationEngine -eq 'HyperV') { $Script:data.Disks = Get-LabVHDX -All }
 
             if ($Script:data.DiskDefinitionFiles.Count -gt 1)
             {
