@@ -84,7 +84,7 @@ function Install-ExchangeRequirements
     }
 
     Write-ScreenInfo "Installing IIS URL Rewrite module on '$machine'" -Type Verbose
-    $jobs += Install-LabSoftwarePackage -ComputerName $machine -Path $iisUrlRewriteInstallFile.FullName -CommandLine '/Quiet /Log C:\DeployDebug\IisurlRewrite.log' -AsScheduledJob -UseExplicitCredentialsForScheduledJob -UseShellExecute -PassThru
+    $jobs += Install-LabSoftwarePackage -ComputerName $machine -Path $iisUrlRewriteInstallFile.FullName -CommandLine '/Quiet /Log C:\DeployDebug\IisurlRewrite.log' -AsJob -AsScheduledJob -UseShellExecute -PassThru
     Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator 20 -NoNewLine
 
     foreach ($machine in $machines)

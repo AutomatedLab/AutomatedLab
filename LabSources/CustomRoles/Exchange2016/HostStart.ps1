@@ -76,7 +76,7 @@ function Install-ExchangeRequirements
     $jobs += Install-LabSoftwarePackage -ComputerName $vm -Path $ucmaInstallFile.FullName -CommandLine '/Quiet /Log C:\DeployDebug\ucma.log' -AsJob -PassThru -NoDisplay
     Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator 20 -NoNewLine
 
-    $jobs += Install-LabSoftwarePackage -ComputerName $vm -Path $iisUrlRewriteInstallFile.FullName -CommandLine '/Quiet /Log C:\DeployDebug\IisurlRewrite.log' -AsScheduledJob -UseExplicitCredentialsForScheduledJob -UseShellExecute -PassThru
+    $jobs += Install-LabSoftwarePackage -ComputerName $vm -Path $iisUrlRewriteInstallFile.FullName -CommandLine '/Quiet /Log C:\DeployDebug\IisurlRewrite.log' -AsJob -AsScheduledJob -UseShellExecute -PassThru
     Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator 20 -NoNewLine
 
     foreach ($machine in $machines)
