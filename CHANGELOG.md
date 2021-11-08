@@ -5,6 +5,7 @@
 ### Enhancements
 
 ### Bugs
+- Fixing issue with data disks on Azure
 
 ## 5.40.0 (2021-10-13)
 
