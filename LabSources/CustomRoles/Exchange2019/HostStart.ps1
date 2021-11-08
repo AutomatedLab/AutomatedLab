@@ -83,10 +83,6 @@ function Install-ExchangeRequirements
         Dismount-LabIsoImage -ComputerName $vm
     }
 
-    Write-ScreenInfo "Installing IIS URL Rewrite module on '$machine'" -Type Verbose
-    $jobs += Install-LabSoftwarePackage -ComputerName $machine -Path $iisUrlRewriteInstallFile.FullName -CommandLine '/Quiet /Log C:\DeployDebug\IisurlRewrite.log' -AsJob -AsScheduledJob -UseShellExecute -PassThru
-    Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator 20 -NoNewLine
-
     foreach ($machine in $machines)
     {
         $dotnetFrameworkVersion = Get-LabVMDotNetFrameworkVersion -ComputerName $machine #-NoDisplay
@@ -112,6 +108,10 @@ function Install-ExchangeRequirements
         {
             Write-ScreenInfo 'Visual C++ 2012 & 2013 redistributed files installed'
         }
+
+        Write-ScreenInfo "Installing IIS URL Rewrite module on '$machine'" -Type Verbose
+        $jobs += Install-LabSoftwarePackage -ComputerName $machine -Path $iisUrlRewriteInstallFile.FullName -CommandLine '/Quiet /Log C:\DeployDebug\IisurlRewrite.log' -AsJob -AsScheduledJob -UseShellExecute -UseExplicitCredentialsForScheduledJob -PassThru
+        Wait-LWLabJob -Job $jobs -ProgressIndicator 20 -NoNewLine
     }
 
     Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator 20 -NoNewLine
