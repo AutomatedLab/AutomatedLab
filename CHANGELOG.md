@@ -6,6 +6,7 @@
 
 ### Bugs
 - Fixing issue with data disks on Azure
+- Fixed a connection bug in 'Copy-LabALCommon' with CredSsp
 
 ## 5.40.0 (2021-10-13)
 
