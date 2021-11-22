@@ -3,6 +3,8 @@
 ## Unreleased (yyyy-MM-dd)
 
 ### Enhancements
+- Performance improvements of DSC Pullserver reports from DscWorkshop
+  - precalculation of values from JSON based status reports at insert time 
 
 ### Bugs
 - Fixing issue with data disks on Azure
