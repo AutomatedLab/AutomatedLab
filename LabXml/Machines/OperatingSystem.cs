@@ -28,12 +28,16 @@ namespace AutomatedLab
             {"2016-Datacenter-Server-Core", "Windows Server 2016 Datacenter" },
             {"2019-Datacenter", "Windows Server 2019 Datacenter (Desktop Experience)" },
             {"2019-Datacenter-Core", "Windows Server 2019 Datacenter" },
+            {"2022-datacenter", "Windows Server 2022 Datacenter (Desktop Experience)" },
+            {"2022-datacenter-Core", "Windows Server 2022 Datacenter" },
             {"Datacenter-Core-1803-with-Containers-smalldisk", "Windows Server Datacenter" },
             {"Win7-SP1-Ent-N-x64", "Windows 7 Enterprise N" },
             {"Win81-Ent-N-x64", "Windows 8.1 Enterprise N" },
             {"Windows-10-N-x64", "Windows 10 Enterprise N" },
             {"20h2-ent", "Windows 10 Enterprise" },
-            {"20h2-pro", "Windows 10 Pro" }
+            {"20h2-pro", "Windows 10 Pro" },
+            {"win11-21h2-ent", "Windows 11 Enterprise" },
+            {"win11-21h2-pro", "Windows 11 Pro" }
             };
         private Dictionary<string, string> isoNameToAzureSku;
 
