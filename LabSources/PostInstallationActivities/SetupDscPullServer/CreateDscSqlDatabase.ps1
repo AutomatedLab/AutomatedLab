@@ -238,7 +238,9 @@ CREATE TABLE [dbo].[TaggingData](
 	[AgentId] [nvarchar](255) NOT NULL,
 	[Environment] [nvarchar](255) NULL,
 	[BuildNumber] [int] NOT NULL,
-	[GitCommitId] [nvarchar](255) NOT NULL,
+	[GitCommitId] [nvarchar](255) NULL,
+	[NodeVersion] [nvarchar](50) NULL,
+	[NodeRole] [nvarchar](50) NULL,
 	[Version] [nvarchar](50) NOT NULL,
 	[BuildDate] [datetime] NOT NULL,
 	[Timestamp] [datetime] NOT NULL,
@@ -573,6 +575,8 @@ SELECT rg.NodeName
       ,tg.[Environment]
       ,tg.[BuildNumber]
       ,tg.[GitCommitId]
+      ,tg.[NodeVersion]
+      ,tg.[NodeRole]
       ,tg.[Version]
       ,tg.[BuildDate]
       ,tg.[Timestamp]
