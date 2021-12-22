@@ -8,7 +8,7 @@ class LabHost : SHiPSDirectory {
     }
 
     [object[]] GetChildItem() {
-        if (-not (Get-Module -ListAvailable (AutomatedLab)))
+        if (-not (Get-Module -ListAvailable AutomatedLab))
         {
             Write-Warning -Message 'AutomatedLab is not available - using its SHiPS provider will not work this way'
             return $null
@@ -29,7 +29,7 @@ class Lab : SHiPSDirectory {
     }
 
     [object[]] GetChildItem() {
-        Import-Lab -Name $this.name -NoValidation
+        Import-Lab -Name $this.name -NoValidation -NoDisplay
         $obj = @()
 
         $obj += [LabMachine]::new('Machines')
