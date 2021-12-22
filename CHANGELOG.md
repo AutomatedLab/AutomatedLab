@@ -7,10 +7,12 @@
   - precalculation of values from JSON based status reports at insert time 
 - Added 2022 and Win11 to Azure image name table
 - Add new columns to TaggingData table and view of DSC Pullserver database.
+- Enabled pipelining for Remove-Lab, Start/Stop/Restart/Wait/Remove-LabVm, Wait-LabVMRestart, Wait-LabVMShutdown
 
 ### Bugs
 - Fixing issue with data disks on Azure
 - Fixed a connection bug in 'Copy-LabALCommon' with CredSsp
+- Fixed issue with AutomatedLab.Ships where folder browsing would not work
 
 ## 5.40.0 (2021-10-13)
 
