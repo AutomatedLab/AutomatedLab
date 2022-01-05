@@ -18,6 +18,7 @@ To manually create network definitions in order to have specific network address
 ```
 
 Additionally, the parameters AzureProperties and HyperVProperties can be used to pass parameter hashtables. The following are valid keys that can be used as properties for AzureProperties:
+
 * SubnetName: The name of the subnet to create in the virtual network. AL does not segment virtual networks into subnets. One virtual network per network definition will be created
 * SubnetAddressPrefix: The address prefix (e.g. 24) of the subnet that will be created.
 * LocationName: The Azure location name (e.g. westeurope). Bear in mind that this should not differ from your lab's default location.
@@ -25,6 +26,7 @@ Additionally, the parameters AzureProperties and HyperVProperties can be used to
 * ConnectToVnets: Connections to other VNETs by leveraging VNET peering. When connecting two or more lab networks through this parameter, please also specifiy this for all additional network definitions
 
 For HyperV, the following properties are valid:
+
 * SwitchType: Internal or External. Defaults to internal. If External is specified, AdapterName needs to be set as well
 * AdapterName: The network adapter of the OS that will bridge the connection to the external network
 
