@@ -39,11 +39,13 @@ The just press the run button or hit F5 to start the deployment.
 
 This is what is going to happen. Many things happen automatically but can be customized:
 * AutomatedLab starts a new lab named "GettingStarted". The lab defininition will be stored in C:\ProgramData\AutomatedLab\Labs\GettingStarted. The location can be customized ["Advanced AutomatedLab Configurations"](../Advanced/automatedlabconfig.md) with the setting LabAppDataRoot.
-* AL will update download the SysInternals tools and put them into the LabSources folder.
-* AL looks for an ISO file that contains the specified OS. If the ISO file cannot be found, the deployment stops.
-* AL adds the one and only machine to the lab and recognizes that no network was defined. In this case, AL creates a virtual switch automatically and uses an free IP range.
-* The AL measures the disk speed and chooses the fastet drive for the lab, as no location is defined in the call to "New-LabDefinition". In my case, it chooses D. Measuring is done only once and the result is cached.
-* Then the actual deployment starts. AL creates  
+
+  * AL will update download the SysInternals tools and put them into the LabSources folder.
+  * AL looks for an ISO file that contains the specified OS. If the ISO file cannot be found, the deployment stops.
+  * AL adds the one and only machine to the lab and recognizes that no network was defined. In this case, AL creates a virtual switch automatically and uses an free IP range.
+  * The AL measures the disk speed and chooses the fastet drive for the lab, as no location is defined in the call to "New-LabDefinition". In my case, it chooses D. Measuring is done only once and the result is cached.
+  * Then the actual deployment starts. AL creates
+
     1. The virtual switch
     2. Then it creates the a base image for the operating system that is shared among all machines with the same OS.
     3. Afterwards the VM is created and started
