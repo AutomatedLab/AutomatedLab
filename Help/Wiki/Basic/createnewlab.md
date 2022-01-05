@@ -3,7 +3,7 @@ Creating your lab starts with New-LabDefinition. This cmdlet creates a container
 It is mandatory to define the name of the lab and the virtualization engine. So far AL supports Hyper-V and Azure.
 
 ``` powershell
-New-LabDefinition -Name $labName -DefaultVirtualizationEngine HyperV -Path D:\AutomatedLabs -VmPath D:\AutomatedLab-VMs
+New-LabDefinition -Name $labName -DefaultVirtualizationEngine HyperV -VmPath D:\AutomatedLab-VMs
 ```
 
 - **New-LabDefinition** Parameters
