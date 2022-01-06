@@ -17,7 +17,7 @@ The following command copies a file to the specified machine trying SMB first an
 Copy-LabFileItem -Path 'D:\170630 AL' -ComputerName wServer1 -DestinationFolderPath C:\Temp
 ```
 
-The following samples are Using the PSFileTransfer cmdlets directly. These do not support SMB and send the files over the PSSession right away. The Force switch creates the target folder if not already existing.
+The following samples are using the PSFileTransfer cmdlets directly. These do not support SMB and send the files over the PSSession right away. The Force switch creates the target folder if not already existing.
 ```
 Note: It is recommended to use Copy-LabFileItem as SMB is much faster
 then sending a byte array over WinRM.
@@ -41,7 +41,7 @@ Receive-Directory -SourceFolderPath 'C:\Program Files\Wireshark' -DestinationFol
 ## Internals
 Hyper-V machines are usually reachable from the host by SMB. However, it is not sure or pretty unlikely if the other way works as well, accessing the host machines from the VM.
 
-Copy-LabFileItem always tries SMB first. If this does not work, it uses the PowerShell session and transfers the file as a Byte[]. Reading and writing a file as a byte array, serializing the by byte array and sending it over the network is much slower than SMB but totally sufficient for most scenarios. If you transfer large files, make sure SMB works from the host to the VMs.
+Copy-LabFileItem always tries SMB first. If this does not work, it uses the PowerShell session and transfers the file as a Byte[]. Reading and writing a file as a byte array, serializing the byte array and sending it over the network is much slower than SMB but totally sufficient for most scenarios. If you transfer large files, make sure SMB works from the host to the VMs.
 
 ```
 Note: All the functions of the module PSFileTransfer do not rely on other modules

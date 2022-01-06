@@ -1,14 +1,14 @@
 ## Summary
-Installing software on lab machines is almost as easy as installing <TODO Windows Features>.  And there are similar challenges. But additionally, there to the challenges some installers have an extra demand, like the .net 4.5.2 package that cannot be installed remotely. Like for installing Windows Features AutomatedLab tries to provide a solution that makes this task as simple as possible. It does not matter if the **installation file is already on the VM or on your host machine**. And you do not have to care whether it is a **.exe, .msi or .msu** file, AL will handle the complexity for you. And there is also a very convenient way to work **install stuff from ISOs** mounted to the lab VMs.
+Installing software on lab machines is almost as easy as installing Windows Features.  And there are similar challenges. But additional to the challenges, some installers have an extra demand, like the .NET 4.5.2 package that cannot be installed remotely. Like when installing Windows Features, AutomatedLab tries to provide a solution that makes this task as simple as possible. It does not matter if the **installation file is already on the VM or on your host machine**. And you do not have to care whether it is a **.exe, .msi or .msu** file, AL will handle the complexity for you. And there is also a very convenient way to **install stuff from ISOs** mounted to the lab VMs.
 
 ### Install-LabSoftwarePackage Introduction
 The cmdlet that handles the installation is Install-LabSoftwarePackage. It is designed to work in various scenarios that will be discussed in this article.
 Internally, it uses Invoke-LabCommand again to connect to the lab VMs by using the credentials known to the lab. The files are copied to the lab VMs using Copy-LabFileItem.
 
 ### Install-LabSoftwarePackage Usage
-#### Installing an package that is on the host machine
+#### Installing a package that is on the host machine
 A very simple demonstration of how the cmdlet can help, is installing Notepad++ on a lab VM. Note that $labSources always points to the LabSources folder that is created by AL, so you do not have to provide the full path. This also works on Azure. A lab VM hosted on Azure accesses the share hosted on Azure by default. The Azure LabSources share can be synced with the local one.
-The next command copes the Notepad++.exe file to the VM and invokes the installer. The package must support a silent installation. For Notepad++, you can switch to the silent mode by providing the argument “/S” (case-sensitive).
+The next command copies the Notepad++.exe file to the VM and invokes the installer. The package must support a silent installation. For Notepad++, you can switch to the silent mode by providing the argument “/S” (case-sensitive).
 ``` PowerShell
 Install-LabSoftwarePackage -ComputerName Server1 -Path $labSources\SoftwarePackages\Notepad++.exe -CommandLine /S
 ```
@@ -17,7 +17,7 @@ If you want to install the same package to all machines in a lab, regardless if 
 Install-LabSoftwarePackage -ComputerName (Get-LabVM) -Path $labSources\SoftwarePackages\Notepad++.exe -CommandLine /S
 ```
 #### Installing a package that is on the host machine as scheduled job
-Some software packages are creating headaches, like the .net Framework 4.5.2. The package calls the Windows Update Service which checks if it is called from remote by checking the token for the NETWORK RID, and cancels the installation if that’s the case.
+Some software packages are creating headaches, like the .NET Framework 4.5.2. The package calls the Windows Update Service which checks if it is called remotely by checking the token for the NETWORK RID, and cancels the installation if that’s the case.
 Install-LabSoftwarePackage offers the switch AsScheduledJob to be able to start the installation remotely which then actually runs locally.
 The next example shows how to install .net 4.5.2 on a VM, restart the VM and then install the Windows Management Framework 5.1.
 

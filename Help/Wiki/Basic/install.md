@@ -18,7 +18,7 @@ Set-PSFConfig -Module AutomatedLab -Name LabAppDataRoot -Value /home/youruser/.a
 # Prepare sample content - modify to your needs
 
 # Windows
-New-LabSourcesFolder -Drive C
+New-LabSourcesFolder -DriveLetter C
 
 # Linux
 Set-PSFConfig -Module AutomatedLab -Name LabSourcesLocation -Value /home/youruser/labsources -PassThru | Register-PSFConfig
