@@ -139,7 +139,6 @@ nav:
 - Version history: https://github.com/AutomatedLab/AutomatedLab/blob/master/CHANGELOG.md
 - Module help:
   - AutomatedLab:
-    - Set-LabAutoLogon: AutomatedLab/en-us/Set-LabAutoLogon.md
     - Add-LabAzureSubscription: AutomatedLab/en-us/Add-LabAzureSubscription.md
     - Add-LabCertificate: AutomatedLab/en-us/Add-LabCertificate.md
     - Add-LabVMUserRight: AutomatedLab/en-us/Add-LabVMUserRight.md
