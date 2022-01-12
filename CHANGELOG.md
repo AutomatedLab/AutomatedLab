@@ -8,6 +8,7 @@
 - Added 2022 and Win11 to Azure image name table
 - Add new columns to TaggingData table and view of DSC Pullserver database.
 - Enabled pipelining for Remove-Lab, Start/Stop/Restart/Wait/Remove-LabVm, Wait-LabVMRestart, Wait-LabVMShutdown
+- Pull Server now defaults to HTTPS if CA is deployed, otherwise plain HTTP (Validator removed as well)
 
 ### Bugs
 - Fixing issue with data disks on Azure
