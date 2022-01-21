@@ -1621,7 +1621,7 @@ function Get-LabAvailableOperatingSystem
         }
         else
         {
-            $cachedSkus = $type::ImportFromRegistry('Cache', "$($storeLocationName)OperatingSystems")
+            $cachedSkus = try { $type::ImportFromRegistry('Cache', "$($storeLocationName)OperatingSystems") } catch { }
         }
 
         $type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.OperatingSystem

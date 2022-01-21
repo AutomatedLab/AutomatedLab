@@ -16,6 +16,7 @@
 - Fixed issue with AutomatedLab.Ships where folder browsing would not work
 
 - CustomRole does not pick up configured properties
+- Including ProductKeys file in module build for offline environments
 
 ## 5.40.0 (2021-10-13)
 
