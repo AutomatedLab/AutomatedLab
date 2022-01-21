@@ -152,6 +152,7 @@ Set-PSFConfig -Module 'AutomatedLab' -Name WacDownloadUrl -Value 'http://aka.ms/
 
 #Host Settings
 Set-PSFConfig -Module 'AutomatedLab' -Name DiskDeploymentInProgressPath -Value (Join-Path -Path (Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot) -ChildPath "LabDiskDeploymentInProgress.txt") -Initialize -Validation string -Description 'The file indicating that Hyper-V disks are being configured to reduce disk congestion'
+Set-PSFConfig -Module 'AutomatedLab' -Name SwitchDeploymentInProgressPath -Value (Join-Path -Path (Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot) -ChildPath "VSwitchDeploymentInProgress.txt") -Initialize -Validation string -Description 'The file indicating that VM switches are being deployed in case multiple lab deployments are started in parallel'
 Set-PSFConfig -Module 'AutomatedLab' -Name SkipHostFileModification -Value $false -Initialize -Validation bool -Description 'Indicates that the hosts file should not be modified when deploying a new lab.'
 
 #Azure
