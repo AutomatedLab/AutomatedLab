@@ -8,7 +8,8 @@ schema: 2.0.0
 # Add-UnattendedRenameNetworkAdapters
 
 ## SYNOPSIS
-Add script to rename network adapters. Windows only.
+Add script to rename network adapters.
+Windows only.
 
 ## SYNTAX
 
@@ -17,7 +18,8 @@ Add-UnattendedRenameNetworkAdapters [-IsKickstart] [-IsAutoYast] [<CommonParamet
 ```
 
 ## DESCRIPTION
-Add script to rename network adapters. Windows only.
+Add script to rename network adapters.
+Windows only.
 
 ## EXAMPLES
 
@@ -40,7 +42,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -55,7 +57,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -66,7 +68,6 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### None
-
 ## OUTPUTS
 
 ### System.Object

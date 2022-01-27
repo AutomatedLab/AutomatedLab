@@ -25,8 +25,8 @@ Wait-LWLabJob -Name <String[]> [-ProgressIndicator <Int32>] [-Timeout <Int32>] [
 ```
 
 ## DESCRIPTION
-Wait for one or more jobs to finish, with the added ability of writing a progress indicator. By default
-returns nothing and just blocks execution.
+Wait for one or more jobs to finish, with the added ability of writing a progress indicator.
+By default returns nothing and just blocks execution.
 
 ## EXAMPLES
 
@@ -79,7 +79,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -94,7 +94,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -109,13 +109,14 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -ProgressIndicator
-Interval in seconds that a . should be written to the console
+Interval in seconds that a .
+should be written to the console
 
 ```yaml
 Type: Int32
@@ -150,7 +151,6 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### None
-
 ## OUTPUTS
 
 ### System.Object

@@ -33,7 +33,6 @@ Download new Sysinternals Suite if not already downloaded and no newer version a
 ## INPUTS
 
 ### None
-
 ## OUTPUTS
 
 ### System.Object

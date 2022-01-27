@@ -33,7 +33,6 @@ Disable telemetry until Enable-LabTelemetry is used.
 ## INPUTS
 
 ### None
-
 ## OUTPUTS
 
 ### System.Object

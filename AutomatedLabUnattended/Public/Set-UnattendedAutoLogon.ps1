@@ -1,5 +1,6 @@
 ﻿function Set-UnattendedAutoLogon
 {
+	[CmdletBinding()]
 	param (
 		[Parameter(Mandatory = $true)]
 		[string]$DomainName,

@@ -1,5 +1,6 @@
 ﻿function Set-UnattendedLocalIntranetSites
 {
+	[CmdletBinding()]
 	param (
 		[Parameter(Mandatory = $true)]
 		[string[]]$Values,

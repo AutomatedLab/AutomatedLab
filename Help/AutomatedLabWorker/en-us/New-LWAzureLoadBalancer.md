@@ -17,8 +17,8 @@ New-LWAzureLoadBalancer [[-ConnectedMachines] <Machine[]>] [-PassThru] [-Wait]
 ```
 
 ## DESCRIPTION
-Creates a new load balancer for the lab environment. Reserves a public IP for the lab
-and creates the necessary frontend and backend address pools.
+Creates a new load balancer for the lab environment.
+Reserves a public IP for the lab and creates the necessary frontend and backend address pools.
 
 ## EXAMPLES
 
@@ -56,7 +56,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -71,7 +71,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -79,7 +79,6 @@ Accept wildcard characters: False
 ## INPUTS
 
 ### None
-
 ## OUTPUTS
 
 ### System.Object

@@ -27,8 +27,8 @@ Invoke-LabRecipe -Recipe <Object> [-DefaultVirtualizationEngine <String>] [-LabC
 ```
 
 ## DESCRIPTION
-Invoke a recipe. Can either export the recipe as a normal script file or directly deploy the lab that
-the recipe describes.
+Invoke a recipe.
+Can either export the recipe as a normal script file or directly deploy the lab that the recipe describes.
 
 ## EXAMPLES
 
@@ -53,7 +53,7 @@ Aliases: cf
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -159,7 +159,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -189,7 +189,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -220,7 +220,7 @@ Aliases: wi
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -231,9 +231,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### System.String
-
 ### System.Object
-
 ## OUTPUTS
 
 ### System.Object

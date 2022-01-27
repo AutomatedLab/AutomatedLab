@@ -1,5 +1,6 @@
 ﻿function Set-UnattendedDomain
 {
+	[CmdletBinding()]
 	param (
 		[Parameter(Mandatory = $true)]
 		[string]$DomainName,

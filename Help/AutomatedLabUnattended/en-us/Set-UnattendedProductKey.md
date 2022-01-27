@@ -17,8 +17,8 @@ Set-UnattendedProductKey [-ProductKey] <String> [-IsKickstart] [-IsAutoYast] [<C
 ```
 
 ## DESCRIPTION
-Set the Windows product key. Currently not supported on Linux, but in a future release will
-configure the enterprise distributions RHEL and SLES.
+Set the Windows product key.
+Currently not supported on Linux, but in a future release will configure the enterprise distributions RHEL and SLES.
 
 ## EXAMPLES
 
@@ -41,7 +41,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -56,7 +56,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -82,7 +82,6 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### None
-
 ## OUTPUTS
 
 ### System.Object

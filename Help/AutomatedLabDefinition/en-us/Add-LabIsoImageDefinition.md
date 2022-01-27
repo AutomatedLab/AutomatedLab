@@ -35,8 +35,6 @@ Add-LabIsoImageDefinition -Path E:\ISOs\MyWin2016ServerFile.iso
 Adds a definition of ISO file to be used when installing Server 2016.
 
 ### Example 2
-
-
 ```powershell
 Add-LabIsoImageDefinition -Name SQLServer2014 -Path E:\ISOs\MySqlSrv2014File.iso
 ```
@@ -46,9 +44,12 @@ Adds a definition of ISO file to be used when installing SQL Server 2014.
 ## PARAMETERS
 
 ### -Name
-Logical name for reference. Names are case sensitive.
+Logical name for reference.
+Names are case sensitive.
 
-In order to deploy certain roles like SQL, TFS, ... use the role name for the ISO, e.g. SQLServer2016
+In order to deploy certain roles like SQL, TFS, ...
+use the role name for the ISO, e.g.
+SQLServer2016
 
 ```yaml
 Type: String
@@ -87,7 +88,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -102,7 +103,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

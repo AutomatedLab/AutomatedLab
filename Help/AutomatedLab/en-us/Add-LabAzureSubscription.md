@@ -15,7 +15,7 @@ Adds Azure subscription data to lab
 ```
 Add-LabAzureSubscription [[-SubscriptionName] <String>] [-SubscriptionId <Guid>]
  [[-DefaultLocationName] <String>] [[-DefaultStorageAccountName] <String>]
- [[-DefaultResourceGroupName] <String>] [-AutoShutdownTime <TimeSpan>] [-AutoShutdownTimeZone <TimeZoneInfo>]
+ [[-DefaultResourceGroupName] <String>] [-AutoShutdownTime <TimeSpan>] [-AutoShutdownTimeZone <String>]
  [-PassThru] [-AllowBastionHost] [<CommonParameters>]
 ```
 
@@ -122,7 +122,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -143,10 +143,11 @@ Accept wildcard characters: False
 ```
 
 ### -AutoShutdownTimeZone
-Time zone for shutdown time. Defaults to current system timezone
+Time zone for shutdown time.
+Defaults to current system timezone
 
 ```yaml
-Type: TimeZoneInfo
+Type: String
 Parameter Sets: (All)
 Aliases:
 

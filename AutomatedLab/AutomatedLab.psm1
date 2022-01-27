@@ -3662,7 +3662,7 @@ function Disable-LabTelemetry
 {
     if ($IsLinux -or $IsMacOs)
     {
-        $null = Remove-Item -Path "$((Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot))/telemetry.enabled"
+        $null = New-Item -ItemType File -Path "$((Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot))/telemetry.disabled" -Force
     }
     else
     {
@@ -3720,7 +3720,8 @@ catch
 
 if (-not (
         (Test-Path Env:\AUTOMATEDLAB_TELEMETRY_OPTIN) -or `
-    (Test-Path -Path "$((Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot))/telemetry.enabled")) -and `
+    (Test-Path -Path "$((Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot))/telemetry.enabled") -or `
+    (Test-Path -Path "$((Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot))/telemetry.disabled")) -and `
     (Get-Date) -ge $nextCheck
 )
 {

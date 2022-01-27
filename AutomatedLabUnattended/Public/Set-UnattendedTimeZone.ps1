@@ -1,5 +1,6 @@
 ﻿function Set-UnattendedTimeZone
 {
+	[CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true)]

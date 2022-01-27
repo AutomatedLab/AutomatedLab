@@ -22,8 +22,6 @@ Return the lab data for the current lab or list all existing labs
 ## EXAMPLES
 
 ### Example 1
-
-
 ```powershell
 Import-Lab MyLabName
 $LabData = Get-Lab
@@ -43,7 +41,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

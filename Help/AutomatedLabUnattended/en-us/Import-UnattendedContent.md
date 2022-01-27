@@ -31,7 +31,8 @@ Imports the AutoYAST XML content from the machine's UnattendedContent property
 ## PARAMETERS
 
 ### -Content
-The content to import. Either XML or plain text.
+The content to import.
+Either XML or plain text.
 
 ```yaml
 Type: String[]
@@ -55,7 +56,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -70,7 +71,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -81,7 +82,6 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### None
-
 ## OUTPUTS
 
 ### System.Object

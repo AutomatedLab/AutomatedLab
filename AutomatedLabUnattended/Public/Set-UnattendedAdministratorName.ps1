@@ -1,5 +1,6 @@
 ﻿function Set-UnattendedAdministratorName
 {
+	[CmdletBinding()]
 	param (
 		[Parameter(Mandatory = $true)]
 		[string]$Name,

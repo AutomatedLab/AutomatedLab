@@ -91,7 +91,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -118,9 +118,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### AutomatedLab.Lab
-
 ### System.String
-
 ## OUTPUTS
 
 ### System.Object

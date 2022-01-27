@@ -30,8 +30,6 @@ To override this, the switch parameter DoNotUseCredSsp can be used.
 ## EXAMPLES
 
 ### Example 1
-
-
 ```powershell
 Get-LabVM FS1 | Enter-LabPSSession -UseLocalCredentials
 ```
@@ -67,7 +65,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -97,7 +95,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

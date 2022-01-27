@@ -29,8 +29,8 @@ PS C:\> Add-LabDomainDefinition -Name comtoso.com -AdminUser Install -AdminPassw
 PS C:\> Set-LabInstallationCredential -User Install -Password Somepass1
 ```
 
-Configures the contoso domain for the entire lab. Take care to select the same installation credentials,
-otherwise the domain controller deployment will not work.
+Configures the contoso domain for the entire lab.
+Take care to select the same installation credentials, otherwise the domain controller deployment will not work.
 
 ## PARAMETERS
 
@@ -89,7 +89,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

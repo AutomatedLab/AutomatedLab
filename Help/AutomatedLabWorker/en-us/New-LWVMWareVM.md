@@ -71,13 +71,14 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -DomainJoinCredential
-The credential to join a domain. Can be retrieved from each lab VM
+The credential to join a domain.
+Can be retrieved from each lab VM
 
 ```yaml
 Type: PSCredential
@@ -131,7 +132,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -157,7 +158,6 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### None
-
 ## OUTPUTS
 
 ### System.Object

@@ -26,8 +26,7 @@ Get the Azure Virtual Network associated with a lab network
 PS C:\> Get-LWAzureNetworkSwitch -VirtualNetwork (Get-LabVirtualNetworkDefinition -Name LabNet)
 ```
 
-During lab deployment, return the virtual network that has been provisioned
-from the network definition LabNet
+During lab deployment, return the virtual network that has been provisioned from the network definition LabNet
 
 ## PARAMETERS
 
@@ -52,7 +51,6 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### None
-
 ## OUTPUTS
 
 ### System.Object

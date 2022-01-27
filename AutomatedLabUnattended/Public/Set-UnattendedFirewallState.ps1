@@ -1,5 +1,6 @@
 ﻿function Set-UnattendedFirewallState
 {
+	[CmdletBinding()]
 	param (
 		[Parameter(Mandatory = $true)]
 		[boolean]$State,

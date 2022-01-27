@@ -8,7 +8,6 @@ schema: 2.0.0
 # Restore-LabConnection
 
 ## SYNOPSIS
-
 Restore the lab connection
 
 ## SYNTAX
@@ -18,7 +17,6 @@ Restore-LabConnection [-SourceLab] <String> [-DestinationLab] <String> [<CommonP
 ```
 
 ## DESCRIPTION
-
 Restore the lab connection
 
 ## EXAMPLES

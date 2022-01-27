@@ -26,7 +26,8 @@ Sets the default operating system for all lab machines
 PS C:\> Set-LabDefaultOperatingSystem -OperatingSystem Centos7.4
 ```
 
-Sets the default operating system for all lab machines to Centos7.4. Can be overruled for individual machines.
+Sets the default operating system for all lab machines to Centos7.4.
+Can be overruled for individual machines.
 
 ## PARAMETERS
 

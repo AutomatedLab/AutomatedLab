@@ -18,9 +18,8 @@ New-LWVHDX [-VhdxPath] <String> [-SizeInGB] <Int32> [[-Label] <String>] [-UseLar
 ```
 
 ## DESCRIPTION
-Creates a new Hyper-V VHDX file. Allows you to specify if FRS is used, which drive letter to mount
-the VHDX to, the allocation unit size in Byte or if the disk should not be initialized
-with the NTFS file system
+Creates a new Hyper-V VHDX file.
+Allows you to specify if FRS is used, which drive letter to mount the VHDX to, the allocation unit size in Byte or if the disk should not be initialized with the NTFS file system
 
 ## EXAMPLES
 
@@ -103,7 +102,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -118,7 +117,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -144,7 +143,6 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### None
-
 ## OUTPUTS
 
 ### System.Object

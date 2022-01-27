@@ -42,7 +42,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -57,7 +57,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -78,7 +78,8 @@ Accept wildcard characters: False
 ```
 
 ### -Path
-The path to look in, e.g. $labsources - speeds up this cmdlet significantly.
+The path to look in, e.g.
+$labsources - speeds up this cmdlet significantly.
 
 ```yaml
 Type: String

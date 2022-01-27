@@ -105,7 +105,7 @@ This solution supports setting up virtual machines with the following.
 - [Complex labs](https://github.com/AutomatedLab/AutomatedLab/blob/master/LabSources/SampleScripts/HyperV/BigLab%202012R2%20EX%20SQL%20ORCH%20VS%20OFF.ps1) in approximately 100 lines
 - Scan these [sample scripts](https://github.com/AutomatedLab/AutomatedLab/tree/master/LabSources/SampleScripts)
 
-### Enviroment
+### Environment
 
 - A single command to connect Azure or Hyper-V Lab [*Learn more*](https://automatedlab.org/en/latest/Wiki/Advanced/connectlabs/)
 - Composite scenarios to demo PowerShell Gallery resources

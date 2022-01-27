@@ -15,9 +15,9 @@ Invoke command on a lab vm
 ### PostInstallationActivity
 ```
 Invoke-LabCommand [-ActivityName <String>] [-ComputerName] <String[]> [-PostInstallationActivity]
- [-CustomRoleName <String[]>] [-ArgumentList <Object[]>] [-DoNotUseCredSsp] [-UseLocalCredential]
- [-Credential <PSCredential>] [-Variable <PSVariable[]>] [-Function <FunctionInfo[]>] [-ThrottleLimit <Int32>]
- [-AsJob] [-PassThru] [-NoDisplay] [-IgnoreAzureLabSources] [<CommonParameters>]
+ [-PreInstallationActivity] [-CustomRoleName <String[]>] [-ArgumentList <Object[]>] [-DoNotUseCredSsp]
+ [-UseLocalCredential] [-Credential <PSCredential>] [-Variable <PSVariable[]>] [-Function <FunctionInfo[]>]
+ [-ThrottleLimit <Int32>] [-AsJob] [-PassThru] [-NoDisplay] [-IgnoreAzureLabSources] [<CommonParameters>]
 ```
 
 ### ScriptBlock
@@ -111,7 +111,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -156,7 +156,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -231,7 +231,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -246,7 +246,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -261,7 +261,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -363,7 +363,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -384,7 +384,8 @@ Accept wildcard characters: False
 ```
 
 ### -CustomRoleName
-The custom role that should be deployed, e.g. ProGet
+The custom role that should be deployed, e.g.
+ProGet
 
 ```yaml
 Type: String[]
@@ -404,6 +405,21 @@ Indicates that Invoke-LabCommand does not need to map LabSources share
 ```yaml
 Type: SwitchParameter
 Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -PreInstallationActivity
+Any pre-installation activities before the role(s) are deployed
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: PostInstallationActivity
 Aliases:
 
 Required: False

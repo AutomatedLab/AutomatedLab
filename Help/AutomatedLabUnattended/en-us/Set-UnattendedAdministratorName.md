@@ -17,7 +17,8 @@ Set-UnattendedAdministratorName [-Name] <String> [-IsKickstart] [-IsAutoYast] [<
 ```
 
 ## DESCRIPTION
-Set the admin name. On a Linux system, adds another root user.
+Set the admin name.
+On a Linux system, adds another root user.
 
 ## EXAMPLES
 
@@ -40,7 +41,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -55,7 +56,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -81,7 +82,6 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### None
-
 ## OUTPUTS
 
 ### System.Object

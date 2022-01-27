@@ -1,5 +1,6 @@
 ﻿function Set-UnattendedPackage
 {
+	[CmdletBinding()]
 	param (
 		[Parameter(Mandatory = $true)]
 		[string[]]$Package,

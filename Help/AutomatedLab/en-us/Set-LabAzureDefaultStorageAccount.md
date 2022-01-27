@@ -26,7 +26,8 @@ Sets the default storage account for the lab
 PS C:\> Set-LabAzureDefaultStorageAccount -Name labstor
 ```
 
-Set the default storage account for the current lab. Usually only used by Add-LabAzureSubscription
+Set the default storage account for the current lab.
+Usually only used by Add-LabAzureSubscription
 
 ## PARAMETERS
 

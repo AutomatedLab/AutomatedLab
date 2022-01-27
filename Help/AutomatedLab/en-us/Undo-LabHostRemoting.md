@@ -17,7 +17,8 @@ Undo-LabHostRemoting [-Force] [-NoDisplay]
 ```
 
 ## DESCRIPTION
-Reset the local policy values to their defaults. See Enable-LabHostRemoting for those settings.
+Reset the local policy values to their defaults.
+See Enable-LabHostRemoting for those settings.
 
 ## EXAMPLES
 
@@ -40,7 +41,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -55,7 +56,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -63,7 +64,6 @@ Accept wildcard characters: False
 ## INPUTS
 
 ### None
-
 ## OUTPUTS
 
 ### System.Object
