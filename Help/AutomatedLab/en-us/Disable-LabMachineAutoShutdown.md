@@ -13,7 +13,7 @@ Disable Azure auto-shutdown for machines
 ## SYNTAX
 
 ```
-Disable-LabMachineAutoShutdown [[-ComputerName] <Machine>] [[-Time] <TimeSpan>] [<CommonParameters>]
+Disable-LabMachineAutoShutdown [[-ComputerName] <String[]>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -34,27 +34,12 @@ Clears all shutdown schedules for all machines
 List of AutomatedLab VMs to clear schedule for
 
 ```yaml
-Type: Machine
+Type: String[]
 Parameter Sets: (All)
 Aliases:
 
 Required: False
 Position: 0
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Time
-The time to clear
-
-```yaml
-Type: TimeSpan
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 1
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -66,7 +51,6 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### None
-
 ## OUTPUTS
 
 ### System.Object

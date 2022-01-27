@@ -13,7 +13,8 @@ Enable Azure auto-shutdown for machines
 ## SYNTAX
 
 ```
-Enable-LabMachineAutoShutdown [[-ComputerName] <Machine>] [[-Time] <TimeSpan>] [<CommonParameters>]
+Enable-LabMachineAutoShutdown [[-ComputerName] <String[]>] [-Time] <TimeSpan> [-TimeZone <String>]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -34,7 +35,7 @@ Using the current time zone, shut down all lab VMs at 7 pm
 List of machines to stop
 
 ```yaml
-Type: Machine
+Type: String[]
 Parameter Sets: (All)
 Aliases:
 
@@ -53,8 +54,23 @@ Type: TimeSpan
 Parameter Sets: (All)
 Aliases:
 
-Required: False
+Required: True
 Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -TimeZone
+{{ Fill TimeZone Description }}
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -66,7 +82,6 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### None
-
 ## OUTPUTS
 
 ### System.Object

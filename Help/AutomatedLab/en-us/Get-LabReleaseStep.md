@@ -26,7 +26,7 @@ Get all possible release steps of a TFS/Azure DevOps release pipeline
 PS C:\> Get-LabReleaseStep
 ```
 
-List all possible release steps from the first Azure DevOps/TFS Server in the lab           
+List all possible release steps from the first Azure DevOps/TFS Server in the lab
 
 ## PARAMETERS
 
@@ -48,7 +48,6 @@ Accept wildcard characters: False
 ## INPUTS
 
 ### None
-
 ## OUTPUTS
 
 ### System.Object

@@ -26,8 +26,8 @@ Get a list of possible build steps for a TFS/Azure DevOps build pipeline
 PS C:\> Get-LabBuildStep
 ```
 
-Searches for the lab's Azure DevOps server and lists all possible steps
-for a new build pipeline definition, e.g. Copy File, Run Script
+Searches for the lab's Azure DevOps server and lists all possible steps for a new build pipeline definition, e.g.
+Copy File, Run Script
 
 ## PARAMETERS
 
@@ -49,7 +49,6 @@ Accept wildcard characters: False
 ## INPUTS
 
 ### None
-
 ## OUTPUTS
 
 ### System.Object

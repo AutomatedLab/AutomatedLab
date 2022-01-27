@@ -47,7 +47,8 @@ Accept wildcard characters: False
 ```
 
 ### -ProgressIndicator
-After n seconds, print a . to the console
+After n seconds, print a .
+to the console
 
 ```yaml
 Type: Int32

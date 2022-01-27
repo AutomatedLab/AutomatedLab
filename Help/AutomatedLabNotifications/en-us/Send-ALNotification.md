@@ -13,12 +13,12 @@ Send a notification to a provider
 ## SYNTAX
 
 ```
-Send-ALNotification [-Activity] <String> [-Message] <String> [-Provider] <String> [<CommonParameters>]
+Send-ALNotification [-Activity] <String> [-Message] <String> [[-Provider] <String[]>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-Send a notification to a provider. The lab data is retrieved automatically, and activity and message are simply
-posted to the provider.
+Send a notification to a provider.
+The lab data is retrieved automatically, and activity and message are simply posted to the provider.
 
 ## EXAMPLES
 
@@ -32,7 +32,8 @@ Sends a mail
 ## PARAMETERS
 
 ### -Activity
-The activity that was executed, e.g. Lab started
+The activity that was executed, e.g.
+Lab started
 
 ```yaml
 Type: String
@@ -47,7 +48,8 @@ Accept wildcard characters: False
 ```
 
 ### -Message
-The message, e.g. Lab finished with 0 errors
+The message, e.g.
+Lab finished with 0 errors
 
 ```yaml
 Type: String
@@ -62,14 +64,15 @@ Accept wildcard characters: False
 ```
 
 ### -Provider
-The provider to use. Uses a dynamic ValidateSet over all possible providers.
+The provider to use.
+Uses a dynamic ValidateSet over all possible providers.
 
 ```yaml
-Type: String
+Type: String[]
 Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: 2
 Default value: None
 Accept pipeline input: False
@@ -82,7 +85,6 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### None
-
 ## OUTPUTS
 
 ### System.Object

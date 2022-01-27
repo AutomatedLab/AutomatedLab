@@ -19,7 +19,7 @@ New-LabNetworkAdapterDefinition -VirtualSwitch <String> [-InterfaceName <String>
  [-IPv6AddressPrefix <Int32>] [-IPv6Gateway <String>] [-IPv6DNSServers <String[]>]
  [-ConnectionSpecificDNSSuffix <String>] [-AppendParentSuffixes <Boolean>] [-AppendDNSSuffixes <String[]>]
  [-RegisterInDNS <Boolean>] [-DnsSuffixInDnsRegistration <Boolean>] [-NetBIOSOptions <String>]
- [-AccessVLANID <Int32>] [-ManagementAdapter <Boolean>] [<CommonParameters>]
+ [-AccessVLANID <Int32>] [-ManagementAdapter <Boolean>] [-MacAddress <String>] [<CommonParameters>]
 ```
 
 ### dhcp
@@ -28,7 +28,7 @@ New-LabNetworkAdapterDefinition -VirtualSwitch <String> [-InterfaceName <String>
  [-Ipv4DNSServers <IPAddress[]>] [-IPv6DNSServers <String[]>] [-ConnectionSpecificDNSSuffix <String>]
  [-AppendParentSuffixes <Boolean>] [-AppendDNSSuffixes <String[]>] [-RegisterInDNS <Boolean>]
  [-DnsSuffixInDnsRegistration <Boolean>] [-NetBIOSOptions <String>] [-AccessVLANID <Int32>]
- [-ManagementAdapter <Boolean>] [<CommonParameters>]
+ [-ManagementAdapter <Boolean>] [-MacAddress <String>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -275,7 +275,9 @@ Accept wildcard characters: False
 ```
 
 ### -UseDhcp
-Indicates that DHCP should be used. Useful e.g. for the Default Switch
+Indicates that DHCP should be used.
+Useful e.g.
+for the Default Switch
 
 ```yaml
 Type: SwitchParameter
@@ -284,7 +286,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -309,6 +311,21 @@ Accept wildcard characters: False
 
 ```yaml
 Type: Boolean
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -MacAddress
+{{ Fill MacAddress Description }}
+
+```yaml
+Type: String
 Parameter Sets: (All)
 Aliases:
 

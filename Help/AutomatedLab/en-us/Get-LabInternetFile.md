@@ -23,8 +23,6 @@ Gets a file by URI and stores it in a specific path if it does not exist.
 ## EXAMPLES
 
 ### Example 1
-
-
 ```powershell
 Get-LabInternetFile -Uri 'https://download.microsoft.com/download/3/1/D/31D734E0-BFE8-4C33-A9DE-2392808ADEE6/SSMS-Setup-ENU.exe' -Path '\\VM1\AFileShare\SSMS.exe'
 ```
@@ -58,7 +56,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -88,7 +86,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -118,7 +116,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

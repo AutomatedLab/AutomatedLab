@@ -1,5 +1,6 @@
 ﻿function Set-UnattendedWorkgroup
 {
+	[CmdletBinding()]
 	param (
 		[Parameter(Mandatory = $true)]
 		[string]$WorkgroupName,

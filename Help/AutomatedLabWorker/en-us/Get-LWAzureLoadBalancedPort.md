@@ -18,8 +18,8 @@ Get-LWAzureLoadBalancedPort [[-Port] <UInt16>] [[-DestinationPort] <UInt16>] [-C
 ```
 
 ## DESCRIPTION
-List the current ports on the lab's load balancer for a machine. Capable of filtering port and
-destination port
+List the current ports on the lab's load balancer for a machine.
+Capable of filtering port and destination port
 
 ## EXAMPLES
 
@@ -86,7 +86,6 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### None
-
 ## OUTPUTS
 
 ### System.Object

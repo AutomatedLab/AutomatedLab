@@ -1,5 +1,6 @@
 ﻿function Export-UnattendedFile
 {
+	[CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
         [string]$Path,

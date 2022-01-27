@@ -1,5 +1,6 @@
 ﻿function Set-UnattendedComputerName
 {
+	[CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
         [string]$ComputerName,

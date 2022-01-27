@@ -12,19 +12,14 @@ Remove the lab
 
 ## SYNTAX
 
-### Path (Default)
+### ByName (Default)
 ```
-Remove-Lab [-RemoveExternalSwitches] [-WhatIf] [-Confirm] [<CommonParameters>]
+Remove-Lab [[-Name] <String>] [-RemoveExternalSwitches] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ### ByPath
 ```
 Remove-Lab -Path <String> [-RemoveExternalSwitches] [-WhatIf] [-Confirm] [<CommonParameters>]
-```
-
-### ByName
-```
-Remove-Lab [-Name] <String> [-RemoveExternalSwitches] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -52,7 +47,7 @@ Aliases: wi
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -67,7 +62,7 @@ Aliases: cf
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -83,7 +78,7 @@ Aliases:
 Required: True
 Position: Named
 Default value: None
-Accept pipeline input: False
+Accept pipeline input: True (ByValue)
 Accept wildcard characters: False
 ```
 
@@ -95,10 +90,10 @@ Type: String
 Parameter Sets: ByName
 Aliases:
 
-Required: True
+Required: False
 Position: 1
 Default value: None
-Accept pipeline input: False
+Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
 ```
 
@@ -112,7 +107,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

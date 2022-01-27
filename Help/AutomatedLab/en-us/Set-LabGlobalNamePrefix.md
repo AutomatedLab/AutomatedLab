@@ -26,7 +26,8 @@ Sets a prefix to prepend to all machine names
 PS C:\> Set-LabGlobalNamePrefix -Name LB
 ```
 
-Prepends LB to all VMs, e.g. LBDC01
+Prepends LB to all VMs, e.g.
+LBDC01
 
 ## PARAMETERS
 

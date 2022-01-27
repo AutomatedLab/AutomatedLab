@@ -1,5 +1,6 @@
 ﻿function Add-UnattendedSynchronousCommand
 {
+	[CmdletBinding()]
     param (
         [Parameter(Mandatory)]
         [string]$Command,

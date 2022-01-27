@@ -1,5 +1,6 @@
 ﻿function Set-UnattendedIpSettings
 {
+    [CmdletBinding()]
     param (
         [string]$IpAddress,
 

@@ -13,7 +13,7 @@ Return the current unattend content that has been created
 ## SYNTAX
 
 ```
-Get-UnattendedContent [<CommonParameters>]
+Get-UnattendedContent
 ```
 
 ## DESCRIPTION
@@ -36,7 +36,6 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### None
-
 ## OUTPUTS
 
 ### System.Object

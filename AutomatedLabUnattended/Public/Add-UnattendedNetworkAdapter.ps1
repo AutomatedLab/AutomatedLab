@@ -1,5 +1,6 @@
 ﻿function Add-UnattendedNetworkAdapter
 {
+	[CmdletBinding()]
     param (
         [string]$Interfacename,
 

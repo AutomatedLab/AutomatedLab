@@ -12,9 +12,9 @@ Remove a VM
 
 ## SYNTAX
 
-### ByName
+### ByName (Default)
 ```
-Remove-LabVM [-Name] <String[]> [<CommonParameters>]
+Remove-LabVM -ComputerName <String[]> [<CommonParameters>]
 ```
 
 ### All
@@ -37,21 +37,6 @@ Removes one machine from the running lab so that Install-Lab can recreate it.
 
 ## PARAMETERS
 
-### -Name
-The machine name
-
-```yaml
-Type: String[]
-Parameter Sets: ByName
-Aliases:
-
-Required: True
-Position: 0
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -All
 Indicates that all lab machines are going to be removed
 
@@ -62,8 +47,23 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ComputerName
+{{ Fill ComputerName Description }}
+
+```yaml
+Type: String[]
+Parameter Sets: ByName
+Aliases: Name
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: True (ByPropertyName, ByValue)
 Accept wildcard characters: False
 ```
 

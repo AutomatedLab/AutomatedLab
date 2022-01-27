@@ -17,8 +17,8 @@ Install-LabSqlSampleDatabases [-Machine] <Machine> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-Install sample databases for the selected SQL version. Attempts to download the fitting
-version from either CodePlex (up to SQL 2012) or GitHub (2014+)
+Install sample databases for the selected SQL version.
+Attempts to download the fitting version from either CodePlex (up to SQL 2012) or GitHub (2014+)
 
 Downloads will be stored in $LabSources\SoftwarePackages\SqlSampleDbs and not downloaded a second time.
 
@@ -54,7 +54,6 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### None
-
 ## OUTPUTS
 
 ### System.Object

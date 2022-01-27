@@ -26,7 +26,8 @@ Gets the lab sources location by either returning it directly if defined or by s
 PS C:\> Get-LabSourcesLocation -Local
 ```
 
-Returns the local lab sources, e.g. D:\LabSources
+Returns the local lab sources, e.g.
+D:\LabSources
 
 ## PARAMETERS
 
@@ -40,7 +41,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

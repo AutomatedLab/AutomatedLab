@@ -17,8 +17,7 @@ Connect-LWAzureLabSourcesDrive [-Session] <PSSession> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-Connect the Azure File Share 'LabSources' in a session so that file copies
-and installations are possible using $LabSources
+Connect the Azure File Share 'LabSources' in a session so that file copies and installations are possible using $LabSources
 
 ## EXAMPLES
 
@@ -52,7 +51,6 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### None
-
 ## OUTPUTS
 
 ### System.Object

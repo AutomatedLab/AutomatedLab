@@ -21,8 +21,8 @@ Add-UnattendedNetworkAdapter [[-Interfacename] <String>] [[-IpAddresses] <IPNetw
 ```
 
 ## DESCRIPTION
-Add a network adapter to the unattend file. Default is Windows, switch parameters can be used for
-either Kickstart or AutoYAST.
+Add a network adapter to the unattend file.
+Default is Windows, switch parameters can be used for either Kickstart or AutoYAST.
 
 ## EXAMPLES
 
@@ -31,13 +31,14 @@ either Kickstart or AutoYAST.
 PS C:\> Add-UnattendedNetworkAdapter -InterfaceName lan01 -IpAddresses 192.168.2.12/24 -Gateways 192.168.2.1 -DnsServers 192.168.2.10,192.168.2.11 -DnsDomain contoso.com -IsKickstart
 ```
 
-Add the network adapter lan01 to the Kickstart file for a VM. Default is Windows, switch parameters can be used for
-either Kickstart or AutoYAST.
+Add the network adapter lan01 to the Kickstart file for a VM.
+Default is Windows, switch parameters can be used for either Kickstart or AutoYAST.
 
 ## PARAMETERS
 
 ### -ConnectionSpecificDNSSuffix
-DNS suffix for this connection. Not used on Linux.
+DNS suffix for this connection.
+Not used on Linux.
 
 ```yaml
 Type: String
@@ -52,7 +53,8 @@ Accept wildcard characters: False
 ```
 
 ### -DNSSuffixSearchOrder
-The DNS suffix search order. Not used on Linux.
+The DNS suffix search order.
+Not used on Linux.
 
 ```yaml
 Type: String
@@ -67,7 +69,8 @@ Accept wildcard characters: False
 ```
 
 ### -DisableDynamicUpdate
-Disable the dynamic update of this adapter. Not used on Linux.
+Disable the dynamic update of this adapter.
+Not used on Linux.
 
 ```yaml
 Type: String
@@ -112,7 +115,8 @@ Accept wildcard characters: False
 ```
 
 ### -EnableAdapterDomainNameRegistration
-Enable the DNS registration of this adapter. Not used on Linux.
+Enable the DNS registration of this adapter.
+Not used on Linux.
 
 ```yaml
 Type: String
@@ -181,7 +185,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -196,13 +200,14 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -NetbiosOptions
-The NetBIOS options for this adapter. 0 Default, 1 Enabled, 2 Disabled
+The NetBIOS options for this adapter.
+0 Default, 1 Enabled, 2 Disabled
 
 ```yaml
 Type: String
@@ -217,7 +222,8 @@ Accept wildcard characters: False
 ```
 
 ### -UseDomainNameDevolution
-Enable Domain Name Devolution. Windows only.
+Enable Domain Name Devolution.
+Windows only.
 
 ```yaml
 Type: String
@@ -237,7 +243,6 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### None
-
 ## OUTPUTS
 
 ### System.Object

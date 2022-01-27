@@ -17,13 +17,8 @@ Enable-LabHostRemoting [-Force] [-NoDisplay]
 ```
 
 ## DESCRIPTION
-Configures several local policy settings to enable lab host remoting. These are:
-SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowFreshCredentials, set to 1
-SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowFreshCredentialsWhenNTLMOnly, set to 1
-SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowSavedCredentials, set to 1
-SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowSavedCredentialsWhenNTLMOnly, set to 1
-SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP\Parameters -Name AllowEncryptionOracle, set to 2
-
+Configures several local policy settings to enable lab host remoting.
+These are: SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowFreshCredentials, set to 1 SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowFreshCredentialsWhenNTLMOnly, set to 1 SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowSavedCredentials, set to 1 SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowSavedCredentialsWhenNTLMOnly, set to 1 SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP\Parameters -Name AllowEncryptionOracle, set to 2
 
 ## EXAMPLES
 
@@ -46,7 +41,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -61,7 +56,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -69,7 +64,6 @@ Accept wildcard characters: False
 ## INPUTS
 
 ### None
-
 ## OUTPUTS
 
 ### System.Object

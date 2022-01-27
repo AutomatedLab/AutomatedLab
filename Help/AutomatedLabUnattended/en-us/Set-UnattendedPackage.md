@@ -26,8 +26,7 @@ Adds additional packages on Linux.
 PS C:\> Set-UnattendedPackage -Package '@core','@^graphical-server-environment'
 ```
 
-Add the package group 'core' and the environment 'graphical-server-environment' to the list
-of packages to install.
+Add the package group 'core' and the environment 'graphical-server-environment' to the list of packages to install.
 
 ## PARAMETERS
 
@@ -41,7 +40,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -56,7 +55,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -82,7 +81,6 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### None
-
 ## OUTPUTS
 
 ### System.Object

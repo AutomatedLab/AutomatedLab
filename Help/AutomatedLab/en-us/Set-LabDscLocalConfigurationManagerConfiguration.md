@@ -23,7 +23,8 @@ Set-LabDscLocalConfigurationManagerConfiguration [-ComputerName] <String[]> [[-A
 ```
 
 ## DESCRIPTION
-Set LCM settings for a node. Supports all parameters of the Settings resource
+Set LCM settings for a node.
+Supports all parameters of the Settings resource
 
 ## EXAMPLES
 
@@ -129,7 +130,8 @@ Accept wildcard characters: False
 ```
 
 ### -ConfigurationModeFrequencyMins
-The configuration mode interval. Minimum is 15
+The configuration mode interval.
+Minimum is 15
 
 ```yaml
 Type: Int32
@@ -220,7 +222,8 @@ Accept wildcard characters: False
 ```
 
 ### -RefreshFrequencyMins
-Refresh frequency. Minimum is 30
+Refresh frequency.
+Minimum is 30
 
 ```yaml
 Type: Int32
@@ -286,7 +289,6 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### None
-
 ## OUTPUTS
 
 ### System.Object

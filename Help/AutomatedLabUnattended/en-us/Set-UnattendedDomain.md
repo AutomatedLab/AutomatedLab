@@ -18,8 +18,9 @@ Set-UnattendedDomain [-DomainName] <String> [-Username] <String> [-Password] <St
 ```
 
 ## DESCRIPTION
-Set the domain membership. On Linux, requires the necessary packages for the realm
-command to complete. These are oddjob, oddjob-mkhomedir, sssd, adcli and krb5-workstation.
+Set the domain membership.
+On Linux, requires the necessary packages for the realm command to complete.
+These are oddjob, oddjob-mkhomedir, sssd, adcli and krb5-workstation.
 
 ## EXAMPLES
 
@@ -57,7 +58,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -72,7 +73,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -113,7 +114,6 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### None
-
 ## OUTPUTS
 
 ### System.Object

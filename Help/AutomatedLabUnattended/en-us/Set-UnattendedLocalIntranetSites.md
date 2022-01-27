@@ -8,7 +8,8 @@ schema: 2.0.0
 # Set-UnattendedLocalIntranetSites
 
 ## SYNOPSIS
-Set the local intranet sites. Windows only.
+Set the local intranet sites.
+Windows only.
 
 ## SYNTAX
 
@@ -17,7 +18,8 @@ Set-UnattendedLocalIntranetSites [-Values] <String[]> [-IsKickstart] [-IsAutoYas
 ```
 
 ## DESCRIPTION
-Set the local intranet sites. Windows only.
+Set the local intranet sites.
+Windows only.
 
 ## EXAMPLES
 
@@ -40,7 +42,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -55,7 +57,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -81,7 +83,6 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### None
-
 ## OUTPUTS
 
 ### System.Object

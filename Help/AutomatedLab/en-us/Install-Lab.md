@@ -15,9 +15,11 @@ Starts the process of lab deployment
 ```
 Install-Lab [-NetworkSwitches] [-BaseImages] [-VMs] [-Domains] [-AdTrusts] [-DHCP] [-Routing]
  [-PostInstallations] [-SQLServers] [-Orchestrator2012] [-WebServers] [-SharepointServer] [-CA] [-ADFS]
- [-DSCPullServer] [-ConfigManager2012R2] [-VisualStudio] [-Office2013] [-Office2016] [-AzureServices]
- [-TeamFoundation] [-FailoverCluster] [-StartRemainingMachines] [-CreateCheckPoints]
- [[-DelayBetweenComputers] <Int32>] [-NoValidation] [<CommonParameters>]
+ [-DSCPullServer] [-VisualStudio] [-Office2013] [-Office2016] [-AzureServices] [-TeamFoundation]
+ [-FailoverStorage] [-FailoverCluster] [-FileServer] [-HyperV] [-WindowsAdminCenter] [-Scvmm] [-Scom]
+ [-Dynamics] [-RemoteDesktop] [-ConfigurationManager] [-StartRemainingMachines] [-CreateCheckPoints]
+ [-InstallRdsCertificates] [-PostDeploymentTests] [-NoValidation] [[-DelayBetweenComputers] <Int32>]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -47,8 +49,6 @@ If called with parameters, only the action(s) specified by the parameters will b
 ## EXAMPLES
 
 ### Example 1
-
-
 ```powershell
 Install-Lab
 ```
@@ -71,7 +71,6 @@ Deploy and configure all machines defined in the lab in following order:
             Start any machines without any AutomatedLab roles
 
 ### Example 2
-
 ```powershell
 Install-Lab -BaseImages
 ```
@@ -81,8 +80,6 @@ Size and/or integrity is NOT checked/verified.
 If the base image (disk) exists, it will considered good.
 
 ### Example 3
-
-
 ```powershell
 Install-Lab -BaseImages -NetworkSwitches -VMs
 ```
@@ -90,12 +87,9 @@ Install-Lab -BaseImages -NetworkSwitches -VMs
 Creates all needed base images if these are not already present.
 Size and/or integrity is NOT checked/verified.
 If the base image (disk) exists, it will considered good.
-         
-        All virtual network to be used in lab will be created.
+All virtual network to be used in lab will be created.
 
 ### Example 4
-
-
 ```powershell
 Install-Lab -BaseImages -NetworkSwitches -VMs -NoValidation
 ```
@@ -105,21 +99,16 @@ Not recommended.
 Use only if experiencing issues.
 
 ### Example 5
-
-
 ```powershell
 Install-Lab -Domains -CA -SQLServers -WebServers -DelayBetweenComputers 30
 ```
 
 Deployment/configuration of all domain controllers, all Certificate (CA) servers, SQL servers and Web servers will be performed.
-        
-        There will be a deplay of 30 seconds start of each machine if more than one machine is required to start at the same time.
+There will be a deplay of 30 seconds start of each machine if more than one machine is required to start at the same time.
 Use to avoid disk congestion (spread the 'load').
 
 ### Example 6
-
-
-```
+```powershell
 Install-Lab -StartRemainingMachines -PostInstallations
 ```
 
@@ -139,7 +128,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -154,7 +143,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -169,7 +158,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -185,7 +174,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -200,7 +189,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -215,7 +204,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -230,7 +219,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -245,7 +234,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -261,7 +250,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -276,7 +265,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -291,7 +280,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -302,11 +291,11 @@ Start installation of all Sharepoint servers
 ```yaml
 Type: SwitchParameter
 Parameter Sets: (All)
-Aliases:
+Aliases: Sharepoint2013
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -321,7 +310,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -336,7 +325,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -351,22 +340,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ConfigManager2012R2
-Start installation of all Config Manager 2012 servers
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -381,7 +355,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -396,7 +370,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -411,7 +385,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -427,7 +401,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -457,7 +431,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -472,7 +446,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -487,7 +461,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -502,13 +476,178 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -TeamFoundation
 Deploy only CI/CD servers
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ConfigurationManager
+Deploy ConfigMgr
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Dynamics
+Deploy Dynamics 365
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -FailoverStorage
+Deploy ISCSI targets
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -FileServer
+Deploy File Servers
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -HyperV
+Deploy Hyper-V VMs
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -InstallRdsCertificates
+Install certificates of virtual machines
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -PostDeploymentTests
+Run post-deployment tests using Pester
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -RemoteDesktop
+Deploy Remote Desktop Services
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Scom
+Deploy SCOM
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Scvmm
+Deploy SCVMM
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -WindowsAdminCenter
+Deploy Windows Admin Center
 
 ```yaml
 Type: SwitchParameter

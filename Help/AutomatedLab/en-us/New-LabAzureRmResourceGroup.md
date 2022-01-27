@@ -47,7 +47,7 @@ Accept wildcard characters: False
 ```
 
 ### -LocationName
-Location to create resource in 
+Location to create resource in
 
 ```yaml
 Type: String

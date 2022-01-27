@@ -13,8 +13,7 @@ Internal worker to enable Azure Auto Shutdown
 ## SYNTAX
 
 ```
-Enable-LWAzureAutoShutdown [[-ComputerName] <String[]>] [[-Time] <TimeSpan>] [[-TimeZone] <TimeZoneInfo>]
- [-Wait]
+Enable-LWAzureAutoShutdown [[-ComputerName] <String[]>] [[-Time] <TimeSpan>] [[-TimeZone] <String>] [-Wait]
 ```
 
 ## DESCRIPTION
@@ -65,7 +64,7 @@ Accept wildcard characters: False
 {{ Fill TimeZone Description }}
 
 ```yaml
-Type: TimeZoneInfo
+Type: String
 Parameter Sets: (All)
 Aliases:
 
@@ -86,7 +85,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -94,7 +93,6 @@ Accept wildcard characters: False
 ## INPUTS
 
 ### None
-
 ## OUTPUTS
 
 ### System.Object

@@ -1,5 +1,6 @@
 ﻿function Set-UnattendedProductKey
 {
+	[CmdletBinding()]
 	param (
 		[Parameter(Mandatory = $true)]
 		[string]$ProductKey,
