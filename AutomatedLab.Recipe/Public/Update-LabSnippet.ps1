@@ -61,7 +61,7 @@
     if ($useAzure -and -not (Get-AzContext))
     {                
         Write-ScreenInfo -Type Error -Message "No Azure context. Please follow the on-screen instructions to log in."
-        $null = Connect-AzAccount -UseDeviceAuthentication
+        $null = Connect-AzAccount -UseDeviceAuthentication -WarningAction Continue
     }
 
     if ($useAzure)

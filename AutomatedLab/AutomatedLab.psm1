@@ -1437,7 +1437,7 @@ function Remove-Lab
             if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure' -and -not (Get-AzContext))
             {
                 Write-ScreenInfo -Type Info -Message "Your Azure session is expired. Please log in to remove your resource group"
-                Connect-AzAccount -UseDeviceAuthentication
+                Connect-AzAccount -UseDeviceAuthentication -WarningAction Continue
             }
 
             try
