@@ -104,7 +104,7 @@ function New-LWHypervVM
             $adapter.MacAddress = $mac
         }
         
-        $ipSettings.Add('MacAddress', $adapter.MacAddress)
+        #$ipSettings.Add('MacAddress', $adapter.MacAddress)
         $macWithDash = '{0}-{1}-{2}-{3}-{4}-{5}' -f (Get-StringSection -SectionSize 2 -String $adapter.MacAddress)
 
         $ipSettings.Add('InterfaceName', $macWithDash)
