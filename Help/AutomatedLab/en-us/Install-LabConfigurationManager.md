@@ -19,19 +19,16 @@ Install-LabConfigurationManager [<CommonParameters>]
 ## DESCRIPTION
 Install Configuration Manager environment. Customize by
 configuration the role, using the following parameters:
-```
-Get-LabMachineRoleDefinition -Role ConfigurationManager -Properties @{
-Version='value'
-Branch='value'
-Roles='value'
-SiteName='value'
-SiteCode='value'
-SqlServerName='value'
-DatabaseName='value'
-WsusContentPath='value'
-AdminUser='value'
-}
-```
+
+Version
+Branch
+Roles
+SiteName
+SiteCode
+SqlServerName
+DatabaseName 
+WsusContentPath 
+AdminUser 
 
 ## EXAMPLES
 

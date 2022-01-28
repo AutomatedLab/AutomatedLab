@@ -13,7 +13,7 @@ Return the current unattend content that has been created
 ## SYNTAX
 
 ```
-Get-UnattendedContent
+Get-UnattendedContent [<CommonParameters>]
 ```
 
 ## DESCRIPTION
