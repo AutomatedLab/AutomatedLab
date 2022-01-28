@@ -115,7 +115,7 @@ function Add-LabAzureSubscription
     if (-not (Get-AzContext))
     {
         Write-ScreenInfo -Message "No Azure context available. Please login to your Azure account in the next step."
-        $null = Connect-AzAccount -UseDeviceAuthentication -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+        $null = Connect-AzAccount -UseDeviceAuthentication -ErrorAction SilentlyContinue -WarningAction Continue
     }
 
     # Select the proper subscription before saving the profile

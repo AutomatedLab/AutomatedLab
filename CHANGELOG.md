@@ -18,6 +18,7 @@
 - Fixing issue with duplicate MAC addresses in case lab deployments are done in parallel
 - CustomRole does not pick up configured properties
 - Including ProductKeys file in module build for offline environments
+- Fixing a bug with Azure-based labs which would stall during Add-LabAzureSubscription
 
 ## 5.40.0 (2021-10-13)
 

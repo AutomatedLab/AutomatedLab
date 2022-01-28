@@ -35,7 +35,7 @@
             if (-not (Get-AzContext))
             {
                 Write-ScreenInfo -Type Error -Message "No Azure context. Please follow the on-screen instructions to log in."
-                $null = Connect-AzAccount -UseDeviceAuthentication
+                $null = Connect-AzAccount -UseDeviceAuthentication -WarningAction Continue
             }
 
             $account = Get-PSFConfigValue -FullName AutomatedLab.Recipe.AzureBlobStorage.AccountName
