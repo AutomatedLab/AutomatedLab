@@ -3,6 +3,12 @@
 ## Unreleased (yyyy-MM-dd)
 
 ### Enhancements
+
+### Bugs
+
+## 5.41.0 (2022-01-31)
+
+### Enhancements
 - Performance improvements of DSC Pullserver reports from DscWorkshop
   - precalculation of values from JSON based status reports at insert time 
 - Added 2022 and Win11 to Azure image name table
