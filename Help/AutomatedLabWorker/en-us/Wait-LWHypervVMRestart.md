@@ -47,8 +47,7 @@ Accept wildcard characters: False
 ```
 
 ### -MonitorJob
-Keep monitoring on or more jobs until the timeout is reached or the uptime of the
-VM is reset
+Keep monitoring on or more jobs until the timeout is reached or the uptime of the VM is reset
 
 ```yaml
 Type: Job[]
@@ -72,13 +71,14 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -ProgressIndicator
-Interval in seconds that a . should be written to the console
+Interval in seconds that a .
+should be written to the console
 
 ```yaml
 Type: Int32
@@ -128,7 +128,6 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### None
-
 ## OUTPUTS
 
 ### System.Object

@@ -22,7 +22,7 @@ Adds user rights on a lab machine from the following rights: 'SeNetworkLogonRigh
 ## EXAMPLES
 
 ### Example 1
-```
+```powershell
 Add-LabVMUserRight -UserName 'domain\myServiceUser' -ComputerName FS1 -Priveleges SeInteractiveLogonRight,SeServiceLogonRight
 ```
 
@@ -61,7 +61,8 @@ Accept wildcard characters: False
 ```
 
 ### -Privilege
-A list of privileges to assign, e.g. SEDebug
+A list of privileges to assign, e.g.
+SEDebug
 
 ```yaml
 Type: String[]

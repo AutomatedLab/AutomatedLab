@@ -32,7 +32,6 @@ In a background job, get the status of the feature FS-DFS-Replication on DC01
 ## PARAMETERS
 
 ### -AsJob
-
 Indicates that the cmdlet should run in the background
 
 ```yaml
@@ -42,7 +41,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -87,7 +86,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -98,7 +97,6 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### None
-
 ## OUTPUTS
 
 ### System.Object

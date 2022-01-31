@@ -32,35 +32,49 @@ function New-LWHypervNetworkSwitch
             return
         }
 
-        if ($network.SwitchType -eq 'External')
+        try
         {
-            $adapterMac = (Get-NetAdapter -Name $network.AdapterName).MacAddress
-            $adapterCountWithSameMac = (Get-NetAdapter | Where-Object { $_.MacAddress -eq $adapterMac -and $_.DriverDescription -ne 'Microsoft Network Adapter Multiplexor Driver' } | Group-Object -Property MacAddress).Count
-            if ($adapterCountWithSameMac -gt 1)
+            $switchCreation = Get-LabConfigurationItem -Name SwitchDeploymentInProgressPath
+            while (Test-Path -Path $switchCreation)
             {
-                if (Get-NetLbfoTeam -Name $network.AdapterName)
-                {
-                    Write-ScreenInfo -Message "Network Adapter ($($network.AdapterName)) is a teamed interface, ignoring duplicate MAC checking" -Type Warning
-                }
-                else
-                {
-                    throw "The given network adapter ($($network.AdapterName)) for the external virtual switch ($($network.ResourceName)) is already part of a network bridge and cannot be used."
-                }
+                Start-Sleep -Milliseconds 250
             }
 
-            $switch = New-VMSwitch -NetAdapterName $network.AdapterName -Name $network.ResourceName -AllowManagementOS $network.EnableManagementAdapter -ErrorAction Stop
+            $null = New-Item -Path $switchCreation -ItemType File -Value (Get-Lab).Name
+            if ($network.SwitchType -eq 'External')
+            {
+                $adapterMac = (Get-NetAdapter -Name $network.AdapterName).MacAddress
+                $adapterCountWithSameMac = (Get-NetAdapter | Where-Object { $_.MacAddress -eq $adapterMac -and $_.DriverDescription -ne 'Microsoft Network Adapter Multiplexor Driver' } | Group-Object -Property MacAddress).Count
+                if ($adapterCountWithSameMac -gt 1)
+                {
+                    if (Get-NetLbfoTeam -Name $network.AdapterName)
+                    {
+                        Write-ScreenInfo -Message "Network Adapter ($($network.AdapterName)) is a teamed interface, ignoring duplicate MAC checking" -Type Warning
+                    }
+                    else
+                    {
+                        throw "The given network adapter ($($network.AdapterName)) for the external virtual switch ($($network.ResourceName)) is already part of a network bridge and cannot be used."
+                    }
+                }
+
+                $switch = New-VMSwitch -NetAdapterName $network.AdapterName -Name $network.ResourceName -AllowManagementOS $network.EnableManagementAdapter -ErrorAction Stop
+            }
+            else
+            {
+                try
+                {
+                    $switch = New-VMSwitch -Name $network.ResourceName -SwitchType ([string]$network.SwitchType) -ErrorAction Stop
+                }
+                catch
+                {
+                    Start-Sleep -Seconds 2
+                    $switch = New-VMSwitch -Name $network.ResourceName -SwitchType ([string]$network.SwitchType) -ErrorAction Stop
+                }
+            }
         }
-        else
+        finally
         {
-            try
-            {
-                $switch = New-VMSwitch -Name $network.ResourceName -SwitchType ([string]$network.SwitchType) -ErrorAction Stop
-            }
-            catch
-            {
-                Start-Sleep -Seconds 2
-                $switch = New-VMSwitch -Name $network.ResourceName -SwitchType ([string]$network.SwitchType) -ErrorAction Stop
-            }
+            Remove-Item -Path $switchCreation -ErrorAction SilentlyContinue
         }
 
         Start-Sleep -Seconds 1

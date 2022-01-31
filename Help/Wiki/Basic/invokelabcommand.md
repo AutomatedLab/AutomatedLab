@@ -19,7 +19,7 @@ Invoke-LabCommand -ScriptBlock { Get-Date } -ComputerName (Get-LabVM)
 ```
 ### Making local variables and functions available remotely
 If you have functions and variables defined locally, they are not available in the remote session. With the using scope (PowerShell 3+) you can access local variables in the remote session but it requires changing the code by adding “$using:” to each variable you want to retrieve from the local scope. Hence this code will no longer work locally which makes debugging your code locally on the VM much harder.
-Invoke-LabCommand provides the two parameters “Variable” and “Function”. All the variables and functions given here are pushed to the remove session making them available there.
+Invoke-LabCommand provides the two parameters “Variable” and “Function”. All the variables and functions given here are pushed to the remote session making them available there.
 The following sample demonstrates this by having a local function that just returns the value of a local variable. Invoke-LabCommand runs the same code on a remote machine without changing anything.
 The code you may run locally:
 ``` PowerShell

@@ -8,7 +8,6 @@ schema: 2.0.0
 # Import-Lab
 
 ## SYNOPSIS
-
 Import a lab
 
 ## SYNTAX
@@ -34,8 +33,6 @@ Imports an installed lab environment
 ## EXAMPLES
 
 ### Example 1
-
-
 ```powershell
 Import-Lab -Name MyLab -NoValidation
 ```
@@ -69,7 +66,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -84,7 +81,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -129,7 +126,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

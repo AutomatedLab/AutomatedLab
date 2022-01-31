@@ -26,8 +26,7 @@ Exports the whole lab definition as XML files in the standard path $env:ProgramD
 PS C:\> Export-LabDefinition -Force
 ```
 
-Export the current lab definition (Get-LabDefinition, Get-Lab) to $env:ProgramData\AutomatedLab\Labs, overwriting
-any existing files
+Export the current lab definition (Get-LabDefinition, Get-Lab) to $env:ProgramData\AutomatedLab\Labs, overwriting any existing files
 
 ## PARAMETERS
 
@@ -41,7 +40,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -56,7 +55,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -71,7 +70,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

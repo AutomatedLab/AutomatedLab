@@ -19,12 +19,12 @@ Add-LabMachineDefinition -Name <String> [-Memory <Double>] [-MinMemory <Double>]
  [-OperatingSystemVersion <String>] [-Network <String>] [-IpAddress <String>] [-Gateway <String>]
  [-DnsServer1 <String>] [-DnsServer2 <String>] [-IsDomainJoined] [-DefaultDomain]
  [-InstallationUserCredential <PSCredential>] [-DomainName <String>] [-Roles <Role[]>] [-UserLocale <String>]
- [-PostInstallationActivity <PostInstallationActivity[]>] [-ToolsPath <String>]
- [-ToolsPathDestination <String>] [-VirtualizationHost <VirtualizationHost>] [-EnableWindowsFirewall]
- [-AutoLogonDomainName <String>] [-AutoLogonUserName <String>] [-AutoLogonPassword <String>]
- [-AzureProperties <Hashtable>] [-HypervProperties <Hashtable>] [-Notes <Hashtable>] [-PassThru]
- [-ResourceName <String>] [-SkipDeployment] [-AzureRoleSize <String>] [-TimeZone <String>]
- [-RhelPackage <String[]>] [<CommonParameters>]
+ [-PostInstallationActivity <InstallationActivity[]>] [-PreInstallationActivity <InstallationActivity[]>]
+ [-ToolsPath <String>] [-ToolsPathDestination <String>] [-VirtualizationHost <VirtualizationHost>]
+ [-EnableWindowsFirewall] [-AutoLogonDomainName <String>] [-AutoLogonUserName <String>]
+ [-AutoLogonPassword <String>] [-AzureProperties <Hashtable>] [-HypervProperties <Hashtable>]
+ [-Notes <Hashtable>] [-PassThru] [-ResourceName <String>] [-SkipDeployment] [-AzureRoleSize <String>]
+ [-TimeZone <String>] [-RhelPackage <String[]>] [-SusePackage <String[]>] [<CommonParameters>]
 ```
 
 ### NetworkAdapter
@@ -33,12 +33,12 @@ Add-LabMachineDefinition -Name <String> [-Memory <Double>] [-MinMemory <Double>]
  [-Processors <Int32>] [-DiskName <String[]>] [-OperatingSystem <OperatingSystem>]
  [-OperatingSystemVersion <String>] [-NetworkAdapter <NetworkAdapter[]>] [-IsDomainJoined] [-DefaultDomain]
  [-InstallationUserCredential <PSCredential>] [-DomainName <String>] [-Roles <Role[]>] [-UserLocale <String>]
- [-PostInstallationActivity <PostInstallationActivity[]>] [-ToolsPath <String>]
- [-ToolsPathDestination <String>] [-VirtualizationHost <VirtualizationHost>] [-EnableWindowsFirewall]
- [-AutoLogonDomainName <String>] [-AutoLogonUserName <String>] [-AutoLogonPassword <String>]
- [-AzureProperties <Hashtable>] [-HypervProperties <Hashtable>] [-Notes <Hashtable>] [-PassThru]
- [-ResourceName <String>] [-SkipDeployment] [-AzureRoleSize <String>] [-TimeZone <String>]
- [-RhelPackage <String[]>] [<CommonParameters>]
+ [-PostInstallationActivity <InstallationActivity[]>] [-PreInstallationActivity <InstallationActivity[]>]
+ [-ToolsPath <String>] [-ToolsPathDestination <String>] [-VirtualizationHost <VirtualizationHost>]
+ [-EnableWindowsFirewall] [-AutoLogonDomainName <String>] [-AutoLogonUserName <String>]
+ [-AutoLogonPassword <String>] [-AzureProperties <Hashtable>] [-HypervProperties <Hashtable>]
+ [-Notes <Hashtable>] [-PassThru] [-ResourceName <String>] [-SkipDeployment] [-AzureRoleSize <String>]
+ [-TimeZone <String>] [-RhelPackage <String[]>] [-SusePackage <String[]>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -48,7 +48,7 @@ It merely creates the information of how the machines should look like.
 
 ## EXAMPLES
 
-### EXAMPLE 1
+### Example 1
 ```powershell
 Add-MachineDefinition -Name Server1 -OperatingSystem 'Windows Server 2016 Technical Preview 5 SERVERDATACENTER' -ToolsPath 'C:\LabSources\MyLabTools1' -ToolsPathDestination 'C:\MyDistTools'
 ```
@@ -58,15 +58,15 @@ Machine will not be domain joined but be placed in workgroup.
 
 If using a folder for tools folder for each machine in the lab ie C:\MyLabTools1\Server1, C:\MyLabTools1\Server2 etc, you can use 'C:\MyLabTools1\\\<machine\>' and AutomatedLab will map using the name of each machine to find the tools folder.
 
-### EXAMPLE 2
+### Example 2
 ```powershell
 Add-MachineDefinition -Name Server1 -OperatingSystem 'Windows Server 2008 R2 Datacenter (Full Installation)' -VirtualizationHost HyperV -Memory 1GB -MinMemory 512MB -MaxMemory 2GB -DomainName 'contoso.com'
 ```
 
 Adds a definition of a Hyper-V machine with the name 'Server1' with the operating system of 'Windows Server 2008 R2 Datacenter (Full Installation)'.
 
-Following parameters for the machine, will be auto-configured:
-- Processors
+Following parameters for the machine, will be auto-configured: - Processors
+
 - IPv4 address and subnet mask
 - DNS server
 - Regional settings (will be set to match the host machine)
@@ -75,7 +75,7 @@ Following parameters for the machine, will be auto-configured:
 - Windows firewall is disabled
 - Hyper-V switch or Azure virtual network depending on -DefaultVirtualizationEngine parameter used for New-LabDefinition or -VirtualizationEngine parameter used for this function (Add-LabMachineDefinition)
 
-### EXAMPLE 3
+### Example 3
 ```powershell
 Add-MachineDefinition -Name Server1 -OperatingSystem 'Windows Server 2012 R2 Datacenter (Server with a GUI)' -OperatingSystemVersion 6.3.9600.17415 -VirtualizationHost HyperV -Processors 2 -Memory 2GB -IpAddress '192.168.100.5/24' -Network Network1
 ```
@@ -84,7 +84,7 @@ Adds a definition of a Hyper-V machine with the name 'Server1' with the operatin
 
 Memory will be set to 2GB (static).
 
-### EXAMPLE 4
+### Example 4
 ```powershell
 Add-MachineDefinition -Name Server1 -OperatingSystem 'Windows Server 2012 R2 Datacenter (Server with a GUI)' -VirtualizationHost HyperV -DefaultDomain -ProductKey 'ABCDE-ABCDE-ABCDE-ABCDE-ABCDE'
 ```
@@ -301,7 +301,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -316,7 +316,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
 ```
@@ -401,7 +401,7 @@ Accept wildcard characters: False
 Post installation activities as defined with Get-LabPostInstallationActivity
 
 ```yaml
-Type: PostInstallationActivity[]
+Type: InstallationActivity[]
 Parameter Sets: (All)
 Aliases:
 
@@ -468,7 +468,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -519,7 +519,8 @@ Accept wildcard characters: False
 ```
 
 ### -AzureProperties
-The Azure properties. Don't add them unless you know what you are doing.
+The Azure properties.
+Don't add them unless you know what you are doing.
 Currently valid properties:  'ResourceGroupName', 'UseAllRoleSizes', 'RoleSize', 'LoadBalancerRdpPort', 'LoadBalancerWinRmHttpPort', 'LoadBalancerWinRmHttpsPort', 'SubnetName','UseByolImage'
 
 ```yaml
@@ -535,7 +536,8 @@ Accept wildcard characters: False
 ```
 
 ### -HypervProperties
-The HyperV properties. Currently valid properties: 'AutomaticStartAction', 'AutomaticStartDelay', 'AutomaticStopAction'
+The HyperV properties.
+Currently valid properties: 'AutomaticStartAction', 'AutomaticStartDelay', 'AutomaticStopAction'
 
 ```yaml
 Type: Hashtable
@@ -589,7 +591,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -635,7 +637,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -645,6 +647,36 @@ Name of the resource in the resource group
 
 ```yaml
 Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -PreInstallationActivity
+{{ Fill PreInstallationActivity Description }}
+
+```yaml
+Type: InstallationActivity[]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -SusePackage
+{{ Fill SusePackage Description }}
+
+```yaml
+Type: String[]
 Parameter Sets: (All)
 Aliases:
 

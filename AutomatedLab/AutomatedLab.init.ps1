@@ -152,6 +152,7 @@ Set-PSFConfig -Module 'AutomatedLab' -Name WacDownloadUrl -Value 'http://aka.ms/
 
 #Host Settings
 Set-PSFConfig -Module 'AutomatedLab' -Name DiskDeploymentInProgressPath -Value (Join-Path -Path (Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot) -ChildPath "LabDiskDeploymentInProgress.txt") -Initialize -Validation string -Description 'The file indicating that Hyper-V disks are being configured to reduce disk congestion'
+Set-PSFConfig -Module 'AutomatedLab' -Name SwitchDeploymentInProgressPath -Value (Join-Path -Path (Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot) -ChildPath "VSwitchDeploymentInProgress.txt") -Initialize -Validation string -Description 'The file indicating that VM switches are being deployed in case multiple lab deployments are started in parallel'
 Set-PSFConfig -Module 'AutomatedLab' -Name SkipHostFileModification -Value $false -Initialize -Validation bool -Description 'Indicates that the hosts file should not be modified when deploying a new lab.'
 
 #Azure
@@ -191,6 +192,9 @@ Set-PSFConfig -Module 'AutomatedLab' -Name cppredist64_2012 -Value 'https://down
 Set-PSFConfig -Module 'AutomatedLab' -Name cppredist32_2012 -Value 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x86.exe' -Initialize -Validation string -Description 'Link to VC++ redist 2012 (x86)'
 
 Set-PSFConfig -Module 'AutomatedLab' -Name cppredist64_2010 -Value 'http://go.microsoft.com/fwlink/?LinkId=404264&clcid=0x409' -Initialize -Validation string -Description 'Link to VC++ redist 2010 (x64)'
+
+# IIS URL Rewrite Module
+Set-PSFConfig -Module automatedlab -Name IisUrlRewriteDownloadUrl -Value "https://download.microsoft.com/download/1/2/8/128E2E22-C1B9-44A4-BE2A-5859ED1D4592/rewrite_amd64_en-US.msi" -Validation string -Description 'Link to IIS URL Rewrite Module needed for Exchange 2016 and 2019'
 
 #SQL Server 2016 Management Studio
 Set-PSFConfig -Module 'AutomatedLab' -Name Sql2016ManagementStudio -Value 'https://go.microsoft.com/fwlink/?LinkID=840946' -Initialize -Validation string -Description 'Link to SSMS 2016'
@@ -317,8 +321,8 @@ Set-PSFConfig -Module AutomatedLab -Name Dynamics365Uri -Value 'https://download
 
 # Exchange Server
 Set-PSFConfig -Module AutomatedLab -Name Exchange2013DownloadUrl -Value 'https://download.microsoft.com/download/7/F/D/7FDCC96C-26C0-4D49-B5DB-5A8B36935903/Exchange2013-x64-cu23.exe'
-Set-PSFConfig -Module AutomatedLab -Name Exchange2016DownloadUrl -Value 'https://download.microsoft.com/download/7/d/5/7d5c319b-510b-4a2c-a77a-099c6f30ab54/ExchangeServer2016-x64-CU21.ISO'
-Set-PSFConfig -Module AutomatedLab -Name Exchange2019DownloadUrl -Value 'https://download.microsoft.com/download/7/3/f/73f75f9e-e7fd-4cb0-a2fc-405cbb800f2d/ExchangeServer2019-x64-CU10.ISO'
+Set-PSFConfig -Module AutomatedLab -Name Exchange2016DownloadUrl -Value 'https://download.microsoft.com/download/f/0/e/f0e65686-3761-4c9d-b8b2-9fb71a207b8d/ExchangeServer2016-x64-CU22.ISO'
+Set-PSFConfig -Module AutomatedLab -Name Exchange2019DownloadUrl -Value 'https://download.microsoft.com/download/5/3/e/53e75dbd-ca33-496a-bd23-1d861feaa02a/ExchangeServer2019-x64-CU11.ISO'
 
 # ConfigMgr
 Set-PSFConfig -Module AutomatedLab -Name ConfigurationManagerWmiExplorer -Value 'https://github.com/vinaypamnani/wmie2/releases/download/v2.0.0.2/WmiExplorer_2.0.0.2.zip'
@@ -738,6 +742,10 @@ Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
 # Product key file path
 $fPath = Join-Path -Path (Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot) -ChildPath 'Assets/ProductKeys.xml'
 $fcPath = Join-Path -Path (Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot) -ChildPath 'Assets/ProductKeysCustom.xml'
+if (-not (Test-Path -Path $fPath -ErrorAction SilentlyContinue))
+{
+    Copy-Item -Path "$PSScriptRoot/ProductKeys.xml" -Destination $fcPath -Force -ErrorAction SilentlyContinue
+}
 Set-PSFConfig -Module AutomatedLab -Name ProductKeyFilePath -Value $fPath -Initialize -Validation string -Description 'Destination of the ProductKeys file for Windows products'
 Set-PSFConfig -Module AutomatedLab -Name ProductKeyFilePathCustom -Value $fcPath -Initialize -Validation string -Description 'Destination of the ProductKeysCustom file for Windows products'
 

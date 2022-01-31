@@ -83,23 +83,20 @@ function Install-LabDscPullServer
     Write-ScreenInfo -Message 'Waiting for machines to startup' -NoNewline
     Start-LabVM -RoleName $roleName -Wait -ProgressIndicator 15
 
-    $ca = Get-LabIssuingCA
-    if (-not $ca)
+    $ca = Get-LabIssuingCA -WarningAction SilentlyContinue
+    if ($ca)
     {
-        Write-Error 'This role requires a Certificate Authority but there is no one defined in the lab. Please make sure that one machine has the role CaRoot or CaSubordinate.'
-        return
-    }
+        if (-not (Test-LabCATemplate -TemplateName DscPullSsl -ComputerName $ca))
+        {
+            New-LabCATemplate -TemplateName DscPullSsl -DisplayName 'Dsc Pull Sever SSL' -SourceTemplateName WebServer -ApplicationPolicy 'Server Authentication' `
+            -EnrollmentFlags Autoenrollment -PrivateKeyFlags AllowKeyExport -Version 2 -SamAccountName 'Domain Computers' -ComputerName $ca -ErrorAction Stop
+        }
 
-    if (-not (Test-LabCATemplate -TemplateName DscPullSsl -ComputerName $ca))
-    {
-        New-LabCATemplate -TemplateName DscPullSsl -DisplayName 'Dsc Pull Sever SSL' -SourceTemplateName WebServer -ApplicationPolicy 'Server Authentication' `
-        -EnrollmentFlags Autoenrollment -PrivateKeyFlags AllowKeyExport -Version 2 -SamAccountName 'Domain Computers' -ComputerName $ca -ErrorAction Stop
-    }
-
-    if (-not (Test-LabCATemplate -TemplateName DscMofFileEncryption  -ComputerName $ca))
-    {
-        New-LabCATemplate -TemplateName DscMofFileEncryption -DisplayName 'Dsc Mof File Encryption' -SourceTemplateName CEPEncryption -ApplicationPolicy 'Document Encryption' `
-        -KeyUsage KEY_ENCIPHERMENT, DATA_ENCIPHERMENT -EnrollmentFlags Autoenrollment -PrivateKeyFlags AllowKeyExport -Version 2 -SamAccountName 'Domain Computers' -ComputerName $ca
+        if (-not (Test-LabCATemplate -TemplateName DscMofFileEncryption  -ComputerName $ca))
+        {
+            New-LabCATemplate -TemplateName DscMofFileEncryption -DisplayName 'Dsc Mof File Encryption' -SourceTemplateName CEPEncryption -ApplicationPolicy 'Document Encryption' `
+            -KeyUsage KEY_ENCIPHERMENT, DATA_ENCIPHERMENT -EnrollmentFlags Autoenrollment -PrivateKeyFlags AllowKeyExport -Version 2 -SamAccountName 'Domain Computers' -ComputerName $ca
+        }
     }
 
     if ($Online)
@@ -232,9 +229,16 @@ function Install-LabDscPullServer
             Add-LWAzureLoadBalancedPort -Port $remotePort -DestinationPort 8080 -ComputerName $machine -ErrorAction SilentlyContinue
         }
 
-        Request-LabCertificate -Subject "CN=$machine" -TemplateName DscMofFileEncryption -ComputerName $machine -PassThru | Out-Null
+        if (Get-LabIssuingCA -WarningAction SilentlyContinue)
+        {
+            Request-LabCertificate -Subject "CN=$machine" -TemplateName DscMofFileEncryption -ComputerName $machine -PassThru | Out-Null
 
-        $cert = Request-LabCertificate -Subject "CN=$($machine.Name)" -SAN $machine.Name, $machine.FQDN -TemplateName DscPullSsl -ComputerName $machine -PassThru -ErrorAction Stop
+            $cert = Request-LabCertificate -Subject "CN=$($machine.Name)" -SAN $machine.Name, $machine.FQDN -TemplateName DscPullSsl -ComputerName $machine -PassThru -ErrorAction Stop
+        }
+        else
+        {
+            $cert = @{Thumbprint = 'AllowUnencryptedTraffic'}
+        }
 
         $setupParams = @{
             ComputerName = $machine
@@ -348,6 +352,8 @@ function Install-LabDscClient
 
     Copy-LabFileItem -Path $labSources\PostInstallationActivities\SetupDscClients\SetupDscClients.ps1 -ComputerName $machines
 
+    [bool] $useSsl = Get-LabIssuingCA -WarningAction SilentlyContinue
+
     foreach ($machine in $machines)
     {
         Invoke-LabCommand -ActivityName 'Setup DSC Pull Clients' -ComputerName $machine -ScriptBlock {
@@ -357,11 +363,12 @@ function Install-LabDscClient
                 [string[]]$PullServer,
 
                 [Parameter(Mandatory)]
-                [string[]]$RegistrationKey
+                [string[]]$RegistrationKey,
+                [bool] $UseSsl
             )
 
-            C:\SetupDscClients.ps1 -PullServer $PullServer -RegistrationKey $RegistrationKey
-        } -ArgumentList $pullServerMachines.FQDN, $pullServerMachines.InternalNotes.DscRegistrationKey -PassThru
+            C:\SetupDscClients.ps1 -PullServer $PullServer -RegistrationKey $RegistrationKey -UseSsl $UseSsl
+        } -ArgumentList $pullServerMachines.FQDN, $pullServerMachines.InternalNotes.DscRegistrationKey, $useSsl -PassThru
     }
 }
 #endregion Install-LabDscClient

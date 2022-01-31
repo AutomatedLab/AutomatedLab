@@ -9,7 +9,39 @@ There are two options installing AutomatedLab:
 ## From gallery
 ```powershell
 Install-PackageProvider Nuget -Force
-Install-Module AutomatedLab -AllowClobber
+# SkipPublisherCheck: AutomatedLabTest requires Pester v5. On system where Pester v3 is still the only versions, you will get an error if the parameter is not present
+# AllowClobber: On some occasions, other modules seem to have published ConvertTo-Json/ConvertFrom-Json, which is overwritten by Newtonsoft.Json
+Install-Module AutomatedLab -SkipPublisherCheck -AllowClobber
+
+#region Non-interactive host
+# Pre-configure telemetry
+if ($IsLinux -or $IsMacOs)
+{
+    # Disable (which is already the default) and in addition skip dialog
+    $null = New-Item -ItemType File -Path "$((Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot))/telemetry.disabled" -Force
+
+    # Enable
+    $null = New-Item -ItemType File -Path "$((Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot))/telemetry.enabled" -Force
+}
+else
+{
+    #  Disable (which is already the default) and in addition skip dialog
+    [Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTIN', 'false', 'Machine')
+    $env:AUTOMATEDLAB_TELEMETRY_OPTIN = 'false'
+
+    # Enable
+    [Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTIN', 'true', 'Machine')
+    $env:AUTOMATEDLAB_TELEMETRY_OPTIN = 'true'
+}
+
+# Pre-configure Lab Host Remoting
+Enable-LabHostRemoting -Force
+
+# Using Azure: Pre-configure Lab Sources Synchronization
+# Get/Set/Register/Unregister-PSFConfig -Module AutomatedLab -Name LabSourcesMaxFileSizeMb
+# Get/Set/Register/Unregister-PSFConfig -Module AutomatedLab -Name LabSourcesSyncIntervalDays
+# Get/Set/Register/Unregister-PSFConfig -Module AutomatedLab -Name AutoSyncLabSources
+#endregion
 
 # If you are on Linux and are not starting pwsh with sudo
 # This needs to executed only once per user - adjust according to your needs!
@@ -18,7 +50,7 @@ Set-PSFConfig -Module AutomatedLab -Name LabAppDataRoot -Value /home/youruser/.a
 # Prepare sample content - modify to your needs
 
 # Windows
-New-LabSourcesFolder -Drive C
+New-LabSourcesFolder -DriveLetter C
 
 # Linux
 Set-PSFConfig -Module AutomatedLab -Name LabSourcesLocation -Value /home/youruser/labsources -PassThru | Register-PSFConfig

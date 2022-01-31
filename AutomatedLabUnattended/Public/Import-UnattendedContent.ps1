@@ -1,5 +1,6 @@
 function Import-UnattendedContent
 {
+	[CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
         [string[]]

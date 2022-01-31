@@ -1,5 +1,6 @@
 ﻿function Set-UnattendedAdministratorPassword
 {
+	[CmdletBinding()]
 	param (
 		[Parameter(Mandatory = $true)]
 		[string]$Password,

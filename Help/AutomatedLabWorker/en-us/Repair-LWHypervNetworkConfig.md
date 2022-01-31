@@ -17,8 +17,8 @@ Repair-LWHypervNetworkConfig [-ComputerName] <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-Reorder and rename Hyper-V VM network adapters. The status of the repair will be
-added to the notes field of the VM
+Reorder and rename Hyper-V VM network adapters.
+The status of the repair will be added to the notes field of the VM
 
 ## EXAMPLES
 
@@ -52,7 +52,6 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### None
-
 ## OUTPUTS
 
 ### System.Object

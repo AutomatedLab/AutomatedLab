@@ -17,8 +17,7 @@ Get-LabAvailableAddresseSpace
 ```
 
 ## DESCRIPTION
-Gets the available address space for the lab by examining the config setting AutomatedLab.DefaultAddressSpace (Get-PSFConfig -FullName AutomatedLab.DefaultAddressSpace) and then incrementing the network until a suitable network
-address space for the lab has been found.
+Gets the available address space for the lab by examining the config setting AutomatedLab.DefaultAddressSpace (Get-PSFConfig -FullName AutomatedLab.DefaultAddressSpace) and then incrementing the network until a suitable network address space for the lab has been found.
 
 ## EXAMPLES
 
@@ -27,8 +26,7 @@ address space for the lab has been found.
 PS C:\> Get-LabAvailableAddressSpace
 ```
 
-On a fresh Hyper-V without any deployed virtual switches, should return 192.168.10.0/24, or the value
-of Get-PSFConfig -FullName AutomatedLab.DefaultAddressSpace
+On a fresh Hyper-V without any deployed virtual switches, should return 192.168.10.0/24, or the value of Get-PSFConfig -FullName AutomatedLab.DefaultAddressSpace
 
 ## PARAMETERS
 

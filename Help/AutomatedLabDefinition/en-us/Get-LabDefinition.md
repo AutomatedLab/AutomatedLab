@@ -22,8 +22,6 @@ Retrieves all lab definition information
 ## EXAMPLES
 
 ### Example 1
-
-
 ```powershell
 Get-LabDefinition
 ```

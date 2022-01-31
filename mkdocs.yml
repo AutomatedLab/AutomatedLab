@@ -90,6 +90,7 @@ nav:
     - AzureDevOpsCloudConnection.ps1: Wiki/SampleScripts/Scenarios/en-us/AzureDevOpsCloudConnection.md
     - CM-1902.ps1: Wiki/SampleScripts/Scenarios/en-us/CM-1902.md
     - CM-2002.ps1: Wiki/SampleScripts/Scenarios/en-us/CM-2002.md
+    - CM-2103.ps1: Wiki/SampleScripts/Scenarios/en-us/CM-2103.md
     - DSC Pull Scenario 1 (Pull Configuration).ps1: Wiki/SampleScripts/Scenarios/en-us/DSC Pull Scenario 1 (Pull Configuration).md
     - DSC Pull Scenario 1 (Pull Configuration, SQL Reporting).ps1: Wiki/SampleScripts/Scenarios/en-us/DSC Pull Scenario 1 (Pull Configuration, SQL Reporting).md
     - DSC Pull Scenario 2 (Pull Partial Configuration).ps1: Wiki/SampleScripts/Scenarios/en-us/DSC Pull Scenario 2 (Pull Partial Configuration).md
@@ -112,7 +113,7 @@ nav:
     - NuGetServer.ps1: Wiki/SampleScripts/Scenarios/en-us/NuGetServer.md
     - ProGet Lab - Azure.ps1: Wiki/SampleScripts/Scenarios/en-us/ProGet Lab - Azure.md
     - ProGet Lab - HyperV.ps1: Wiki/SampleScripts/Scenarios/en-us/ProGet Lab - HyperV.md
-    - RemoteDesktopServices.ps1: Wiki/SampleScripts/Scenarios/en-us/RemoteDesktopServices.ps1
+    - RemoteDesktopServices.ps1: Wiki/SampleScripts/Scenarios/en-us/RemoteDesktopServices.md
     - SCCM Lab 1.ps1: Wiki/SampleScripts/Scenarios/en-us/SCCM Lab 1.md
     - SCOMDistributed.ps1: Wiki/SampleScripts/Scenarios/en-us/SCOMDistributed.md
     - SCVMM.ps1: Wiki/SampleScripts/Scenarios/en-us/SCVMM.md
@@ -139,7 +140,7 @@ nav:
 - Version history: https://github.com/AutomatedLab/AutomatedLab/blob/master/CHANGELOG.md
 - Module help:
   - AutomatedLab:
-    - Set-LabAutoLogon: AutomatedLab/en-us/Set-LabAutoLogon.md
+    - Disable-LabHostRemoting: AutomatedLab/en-us/Disable-LabHostRemoting.md
     - Add-LabAzureSubscription: AutomatedLab/en-us/Add-LabAzureSubscription.md
     - Add-LabCertificate: AutomatedLab/en-us/Add-LabCertificate.md
     - Add-LabVMUserRight: AutomatedLab/en-us/Add-LabVMUserRight.md
@@ -218,6 +219,7 @@ nav:
     - Install-LabAdfsProxy: AutomatedLab/en-us/Install-LabAdfsProxy.md
     - Install-LabAzureServices: AutomatedLab/en-us/Install-LabAzureServices.md
     - Install-LabBuildWorker: AutomatedLab/en-us/Install-LabBuildWorker.md
+    - Install-LabConfigurationManager: AutomatedLab/en-us/Install-LabConfigurationManager.md
     - Install-LabDcs: AutomatedLab/en-us/Install-LabDcs.md
     - Install-LabDnsForwarder: AutomatedLab/en-us/Install-LabDnsForwarder.md
     - Install-LabDscClient: AutomatedLab/en-us/Install-LabDscClient.md
@@ -229,6 +231,7 @@ nav:
     - Install-LabOffice2013: AutomatedLab/en-us/Install-LabOffice2013.md
     - Install-LabOffice2016: AutomatedLab/en-us/Install-LabOffice2016.md
     - Install-LabRdsCertificate: AutomatedLab/en-us/Install-LabRdsCertificate.md
+    - Install-LabRemoteDesktopServices: AutomatedLab/en-us/Install-LabRemoteDesktopServices.md
     - Install-LabRootDcs: AutomatedLab/en-us/Install-LabRootDcs.md
     - Install-LabRouting: AutomatedLab/en-us/Install-LabRouting.md
     - Install-LabScom: AutomatedLab/en-us/Install-LabScom.md
@@ -319,12 +322,20 @@ nav:
     - Wait-LabVMRestart: AutomatedLab/en-us/Wait-LabVMRestart.md
     - Wait-LabVMShutdown: AutomatedLab/en-us/Wait-LabVMShutdown.md
   - AutomatedLab.Recipe:
+    - Export-LabSnippet: AutomatedLab.Recipe/en-us/Export-LabSnippet.md
     - Get-LabRecipe: AutomatedLab.Recipe/en-us/Get-LabRecipe.md
+    - Get-LabSnippet: AutomatedLab.Recipe/en-us/Get-LabSnippet.md
     - Invoke-LabRecipe: AutomatedLab.Recipe/en-us/Invoke-LabRecipe.md
+    - Invoke-LabSnippet: AutomatedLab.Recipe/en-us/Invoke-LabSnippet.md
     - New-LabRecipe: AutomatedLab.Recipe/en-us/New-LabRecipe.md
+    - New-LabSnippet: AutomatedLab.Recipe/en-us/New-LabSnippet.md
     - Remove-LabRecipe: AutomatedLab.Recipe/en-us/Remove-LabRecipe.md
+    - Remove-LabSnippet: AutomatedLab.Recipe/en-us/Remove-LabSnippet.md
     - Save-LabRecipe: AutomatedLab.Recipe/en-us/Save-LabRecipe.md
+    - Set-LabSnippet: AutomatedLab.Recipe/en-us/Set-LabSnippet.md
+    - Update-LabSnippet: AutomatedLab.Recipe/en-us/Update-LabSnippet.md
   - AutomatedLabDefinition:
+    - Get-LabPostInstallationActivity: AutomatedLabDefinition/en-us/Get-LabPostInstallationActivity.md
     - Add-LabAzureAppServicePlanDefinition: AutomatedLabDefinition/en-us/Add-LabAzureAppServicePlanDefinition.md
     - Add-LabAzureWebAppDefinition: AutomatedLabDefinition/en-us/Add-LabAzureWebAppDefinition.md
     - Add-LabDiskDefinition: AutomatedLabDefinition/en-us/Add-LabDiskDefinition.md
@@ -339,10 +350,10 @@ nav:
     - Get-LabAzureWebAppDefinition: AutomatedLabDefinition/en-us/Get-LabAzureWebAppDefinition.md
     - Get-LabDefinition: AutomatedLabDefinition/en-us/Get-LabDefinition.md
     - Get-LabDomainDefinition: AutomatedLabDefinition/en-us/Get-LabDomainDefinition.md
+    - Get-LabInstallationActivity: AutomatedLabDefinition/en-us/Get-LabInstallationActivity.md
     - Get-LabIsoImageDefinition: AutomatedLabDefinition/en-us/Get-LabIsoImageDefinition.md
     - Get-LabMachineDefinition: AutomatedLabDefinition/en-us/Get-LabMachineDefinition.md
     - Get-LabMachineRoleDefinition: AutomatedLabDefinition/en-us/Get-LabMachineRoleDefinition.md
-    - Get-LabPostInstallationActivity: AutomatedLabDefinition/en-us/Get-LabPostInstallationActivity.md
     - Get-LabVirtualNetwork: AutomatedLabDefinition/en-us/Get-LabVirtualNetwork.md
     - Get-LabVirtualNetworkDefinition: AutomatedLabDefinition/en-us/Get-LabVirtualNetworkDefinition.md
     - Get-LabVolumesOnPhysicalDisks: AutomatedLabDefinition/en-us/Get-LabVolumesOnPhysicalDisks.md

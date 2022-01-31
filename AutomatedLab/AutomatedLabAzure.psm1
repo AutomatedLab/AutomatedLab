@@ -115,7 +115,7 @@ function Add-LabAzureSubscription
     if (-not (Get-AzContext))
     {
         Write-ScreenInfo -Message "No Azure context available. Please login to your Azure account in the next step."
-        $null = Connect-AzAccount -UseDeviceAuthentication -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+        $null = Connect-AzAccount -UseDeviceAuthentication -ErrorAction SilentlyContinue -WarningAction Continue
     }
 
     # Select the proper subscription before saving the profile
@@ -1439,10 +1439,17 @@ function Test-LabAzureSubscription
 
 function Get-LabAzureAvailableRoleSize
 {
+    [CmdletBinding(DefaultParameterSetName='DisplayName')]
     param
     (
-        [Parameter(Mandatory)]
-        [string]$Location
+        [Parameter(Mandatory, ParameterSetName='DisplayName')]
+        [Alias('Location')]
+        [string]
+        $DisplayName,
+
+        [Parameter(Mandatory, ParameterSetName='Name')]
+        [string]
+        $LocationName
     )
 
     Test-LabHostConnected -Throw -Quiet
@@ -1452,29 +1459,43 @@ function Get-LabAzureAvailableRoleSize
         [void] (Connect-AzAccount -UseDeviceAuthentication -WarningAction SilentlyContinue)
     }
 
-    $azLocation = Get-AzLocation | Where-Object -Property DisplayName -eq $Location
+    $azLocation = Get-AzLocation | Where-Object {$_.DisplayName -eq $DisplayName -or $_.Location -eq $LocationName}
+    if (-not $azLocation)
+    {
+        Write-ScreenInfo -Type Error -Message "No location found matching DisplayName '$DisplayName' or Name '$LocationName'"
+    }
 
     $availableRoleSizes = Get-AzComputeResourceSku | Where-Object {
         $_.ResourceType -eq 'virtualMachines' -and $_.Locations -contains $azLocation.Location -and $_.Restrictions.ReasonCode -notcontains 'NotAvailableForSubscription'
     } | Select-Object -ExpandProperty Name
 
-    Get-AzVMSize -Location $Location | Where-Object -Property Name -in $availableRoleSizes
+    Get-AzVMSize -Location $azLocation.Location | Where-Object -Property Name -in $availableRoleSizes
 }
 
 function Get-LabAzureAvailableSku
 {
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName='DisplayName')]
     param
     (
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory, ParameterSetName='DisplayName')]
+        [Alias('Location')]
         [string]
-        $Location
+        $DisplayName,
+
+        [Parameter(Mandatory, ParameterSetName='Name')]
+        [string]
+        $LocationName
     )
 
     Test-LabHostConnected -Throw -Quiet
 
     # Server
-    $publishers = Get-AzVMImagePublisher -Location $Location
+    $azLocation = Get-AzLocation | Where-Object {$_.DisplayName -eq $DisplayName -or $_.Location -eq $LocationName}
+    if (-not $azLocation)
+    {
+        Write-ScreenInfo -Type Error -Message "No location found matching DisplayName '$DisplayName' or Name '$LocationName'"
+    }
+    $publishers = Get-AzVMImagePublisher -Location $azLocation.Location
     
     $publishers |
     Where-Object PublisherName -eq 'MicrosoftWindowsServer' |

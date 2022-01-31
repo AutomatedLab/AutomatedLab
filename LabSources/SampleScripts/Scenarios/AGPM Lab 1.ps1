@@ -1,4 +1,4 @@
-﻿#Lab for working with the Advanced Group Policy Manaement Console (AGMP)
+﻿#Lab for working with the Advanced Group Policy Management Console (AGMP)
 #The following files are required:
 # - agpm_403_server_amd64.exe
 # - agpm_403_client_amd64.exe

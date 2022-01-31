@@ -24,6 +24,9 @@ function Download-ExchangeSources
     $script:cppredist642013InstallFile = Get-LabInternetFile -Uri $cppredist642013DownloadLink -Path $downloadTargetFolder -FileName vcredist_x64_2013.exe -PassThru -ErrorAction Stop
     $script:cppredist322013InstallFile = Get-LabInternetFile -Uri $cppredist322013DownloadLink -Path $downloadTargetFolder -FileName vcredist_x86_2013.exe -PassThru -ErrorAction Stop
 
+    Write-ScreenInfo -Message "Downloading IIS URL Rewrite module from '$iisUrlRewriteDownloadlink'"
+    $script:iisUrlRewriteInstallFile = Get-LabInternetFile -Uri $iisUrlRewriteDownloadlink -Path $downloadTargetFolder -PassThru -ErrorAction Stop
+
     Write-ScreenInfo 'finished' -TaskEnd
 }
 
@@ -50,8 +53,8 @@ function Add-ExchangeAdRights
 
 function Install-ExchangeWindowsFeature
 {
-    Write-ScreenInfo "Installing Windows Features Server-Media-Foundation, RSAT on '$vm'"  -TaskStart -NoNewLine
-    $jobs += Install-LabWindowsFeature -ComputerName $vm -FeatureName Server-Media-Foundation, RSAT -UseLocalCredential -AsJob -PassThru -NoDisplay
+    Write-ScreenInfo "Installing Windows Features Web-Server, Web-Mgmt-Service, Server-Media-Foundation, RSAT on '$vm'"  -TaskStart -NoNewLine
+    $jobs += Install-LabWindowsFeature -ComputerName $vm -FeatureName Web-Server, Web-Mgmt-Service, Server-Media-Foundation, RSAT -UseLocalCredential -AsJob -PassThru -NoDisplay
     Wait-LWLabJob -Job $jobs -NoDisplay
     Restart-LabVM -ComputerName $vm -Wait
     Write-ScreenInfo 'finished' -TaskEnd
@@ -71,6 +74,9 @@ function Install-ExchangeRequirements
 
     $jobs = @()
     $jobs += Install-LabSoftwarePackage -ComputerName $vm -Path $ucmaInstallFile.FullName -CommandLine '/Quiet /Log C:\DeployDebug\ucma.log' -AsJob -PassThru -NoDisplay
+    Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator 20 -NoNewLine
+
+    $jobs += Install-LabSoftwarePackage -ComputerName $vm -Path $iisUrlRewriteInstallFile.FullName -CommandLine '/Quiet /Log C:\DeployDebug\IisurlRewrite.log' -AsJob -AsScheduledJob -UseShellExecute -PassThru
     Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator 20 -NoNewLine
 
     foreach ($machine in $machines)
@@ -139,7 +145,7 @@ function Start-ExchangeInstallSequence
 
             try
             {
-                Write-ScreenInfo "Calling activity '$Activity' agian."
+                Write-ScreenInfo "Calling activity '$Activity' again."
                 $job = Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath "$($disk.DriveLetter)\setup.exe" -CommandLine $CommandLine `
                     -ExpectedReturnCodes 1 -AsJob -NoDisplay -PassThru -ErrorAction Stop -ErrorVariable exchangeError
                 $result = Wait-LWLabJob -Job $job -NoDisplay -NoNewLine -ProgressIndicator 15 -PassThru -ErrorVariable jobError
@@ -218,7 +224,7 @@ function Start-ExchangeInstallation
             $disk = Mount-LabIsoImage -ComputerName $prepMachine -IsoPath $exchangeInstallFile.FullName -PassThru -SupressOutput
             Remove-LabPSSession -ComputerName $prepMachine
 
-            $commandLine = '/PrepareSchema /IAcceptExchangeServerLicenseTerms'
+            $commandLine = '/PrepareSchema /IAcceptExchangeServerLicenseTerms_DiagnosticDataON'
             $result = Start-ExchangeInstallSequence -Activity 'Exchange PrepareSchema' -ComputerName $prepMachine -CommandLine $commandLine -ErrorAction Stop
             Set-Variable -Name "AL_Result_PrepareSchema_$prepMachine" -Scope Global -Value $result -Force
         }
@@ -229,7 +235,7 @@ function Start-ExchangeInstallation
             $disk = Mount-LabIsoImage -ComputerName $prepMachine -IsoPath $exchangeInstallFile.FullName -PassThru -SupressOutput
             Remove-LabPSSession -ComputerName $prepMachine
 
-            $commandLine = '/PrepareAD /OrganizationName:"{0}" /IAcceptExchangeServerLicenseTerms' -f $OrganizationName
+            $commandLine = '/PrepareAD /OrganizationName:"{0}" /IAcceptExchangeServerLicenseTerms_DiagnosticDataON' -f $OrganizationName
             $result = Start-ExchangeInstallSequence -Activity 'Exchange PrepareAD' -ComputerName $prepMachine -CommandLine $commandLine -ErrorAction Stop
             Set-Variable -Name "AL_Result_PrepareAD_$prepMachine" -Scope Global -Value $result -Force
         }
@@ -240,7 +246,7 @@ function Start-ExchangeInstallation
             $disk = Mount-LabIsoImage -ComputerName $prepMachine -IsoPath $exchangeInstallFile.FullName -PassThru -SupressOutput
             Remove-LabPSSession -ComputerName $prepMachine
 
-            $commandLine = '/PrepareAllDomains /IAcceptExchangeServerLicenseTerms'
+            $commandLine = '/PrepareAllDomains /IAcceptExchangeServerLicenseTerms_DiagnosticDataON'
             $result = Start-ExchangeInstallSequence -Activity 'Exchange PrepareAllDomains' -ComputerName $prepMachine -CommandLine $commandLine -ErrorAction Stop
             Set-Variable -Name "AL_Result_AL_Result_PrepareAllDomains_$prepMachine" -Scope Global -Value $result -Force
         }
@@ -266,7 +272,7 @@ function Start-ExchangeInstallation
             Remove-LabPSSession -ComputerName $prepMachine
 
             #Actual Exchange Installaton
-            $commandLine = '/Mode:Install /Roles:mb,mt /InstallWindowsComponents /OrganizationName:"{0}" /IAcceptExchangeServerLicenseTerms' -f $OrganizationName
+            $commandLine = '/Mode:Install /Roles:mb,mt /InstallWindowsComponents /OrganizationName:"{0}" /IAcceptExchangeServerLicenseTerms_DiagnosticDataON' -f $OrganizationName
             $result = Start-ExchangeInstallSequence -Activity 'Exchange Components' -ComputerName $vm -CommandLine $commandLine -ErrorAction Stop
             Set-Variable -Name "AL_Result_ExchangeInstall_$vm" -Value $result -Scope Global
             Write-ScreenInfo -Message "Finished installing Exchange Server 2016 on machine '$vm'" -TaskEnd
@@ -289,6 +295,7 @@ $exchangeDownloadLink = Get-LabConfigurationItem -Name Exchange2016DownloadUrl
 $dotnetDownloadLink = Get-LabConfigurationItem -Name dotnet48DownloadLink
 $cppredist642013DownloadLink = Get-LabConfigurationItem -Name cppredist64_2013
 $cppredist322013DownloadLink = Get-LabConfigurationItem -Name cppredist32_2013
+$iisUrlRewriteDownloadlink = Get-LabConfigurationItem -Name IisUrlRewriteDownloadUrl
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------
 

@@ -17,7 +17,8 @@ New-LWHypervVM [-Machine] <Machine> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-Create a new Hyper-V VM. Takes care of both Windows and Linux VMs.
+Create a new Hyper-V VM.
+Takes care of both Windows and Linux VMs.
 
 ## EXAMPLES
 
@@ -51,7 +52,6 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### None
-
 ## OUTPUTS
 
 ### System.Object

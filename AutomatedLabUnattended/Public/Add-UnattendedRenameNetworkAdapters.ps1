@@ -1,5 +1,6 @@
 ﻿function Add-UnattendedRenameNetworkAdapters
 {
+	[CmdletBinding()]
     param
     (
         [switch]$IsKickstart,

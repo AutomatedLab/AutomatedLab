@@ -28,8 +28,6 @@ This function creates a checkpoint of a lab virtual machine running on HyperV
 ## EXAMPLES
 
 ### Example 1
-
-
 ```powershell
 Checkpoint-LabVM -All -SnapshotName 'FirstSnapshot'
 ```
@@ -78,7 +76,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
 ```

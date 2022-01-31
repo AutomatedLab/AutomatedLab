@@ -17,7 +17,8 @@ Register-LabArgumentCompleters
 ```
 
 ## DESCRIPTION
-Register the necessary argument completers for AutomatedLab. Is called when the module is ipmorted.
+Register the necessary argument completers for AutomatedLab.
+Is called when the module is ipmorted.
 
 ## EXAMPLES
 
@@ -33,7 +34,6 @@ Register the necessary argument completers for AutomatedLab
 ## INPUTS
 
 ### None
-
 ## OUTPUTS
 
 ### System.Object

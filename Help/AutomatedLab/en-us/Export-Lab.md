@@ -26,7 +26,8 @@ Exports a lab including all machine and disk definitions to local XML stores acc
 PS C:\> Export-Lab
 ```
 
-Saves the currently created lab definition to the lab path. Default: $env:PROGRAMDATA\AutomatedLab\Labs
+Saves the currently created lab definition to the lab path.
+Default: $env:PROGRAMDATA\AutomatedLab\Labs
 
 ## PARAMETERS
 

@@ -7,18 +7,31 @@
 	$UseNwFeature = $false
 )
 
-$createDbQuery = @'
+[string]$createDbQuery = @'
 USE [master]
 GO
 /****** Object:  Database [DSC]    Script Date: 07.04.2021 16:59:54 ******/
+
+DECLARE @DefaultDataPath varchar(max)
+SET @DefaultDataPath = (SELECT CONVERT(varchar(max), SERVERPROPERTY('INSTANCEDEFAULTDATAPATH')))
+
+DECLARE @DefaultLogPath varchar(max)
+SET @DefaultLogPath = (SELECT CONVERT(varchar(max), SERVERPROPERTY('INSTANCEDEFAULTLOGPATH')))
+
+EXECUTE('
 CREATE DATABASE [DSC]
  CONTAINMENT = NONE
  ON  PRIMARY 
-( NAME = N'DSC', FILENAME = N'C:\DSCDB\DSC.mdf' , SIZE = 8192KB , MAXSIZE = UNLIMITED, FILEGROWTH = 1024KB )
- LOG ON 
-( NAME = N'DSC_log', FILENAME = N'C:\DSCDB\DSC_log.ldf' , SIZE = 1024KB , MAXSIZE = 1073741824KB , FILEGROWTH = 10%)
+( NAME = N''DSC'', FILENAME = ''' + @DefaultDataPath + 'DSC.mdf'', SIZE = 16384KB, MAXSIZE = UNLIMITED, FILEGROWTH = 16384KB )
+ LOG ON
+( NAME = N''DSC_log'', FILENAME = ''' + @DefaultLogPath + 'DSC_log.mdf'', SIZE = 2048KB, MAXSIZE = 2048GB, FILEGROWTH = 16384KB )
  WITH CATALOG_COLLATION = DATABASE_DEFAULT
+');
 GO
+
+ALTER DATABASE [DSC] SET RECOVERY SIMPLE
+GO
+
 ALTER DATABASE [DSC] SET COMPATIBILITY_LEVEL = 130
 GO
 IF (1 = FULLTEXTSERVICEPROPERTY('IsFullTextInstalled'))
@@ -142,15 +155,10 @@ BEGIN
       ELSE INSERT INTO @Items VALUES (@InputString)
 
       RETURN
-
 END -- End Function
+GO
 
-GO
 /****** Object:  Table [dbo].[RegistrationData]    Script Date: 07.04.2021 16:59:54 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 CREATE TABLE [dbo].[RegistrationData](
 	[AgentId] [nvarchar](255) NOT NULL,
 	[LCMVersion] [nvarchar](255) NULL,
@@ -159,18 +167,15 @@ CREATE TABLE [dbo].[RegistrationData](
 	[ConfigurationNames] [nvarchar](max) NULL,
  CONSTRAINT [PK_RegistrationData] PRIMARY KEY CLUSTERED 
 (
-	[AgentId] ASC
+    [AgentId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
+
 /****** Object:  Table [dbo].[StatusReport]    Script Date: 07.04.2021 16:59:54 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 CREATE TABLE [dbo].[StatusReport](
-	[JobId] [nvarchar](50) NOT NULL,
-	[Id] [nvarchar](50) NOT NULL,
+    [JobId] [nvarchar](255) NOT NULL,
+    [Id] [nvarchar](255) NOT NULL,
 	[OperationType] [nvarchar](255) NULL,
 	[RefreshMode] [nvarchar](255) NULL,
 	[Status] [nvarchar](255) NULL,
@@ -187,54 +192,67 @@ CREATE TABLE [dbo].[StatusReport](
 	[AdditionalData] [nvarchar](max) NULL,
  CONSTRAINT [PK_StatusReport] PRIMARY KEY CLUSTERED 
 (
-	[JobId] ASC
+    [JobId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
+
+CREATE NONCLUSTERED INDEX [IDX_StatusReport_NodeNameStartTime] ON [dbo].[StatusReport]
+(
+	[NodeName] ASC,
+	[StartTime] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+
 /****** Object:  Table [dbo].[StatusReportMetaData]    Script Date: 07.04.2021 16:59:54 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 CREATE TABLE [dbo].[StatusReportMetaData](
-	[Id] [int] IDENTITY(1,1) NOT NULL,
 	[JobId] [nvarchar](255) NOT NULL,
-	[CreationTime] [datetime] NOT NULL
-) ON [PRIMARY]
+	[CreationTime] [datetime] NOT NULL,
+	[ResourcesInDesiredStateCount] [int] NULL,
+	[ResourcesNotInDesiredStateCount] [int] NULL,
+	[ResourceCount] [int] NULL,
+	[NodeStatus] [nvarchar](50) NULL,
+	[NodeName] [nvarchar](255) NULL,
+	[ErrorMessage] [nvarchar](2500) NULL,
+	[HostName] [nvarchar](50) NULL,
+	[ResourcesInDesiredState] [nvarchar](max) NULL,
+	[ResourcesNotInDesiredState] [nvarchar](max) NULL,
+	[Duration] [float] NULL,
+	[DurationWithOverhead] [float] NULL
+CONSTRAINT [PK_StatusReportMetaData] PRIMARY KEY CLUSTERED 
+(
+    [JobId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  View [dbo].[vBaseNodeUpdateErrors]    Script Date: 07.04.2021 16:59:54 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
+
+CREATE NONCLUSTERED INDEX [IDX_StatusReportMetaData_NodeNameCreationTime] ON [dbo].[StatusReportMetaData]
+(
+	[NodeName] ASC,
+	[CreationTime] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
 
 /****** Object:  Table [dbo].[TaggingData]    Script Date: 4/6/2021 10:53:28 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 CREATE TABLE [dbo].[TaggingData](
 	[AgentId] [nvarchar](255) NOT NULL,
 	[Environment] [nvarchar](255) NULL,
 	[BuildNumber] [int] NOT NULL,
-	[GitCommitId] [nvarchar](255) NOT NULL,
+	[GitCommitId] [nvarchar](255) NULL,
+	[NodeVersion] [nvarchar](50) NULL,
+	[NodeRole] [nvarchar](50) NULL,
 	[Version] [nvarchar](50) NOT NULL,
 	[BuildDate] [datetime] NOT NULL,
 	[Timestamp] [datetime] NOT NULL,
-	[Layers] [text] NULL,
- CONSTRAINT [PK_DiagnosticData] PRIMARY KEY CLUSTERED 
+	[Layers] [nvarchar](max) NULL,
+CONSTRAINT [PK_TaggingData] PRIMARY KEY CLUSTERED 
 (
 	[AgentId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
-) ON [PRIMARY]
-
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
 
 /****** Object:  Table [dbo].[Devices]    Script Date: 07.04.2021 16:59:54 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 CREATE TABLE [dbo].[Devices](
 	[TargetName] [nvarchar](255) NOT NULL,
 	[ConfigurationID] [nvarchar](255) NOT NULL,
@@ -250,76 +268,67 @@ CREATE TABLE [dbo].[Devices](
 	[TargetName] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-
 GO
 
 /****** Object:  Table [dbo].[NodeErrorData]    Script Date: 4/6/2021 10:53:28 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 CREATE TABLE [dbo].[NodeErrorData](
-	[NodeName] [nvarchar](50) NULL,
+	[NodeName] [nvarchar](50) NOT NULL,
 	[StartTime] [datetime] NULL,
 	[Errors] [nvarchar](max) NULL
+CONSTRAINT [PK_NodeErrorData] PRIMARY KEY CLUSTERED 
+(
+    [NodeName] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
 
-GO
 /****** Object:  Table [dbo].[NodeLastStatusData]    Script Date: 4/6/2021 10:53:28 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 CREATE TABLE [dbo].[NodeLastStatusData](
-	[NodeName] [varchar](30) NOT NULL,
+	[NodeName] [nvarchar](50) NOT NULL,
 	[NumberOfResources] [int] NULL,
-	[DscMode] [varchar](10) NULL,
-	[DscConfigMode] [varchar](100) NULL,
-	[ActionAfterReboot] [varchar](50) NULL,
+	[DscMode] [nvarchar](10) NULL,
+	[DscConfigMode] [nvarchar](100) NULL,
+	[ActionAfterReboot] [nvarchar](50) NULL,
 	[ReapplyMOFCycle] [int] NULL,
 	[CheckForNewMOF] [int] NULL,
-	[PullServer] [varchar](30) NULL,
+	[PullServer] [nvarchar](50) NULL,
 	[LastUpdate] [datetime] NULL
+CONSTRAINT [PK_NodeLastStatusData] PRIMARY KEY CLUSTERED 
+(
+    [NodeName] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
+GO
 
-GO
 /****** Object:  Table [dbo].[RegistrationMetaData]    Script Date: 07.04.2021 16:59:54 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 CREATE TABLE [dbo].[RegistrationMetaData](
-	[Id] [int] IDENTITY(1,1) NOT NULL,
 	[AgentId] [nvarchar](255) NOT NULL,
 	[CreationTime] [datetime] NOT NULL
+CONSTRAINT [PK_RegistrationMetaData] PRIMARY KEY CLUSTERED 
+(
+    [AgentId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
 
 --Base views
+
 CREATE VIEW [dbo].[vBaseNodeUpdateErrors]
 AS
 WITH CTE(NodeName
-	,CreationTime
-	,StartTime
-	,EndTime
-	,ErrorMessage
+    ,CreationTime
+    ,StartTime
+    ,EndTime
+    ,ErrorMessage
 ) AS (
-SELECT RegistrationData.NodeName
-	,CreationTime
-	,StartTime
-	,EndTime
-	,(SELECT [ResourceId] + ':' + ' (' + [ErrorCode] + ') ' + [ErrorMessage] + ',' AS [text()]
-		FROM OPENJSON(
-			(SELECT TOP 1  [value] FROM OPENJSON([Errors]))
-		)
-		WITH (
-			ErrorMessage nvarchar(2000) '$.ErrorMessage',
-			ErrorCode nvarchar(20) '$.ErrorCode',
-			ResourceId nvarchar(200) '$.ResourceId'
-		) FOR XML PATH ('')) AS ErrorMessage
-	FROM StatusReport
-	INNER JOIN RegistrationData ON StatusReport.Id = RegistrationData.AgentId
-	INNER JOIN StatusReportMetaData AS SRMD ON StatusReport.JobId = SRMD.JobId
+SELECT rd.NodeName
+    ,srmd.CreationTime
+    ,sr.StartTime
+    ,sr.EndTime
+    ,srmd.ErrorMessage
+    FROM StatusReport AS sr
+    INNER JOIN RegistrationData AS rd ON sr.Id = rd.AgentId
+    INNER JOIN StatusReportMetaData AS srmd ON sr.JobId = srmd.JobId
 )
 SELECT TOP 5000 * FROM CTE WHERE
 ErrorMessage IS NOT NULL
@@ -330,21 +339,15 @@ ErrorMessage IS NOT NULL
 ORDER BY EndTime DESC
 
 --Module does not exist					Cannot find module
---Configuration does not exist			The assigned configuration <Name> is not found
---Checksum does not exist				Checksum file not located for
-
+--Configuration does not exist          The assigned configuration <Name> is not found
+--Checksum does not exist               Checksum file not located for
 GO
+
 /****** Object:  View [dbo].[vBaseNodeLocalStatus]    Script Date: 07.04.2021 16:59:54 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
 CREATE VIEW [dbo].[vBaseNodeLocalStatus]
 AS
-
 WITH CTE(JobId
-	,NodeName
+    ,NodeName
 	,OperationType
 	,RefreshMode
 	,[Status]
@@ -354,158 +357,99 @@ WITH CTE(JobId
 	,IPAddress
 	,CreationTime
 	,StartTime
-	,EndTime
-	,Errors
-	,StatusData
-	,RebootRequested
-	,AdditionalData
-	,ErrorMessage
+    ,EndTime
+    ,Errors
+    ,StatusData
+    ,RebootRequested
+    ,AdditionalData
+    ,ErrorMessage
+    ,ResourceCountInDesiredState
+    ,ResourceCountNotInDesiredState
+    ,ResourcesInDesiredState
+    ,ResourcesNotInDesiredState
+    ,Duration
+    ,DurationWithOverhead
+    ,HostName
 ) AS (
-SELECT StatusReport.JobId
-	,RegistrationData.NodeName
-	,OperationType
-	,RefreshMode
-	,[Status]
-	,StatusReport.LCMVersion
-	,ReportFormatVersion
-	,ConfigurationVersion
-	,StatusReport.IPAddress
-	,CreationTime
-	,StartTime
-	,EndTime
-	,Errors
-	,StatusData
-	,RebootRequested
-	,AdditionalData
-	,(SELECT [ResourceId] + ':' + ' (' + [ErrorCode] + ') ' + [ErrorMessage] + ',' AS [text()]
-	FROM OPENJSON(
-		(SELECT TOP 1  [value] FROM OPENJSON([Errors]))
-	)
-	WITH (
-		ErrorMessage nvarchar(2000) '$.ErrorMessage',
-		ErrorCode nvarchar(20) '$.ErrorCode',
-		ResourceId nvarchar(200) '$.ResourceId'
-		) FOR XML PATH ('')
-	) AS ErrorMessage
-	FROM StatusReport
-	INNER JOIN RegistrationData ON StatusReport.Id = RegistrationData.AgentId
-	INNER JOIN StatusReportMetaData AS SRMD ON StatusReport.JobId = SRMD.JobId
-	)
-	SELECT * FROM CTE
-	WHERE
-		ErrorMessage NOT LIKE '%cannot find module%'
-		AND ErrorMessage NOT LIKE '%The assigned configuration%is not found%'
-		AND ErrorMessage NOT LIKE '%Checksum file not located for%'
+SELECT sr.JobId
+      ,sr.NodeName
+      ,sr.OperationType
+      ,sr.RefreshMode
+      ,sr.Status
+      ,sr.LCMVersion
+      ,sr.ReportFormatVersion
+      ,sr.ConfigurationVersion
+      ,sr.IPAddress
+      ,srmd.CreationTime
+      ,sr.StartTime
+      ,sr.EndTime
+      ,sr.Errors
+      ,sr.StatusData
+      ,sr.RebootRequested
+      ,sr.AdditionalData
+      ,srmd.ErrorMessage
+      ,srmd.ResourcesInDesiredStateCount
+      ,srmd.ResourcesNotInDesiredStateCount
+      ,srmd.ResourcesInDesiredState
+      ,srmd.ResourcesNotInDesiredState
+      ,srmd.Duration
+      ,srmd.DurationWithOverhead
+      ,srmd.HostName
+    FROM StatusReport AS sr
+    INNER JOIN RegistrationData AS rd ON sr.Id = rd.AgentId
+    INNER JOIN StatusReportMetaData AS srmd ON sr.JobId = srmd.JobId
+    )
+    SELECT * FROM CTE
+    WHERE
+        ErrorMessage NOT LIKE '%cannot find module%'
+        AND ErrorMessage NOT LIKE '%The assigned configuration%is not found%'
+        AND ErrorMessage NOT LIKE '%Checksum file not located for%'
 		AND ErrorMessage NOT LIKE '%Checksum for module%'
 		AND [Status] IS NOT NULL
-		OR ErrorMessage IS NULL
-
-
+        OR ErrorMessage IS NULL
 GO
+
 /****** Object:  UserDefinedFunction [dbo].[tvfGetRegistrationData]    Script Date: 07.04.2021 16:59:54 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
 CREATE FUNCTION [dbo].[tvfGetRegistrationData] ()
 RETURNS TABLE
     AS
 RETURN
 (
-    SELECT NodeName, AgentId,
-        (SELECT TOP (1) Item FROM dbo.Split(dbo.RegistrationData.IPAddress, ';') AS IpAddresses) AS IP,
-        (SELECT(SELECT [Value] + ',' AS [text()] FROM OPENJSON([ConfigurationNames]) FOR XML PATH (''))) AS ConfigurationName,
-        (SELECT COUNT(*) FROM (SELECT [Value] FROM OPENJSON([ConfigurationNames]))AS ConfigurationCount ) AS ConfigurationCount
-    FROM dbo.RegistrationData
+    SELECT rd.NodeName AS NodeName, 
+           rd.AgentId AS AgentId,
+           (SELECT TOP (1) Item FROM dbo.Split(rd.IPAddress, ';') AS IpAddresses) AS IP,
+           (SELECT(SELECT [Value] + ',' AS [text()] FROM OPENJSON([ConfigurationNames]) FOR XML PATH (''))) AS ConfigurationName,
+           (SELECT COUNT(*) FROM (SELECT [Value] FROM OPENJSON([ConfigurationNames]))AS ConfigurationCount ) AS ConfigurationCount,
+           rdmd.CreationTime AS CreationTime
+    FROM dbo.RegistrationData rd
+    INNER JOIN RegistrationMetaData AS rdmd ON rd.AgentId = rdmd.AgentId
 )
-
 GO
+
 /****** Object:  UserDefinedFunction [dbo].[tvfGetNodeStatus]    Script Date: 07.04.2021 16:59:54 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
 CREATE FUNCTION [dbo].[tvfGetNodeStatus] ()
 RETURNS TABLE
     AS
 RETURN
 (
     SELECT vBaseNodeLocalStatus.NodeName
-	,[Status]
-	,CreationTime AS [Time]
-	,RebootRequested
-	,OperationType
-	,JobId
-
-	,(
-	SELECT [HostName] FROM OPENJSON(
-		(SELECT [value] FROM OPENJSON([StatusData]))
-	) WITH (HostName nvarchar(200) '$.HostName')) AS HostName
-
-	,(
-	SELECT [ResourceId] + ',' AS [text()]
-	FROM OPENJSON(
-	(SELECT [value] FROM OPENJSON((SELECT [value] FROM OPENJSON([StatusData]))) WHERE [key] = 'ResourcesInDesiredState')
-	)
-	WITH (
-		ResourceId nvarchar(200) '$.ResourceId'
-	) FOR XML PATH ('')) AS ResourcesInDesiredState
-
-	,(
-	SELECT [ResourceId] + ',' AS [text()]
-	FROM OPENJSON(
-	(SELECT [value] FROM OPENJSON((SELECT [value] FROM OPENJSON([StatusData]))) WHERE [key] = 'ResourcesNotInDesiredState')
-	)
-	WITH (
-		ResourceId nvarchar(200) '$.ResourceId'
-	) FOR XML PATH ('')) AS ResourcesNotInDesiredState
-
-	,(
-	SELECT SUM(CAST(REPLACE(DurationInSeconds, ',', '.') AS float)) AS Duration
-	FROM OPENJSON(
-	(SELECT [value] FROM OPENJSON((SELECT [value] FROM OPENJSON([StatusData]))) WHERE [key] = 'ResourcesInDesiredState')
-	)
-	WITH (
-			DurationInSeconds nvarchar(50) '$.DurationInSeconds',
-			InDesiredState bit '$.InDesiredState'
-		)
-	) AS Duration
-
-	,(
-	SELECT [DurationInSeconds] FROM OPENJSON(
-		(SELECT [value] FROM OPENJSON([StatusData]))
-	) WITH (DurationInSeconds nvarchar(200) '$.DurationInSeconds')) AS DurationWithOverhead
-
-	,(
-	SELECT COUNT(*)
-	FROM OPENJSON(
-	(SELECT [value] FROM OPENJSON((SELECT [value] FROM OPENJSON([StatusData]))) WHERE [key] = 'ResourcesInDesiredState')
-	)) AS ResourceCountInDesiredState
-
-	,(
-	SELECT COUNT(*)
-	FROM OPENJSON(
-	(SELECT [value] FROM OPENJSON((SELECT [value] FROM OPENJSON([StatusData]))) WHERE [key] = 'ResourcesNotInDesiredState')
-	)) AS ResourceCountNotInDesiredState
-
-	,(
-	SELECT [ResourceId] + ':' + ' (' + [ErrorCode] + ') ' + [ErrorMessage] + ',' AS [text()]
-	FROM OPENJSON(
-	(SELECT TOP 1 [value] FROM OPENJSON([Errors]))
-	)
-	WITH (
-		ErrorMessage nvarchar(2000) '$.ErrorMessage',
-		ErrorCode nvarchar(20) '$.ErrorCode',
-		ResourceId nvarchar(200) '$.ResourceId'
-	) FOR XML PATH ('')) AS ErrorMessage
-
-	,(
-	SELECT [value] FROM OPENJSON([StatusData])
-	) AS RawStatusData
-
-	,(
+        ,[Status]
+        ,CreationTime AS [Time]
+        ,RebootRequested
+        ,OperationType
+        ,JobId
+        ,HostName
+        ,ResourcesInDesiredState
+        ,ResourcesNotInDesiredState
+        ,Duration
+        ,DurationWithOverhead
+        ,ResourceCountInDesiredState
+        ,ResourceCountNotInDesiredState
+        ,ErrorMessage
+        ,(
+        SELECT [value] FROM OPENJSON([StatusData])
+        ) AS RawStatusData
+        ,(
 	SELECT [value] FROM OPENJSON([Errors]) FOR JSON PATH
 	) AS RawErrors
 
@@ -515,103 +459,79 @@ RETURN
 		,MAX(CreationTime) AS MaxEndTime
 		FROM dbo.vBaseNodeLocalStatus
 		WHERE OperationType <> 'LocalConfigurationManager'
-		GROUP BY NodeName
-
-	) AS SubMax ON CreationTime = SubMax.MaxEndTime AND [dbo].[vBaseNodeLocalStatus].[NodeName] = SubMax.NodeName
+            GROUP BY NodeName
+        ) AS SubMax ON CreationTime = SubMax.MaxEndTime AND [dbo].[vBaseNodeLocalStatus].[NodeName] = SubMax.NodeName
 )
-
-GO
-/****** Object:  View [dbo].[vRegistrationData]    Script Date: 07.04.2021 16:59:54 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
 GO
 
 --Remaining views
+
+/****** Object:  View [dbo].[vRegistrationData]    Script Date: 07.04.2021 16:59:54 ******/
 CREATE VIEW [dbo].[vRegistrationData]
 AS
 SELECT GetRegistrationData.*
 FROM dbo.tvfGetRegistrationData() AS GetRegistrationData
-
 GO
+
 /****** Object:  View [dbo].[vNodeStatusSimple]    Script Date: 07.04.2021 16:59:54 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
 CREATE VIEW [dbo].[vNodeStatusSimple]
 AS
-SELECT rd.NodeName,nss.Time,
-	CASE WHEN nss.NodeName IS NULL AND nss.RefreshMode IS NOT NULL THEN 'No data' ELSE
-	CASE WHEN nss.NodeName IS NULL AND nss.RefreshMode IS NULL THEN 'LCM Error' ELSE
-	CASE WHEN nss.NodeName IS NOT NULL AND RefreshMode IS NULL THEN 'LCM Error' ELSE
-	CASE WHEN nss.NodeName IS NOT NULL AND Status = 'Success' AND ResourceCountNotInDesiredState > 0 THEN 'Not in Desired state' ELSE
-	CASE WHEN nss.NodeName IS NOT NULL AND Status = 'Success' AND ResourceCountNotInDesiredState = 0 THEN 'In Desired state' ELSE
-	CASE WHEN nss.NodeName IS NOT NULL THEN Status END END END END END END AS Status,
-	ResourceCountNotInDesiredState,
-	IIF(ResourcesNotInDesiredState IS NULL, '0', ResourcesNotInDesiredState) AS ResourcesNotInDesiredState
+SELECT nss.NodeName
+       ,nss.StartTime
+	   ,nss.NodeStatus AS Status
+       ,CASE WHEN nss.EndTime < CAST('19000101' AS datetime) THEN NULL ELSE nss.EndTime END AS EndTime
+       ,nss.ResourcesInDesiredStateCount AS ResourceCountInDesiredState
+       ,nss.ResourcesNotInDesiredStateCount AS ResourceCountNotInDesiredState
+       ,IIF(nss.ResourcesNotInDesiredState IS NULL, '', nss.ResourcesNotInDesiredState) AS ResourcesNotInDesiredState
+       ,IIF(nss.ErrorMessage IS NULL, '', nss.ErrorMessage) AS ErrorMessage
+       ,nss.Duration
+       ,nss.DurationWithOverhead
+       ,nss.RebootRequested
 FROM (
-SELECT DISTINCT
-	dbo.StatusReport.NodeName
-	,dbo.StatusReport.Status
-	,(SELECT COUNT(*)
-		FROM OPENJSON(
-		(SELECT [value] FROM OPENJSON((SELECT [value] FROM OPENJSON([StatusData]))) WHERE [key] = 'ResourcesNotInDesiredState')
-		))  AS ResourceCountNotInDesiredState
-	,(SELECT [ResourceId] + ',' AS [text()] 
-	FROM OPENJSON(
-	(SELECT [value] FROM OPENJSON((SELECT [value] FROM OPENJSON([StatusData]))) WHERE [key] = 'ResourcesNotInDesiredState')
-	)
-	WITH (
-		ResourceId nvarchar(200) '$.ResourceId'
-	) FOR XML PATH (''))  AS ResourcesNotInDesiredState
-	,dbo.StatusReport.EndTime AS Time
-	,dbo.StatusReport.RefreshMode
-FROM dbo.StatusReport INNER JOIN
-    (SELECT MAX(EndTime) AS MaxEndTime, NodeName
-    FROM dbo.StatusReport AS StatusReport_1
-    GROUP BY NodeName) AS SubMax ON dbo.StatusReport.EndTime = SubMax.MaxEndTime AND dbo.StatusReport.NodeName = SubMax.NodeName
-	WHERE dbo.StatusReport.Status IS NOT NULL
-) as nss
-RIGHT OUTER JOIN dbo.RegistrationData AS rd 
-ON nss.NodeName = rd.NodeName
-
-
+	SELECT DISTINCT
+		sr.JobId
+		,sr.NodeName
+		,sr.OperationType
+		,sr.RebootRequested
+		,sr.StartTime
+		,sr.EndTime
+		,sr.RefreshMode
+		,srmd.NodeStatus
+		,srmd.ResourcesInDesiredStateCount
+		,srmd.ResourcesNotInDesiredStateCount
+		,srmd.ResourcesNotInDesiredState
+		,srmd.ErrorMessage
+		,srmd.Duration
+		,srmd.DurationWithOverhead
+	FROM dbo.StatusReport AS sr
+		 INNER JOIN dbo.StatusReportMetaData AS srmd
+		 ON sr.JobId = srmd.JobId
+		 INNER JOIN (SELECT MAX(CreationTime) AS MaxCreationTime, NodeName
+					 FROM dbo.StatusReportMetaData
+					 GROUP BY NodeName) AS srmdmax
+					 ON sr.NodeName = srmdmax.NodeName AND srmd.CreationTime = srmdmax.MaxCreationTime
+) AS nss
 GO
+
+
 /****** Object:  View [dbo].[vNodeStatusComplex]    Script Date: 07.04.2021 16:59:54 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
-
 CREATE VIEW [dbo].[vNodeStatusComplex]
 AS
 SELECT GetNodeStatus.*,
 IIF([ResourceCountNotInDesiredState] > 0 OR [ResourceCountInDesiredState] = 0, 'FALSE', 'TRUE') AS [InDesiredState]
 FROM dbo.tvfGetNodeStatus() AS GetNodeStatus
+GO
 
-GO
 /****** Object:  View [dbo].[vNodeStatusCount]    Script Date: 07.04.2021 16:59:54 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 CREATE VIEW [dbo].[vNodeStatusCount]
 AS
 SELECT NodeName, COUNT(*) AS NodeStatusCount
 FROM dbo.StatusReport
 WHERE (NodeName IS NOT NULL)
 GROUP BY NodeName
-
 GO
+
 /****** Object:  View [dbo].[vStatusReportDataNewest]    Script Date: 07.04.2021 16:59:54 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
 CREATE VIEW [dbo].[vStatusReportDataNewest]
 AS
 SELECT TOP (1000) dbo.StatusReport.JobId,dbo.RegistrationData.NodeName, dbo.StatusReport.OperationType, dbo.StatusReport.RefreshMode, dbo.StatusReport.Status, dbo.StatusReportMetaData.CreationTime, 
@@ -620,69 +540,54 @@ FROM dbo.StatusReport
 INNER JOIN dbo.StatusReportMetaData ON dbo.StatusReport.JobId = dbo.StatusReportMetaData.JobId
 INNER JOIN dbo.RegistrationData ON dbo.StatusReport.Id = dbo.RegistrationData.AgentId
 ORDER BY dbo.StatusReportMetaData.CreationTime DESC
-
-GO
-
-CREATE VIEW [dbo].[vDscTaggingData]
-AS
-SELECT dbo.RegistrationData.NodeName, dbo.TaggingData.Environment, dbo.TaggingData.BuildNumber, dbo.TaggingData.GitCommitId, dbo.TaggingData.Version, dbo.TaggingData.BuildDate, dbo.TaggingData.Timestamp, 
-dbo.TaggingData.AgentId
-FROM dbo.RegistrationData INNER JOIN
-dbo.TaggingData ON dbo.RegistrationData.AgentId = dbo.TaggingData.AgentId
-
 GO
 
 /****** Object:  View [dbo].[vNodeLastStatus]    Script Date: 4/6/2021 10:53:28 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 Create View [dbo].[vNodeLastStatus]
 AS
 SELECT sr.[JobId]
       ,sr.[Id]
-      ,[OperationType]
-      ,[RefreshMode]
+      ,sr.[OperationType]
+      ,sr.[RefreshMode]
       ,sr.[Status]
-      ,[LCMVersion]
-      ,[ReportFormatVersion]
-      ,[ConfigurationVersion]
+      ,sr.[LCMVersion]
+      ,sr.[ReportFormatVersion]
+      ,sr.[ConfigurationVersion]
       ,sr.[NodeName]
-      ,[IPAddress]
-      ,[StartTime]
-      ,[EndTime]
-      ,[Errors]
-      ,[StatusData]
-      ,[RebootRequested]
-      ,[AdditionalData]
-  FROM [DSC].[dbo].[StatusReport] sr
-  inner join [dbo].[StatusReportMetaData] srmd on sr.JobId = srmd.JobId
-  inner join [DSC].[dbo].[vNodeStatusSimple] vnss on sr.NodeName = vnss.NodeName AND sr.EndTime = vnss.Time
-
+      ,sr.[IPAddress]
+      ,sr.[StartTime]
+      ,sr.[EndTime]
+      ,sr.[Errors]
+      ,sr.[StatusData]
+      ,sr.[RebootRequested]
+      ,sr.[AdditionalData]
+      ,srmd.[CreationTime]
+  FROM [dbo].[StatusReport] sr
+  INNER JOIN [dbo].[StatusReportMetaData] srmd ON sr.JobId = srmd.JobId
+  INNER JOIN [dbo].[vNodeStatusSimple] vnss ON sr.NodeName = vnss.NodeName AND sr.StartTime = vnss.StartTime
 GO
 
 /****** Object:  View [dbo].[vTaggingData]    Script Date: 4/6/2021 10:53:28 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
 Create View [dbo].[vTaggingData]
 AS
-SELECT NodeName
+SELECT rg.NodeName
+      ,tg.[AgentId]
       ,tg.[Environment]
       ,tg.[BuildNumber]
       ,tg.[GitCommitId]
+      ,tg.[NodeVersion]
+      ,tg.[NodeRole]
       ,tg.[Version]
       ,tg.[BuildDate]
       ,tg.[Timestamp]
-  FROM [DSC].[dbo].[TaggingData] tg
-  inner join [dbo].[RegistrationData] rg on rg.AgentId = tg.AgentId
-
-
+      ,tg.[Layers]
+  FROM [dbo].[TaggingData] tg
+  INNER JOIN [dbo].[RegistrationData] rg on rg.AgentId = tg.AgentId
 GO
 
-CREATE TRIGGER [dbo].[InsertCreationTimeRDMD]
+-- Trigger
+
+CREATE TRIGGER [dbo].[InsertRegistrationMetaData]
 ON [dbo].[RegistrationData]
 AFTER INSERT
 AS
@@ -699,33 +604,158 @@ BEGIN
   -- Insert statements for trigger here
   INSERT INTO [RegistrationMetaData] (AgentId,CreationTime)
   VALUES(@AgentId,GETDATE())
-
 END
 GO
 
-CREATE TRIGGER [dbo].[InsertCreationTimeSRMD]
+CREATE TRIGGER [dbo].[InsertUpdateStatusReportMetaData]
 ON [dbo].[StatusReport]
-AFTER INSERT
+AFTER INSERT, UPDATE
 AS
 BEGIN
-  -- SET NOCOUNT ON added to prevent extra result sets from
-  -- interfering with SELECT statements.
-  SET NOCOUNT ON;
+    -- SET NOCOUNT ON added to prevent extra result sets from
+    -- interfering with SELECT statements.
+    SET NOCOUNT ON;
 
-  -- get the last id value of the record inserted or updated
-  DECLARE @JobId nvarchar(255)
-  SELECT @JobId = JobId
-  FROM INSERTED
+    -- get the last id value of the record inserted or updated
+    DECLARE @JobId nvarchar(255)
+    DECLARE @NodeName nvarchar(255)
+    DECLARE @NodeStatus nvarchar(50)
+    DECLARE @HostName nvarchar(50)
+    DECLARE @ErrorMessage nvarchar(2500)
+    DECLARE @ResourcesInDesiredStateCount int
+    DECLARE @ResourcesNotInDesiredStateCount int
+    DECLARE @ResourcesInDesiredState nvarchar(max)
+    DECLARE @ResourcesNotInDesiredState nvarchar(max)
+    DECLARE @Duration float
+    DECLARE @DurationWithOverhead float
 
-  -- Insert statements for trigger here
-  INSERT INTO [StatusReportMetaData] (JobId,CreationTime)
-  VALUES(@JobId,GETDATE())
+    SELECT @JobId = JobId
+        ,@NodeName = NodeName
+        ,@ResourcesInDesiredStateCount =
+            (SELECT COUNT(*)
+                FROM OPENJSON(
+                    (SELECT [value] FROM OPENJSON((SELECT [value] FROM OPENJSON([StatusData]))) WHERE [key] = 'ResourcesInDesiredState')
+                )
+            )
+        ,@ResourcesNotInDesiredStateCount =
+            (SELECT COUNT(*)
+                FROM OPENJSON(
+                    (SELECT [value] FROM OPENJSON((SELECT [value] FROM OPENJSON([StatusData]))) WHERE [key] = 'ResourcesNotInDesiredState')
+                )
+            )
+        ,@ErrorMessage = 
+            (SELECT [ResourceId] + ':' + ' (' + [ErrorCode] + ') ' + [ErrorMessage] + ',' AS [text()]
+                FROM OPENJSON(
+                    (SELECT TOP 1  [value] FROM OPENJSON([Errors]))
+                )
+                WITH (
+                    ErrorMessage nvarchar(2000) '$.ErrorMessage',
+                    ErrorCode nvarchar(20) '$.ErrorCode',
+                    ResourceId nvarchar(200) '$.ResourceId'
+                ) 
+                FOR XML PATH ('')
+            )
+        ,@HostName =
+            (SELECT [HostName]
+                FROM OPENJSON(
+                    (SELECT [value] FROM OPENJSON([StatusData]))
+                )
+                WITH (
+                    HostName nvarchar(50) '$.HostName'
+                )
+            )
+        ,@ResourcesInDesiredState =
+            (SELECT [ResourceId] + ',' AS [text()]
+                FROM OPENJSON(
+                    (SELECT [value] FROM OPENJSON((SELECT [value] FROM OPENJSON([StatusData]))) WHERE [key] = 'ResourcesInDesiredState')
+                )
+                WITH (
+                    ResourceId nvarchar(200) '$.ResourceId'
+                )
+                FOR XML PATH ('')
+            )
+        ,@ResourcesNotInDesiredState = 
+            (SELECT [ResourceId] + ',' AS [text()]
+                FROM OPENJSON(
+                    (SELECT [value] FROM OPENJSON((SELECT [value] FROM OPENJSON([StatusData]))) WHERE [key] = 'ResourcesNotInDesiredState')
+                )
+                WITH (
+                    ResourceId nvarchar(200) '$.ResourceId'
+                )
+                FOR XML PATH ('')
+            )
+        ,@Duration =
+            (SELECT SUM(CAST(REPLACE(DurationInSeconds, ',', '.') AS float))
+                FROM OPENJSON(
+                    (SELECT [value] FROM OPENJSON((SELECT [value] FROM OPENJSON([StatusData]))) WHERE [key] = 'ResourcesInDesiredState')
+                )
+                WITH (
+                    DurationInSeconds nvarchar(50) '$.DurationInSeconds',
+                    InDesiredState bit '$.InDesiredState'
+                )
+            )
+        ,@DurationWithOverhead =
+            (SELECT SUM(CAST(REPLACE(DurationInSeconds, ',', '.') AS float))
+                FROM OPENJSON(
+                    (SELECT [value] FROM OPENJSON([StatusData]))
+                )
+                WITH (
+                    DurationInSeconds nvarchar(50) '$.DurationInSeconds'
+                )
+            )
+    FROM INSERTED
 
+    SELECT @NodeStatus =
+            CASE WHEN NodeName IS NULL AND RefreshMode IS NOT NULL THEN 'No data' ELSE
+            CASE WHEN NodeName IS NULL AND RefreshMode IS NULL THEN 'LCM Error' ELSE
+            CASE WHEN NodeName IS NOT NULL AND RefreshMode IS NULL AND Status IS NULL THEN 'LCM is running' ELSE
+            CASE WHEN NodeName IS NOT NULL AND Status IS NULL THEN 'Error' ELSE
+            CASE WHEN NodeName IS NOT NULL AND OperationType != 'LocalConfigurationManager' AND Status = 'Success' AND @ResourcesInDesiredStateCount > 0 AND @ResourcesNotInDesiredStateCount > 0 THEN 'Not in Desired State' ELSE
+            CASE WHEN NodeName IS NOT NULL AND OperationType != 'LocalConfigurationManager' AND Status = 'Success' AND @ResourcesInDesiredStateCount > 0 AND @ResourcesNotInDesiredStateCount = 0 THEN 'In Desired State' ELSE
+            CASE WHEN NodeName IS NOT NULL AND OperationType = 'LocalConfigurationManager' THEN 'Unknown' ELSE
+            CASE WHEN NodeName IS NOT NULL THEN Status END END END END END END END END
+    FROM INSERTED
+
+    IF EXISTS(SELECT * FROM deleted)
+    BEGIN
+        UPDATE [StatusReportMetaData]
+        SET
+            NodeName                         = @NodeName
+            ,NodeStatus                      = @NodeStatus
+            ,ErrorMessage                    = @ErrorMessage
+            ,ResourcesInDesiredStateCount    = @ResourcesInDesiredStateCount
+            ,ResourcesNotInDesiredStateCount = @ResourcesNotInDesiredStateCount
+            ,ResourceCount                   = @ResourcesInDesiredStateCount + @ResourcesNotInDesiredStateCount
+            ,HostName                        = @HostName
+            ,ResourcesInDesiredState         = @ResourcesInDesiredState
+            ,ResourcesNotInDesiredState      = @ResourcesNotInDesiredState
+            ,Duration                        = @Duration
+            ,DurationWithOverhead            = @DurationWithOverhead
+        WHERE
+            JobId = @JobId
+    END
+    ELSE
+    BEGIN
+        INSERT INTO [StatusReportMetaData]
+            (
+                JobId, NodeName, NodeStatus, ErrorMessage, HostName,
+                ResourcesInDesiredState, ResourcesNotInDesiredState,
+                ResourcesInDesiredStateCount, ResourcesNotInDesiredStateCount, ResourceCount,
+                Duration, DurationWithOverhead, CreationTime
+            )
+            VALUES
+            (
+                @JobId, @NodeName, @NodeStatus, @ErrorMessage, @HostName,
+                @ResourcesInDesiredState, @ResourcesNotInDesiredState,
+                @ResourcesInDesiredStateCount, @ResourcesNotInDesiredStateCount, (@ResourcesInDesiredStateCount + @ResourcesNotInDesiredStateCount),
+                @Duration, @DurationWithOverhead, GETDATE()
+            )
+    END
 END
 GO
 
-ALTER TABLE [dbo].[StatusReport] ENABLE TRIGGER [InsertCreationTimeSRMD]
-ALTER TABLE [dbo].[RegistrationData] ENABLE TRIGGER [InsertCreationTimeRDMD]
+ALTER TABLE [dbo].[StatusReport] ENABLE TRIGGER [InsertUpdateStatusReportMetaData]
+ALTER TABLE [dbo].[RegistrationData] ENABLE TRIGGER [InsertRegistrationMetaData]
 GO
 
 CREATE TRIGGER [dbo].[InsertNodeLastStatusData]
@@ -780,18 +810,19 @@ BEGIN
 
          -- Insert statements for trigger here
          IF NOT EXISTS (SELECT NodeName FROM dbo.NodeLastStatusData WHERE NodeName = @NodeName)
-         BEGIN
-                    INSERT INTO [NodeLastStatusData] (NodeName, NumberOfResources, DscMode, DscConfigMode, ActionAfterReboot, ReapplyMOFCycle, CheckForNewMOF, PullServer, LastUpdate)
-                    SELECT NodeName, NumberOfResources, DscMode, DscConfigMode, ActionAfterReboot, ReapplyMOFCycle, CheckForNewMOF, PullServer, LastUpdate FROM #TempJSON
-         END
-         ELSE
-         BEGIN
-                           UPDATE [NodeLastStatusData] SET NumberOfResources = #TempJSON.NumberOfResources, DscMode = #TempJSON.DscMode, DscConfigMode = #TempJSON.DscConfigMode, ActionAfterReboot = #TempJSON.ActionAfterReboot, ReapplyMOFCycle = #TempJSON.ReapplyMOFCycle, CheckForNewMOF = #TempJSON.CheckForNewMOF, PullServer = #TempJSON.PullServer, LastUpdate = #TempJSON.LastUpdate
-                           FROM [NodeLastStatusData] nlsd
-                           INNER JOIN #TempJSON ON nlsd.NodeName = #TempJSON.NodeName
-                           WHERE nlsd.NodeName = #TempJSON.NodeName
-         END
-       END
+        BEGIN
+            INSERT INTO [NodeLastStatusData] (NodeName, NumberOfResources, DscMode, DscConfigMode, ActionAfterReboot, ReapplyMOFCycle, CheckForNewMOF, PullServer, LastUpdate)
+                SELECT NodeName, NumberOfResources, DscMode, DscConfigMode, ActionAfterReboot, ReapplyMOFCycle, CheckForNewMOF, PullServer, LastUpdate FROM #TempJSON
+        END
+        ELSE
+        BEGIN
+            UPDATE [NodeLastStatusData]
+                SET NumberOfResources = #TempJSON.NumberOfResources, DscMode = #TempJSON.DscMode, DscConfigMode = #TempJSON.DscConfigMode, ActionAfterReboot = #TempJSON.ActionAfterReboot, ReapplyMOFCycle = #TempJSON.ReapplyMOFCycle, CheckForNewMOF = #TempJSON.CheckForNewMOF, PullServer = #TempJSON.PullServer, LastUpdate = #TempJSON.LastUpdate
+                FROM [NodeLastStatusData] nlsd
+                INNER JOIN #TempJSON ON nlsd.NodeName = #TempJSON.NodeName
+                WHERE nlsd.NodeName = #TempJSON.NodeName
+        END
+    END
 END
 
 GO
@@ -801,7 +832,7 @@ GO
 
 USE [master]
 GO
-ALTER DATABASE [DSC] SET  READ_WRITE 
+ALTER DATABASE [DSC] SET READ_WRITE 
 GO
 '@
 

@@ -17,8 +17,8 @@ Install-LabTeamFoundationEnvironment [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-Install all CI/CD servers in the lab including all build workers. Only installs components that are not
-yet present.
+Install all CI/CD servers in the lab including all build workers.
+Only installs components that are not yet present.
 
 ## EXAMPLES
 
@@ -37,7 +37,6 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### None
-
 ## OUTPUTS
 
 ### System.Object

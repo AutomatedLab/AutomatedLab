@@ -50,8 +50,8 @@ PS C:\> {{ Add example code here }}
 ## PARAMETERS
 
 ### -SearchString
-The search string to use. For more information, see:
-https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.x509certificates.x509certificate2collection.find
+The search string to use.
+For more information, see: https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.x509certificates.x509certificate2collection.find
 
 ```yaml
 Type: String
@@ -66,7 +66,8 @@ Accept wildcard characters: False
 ```
 
 ### -FindType
-Sets which attribute will be searched, e.g. FindBySubjectName
+Sets which attribute will be searched, e.g.
+FindBySubjectName
 
 ```yaml
 Type: X509FindType
@@ -81,7 +82,8 @@ Accept wildcard characters: False
 ```
 
 ### -Location
-The location to search in. Possible values CERT_SYSTEM_STORE_CURRENT_USER, CERT_SYSTEM_STORE_LOCAL_MACHINE, CERT_SYSTEM_STORE_SERVICES, CERT_SYSTEM_STORE_USERS
+The location to search in.
+Possible values CERT_SYSTEM_STORE_CURRENT_USER, CERT_SYSTEM_STORE_LOCAL_MACHINE, CERT_SYSTEM_STORE_SERVICES, CERT_SYSTEM_STORE_USERS
 
 ```yaml
 Type: CertStoreLocation
@@ -96,7 +98,8 @@ Accept wildcard characters: False
 ```
 
 ### -Store
-The store to look in, e.g. My
+The store to look in, e.g.
+My
 
 ```yaml
 Type: StoreName
@@ -165,7 +168,7 @@ Aliases:
 
 Required: True
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -180,7 +183,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -195,7 +198,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

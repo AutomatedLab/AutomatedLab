@@ -6,6 +6,7 @@ using Microsoft.ApplicationInsights.Channel;
 using Microsoft.ApplicationInsights.DataContracts;
 using System.Linq;
 using System.Diagnostics;
+using Microsoft.ApplicationInsights.Extensibility.Implementation.Tracing;
 
 namespace AutomatedLab
 {
@@ -23,6 +24,9 @@ namespace AutomatedLab
         {
             TelemetryConfiguration.Active.InstrumentationKey = telemetryKey;
             TelemetryConfiguration.Active.TelemetryChannel.DeveloperMode = false;
+            var diagnosticsTelemetryModule = new DiagnosticsTelemetryModule();
+            diagnosticsTelemetryModule.IsHeartbeatEnabled = false;
+            diagnosticsTelemetryModule.Initialize(TelemetryConfiguration.Active);
 
             // Add our own initializer to filter out any personal information before sending telemetry data
             TelemetryConfiguration.Active.TelemetryInitializers.Add(new LabTelemetryInitializer());

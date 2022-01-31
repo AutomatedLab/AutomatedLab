@@ -18,8 +18,9 @@ Write-ScreenInfo [[-Message] <String[]>] [[-TimeDelta] <TimeSpan>] [[-TimeDelta2
 ```
 
 ## DESCRIPTION
-Write formatted text on screen. Using TimeDelta and TimeDelta2 you can indicate the runtime of a process or
-an operation. With the parameters TaskStart and TaskEnd you can control the indentation.
+Write formatted text on screen.
+Using TimeDelta and TimeDelta2 you can indicate the runtime of a process or an operation.
+With the parameters TaskStart and TaskEnd you can control the indentation.
 
 ## EXAMPLES
 
@@ -64,7 +65,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -79,7 +80,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -94,7 +95,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -109,13 +110,14 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -TimeDelta
-Controls the first timespan that is displayed after the current time. Calculated automatically
+Controls the first timespan that is displayed after the current time.
+Calculated automatically
 
 ```yaml
 Type: TimeSpan
@@ -130,7 +132,8 @@ Accept wildcard characters: False
 ```
 
 ### -TimeDelta2
-Controls the second timespan that is displayed after the current time. Calculated automatically
+Controls the second timespan that is displayed after the current time.
+Calculated automatically
 
 ```yaml
 Type: TimeSpan
@@ -145,7 +148,8 @@ Accept wildcard characters: False
 ```
 
 ### -Type
-The type of the message. Default is Info
+The type of the message.
+Default is Info
 
 ```yaml
 Type: String
@@ -166,7 +170,6 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### None
-
 ## OUTPUTS
 
 ### System.Object

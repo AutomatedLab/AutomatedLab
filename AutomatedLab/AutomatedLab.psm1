@@ -548,7 +548,7 @@ function Import-Lab
         try
         {
             $Script:data.Disks = $importMethodInfo.Invoke($null, $Script:data.DiskDefinitionFiles[0].Path)
-            $Script:data.Disks = Get-LabVHDX -All
+            if ($script:lab.DefaultVirtualizationEngine -eq 'HyperV') { $Script:data.Disks = Get-LabVHDX -All }
 
             if ($Script:data.DiskDefinitionFiles.Count -gt 1)
             {
@@ -629,7 +629,10 @@ function Export-Lab
         $tmpList.Export($lab.DiskDefinitionFiles[0].Path)
     }
     $lab.Machines.Clear()
-    $lab.Disks.Clear()
+    if ($lab.Disks)
+    {
+        $lab.Disks.Clear()
+    }
 
     $lab.Export($lab.LabFilePath)
 
@@ -1391,180 +1394,186 @@ function Install-Lab
 #region Remove-Lab
 function Remove-Lab
 {
-    [CmdletBinding(DefaultParameterSetName = 'Path', ConfirmImpact = 'High', SupportsShouldProcess)]
+    [CmdletBinding(DefaultParameterSetName = 'ByName', ConfirmImpact = 'High', SupportsShouldProcess)]
     param (
-        [Parameter(Mandatory, ParameterSetName = 'ByPath')]
+        [Parameter(Mandatory, ParameterSetName = 'ByPath', ValueFromPipeline)]
         [string]$Path,
 
-        [Parameter(Mandatory, ParameterSetName = 'ByName', Position = 1)]
+        [Parameter(ParameterSetName = 'ByName', ValueFromPipelineByPropertyName)]
         [string]$Name,
         
         [switch]$RemoveExternalSwitches
     )
 
-    Write-LogFunctionEntry
-    $global:PSLog_Indent = 0
-
-    if ($Name)
+    begin
     {
-        $Path = "$((Get-LabConfigurationItem -Name LabAppDataRoot))/Labs/$Name"
-        $labName = $Name
-    }
-    else
-    {
-        $labName = $script:data.Name
+        Write-LogFunctionEntry
+        $global:PSLog_Indent = 0
     }
 
-    if ($Path)
+    process
     {
-        Import-Lab -Path $Path -NoValidation
-    }
-
-    if (-not $Script:data)
-    {
-        Write-Error 'No definitions imported, so there is nothing to test. Please use Import-Lab against the xml file'
-        return
-    }
-
-    if($pscmdlet.ShouldProcess((Get-Lab).Name, 'Remove the lab completely'))
-    {
-        Write-ScreenInfo -Message "Removing lab '$($Script:data.Name)'" -Type Warning -TaskStart
-        if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure' -and -not (Get-AzContext))
+        if ($Name)
         {
-            Write-ScreenInfo -Type Info -Message "Your Azure session is expired. Please log in to remove your resource group"
-            Connect-AzAccount -UseDeviceAuthentication
+            Import-Lab -Name $Name -NoValidation -NoDisplay
+            $labName = $Name
         }
 
-        try
+        if ($Path)
         {
-            [AutomatedLab.LabTelemetry]::Instance.LabRemoved((Get-Lab).Export())
-        }
-        catch
-        {
-            Write-PSFMessage -Message ('Error sending telemetry: {0}' -f $_.Exception)
-        }
-
-        Write-ScreenInfo -Message 'Removing lab sessions'
-        Remove-LabPSSession -All
-        Write-PSFMessage '...done'
-
-        Write-ScreenInfo -Message 'Removing imported RDS certificates'
-        Uninstall-LabRdsCertificate
-        Write-PsfMessage '...done'
-
-        Write-ScreenInfo -Message 'Removing lab background jobs'
-        $jobs = Get-Job
-        Write-PSFMessage "Removing remaining $($jobs.Count) jobs..."
-        $jobs | Remove-Job -Force -ErrorAction SilentlyContinue
-        Write-PSFMessage '...done'
-
-        if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
-        {
-            Write-ScreenInfo -Message "Removing Resource Group '$labName' and all resources in this group"
-            #without cloning the collection, a Runtime Exceptionis thrown: An error occurred while enumerating through a collection: Collection was modified; enumeration operation may not execute
-            @(Get-LabAzureResourceGroup -CurrentLab).Clone() | Remove-LabAzureResourceGroup -Force
-        }
-
-        $labMachines = Get-LabVM -IncludeLinux | Where-Object HostType -eq 'HyperV' | Where-Object { -not $_.SkipDeployment }
-        if ($labMachines)
-        {
+            Import-Lab -Path $Path -NoValidation -NoDisplay
             $labName = (Get-Lab).Name
-
-            $removeMachines = foreach ($machine in $labMachines)
-            {
-                $machineMetadata = Get-LWHypervVMDescription -ComputerName $machine.ResourceName -ErrorAction SilentlyContinue
-                $vm = Get-VM -Name $machine.ResourceName -ErrorAction SilentlyContinue
-                if (-not $machineMetadata)
-                {
-                    Write-Error -Message "Cannot remove machine '$machine' because lab meta data could not be retrieved"
-                }
-                elseif ($machineMetadata.LabName -ne $labName -and $vm)
-                {
-                    Write-Error -Message "Cannot remove machine '$machine' because it does not belong to this lab"
-                }
-                else
-                {
-                    $machine
-                }
-            }
-
-            if ($removeMachines)
-            {
-                Remove-LabVM -Name $removeMachines
-
-                $disks = Get-LabVHDX -All
-                Write-PSFMessage "Lab knows about $($disks.Count) disks"
-
-                if ($disks)
-                {
-                    Write-ScreenInfo -Message 'Removing additionally defined disks'
-
-                    Write-PSFMessage 'Removing disks...'
-                    foreach ($disk in $disks)
-                    {
-                        Write-PSFMessage "Removing disk '($disk.Name)'"
-
-                        if (Test-Path -Path $disk.Path)
-                        {
-                            Remove-Item -Path $disk.Path
-                        }
-                        else
-                        {
-                            Write-ScreenInfo "Disk '$($disk.Path)' does not exist" -Type Verbose
-                        }
-                    }
-                }
-
-                if ($Script:data.Target.Path)
-                {
-                    $diskPath = (Join-Path -Path $Script:data.Target.Path -ChildPath Disks)
-                    #Only remove disks folder if empty
-                    if ((Test-Path -Path $diskPath) -and (-not (Get-ChildItem -Path $diskPath)) )
-                    {
-                        Remove-Item -Path $diskPath
-                    }
-                }
-            }
-
-            #Only remove folder for VMs if folder is empty
-            if ($Script:data.Target.Path -and (-not (Get-ChildItem -Path $Script:data.Target.Path)))
-            {
-                Remove-Item -Path $Script:data.Target.Path -Recurse -Force -Confirm:$false
-            }
-
-            Write-ScreenInfo -Message 'Removing entries in the hosts file'
-            Clear-HostFile -Section $Script:data.Name -ErrorAction SilentlyContinue
         }
 
-        Write-ScreenInfo -Message 'Removing virtual networks'
-        Remove-LabNetworkSwitches -RemoveExternalSwitches:$RemoveExternalSwitches
-
-        if ($Script:data.LabPath)
+        if (-not $Script:data)
         {
-            Write-ScreenInfo -Message 'Removing Lab XML files'
-            if (Test-Path "$($Script:data.LabPath)/$(Get-LabConfigurationItem -Name LabFileName)") { Remove-Item -Path "$($Script:data.LabPath)/Lab.xml" -Force -Confirm:$false }
-            if (Test-Path "$($Script:data.LabPath)/$(Get-LabConfigurationItem -Name DiskFileName)") { Remove-Item -Path "$($Script:data.LabPath)/Disks.xml" -Force -Confirm:$false }
-            if (Test-Path "$($Script:data.LabPath)/$(Get-LabConfigurationItem -Name MachineFileName)") { Remove-Item -Path "$($Script:data.LabPath)/Machines.xml" -Force -Confirm:$false }
-            if (Test-Path "$($Script:data.LabPath)/Unattended*.xml") { Remove-Item -Path "$($Script:data.LabPath)/Unattended*.xml" -Force -Confirm:$false }
-            if (Test-Path "$($Script:data.LabPath)/armtemplate.json") { Remove-Item -Path "$($Script:data.LabPath)/armtemplate.json" -Force -Confirm:$false }
-            if (Test-Path "$($Script:data.LabPath)/ks*.cfg") { Remove-Item -Path "$($Script:data.LabPath)/ks*.cfg" -Force -Confirm:$false }
-            if (Test-Path "$($Script:data.LabPath)/autoinst*.xml") { Remove-Item -Path "$($Script:data.LabPath)/autoinst*.xml" -Force -Confirm:$false }
-            if (Test-Path "$($Script:data.LabPath)/AzureNetworkConfig.Xml") { Remove-Item -Path "$($Script:data.LabPath)/AzureNetworkConfig.Xml" -Recurse -Force -Confirm:$false }
-            if (Test-Path "$($Script:data.LabPath)/Certificates") { Remove-Item -Path "$($Script:data.LabPath)/Certificates" -Recurse -Force -Confirm:$false }
-
-            #Only remove lab path folder if empty
-            if ((Test-Path "$($Script:data.LabPath)") -and (-not (Get-ChildItem -Path $Script:data.LabPath)))
-            {
-                Remove-Item -Path $Script:data.LabPath
-            }
+            Write-Error 'No definitions imported, so there is nothing to remove. Please use Import-Lab against the xml file'
+            return
         }
 
-        $Script:data = $null
+        if($pscmdlet.ShouldProcess((Get-Lab).Name, 'Remove the lab completely'))
+        {
+            Write-ScreenInfo -Message "Removing lab '$($Script:data.Name)'" -Type Warning -TaskStart
+            if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure' -and -not (Get-AzContext))
+            {
+                Write-ScreenInfo -Type Info -Message "Your Azure session is expired. Please log in to remove your resource group"
+                Connect-AzAccount -UseDeviceAuthentication -WarningAction Continue
+            }
 
-        Write-ScreenInfo -Message "Done removing lab '$labName'" -TaskEnd
+            try
+            {
+                [AutomatedLab.LabTelemetry]::Instance.LabRemoved((Get-Lab).Export())
+            }
+            catch
+            {
+                Write-PSFMessage -Message ('Error sending telemetry: {0}' -f $_.Exception)
+            }
+
+            Write-ScreenInfo -Message 'Removing lab sessions'
+            Remove-LabPSSession -All
+            Write-PSFMessage '...done'
+
+            Write-ScreenInfo -Message 'Removing imported RDS certificates'
+            Uninstall-LabRdsCertificate
+            Write-PsfMessage '...done'
+
+            Write-ScreenInfo -Message 'Removing lab background jobs'
+            $jobs = Get-Job
+            Write-PSFMessage "Removing remaining $($jobs.Count) jobs..."
+            $jobs | Remove-Job -Force -ErrorAction SilentlyContinue
+            Write-PSFMessage '...done'
+
+            if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
+            {
+                Write-ScreenInfo -Message "Removing Resource Group '$labName' and all resources in this group"
+                #without cloning the collection, a Runtime Exceptionis thrown: An error occurred while enumerating through a collection: Collection was modified; enumeration operation may not execute
+                @(Get-LabAzureResourceGroup -CurrentLab).Clone() | Remove-LabAzureResourceGroup -Force
+            }
+
+            $labMachines = Get-LabVM -IncludeLinux | Where-Object HostType -eq 'HyperV' | Where-Object { -not $_.SkipDeployment }
+            if ($labMachines)
+            {
+                $labName = (Get-Lab).Name
+
+                $removeMachines = foreach ($machine in $labMachines)
+                {
+                    $machineMetadata = Get-LWHypervVMDescription -ComputerName $machine.ResourceName -ErrorAction SilentlyContinue
+                    $vm = Get-VM -Name $machine.ResourceName -ErrorAction SilentlyContinue
+                    if (-not $machineMetadata)
+                    {
+                        Write-Error -Message "Cannot remove machine '$machine' because lab meta data could not be retrieved"
+                    }
+                    elseif ($machineMetadata.LabName -ne $labName -and $vm)
+                    {
+                        Write-Error -Message "Cannot remove machine '$machine' because it does not belong to this lab"
+                    }
+                    else
+                    {
+                        $machine
+                    }
+                }
+
+                if ($removeMachines)
+                {
+                    Remove-LabVM -Name $removeMachines
+
+                    $disks = Get-LabVHDX -All
+                    Write-PSFMessage "Lab knows about $($disks.Count) disks"
+
+                    if ($disks)
+                    {
+                        Write-ScreenInfo -Message 'Removing additionally defined disks'
+
+                        Write-PSFMessage 'Removing disks...'
+                        foreach ($disk in $disks)
+                        {
+                            Write-PSFMessage "Removing disk '($disk.Name)'"
+
+                            if (Test-Path -Path $disk.Path)
+                            {
+                                Remove-Item -Path $disk.Path
+                            }
+                            else
+                            {
+                                Write-ScreenInfo "Disk '$($disk.Path)' does not exist" -Type Verbose
+                            }
+                        }
+                    }
+
+                    if ($Script:data.Target.Path)
+                    {
+                        $diskPath = (Join-Path -Path $Script:data.Target.Path -ChildPath Disks)
+                        #Only remove disks folder if empty
+                        if ((Test-Path -Path $diskPath) -and (-not (Get-ChildItem -Path $diskPath)) )
+                        {
+                            Remove-Item -Path $diskPath
+                        }
+                    }
+                }
+
+                #Only remove folder for VMs if folder is empty
+                if ($Script:data.Target.Path -and (-not (Get-ChildItem -Path $Script:data.Target.Path)))
+                {
+                    Remove-Item -Path $Script:data.Target.Path -Recurse -Force -Confirm:$false
+                }
+
+                Write-ScreenInfo -Message 'Removing entries in the hosts file'
+                Clear-HostFile -Section $Script:data.Name -ErrorAction SilentlyContinue
+            }
+
+            Write-ScreenInfo -Message 'Removing virtual networks'
+            Remove-LabNetworkSwitches -RemoveExternalSwitches:$RemoveExternalSwitches
+
+            if ($Script:data.LabPath)
+            {
+                Write-ScreenInfo -Message 'Removing Lab XML files'
+                if (Test-Path "$($Script:data.LabPath)/$(Get-LabConfigurationItem -Name LabFileName)") { Remove-Item -Path "$($Script:data.LabPath)/Lab.xml" -Force -Confirm:$false }
+                if (Test-Path "$($Script:data.LabPath)/$(Get-LabConfigurationItem -Name DiskFileName)") { Remove-Item -Path "$($Script:data.LabPath)/Disks.xml" -Force -Confirm:$false }
+                if (Test-Path "$($Script:data.LabPath)/$(Get-LabConfigurationItem -Name MachineFileName)") { Remove-Item -Path "$($Script:data.LabPath)/Machines.xml" -Force -Confirm:$false }
+                if (Test-Path "$($Script:data.LabPath)/Unattended*.xml") { Remove-Item -Path "$($Script:data.LabPath)/Unattended*.xml" -Force -Confirm:$false }
+                if (Test-Path "$($Script:data.LabPath)/armtemplate.json") { Remove-Item -Path "$($Script:data.LabPath)/armtemplate.json" -Force -Confirm:$false }
+                if (Test-Path "$($Script:data.LabPath)/ks*.cfg") { Remove-Item -Path "$($Script:data.LabPath)/ks*.cfg" -Force -Confirm:$false }
+                if (Test-Path "$($Script:data.LabPath)/autoinst*.xml") { Remove-Item -Path "$($Script:data.LabPath)/autoinst*.xml" -Force -Confirm:$false }
+                if (Test-Path "$($Script:data.LabPath)/AzureNetworkConfig.Xml") { Remove-Item -Path "$($Script:data.LabPath)/AzureNetworkConfig.Xml" -Recurse -Force -Confirm:$false }
+                if (Test-Path "$($Script:data.LabPath)/Certificates") { Remove-Item -Path "$($Script:data.LabPath)/Certificates" -Recurse -Force -Confirm:$false }
+
+                #Only remove lab path folder if empty
+                if ((Test-Path "$($Script:data.LabPath)") -and (-not (Get-ChildItem -Path $Script:data.LabPath)))
+                {
+                    Remove-Item -Path $Script:data.LabPath
+                }
+            }
+
+            $Script:data = $null
+
+            Write-ScreenInfo -Message "Done removing lab '$labName'" -TaskEnd
+        }
     }
 
-    Write-LogFunctionExit
+    end
+    {
+        Write-LogFunctionExit
+    }
 }
 #endregion Remove-Lab
 
@@ -1612,7 +1621,7 @@ function Get-LabAvailableOperatingSystem
         }
         else
         {
-            $cachedSkus = $type::ImportFromRegistry('Cache', "$($storeLocationName)OperatingSystems")
+            $cachedSkus = try { $type::ImportFromRegistry('Cache', "$($storeLocationName)OperatingSystems") } catch { }
         }
 
         $type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.OperatingSystem
@@ -3653,7 +3662,7 @@ function Disable-LabTelemetry
 {
     if ($IsLinux -or $IsMacOs)
     {
-        $null = Remove-Item -Path "$((Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot))/telemetry.enabled"
+        $null = New-Item -ItemType File -Path "$((Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot))/telemetry.disabled" -Force
     }
     else
     {
@@ -3711,7 +3720,8 @@ catch
 
 if (-not (
         (Test-Path Env:\AUTOMATEDLAB_TELEMETRY_OPTIN) -or `
-    (Test-Path -Path "$((Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot))/telemetry.enabled")) -and `
+    (Test-Path -Path "$((Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot))/telemetry.enabled") -or `
+    (Test-Path -Path "$((Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot))/telemetry.disabled")) -and `
     (Get-Date) -ge $nextCheck
 )
 {

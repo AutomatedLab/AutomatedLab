@@ -46,7 +46,8 @@ Accept wildcard characters: False
 ```
 
 ### -SnapshotName
-The name of the snapshot. Will be added as a Tag to the resource
+The name of the snapshot.
+Will be added as a Tag to the resource
 
 ```yaml
 Type: String
@@ -66,7 +67,6 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### None
-
 ## OUTPUTS
 
 ### System.Object

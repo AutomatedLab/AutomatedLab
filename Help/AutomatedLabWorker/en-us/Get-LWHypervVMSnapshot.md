@@ -13,7 +13,7 @@ Find snapshots of Hyper-V VMs
 ## SYNTAX
 
 ```
-Get-LWHypervVMSnapshot [-VMName] <String[]> [[-Name] <String>] [<CommonParameters>]
+Get-LWHypervVMSnapshot [[-VMName] <String[]>] [[-Name] <String>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -53,7 +53,7 @@ Type: String[]
 Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: 0
 Default value: None
 Accept pipeline input: False
@@ -66,7 +66,6 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### None
-
 ## OUTPUTS
 
 ### System.Object

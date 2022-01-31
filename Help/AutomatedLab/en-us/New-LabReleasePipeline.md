@@ -40,7 +40,8 @@ Create a build and release pipeline without any build and release steps from the
 ## PARAMETERS
 
 ### -BuildSteps
-A collection of build steps. See Get-LabBuildStep
+A collection of build steps.
+See Get-LabBuildStep
 
 ```yaml
 Type: Hashtable[]
@@ -71,7 +72,8 @@ Accept wildcard characters: False
 ```
 
 ### -ComputerName
-The CI/CD server. Defaults to the most recent version
+The CI/CD server.
+Defaults to the most recent version
 
 ```yaml
 Type: String
@@ -86,7 +88,8 @@ Accept wildcard characters: False
 ```
 
 ### -ProjectName
-Name of the new team project. Default AutomatedLab
+Name of the new team project.
+Default AutomatedLab
 
 ```yaml
 Type: String
@@ -101,7 +104,8 @@ Accept wildcard characters: False
 ```
 
 ### -ReleaseSteps
-Collection of release steps. See Get-LabReleaseStep
+Collection of release steps.
+See Get-LabReleaseStep
 
 ```yaml
 Type: Hashtable[]
@@ -163,7 +167,6 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### None
-
 ## OUTPUTS
 
 ### System.Object

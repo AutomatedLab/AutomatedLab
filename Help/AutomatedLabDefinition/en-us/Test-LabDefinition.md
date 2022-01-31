@@ -23,32 +23,26 @@ A lot of checks is being done which can potentially avoid issues up front instea
 ## EXAMPLES
 
 ### Example 1
-
 ```powershell
 Test-LabDefinition -Path D:\MyLabs\MyTestLab\Lab.xml
 ```
 
 Performs validation of the lab saved in the file 'D:\MyLabs\MyTestLab\Lab.xml'
 
-Type        Message                TargetObject     
-----        -------                ------------     
-Information Role defined           RootDC           
-Information Role defined           FirstChildDC     
-Information Role defined           DC               
-Information Machine defined in lab DC1              
-Information Machine defined in lab DC2              
-Information Machine defined in lab DC3              
-Information Machine defined in lab SRV1             
-Information Domain defined         contoso.com      
-Information Domain defined         child.contoso.com
-Summary     Ok                     Lab              
-
-
-
+Type        Message                TargetObject
+----        -------                ------------
+Information Role defined           RootDC
+Information Role defined           FirstChildDC
+Information Role defined           DC
+Information Machine defined in lab DC1
+Information Machine defined in lab DC2
+Information Machine defined in lab DC3
+Information Machine defined in lab SRV1
+Information Domain defined         contoso.com
+Information Domain defined         child.contoso.com Summary     Ok                     Lab
 True
 
 ### Example 2
-
 ```powershell
 Test-LabDefinition -Path D:\MyLabs\MyTestLab\Lab.xml -Quiet
 ```
@@ -82,7 +76,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

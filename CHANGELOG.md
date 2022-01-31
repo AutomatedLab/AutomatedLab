@@ -6,6 +6,26 @@
 
 ### Bugs
 
+## 5.41.0 (2022-01-31)
+
+### Enhancements
+- Performance improvements of DSC Pullserver reports from DscWorkshop
+  - precalculation of values from JSON based status reports at insert time 
+- Added 2022 and Win11 to Azure image name table
+- Add new columns to TaggingData table and view of DSC Pullserver database.
+- Enabled pipelining for Remove-Lab, Start/Stop/Restart/Wait/Remove-LabVm, Wait-LabVMRestart, Wait-LabVMShutdown
+- Pull Server now defaults to HTTPS if CA is deployed, otherwise plain HTTP (Validator removed as well)
+- Enabling additional parameter LocationName in Get-LabAzureAvailableRoleSize
+
+### Bugs
+- Fixing issue with data disks on Azure
+- Fixed a connection bug in 'Copy-LabALCommon' with CredSsp
+- Fixed issue with AutomatedLab.Ships where folder browsing would not work
+- Fixing issue with duplicate MAC addresses in case lab deployments are done in parallel
+- CustomRole does not pick up configured properties
+- Including ProductKeys file in module build for offline environments
+- Fixing a bug with Azure-based labs which would stall during Add-LabAzureSubscription
+
 ## 5.40.0 (2021-10-13)
 
 ### Enhancements

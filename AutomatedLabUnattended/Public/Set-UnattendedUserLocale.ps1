@@ -1,5 +1,6 @@
 ﻿function Set-UnattendedUserLocale
 {
+	[CmdletBinding()]
 	param (
 		[Parameter(Mandatory = $true)]
 		[string]$UserLocale,

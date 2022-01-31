@@ -22,8 +22,6 @@ Gets the connection information for Azure and HyperV VMs and uses the informatio
 ## EXAMPLES
 
 ### Example 1
-
-
 ```powershell
 Connect-LabVM -ComputerName DC1,DC2 -Credential (Get-Credential)
 ```
@@ -57,7 +55,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

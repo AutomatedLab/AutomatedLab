@@ -49,7 +49,8 @@ Accept wildcard characters: False
 ```
 
 ### -Hashtable
-A hashtable containing notes. Values will be converted to String
+A hashtable containing notes.
+Values will be converted to String
 
 ```yaml
 Type: Hashtable
@@ -69,7 +70,6 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### None
-
 ## OUTPUTS
 
 ### System.Object

@@ -31,7 +31,8 @@ Creates the resource group AutomatedLabSources and a random storage account with
 ## PARAMETERS
 
 ### -LocationName
-The location to store the lab sources in. Defaults to lab location
+The location to store the lab sources in.
+Defaults to lab location
 
 ```yaml
 Type: String
@@ -55,7 +56,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

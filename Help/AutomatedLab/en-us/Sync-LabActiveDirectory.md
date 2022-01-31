@@ -47,7 +47,8 @@ Accept wildcard characters: False
 ```
 
 ### -ProgressIndicator
-Every n seconds, print a . to the console
+Every n seconds, print a .
+to the console
 
 ```yaml
 Type: Int32
@@ -71,7 +72,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -86,7 +87,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

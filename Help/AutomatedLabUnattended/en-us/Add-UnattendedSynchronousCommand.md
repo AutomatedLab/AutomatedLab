@@ -8,7 +8,7 @@ schema: 2.0.0
 # Add-UnattendedSynchronousCommand
 
 ## SYNOPSIS
-Add commands to the post deployment. 
+Add commands to the post deployment.
 
 ## SYNTAX
 
@@ -18,7 +18,8 @@ Add-UnattendedSynchronousCommand [-Command] <String> [-Description] <String> [-I
 ```
 
 ## DESCRIPTION
-Add commands to the post deployment. Apply common sense when adding Linux commands, these work differently.
+Add commands to the post deployment.
+Apply common sense when adding Linux commands, these work differently.
 
 ## EXAMPLES
 
@@ -71,7 +72,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -86,7 +87,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -97,7 +98,6 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### None
-
 ## OUTPUTS
 
 ### System.Object

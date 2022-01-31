@@ -32,7 +32,7 @@ Can either deploy a fresh configuration or use an existing one.
 ## EXAMPLES
 
 ### Example 1
-```
+```powershell
 configuration Baseline
 {
     WindowsFeature ADTools
@@ -105,7 +105,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -120,7 +120,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -135,7 +135,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

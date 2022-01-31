@@ -28,7 +28,8 @@ It is used mostly internally to get specific settings like the default lab VM re
 PS C:\> Get-LabConfigurationItem -Name Timeout_RestartLabMachine_Shutdown
 ```
 
-Returns the configured timeout for the shutdown during Restart-LabVM. Default is 30, but can be configured with the PSFramework module
+Returns the configured timeout for the shutdown during Restart-LabVM.
+Default is 30, but can be configured with the PSFramework module
 
 ## PARAMETERS
 
@@ -48,7 +49,8 @@ Accept wildcard characters: False
 ```
 
 ### -Name
-The name of the setting, e.g. Timeout_RestartLabMachine_Shutdown
+The name of the setting, e.g.
+Timeout_RestartLabMachine_Shutdown
 
 ```yaml
 Type: String
@@ -68,7 +70,6 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### None
-
 ## OUTPUTS
 
 ### System.Object

@@ -18,8 +18,8 @@ Stop-LWHypervVM [-ComputerName] <String[]> [[-TimeoutInMinutes] <Double>] [[-Pro
 ```
 
 ## DESCRIPTION
-Stop a Hyper-V VM, with the ability to wait for a timeout in minutes. Both Windows and Linux
-support a shutdown from the OS, if they are available via WinRM
+Stop a Hyper-V VM, with the ability to wait for a timeout in minutes.
+Both Windows and Linux support a shutdown from the OS, if they are available via WinRM
 
 ## EXAMPLES
 
@@ -57,13 +57,14 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -ProgressIndicator
-Interval in seconds that a . should be written to the console
+Interval in seconds that a .
+should be written to the console
 
 ```yaml
 Type: Int32
@@ -78,7 +79,8 @@ Accept wildcard characters: False
 ```
 
 ### -ShutdownFromOperatingSystem
-Initiate the shutdown from the operating system. Uses shutdown.exe on Windows or /bin/shutdown on Linux
+Initiate the shutdown from the operating system.
+Uses shutdown.exe on Windows or /bin/shutdown on Linux
 
 ```yaml
 Type: SwitchParameter
@@ -87,7 +89,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -113,7 +115,6 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### None
-
 ## OUTPUTS
 
 ### System.Object

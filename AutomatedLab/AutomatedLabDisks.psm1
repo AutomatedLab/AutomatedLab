@@ -319,6 +319,12 @@ function Get-LabVHDX
     Write-LogFunctionEntry
 
     $lab = Get-Lab
+
+    if ($lab.DefaultVirtualizationEngine -ne 'HyperV') # We should not even be here!
+    {
+        return
+    }
+
     if (-not $lab)
     {
         Write-Error 'No definitions imported, so there is nothing to do. Please use Import-Lab first'

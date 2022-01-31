@@ -29,16 +29,14 @@ Available after either calling New-LabDefinition or Import-Lab or by specifying 
 ## EXAMPLES
 
 ### Example 1
-
-
 ```powershell
 Get-LabAvailableOperatingSystem -Path D:\LabSources\ISOs
 ```
 
 List all available OS in the lab sources directory
 
-OperatingSystemName                         Idx Version        PublishedDate       IsoPath                             
--------------------                         --- -------        -------------       -------                             
+OperatingSystemName                         Idx Version        PublishedDate       IsoPath
+-------------------                         --- -------        -------------       -------
 Windows Server 2012 R2 Standard (Server Core Installation)   1   6.3.9600.17415 21.11.2014 15:34:09 D:\LabSources\ISOs\en_windows_ser...
 Windows Server 2012 R2 Standard (Server with a GUI)       2   6.3.9600.17415 21.11.2014 15:45:29 D:\LabSources\ISOs\en_windows_ser...
 Windows Server 2012 R2 Datacenter (Server Core Installation) 3   6.3.9600.17415 21.11.2014 15:54:25 D:\LabSources\ISOs\en_windows_ser...
@@ -76,13 +74,14 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -Location
-The Azure location, e.g. West Europe
+The Azure location, e.g.
+West Europe
 
 ```yaml
 Type: Object
@@ -106,7 +105,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -121,7 +120,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

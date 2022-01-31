@@ -74,7 +74,8 @@ Invoke-LWCommand -ComputerName <String[]> -Session <PSSession[]> [-ActivityName 
 ```
 
 ## DESCRIPTION
-Executes code on remote hosts. Has various modes of operation like transmitting dependency content or executing scripts on the remote host.
+Executes code on remote hosts.
+Has various modes of operation like transmitting dependency content or executing scripts on the remote host.
 
 ## EXAMPLES
 
@@ -83,13 +84,13 @@ Executes code on remote hosts. Has various modes of operation like transmitting 
 PS C:\> Invoke-LWCommand -ComputerName Host1 -ScriptFilePath C:\StartDeployment.ps1 -Retries 3 -RetryInterval 10
 ```
 
-Executes the script StartDeployment.ps1 which exists on the remote host Host1 with up to 3 retries and a
-retry interval of 10 seconds.
+Executes the script StartDeployment.ps1 which exists on the remote host Host1 with up to 3 retries and a retry interval of 10 seconds.
 
 ## PARAMETERS
 
 ### -ActivityName
-Name of the activity. Relevant for logging and display
+Name of the activity.
+Relevant for logging and display
 
 ```yaml
 Type: String
@@ -128,7 +129,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -188,7 +189,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -218,7 +219,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -358,7 +359,6 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### None
-
 ## OUTPUTS
 
 ### System.Object

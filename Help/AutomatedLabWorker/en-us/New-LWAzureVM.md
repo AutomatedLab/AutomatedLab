@@ -17,14 +17,13 @@ New-LWAzureVM [-Machine] <Machine> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-Create a new Azure VM. The VM role size is gathered from either the default role size, the configured role
-size in the machine definition or by the memory and CPU consumption.
+Create a new Azure VM.
+The VM role size is gathered from either the default role size, the configured role size in the machine definition or by the memory and CPU consumption.
 
-Depending on the role, a SKU will be selected. SQL Server for example is available as a separate SKU and
-will be automatically selected.
+Depending on the role, a SKU will be selected.
+SQL Server for example is available as a separate SKU and will be automatically selected.
 
-This cmdlet also takes care of assigning the necessary managed disks, network adapters and is responsible
-for creating the necessary inbound NAT rules for each new VM
+This cmdlet also takes care of assigning the necessary managed disks, network adapters and is responsible for creating the necessary inbound NAT rules for each new VM
 
 ## EXAMPLES
 
@@ -58,7 +57,6 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### None
-
 ## OUTPUTS
 
 ### System.Object

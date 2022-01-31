@@ -7,6 +7,7 @@ if (-not $IsLinux)
 }
 
 Write-Host "'before_build' block"
+Copy-Item -Path (Join-Path -Path $env:APPVEYOR_BUILD_FOLDER 'Assets/ProductKeys.xml') -Destination (Join-Path -Path $env:APPVEYOR_BUILD_FOLDER 'AutomatedLab/ProductKeys.xml')
 
 Write-Host "Setting version number in files"
 Add-AppveyorMessage -Message "Setting version number in files" -Category Information

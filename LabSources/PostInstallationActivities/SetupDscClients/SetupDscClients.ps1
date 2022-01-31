@@ -3,7 +3,10 @@
     [string[]] $PullServer,
 
     [Parameter(Mandatory)]
-    [string[]] $RegistrationKey
+    [string[]] $RegistrationKey,
+
+    [bool]
+    $UseSsl = $true
 )
 
 [DSCLocalConfigurationManager()]
@@ -14,7 +17,10 @@ Configuration PullClient
         [string[]] $PullServer,
 
         [Parameter(Mandatory)]
-        [string[]] $RegistrationKey
+        [string[]] $RegistrationKey,
+
+        [bool]
+        $UseSsl = $true
     )
 
     [string[]]$flatNames = foreach ($server in $PullServer)
@@ -40,28 +46,30 @@ Configuration PullClient
             RebootNodeIfNeeded   = $true
         }
 
+        $proto = if ($UseSsl) { 'https' } else { 'http' }
+
         if ($PullServer.Count -eq 1)
         {
-            Write-Verbose "ServerUrl = $("https://$($PullServer[0]):8080/PSDSCPullServer.svc"), RegistrationKey = $($RegistrationKey[0]), ConfigurationNames = $("TestConfig$($flatNames[0])")"
+            Write-Verbose "ServerUrl = $("$($proto)://$($PullServer[0]):8080/PSDSCPullServer.svc"), RegistrationKey = $($RegistrationKey[0]), ConfigurationNames = $("TestConfig$($flatNames[0])")"
             ConfigurationRepositoryWeb "PullServer_1"
             {
-                ServerURL          = "https://$($PullServer[0]):8080/PSDSCPullServer.svc"
+                ServerURL          = "$($proto)://$($PullServer[0]):8080/PSDSCPullServer.svc"
                 RegistrationKey    = $RegistrationKey[0]
                 ConfigurationNames = @("TestConfig$($flatNames[0])")
-                #AllowUnsecureConnection = $true
+                AllowUnsecureConnection = -not $UseSsl.IsPresent
             }
         }
         else
         {
             for ($i = 0; $i -lt $PullServer.Count; $i++)
             {
-                Write-Verbose "ServerUrl = $("https://$($PullServer[$i]):8080/PSDSCPullServer.svc"), RegistrationKey = $($RegistrationKey[$i]), ConfigurationNames = $("TestConfig$($flatNames[$i])")"
+                Write-Verbose "ServerUrl = $("$($proto)://$($PullServer[$i]):8080/PSDSCPullServer.svc"), RegistrationKey = $($RegistrationKey[$i]), ConfigurationNames = $("TestConfig$($flatNames[$i])")"
                 ConfigurationRepositoryWeb "PullServer_$($i + 1)"
                 {
-                    ServerURL          = "https://$($PullServer[$i]):8080/PSDSCPullServer.svc"
+                    ServerURL          = "$($proto)://$($PullServer[$i]):8080/PSDSCPullServer.svc"
                     RegistrationKey    = $RegistrationKey[$i]
                     ConfigurationNames = @("TestConfig$($flatNames[$i])")
-                    #AllowUnsecureConnection = $true
+                    AllowUnsecureConnection = -not $UseSsl
                 }
 
                 PartialConfiguration "TestConfigDPull$($i + 1)"
@@ -75,9 +83,9 @@ Configuration PullClient
 
         ReportServerWeb CONTOSO-PullSrv
         {
-            ServerURL       = "https://$($PullServer[0]):8080/PSDSCPullServer.svc"
+            ServerURL       = "$($proto)://$($PullServer[0]):8080/PSDSCPullServer.svc"
             RegistrationKey = $RegistrationKey[0]
-            #AllowUnsecureConnection = $true
+            AllowUnsecureConnection = -not $UseSsl
         }
     }
 }
@@ -88,7 +96,7 @@ if ($PullServer.Count -ne $RegistrationKey.Count)
     return
 }
 
-PullClient -OutputPath c:\Dsc -PullServer $PullServer -RegistrationKey $RegistrationKey | Out-Null
+PullClient -OutputPath c:\Dsc -PullServer $PullServer -RegistrationKey $RegistrationKey -UseSsl:$UseSsl | Out-Null
 Set-DscLocalConfigurationManager -Path C:\Dsc -ComputerName localhost -Verbose
 
 Update-DscConfiguration -Wait -Verbose

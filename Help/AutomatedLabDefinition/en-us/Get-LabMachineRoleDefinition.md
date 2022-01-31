@@ -35,6 +35,7 @@ Get-LabMachineRoleDefinition -Role RootDc -Syntax
 ```
 
 Returns all possible parameter for the specified role
+
 ## PARAMETERS
 
 ### -Role
@@ -78,7 +79,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
