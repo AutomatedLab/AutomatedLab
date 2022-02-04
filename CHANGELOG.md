@@ -4,13 +4,18 @@
 
 ### Enhancements
 
+- Added support for files in a folder copy in Copy-LabFileItem
+
 ### Bugs
+
+- Corrected various issues in the SharePoint role installation script.
+- Corrected incorrect HERE string in the PrepareRootDomain script
 
 ## 5.41.0 (2022-01-31)
 
 ### Enhancements
 - Performance improvements of DSC Pullserver reports from DscWorkshop
-  - precalculation of values from JSON based status reports at insert time 
+  - precalculation of values from JSON based status reports at insert time
 - Added 2022 and Win11 to Azure image name table
 - Add new columns to TaggingData table and view of DSC Pullserver database.
 - Enabled pipelining for Remove-Lab, Start/Stop/Restart/Wait/Remove-LabVm, Wait-LabVMRestart, Wait-LabVMShutdown
@@ -160,7 +165,7 @@
   - Cache will not entirely be rebuilt, additional OSs will be added
 - New Import-LabDefinition cmdlet
 - Various updates to custom roles CM-1902 and CM-2002: (thank you @codaamok !)
-  - In both CM-1902 and CM-2002: 
+  - In both CM-1902 and CM-2002:
     - Checks for site update failure, and site update download failures, and throw exception if one occurs
     - Improved site update success rate by adding a wait for idle state on SMS_SITE_COMPONENT_MANAGER
     - Added Defender antivirus exclusions as per Microsoft recommendations
@@ -210,7 +215,7 @@
 
 - Aligned the name of the 'DscMofEncryption' template with its display name
 - Fixed issue with Install-LabSoftwarePackage not working for Azure VMs outside of $LabSources (Issue #989)
-- Installing RDS certificates and calling the Pester tests only if $performAll or explicitly defined. Before Install-Lab 
+- Installing RDS certificates and calling the Pester tests only if $performAll or explicitly defined. Before Install-Lab
   threw errors in case only some parts of the lab deployment should be done.
 - Remove-LabVm now removes associated resources on Azure (Issue #998 and #997)
 - New-LabSourcesFolder now actually copies dev branch.
@@ -257,7 +262,7 @@
   - No interaction is done in AL using the resource name. This is only for the purpose of
     deploying the same lab on the same host with different resource names (VM names, switch names)
 - Enabling configuration of allowed inbound IP addresses for Azure load balancer
-  
+
 ### Bug Fixes
 - Get-LabInternetFile did not work on Azure when the Uri did not contain a file name like 'https://go.microsoft.com/fwlink/?Linkid=85215'.
 - Decreased runtime of installation on Azure by disabling the Azure LabSources check in Copy-LabAlCommon
@@ -695,7 +700,7 @@ downloaded through PSGallery
   - OS < 2008 R2: Cluster cmdlets work with 2008 R2 and above
   - Duplicate cluster IPs
   - Fewer than 2 nodes per cluster
-  - Sample script that deploys three clusters with varying configurations  
+  - Sample script that deploys three clusters with varying configurations
 - SQL Sample Database Installation revised
   - Sample DBs will now be downloaded
   - Customization of download links in AutomatedLab.psd1
