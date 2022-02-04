@@ -5,6 +5,7 @@
 ### Enhancements
 
 ### Bugs
+- Fixing issue with Get-LabAzureAvailableRoleSize by filtering earlier
 
 ## 5.41.0 (2022-01-31)
 

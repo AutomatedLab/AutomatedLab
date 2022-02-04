@@ -1465,8 +1465,8 @@ function Get-LabAzureAvailableRoleSize
         Write-ScreenInfo -Type Error -Message "No location found matching DisplayName '$DisplayName' or Name '$LocationName'"
     }
 
-    $availableRoleSizes = Get-AzComputeResourceSku | Where-Object {
-        $_.ResourceType -eq 'virtualMachines' -and $_.Locations -contains $azLocation.Location -and $_.Restrictions.ReasonCode -notcontains 'NotAvailableForSubscription'
+    $availableRoleSizes = Get-AzComputeResourceSku -Location $azLocation.Location | Where-Object {
+        $_.ResourceType -eq 'virtualMachines' -and $_.Restrictions.ReasonCode -notcontains 'NotAvailableForSubscription'
     } | Select-Object -ExpandProperty Name
 
     Get-AzVMSize -Location $azLocation.Location | Where-Object -Property Name -in $availableRoleSizes
