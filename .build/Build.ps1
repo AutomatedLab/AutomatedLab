@@ -32,7 +32,7 @@
                 else
                 {
                     Write-Verbose -Message "Module Installed, Importing $($moduleName)"
-                    Import-Module -Name $moduleName -Force -RequiredVersion $version
+                    Import-Module -ModuleInfo $module -Force
                 }
             }
             else
@@ -82,7 +82,7 @@ if ($IsLinux)
     $null = sudo mkdir /usr/share/AutomatedLab/LabSources -p
 }
 
-Resolve-Module -Name Psake, PSDeploy, Pester, BuildHelpers, AutomatedLab, Ships, PSFramework, xPSDesiredStateConfiguration, xDscDiagnostics, xWebAdministration
+Resolve-Module -Name Psake, PSDeploy, Pester, BuildHelpers, AutomatedLab.Common, AutomatedLab, Ships, PSFramework, xPSDesiredStateConfiguration, xDscDiagnostics, xWebAdministration
 
 Invoke-psake ./.build/psake.ps1
 exit ( [int]( -not $psake.build_success ) )

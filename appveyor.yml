@@ -81,9 +81,8 @@ for:
         on:
           branch: master
 
-after_deploy:
-  - ps: "& $env:APPVEYOR_BUILD_FOLDER/.build/afterdeploy.ps1"
 after_build:
+  - ps: "& $env:APPVEYOR_BUILD_FOLDER/.build/afterdeploy.ps1"
   - ps: "& $env:APPVEYOR_BUILD_FOLDER/.build/afterbuild.ps1"
 
 on_finish:
