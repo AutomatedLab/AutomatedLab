@@ -12,6 +12,9 @@
 - Corrected various issues in the SharePoint role installation script.
 - Corrected incorrect HERE string in the PrepareRootDomain script
 
+- Corrected various issues in the SharePoint role installation script.
+- Corrected incorrect HERE string in the PrepareRootDomain script
+
 ## 5.41.0 (2022-01-31)
 
 ### Enhancements
