@@ -22,7 +22,7 @@ $SharePoint2013InstallScript = {
         [string]
         $Mode = '/unattended'
     )
-    $exitCode = (Start-Process -PassThru -Wait "C:\SPInstall\PrerequisiteInstaller.exe" –ArgumentList "$Mode /SQLNCli:C:\SPInstall\PrerequisiteInstallerFiles\sqlncli.msi `
+    (Start-Process -PassThru -Wait "C:\SPInstall\PrerequisiteInstaller.exe" –ArgumentList "$Mode /SQLNCli:C:\SPInstall\PrerequisiteInstallerFiles\sqlncli.msi `
                /IDFX:C:\SPInstall\PrerequisiteInstallerFiles\Windows6.1-KB974405-x64.msu  `
                /IDFX11:C:\SPInstall\PrerequisiteInstallerFiles\MicrosoftIdentityExtensions-64.msi `
                /Sync:C:\SPInstall\PrerequisiteInstallerFiles\Synchronization.msi  `
@@ -31,11 +31,6 @@ $SharePoint2013InstallScript = {
                /MSIPCClient:C:\SPInstall\PrerequisiteInstallerFiles\setup_msipc_x64.msi  `
                /WCFDataServices:C:\SPInstall\PrerequisiteInstallerFiles\WcfDataServices.exe  `
                /WCFDataServices56:C:\SPInstall\PrerequisiteInstallerFiles\WcfDataServices56.exe").ExitCode
-
-    return @{
-        ExitCode = $exitCode
-        Hostname = $env:COMPUTERNAME
-    }
 }
 $SharePoint2016InstallScript = {
     param
@@ -43,7 +38,7 @@ $SharePoint2016InstallScript = {
         [string]
         $Mode = '/unattended'
     )
-    $exitCode = (Start-Process -PassThru -Wait "C:\SPInstall\PrerequisiteInstaller.exe" –ArgumentList "$Mode /SQLNCli:C:\SPInstall\PrerequisiteInstallerFiles\sqlncli.msi `
+    (Start-Process -PassThru -Wait "C:\SPInstall\PrerequisiteInstaller.exe" –ArgumentList "$Mode /SQLNCli:C:\SPInstall\PrerequisiteInstallerFiles\sqlncli.msi `
     /IDFX11:C:\SPInstall\PrerequisiteInstallerFiles\MicrosoftIdentityExtensions-64.msi `
     /Sync:C:\SPInstall\PrerequisiteInstallerFiles\Synchronization.msi  `
     /AppFabric:C:\SPInstall\PrerequisiteInstallerFiles\WindowsServerAppFabricSetup_x64.exe  `
@@ -54,11 +49,6 @@ $SharePoint2016InstallScript = {
     /ODBC:C:\SPInstall\PrerequisiteInstallerFiles\msodbcsql.msi  `
     /MSVCRT11:C:\SPInstall\PrerequisiteInstallerFiles\vcredist_64_2012.exe  `
     /MSVCRT14:C:\SPInstall\PrerequisiteInstallerFiles\vcredist_64_2015.exe").ExitCode
-
-    return @{
-        ExitCode = $exitCode
-        Hostname = $env:COMPUTERNAME
-    }
 }
 $SharePoint2019InstallScript = {
     param
@@ -211,26 +201,26 @@ function Install-LabSharePoint
     }
 
     $instResult = Invoke-LabCommand -PassThru -ComputerName $machines -ActivityName "Install SharePoint (all) Prerequisites" -ScriptBlock { & C:\DeployDebug\SPPrereq.ps1 -Mode '/unattended' }
-    $failed = $instResult | Where-Object { $_ -notin 0, 3010 }
+    $failed = $instResult | Where-Object { $_.ExitCode -notin 0, 3010 }
     if ($null -ne $failed)
     {
         Write-ScreenInfo -Type Error -Message "The following SharePoint servers failed installing prerequisites $($failed.PSComputerName)"
         return
     }
 
-    $rebootRequired = $instResult | Where-Object { $_ -eq 3010 }
+    $rebootRequired = $instResult | Where-Object { $_.ExitCode -eq 3010 }
     while ($null -ne $rebootRequired)
     {
-        Write-ScreenInfo -Type Verbose -Message "Some machines require a second pass at installing prerequisites: $($rebootRequired.PSComputerName -join ',')"
-        Restart-LabVM -ComputerName $rebootRequired.PSComputerName -Wait
+        Write-ScreenInfo -Type Verbose -Message "Some machines require a second pass at installing prerequisites: $($rebootRequired.HostName -join ',')"
+        Restart-LabVM -ComputerName $rebootRequired.HostName -Wait
         $instResult = Invoke-LabCommand -PassThru -ComputerName $rebootRequired.PSComputerName -ActivityName "Install $($group.Name) Prerequisites" -ScriptBlock { & C:\DeployDebug\SPPrereq.ps1 -Mode '/unattended /continue' } | Where-Object { $_ -eq 3010 }
-        $failed = $instResult | Where-Object { $_ -notin 0, 3010 }
+        $failed = $instResult | Where-Object { $_.ExitCode -notin 0, 3010 }
         if ($null -ne $failed)
         {
             Write-ScreenInfo -Type Error -Message "The following SharePoint servers failed installing prerequisites $($failed.PSComputerName)"
         }
 
-        $rebootRequired = $instResult | Where-Object { $_ -eq 3010 }
+        $rebootRequired = $instResult | Where-Object { $_.ExitCode -eq 3010 }
     }
 
     # Install SharePoint binaries
