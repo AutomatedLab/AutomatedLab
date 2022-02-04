@@ -2,8 +2,8 @@
 
 if (-not (Get-Command -Name Get-ADReplicationSite -ErrorAction SilentlyContinue))
 {
-	Write-ScreenInfo 'The script "PrepareRootDomain.ps1" script runs only if the ADReplication cmdlets are available' -Type Warning
-	return
+    Write-ScreenInfo 'The script "PrepareRootDomain.ps1" script runs only if the ADReplication cmdlets are available' -Type Warning
+    return
 }
 
 $password = "Password1"
@@ -39,12 +39,12 @@ foreach ($branchSite in $branchSites)
     Write-Verbose ("Creating Link from '{0}' to '{1}'" -f $hubSite.Name, $branchSite.Name)
     New-ADReplicationSiteLink -Name "$($hubSite.Name) - $($branchSite.Name)" `
         -SitesIncluded $hubSite, $branchSite `
-        -Description "Standard Site Link" -OtherAttributes @{'options'=1} `
-		-Cost 100 -ReplicationFrequencyInMinutes 15 `
-		-PassThru
+        -Description "Standard Site Link" -OtherAttributes @{'options' = 1 } `
+        -Cost 100 -ReplicationFrequencyInMinutes 15 `
+        -PassThru
 }
 
-$repAllScript = '@
+$repAllScript = @'
 REPADMIN /viewlist * > DCs.txt
 
 :: FOR /F "tokens=3" %%a IN (DCs.txt) DO ECHO dadasdads %%a
@@ -53,7 +53,7 @@ FOR /F "tokens=3" %%a IN (DCs.txt) DO CALL REPADMIN /SyncAll /AeP %%a
 DEL DCs.txt
 
 REPADMIN /ReplSum
-@'
+'@
 
 $repAllScript | Out-File -FilePath C:\Windows\RepAll.bat
 
