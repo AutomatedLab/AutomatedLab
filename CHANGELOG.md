@@ -8,10 +8,6 @@
 
 ### Bugs
 - Fixing issue with Get-LabAzureAvailableRoleSize by filtering earlier
-
-- Corrected various issues in the SharePoint role installation script.
-- Corrected incorrect HERE string in the PrepareRootDomain script
-
 - Corrected various issues in the SharePoint role installation script.
 - Corrected incorrect HERE string in the PrepareRootDomain script
 
