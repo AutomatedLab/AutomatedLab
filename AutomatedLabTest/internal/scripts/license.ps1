@@ -1,5 +1,5 @@
 ﻿New-PSFLicense -Product 'AutomatedLabTest' -Manufacturer 'janhe' -ProductVersion $script:ModuleVersion -ProductType Module -Name MIT -Version "1.0.0.0" -Date (Get-Date "2020-05-20") -Text @"
-Copyright (c) 2020 janhe
+Copyright (c) 2022 AutomatedLab
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

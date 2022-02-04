@@ -11,7 +11,7 @@
 
     CompanyName            = 'AutomatedLab Team'
 
-    Copyright              = '2020'
+    Copyright              = '2022'
 
     Description            = 'The module is for testing AutomatedLab'
 
@@ -32,10 +32,20 @@
 
     FileList               = @('xml\AutomatedLabTest.format.ps1xml', 'AutomatedLabTest.psm1', 'AutomatedLabTest.psd1')
 
-    PrivateData            = @{ }
+    PrivateData            = @{
+
+        PSData = @{
+            Prerelease   = ''
+            Tags         = @('LabTest', 'Lab', 'LabAutomation', 'HyperV', 'Azure')
+            LicenseUri   = 'https://github.com/AutomatedLab/AutomatedLab/blob/main/LICENSE'
+            ProjectUri   = 'https://github.com/AutomatedLab/AutomatedLab'
+            IconUri      = 'https://github.com/AutomatedLab/AutomatedLab/blob/master/Assets/Automated-Lab_icon256.png'
+            ReleaseNotes = ''
+        }
+    }
 
     RequiredModules        = @(
-        @{ ModuleName='Pester'; ModuleVersion='5.0.0'; }
-        @{ ModuleName='PSFramework'; ModuleVersion='1.1.59' }
+        @{ ModuleName = 'Pester'; ModuleVersion = '5.0.0'; }
+        @{ ModuleName = 'PSFramework'; ModuleVersion = '1.1.59' }
     )
 }

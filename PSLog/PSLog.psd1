@@ -13,7 +13,7 @@
 
     CompanyName            = 'AutomatedLab Team'
 
-    Copyright              = '2019'
+    Copyright              = '2022'
 
     PowerShellVersion      = '5.1'
 
@@ -33,5 +33,14 @@
             'System.Management.Automation.ScriptBlock'
         )
         TruncateLength = 50
+
+        PSData         = @{
+            Prerelease   = ''
+            Tags         = @('Logging')
+            LicenseUri   = 'https://github.com/AutomatedLab/AutomatedLab/blob/main/LICENSE'
+            ProjectUri   = 'https://github.com/AutomatedLab/AutomatedLab'
+            IconUri      = 'https://github.com/AutomatedLab/AutomatedLab/blob/master/Assets/Automated-Lab_icon256.png'
+            ReleaseNotes = ''
+        }
     }
 }

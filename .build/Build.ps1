@@ -76,10 +76,10 @@ if (-not ($latestVersion.Version -ge '1.6.0'))
 
 if ($IsLinux)
 {
-    $null = sudo mkdir ./usr/share/AutomatedLab/Assets -p
-    $null = sudo mkdir ./usr/share/AutomatedLab/Stores -p
-    $null = sudo mkdir ./usr/share/AutomatedLab/Labs -p
-    $null = sudo mkdir ./usr/share/AutomatedLab/LabSources -p
+    $null = sudo mkdir /usr/share/AutomatedLab/Assets -p
+    $null = sudo mkdir /usr/share/AutomatedLab/Stores -p
+    $null = sudo mkdir /usr/share/AutomatedLab/Labs -p
+    $null = sudo mkdir /usr/share/AutomatedLab/LabSources -p
 }
 
 Resolve-Module -Name Psake, PSDeploy, Pester, BuildHelpers, AutomatedLab, Ships, PSFramework, xPSDesiredStateConfiguration, xDscDiagnostics, xWebAdministration
