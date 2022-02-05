@@ -744,7 +744,8 @@ $fPath = Join-Path -Path (Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRo
 $fcPath = Join-Path -Path (Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot) -ChildPath 'Assets/ProductKeysCustom.xml'
 if (-not (Test-Path -Path $fPath -ErrorAction SilentlyContinue))
 {
-    Copy-Item -Path "$PSScriptRoot/ProductKeys.xml" -Destination $fcPath -Force -ErrorAction SilentlyContinue
+    $null = if (-not (Test-Path -Path (Split-Path $fPath -Parent))) {New-Item -Path (Split-Path $fPath -Parent) -ItemType Directory} 
+    Copy-Item -Path "$PSScriptRoot/ProductKeys.xml" -Destination $fPath -Force -ErrorAction SilentlyContinue
 }
 Set-PSFConfig -Module AutomatedLab -Name ProductKeyFilePath -Value $fPath -Initialize -Validation string -Description 'Destination of the ProductKeys file for Windows products'
 Set-PSFConfig -Module AutomatedLab -Name ProductKeyFilePathCustom -Value $fcPath -Initialize -Validation string -Description 'Destination of the ProductKeysCustom file for Windows products'

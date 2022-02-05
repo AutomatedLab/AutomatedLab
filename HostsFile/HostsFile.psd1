@@ -11,7 +11,7 @@
 
     CompanyName            = 'AutomatedLab Team'
 
-    Copyright              = '2019'
+    Copyright              = '2022'
 
     Description            = 'This module provides management of hosts file content'
 
@@ -26,4 +26,16 @@
     FileList               = @('HostsFile.psm1', 'HostsFile.psd1')
 
     RequiredModules        = @('PSFramework')
+
+    PrivateData            = @{
+
+        PSData = @{
+            Prerelease   = ''
+            Tags         = @('HostFile', 'HostEntry')
+            LicenseUri   = 'https://github.com/AutomatedLab/AutomatedLab/blob/main/LICENSE'
+            ProjectUri   = 'https://github.com/AutomatedLab/AutomatedLab'
+            IconUri      = 'https://github.com/AutomatedLab/AutomatedLab/blob/master/Assets/Automated-Lab_icon256.png'
+            ReleaseNotes = ''
+        }
+    }
 }
