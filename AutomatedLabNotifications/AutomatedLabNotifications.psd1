@@ -7,7 +7,7 @@
 
     CompatiblePSEditions   = 'Core', 'Desktop'
 
-    Copyright              = '2019'
+    Copyright              = '2022'
 
     Description            = 'The module creates a Hyper-V visual lab automatically as defined in the XML files.'
 
@@ -33,7 +33,17 @@
         "Public\Send-ALNotification.ps1"
     )
 
-    PrivateData            = @{ }
+    PrivateData            = @{
+
+        PSData = @{
+            Prerelease   = ''
+            Tags         = @('LabNotifications' , 'IFTTT', 'Toast', 'Lab', 'LabAutomation', 'HyperV', 'Azure')
+            LicenseUri   = 'https://github.com/AutomatedLab/AutomatedLab/blob/main/LICENSE'
+            ProjectUri   = 'https://github.com/AutomatedLab/AutomatedLab'
+            IconUri      = 'https://github.com/AutomatedLab/AutomatedLab/blob/master/Assets/Automated-Lab_icon256.png'
+            ReleaseNotes = ''
+        }
+    }
 
     # HelpInfo URI of this module
     # HelpInfoURI = ''

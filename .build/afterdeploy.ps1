@@ -1,4 +1,5 @@
 ﻿Write-Host "'after_deploy' block"
+if ($IsLinux -or $IsMacOs) { return }
 if ( (Get-PackageProvider nuget -Erroraction SilentlyContinue).Version -lt 2.8.5.210)
 {
     $provParams = @{

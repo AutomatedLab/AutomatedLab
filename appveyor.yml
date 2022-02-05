@@ -1,7 +1,7 @@
 version: 5.41.{build}
 image:
-- Visual Studio 2017
-- Ubuntu
+  - Visual Studio 2017
+  - Ubuntu
 
 environment:
   AppVeyorApi:
@@ -16,16 +16,16 @@ branches:
 skip_tags: true
 
 install:
-  - ps: '& $env:APPVEYOR_BUILD_FOLDER/.build/install.ps1'
+  - ps: "& $env:APPVEYOR_BUILD_FOLDER/.build/install.ps1"
 
 dotnet_csproj:
   patch: true
   file: '**\LabXml.csproj'
-  version: '{version}'
-  package_version: '{version}'
-  assembly_version: '{version}'
-  file_version: '{version}'
-  informational_version: '{version}'
+  version: "{version}"
+  package_version: "{version}"
+  assembly_version: "{version}"
+  file_version: "{version}"
+  informational_version: "{version}"
 
 assembly_info:
   patch: true
@@ -36,8 +36,8 @@ assembly_info:
 
 before_build:
   - nuget restore
-  - ps: '& $env:APPVEYOR_BUILD_FOLDER/.build/beforebuild.ps1'
-        
+  - ps: "& $env:APPVEYOR_BUILD_FOLDER/.build/beforebuild.ps1"
+
 for:
   - matrix:
       only:
@@ -46,7 +46,7 @@ for:
       project: AutomatedLab.sln
     deploy:
       - provider: GitHub
-        description: 'This is an automated deployment'
+        description: "This is an automated deployment"
         auth_token:
           secure: 0gI2mQ864yW9/wSMzuKz4vqrHZ8hOEWcLdxTxvcH/U13he2WSmRyNIxN7Rebersx # your encrypted token from GitHub
         artifact: alinstaller
@@ -55,15 +55,13 @@ for:
         prerelease: false
         on:
           branch: master
-    after_deploy:
-      ps: '& $env:APPVEYOR_BUILD_FOLDER/.build/afterdeploy.ps1'
   - matrix:
       only:
         - image: Ubuntu
     build_script: dotnet build -f netcoreapp2.2 LabXml/LabXml.csproj
     deploy:
       - provider: GitHub
-        description: 'This is an automated deployment'
+        description: "This is an automated deployment"
         auth_token:
           secure: 0gI2mQ864yW9/wSMzuKz4vqrHZ8hOEWcLdxTxvcH/U13he2WSmRyNIxN7Rebersx # your encrypted token from GitHub
         artifact: aldebianpackage
@@ -73,7 +71,7 @@ for:
         on:
           branch: master
       - provider: GitHub
-        description: 'This is an automated deployment'
+        description: "This is an automated deployment"
         auth_token:
           secure: 0gI2mQ864yW9/wSMzuKz4vqrHZ8hOEWcLdxTxvcH/U13he2WSmRyNIxN7Rebersx # your encrypted token from GitHub
         artifact: alrpmpackage
@@ -84,7 +82,8 @@ for:
           branch: master
 
 after_build:
-  - ps: '& $env:APPVEYOR_BUILD_FOLDER/.build/afterbuild.ps1'
+  - ps: "& $env:APPVEYOR_BUILD_FOLDER/.build/afterdeploy.ps1"
+  - ps: "& $env:APPVEYOR_BUILD_FOLDER/.build/afterbuild.ps1"
 
 on_finish:
-  - ps: '& $env:APPVEYOR_BUILD_FOLDER/.build/onfinish.ps1'
+  - ps: "& $env:APPVEYOR_BUILD_FOLDER/.build/onfinish.ps1"

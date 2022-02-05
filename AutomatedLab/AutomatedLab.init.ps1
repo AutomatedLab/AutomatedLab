@@ -57,7 +57,7 @@ else
 }
 
 $usedRelease = (Split-Path -Leaf -Path $PSScriptRoot) -as [version]
-$currentRelease = try {((Invoke-RestMethod -Method Get -Uri https://api.github.com/repos/AutomatedLab/AutomatedLab/releases/latest -ErrorAction Stop).tag_Name -replace 'v') -as [Version] } catch {}
+$currentRelease = try { ((Invoke-RestMethod -Method Get -Uri https://api.github.com/repos/AutomatedLab/AutomatedLab/releases/latest -ErrorAction Stop).tag_Name -replace 'v') -as [Version] } catch {}
 
 if ($currentRelease -and $usedRelease -lt $currentRelease)
 {
@@ -300,15 +300,15 @@ Set-PSFConfig -Module AutomatedLab -Name SharePoint2016Prerequisites -Value @(
 ) -Initialize -Description 'List of prerequisite urls for SP2013' -Validation stringarray
 
 Set-PSFConfig -Module AutomatedLab -Name SharePoint2019Prerequisites -Value @(
-    "https://download.microsoft.com/download/B/E/D/BED73AAC-3C8A-43F5-AF4F-EB4FEA6C8F3A/ENU/x64/sqlncli.msi",
-    "https://download.microsoft.com/download/3/C/F/3CF781F5-7D29-4035-9265-C34FF2369FA2/setup_msipc_x64.exe",
-    "https://download.microsoft.com/download/B/9/D/B9D6E014-C949-4A1E-BA6B-2E0DEBA23E54/SyncSetup_en.x64.zip",
-    "https://download.microsoft.com/download/1/C/A/1CAA41C7-88B9-42D6-9E11-3C655656DAB1/WcfDataServices.exe",
-    "https://download.microsoft.com/download/0/1/D/01D06854-CA0C-46F1-ADBA-EBF86010DCC6/rtm/MicrosoftIdentityExtensions-64.msi",
-    "https://download.microsoft.com/download/A/6/7/A678AB47-496B-4907-B3D4-0A2D280A13C0/WindowsServerAppFabricSetup_x64.exe",
-    "https://download.microsoft.com/download/F/1/0/F1093AF6-E797-4CA8-A9F6-FC50024B385C/AppFabric-KB3092423-x64-ENU.exe",
-    'https://download.microsoft.com/download/5/7/2/57249A3A-19D6-4901-ACCE-80924ABEB267/ENU/x64/msodbcsql.msi'
-    'https://download.microsoft.com/download/6/E/4/6E48E8AB-DC00-419E-9704-06DD46E5F81D/NDP472-KB4054530-x86-x64-AllOS-ENU.exe'
+    'https://download.microsoft.com/download/F/3/C/F3C64941-22A0-47E9-BC9B-1A19B4CA3E88/ENU/x64/sqlncli.msi',
+    'https://download.microsoft.com/download/3/C/F/3CF781F5-7D29-4035-9265-C34FF2369FA2/setup_msipc_x64.exe',
+    'https://download.microsoft.com/download/E/0/0/E0060D8F-2354-4871-9596-DC78538799CC/Synchronization.msi',
+    'https://download.microsoft.com/download/1/C/A/1CAA41C7-88B9-42D6-9E11-3C655656DAB1/WcfDataServices.exe',
+    'https://download.microsoft.com/download/0/1/D/01D06854-CA0C-46F1-ADBA-EBF86010DCC6/rtm/MicrosoftIdentityExtensions-64.msi',
+    'https://download.microsoft.com/download/A/6/7/A678AB47-496B-4907-B3D4-0A2D280A13C0/WindowsServerAppFabricSetup_x64.exe',
+    'https://download.microsoft.com/download/F/1/0/F1093AF6-E797-4CA8-A9F6-FC50024B385C/AppFabric-KB3092423-x64-ENU.exe',
+    'https://download.microsoft.com/download/5/7/2/57249A3A-19D6-4901-ACCE-80924ABEB267/ENU/x64/msodbcsql.msi',
+    'https://download.visualstudio.microsoft.com/download/pr/1f5af042-d0e4-4002-9c59-9ba66bcf15f6/089f837de42708daacaae7c04b7494db/ndp472-kb4054530-x86-x64-allos-enu.exe'
 ) -Initialize -Description 'List of prerequisite urls for SP2013' -Validation stringarray
 
 # Dynamics 365 CRM
@@ -336,13 +336,13 @@ Set-PSFConfig -Module AutomatedLab -Name ConfigurationManagerUrl2103TP -Value "h
 # Validation
 Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
     ValidRoleProperties     = @{
-        Orchestrator2012 = @(
+        Orchestrator2012         = @(
             'DatabaseServer'
             'DatabaseName'
             'ServiceAccount'
             'ServiceAccountPassword'
         )
-        DC               = @(
+        DC                       = @(
             'IsReadOnly'
             'SiteName'
             'SiteSubnet'
@@ -351,7 +351,7 @@ Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
             'SysvolPath'
             'DsrmPassword'
         )
-        CaSubordinate    = @(
+        CaSubordinate            = @(
             'ParentCA'
             'ParentCALogicalName'
             'CACommonName'
@@ -392,14 +392,14 @@ Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
             'OCSPHTTPURL02'
             'DoNotLoadDefaultTemplates'
         )
-        Office2016       = 'SharedComputerLicensing'
-        DSCPullServer    = @(
+        Office2016               = 'SharedComputerLicensing'
+        DSCPullServer            = @(
             'DoNotPushLocalModules'
             'DatabaseEngine'
             'SqlServer'
             'DatabaseName'
         )
-        FirstChildDC     = @(
+        FirstChildDC             = @(
             'ParentDomain'
             'NewDomain'
             'DomainFunctionalLevel'
@@ -411,12 +411,12 @@ Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
             'SysvolPath'
             'DsrmPassword'
         )
-        ADFS             = @(
+        ADFS                     = @(
             'DisplayName'
             'ServiceName'
             'ServicePassword'
         )
-        RootDC           = @(
+        RootDC                   = @(
             'DomainFunctionalLevel'
             'ForestFunctionalLevel'
             'SiteName'
@@ -427,7 +427,7 @@ Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
             'SysvolPath'
             'DsrmPassword'
         )
-        CaRoot           = @(
+        CaRoot                   = @(
             'CACommonName'
             'CAType'
             'KeyLength'
@@ -466,11 +466,11 @@ Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
             'OCSPHTTPURL02'
             'DoNotLoadDefaultTemplates'
         )
-        Tfs2015 = @('Port','InitialCollection', 'DbServer')
-        Tfs2017 = @('Port','InitialCollection', 'DbServer')
-        Tfs2018 = @('Port','InitialCollection', 'DbServer')
-        AzDevOps = @('Port','InitialCollection', 'DbServer','PAT','Organisation')
-        TfsBuildWorker   = @(
+        Tfs2015                  = @('Port', 'InitialCollection', 'DbServer')
+        Tfs2017                  = @('Port', 'InitialCollection', 'DbServer')
+        Tfs2018                  = @('Port', 'InitialCollection', 'DbServer')
+        AzDevOps                 = @('Port', 'InitialCollection', 'DbServer', 'PAT', 'Organisation')
+        TfsBuildWorker           = @(
             'NumberOfBuildWorkers'
             'TfsServer'
             'AgentPool'
@@ -478,8 +478,8 @@ Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
             'Organisation'
             'Capabilities'
         )
-        WindowsAdminCenter = @('Port', 'EnableDevMode', 'ConnectedNode', 'UseSsl')
-        Scvmm2016 = @(
+        WindowsAdminCenter       = @('Port', 'EnableDevMode', 'ConnectedNode', 'UseSsl')
+        Scvmm2016                = @(
             'MUOptIn'
             'SqlMachineName'
             'LibraryShareDescription'
@@ -507,7 +507,7 @@ Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
             'ConnectHyperVRoleVms'
             'ConnectClusters'
         )
-        Scvmm2019 = @(
+        Scvmm2019                = @(
             'MUOptIn'
             'SqlMachineName'
             'LibraryShareDescription'
@@ -535,7 +535,7 @@ Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
             'ConnectHyperVRoleVms'
             'ConnectClusters'
         )
-        DynamicsFull = @(
+        DynamicsFull             = @(
             'SqlServer',
             'ReportingUrl',
             'OrganizationCollation',
@@ -564,7 +564,7 @@ Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
             'PrivReportingGroup'
             'LicenseKey'
         )
-        DynamicsFrontend = @(
+        DynamicsFrontend         = @(
             'SqlServer',
             'ReportingUrl',
             'OrganizationCollation',
@@ -593,7 +593,7 @@ Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
             'PrivReportingGroup'
             'LicenseKey'
         )
-        DynamicsBackend = @(
+        DynamicsBackend          = @(
             'SqlServer',
             'ReportingUrl',
             'OrganizationCollation',
@@ -622,7 +622,7 @@ Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
             'PrivReportingGroup'
             'LicenseKey'
         )
-        DynamicsAdmin = @(
+        DynamicsAdmin            = @(
             'SqlServer',
             'ReportingUrl',
             'OrganizationCollation',
@@ -651,7 +651,7 @@ Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
             'PrivReportingGroup'
             'LicenseKey'
         )
-        ScomManagement = @(
+        ScomManagement           = @(
             'ManagementGroupName'
             'SqlServerInstance'
             'SqlInstancePort'
@@ -674,16 +674,16 @@ Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
             'AcceptEndUserLicenseAgreement'
             'ProductKey'
         )
-    
-        ScomConsole = @(
+
+        ScomConsole              = @(
             'EnableErrorReporting'
             'InstallLocation'
             'SendCEIPReports'
             'UseMicrosoftUpdate'
             'AcceptEndUserLicenseAgreement'
         )
-    
-        ScomWebConsole = @(
+
+        ScomWebConsole           = @(
             'ManagementServer'
             'WebSiteName'
             'WebConsoleAuthorizationMode'
@@ -691,8 +691,8 @@ Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
             'UseMicrosoftUpdate'
             'AcceptEndUserLicenseAgreement'
         )
-    
-        ScomReporting = @(
+
+        ScomReporting            = @(
             'ManagementServer'
             'SRSInstance'
             'DataReaderUser'
@@ -709,17 +709,17 @@ Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
             'GrantAdministrativePrivilege'
             'PooledUnmanaged'
         )
-        RemoteDesktopGateway = @(
+        RemoteDesktopGateway     = @(
             'GatewayExternalFqdn'
             'BypassLocal'
             'LogonMethod'
             'UseCachedCredentials'
             'GatewayMode'
         )
-        RemoteDesktopLicensing = @(
+        RemoteDesktopLicensing   = @(
             'Mode'
         )
-        ConfigurationManager = @(
+        ConfigurationManager     = @(
             'Version'
             'Branch'
             'Roles'
@@ -744,7 +744,8 @@ $fPath = Join-Path -Path (Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRo
 $fcPath = Join-Path -Path (Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot) -ChildPath 'Assets/ProductKeysCustom.xml'
 if (-not (Test-Path -Path $fPath -ErrorAction SilentlyContinue))
 {
-    Copy-Item -Path "$PSScriptRoot/ProductKeys.xml" -Destination $fcPath -Force -ErrorAction SilentlyContinue
+    $null = if (-not (Test-Path -Path (Split-Path $fPath -Parent))) {New-Item -Path (Split-Path $fPath -Parent) -ItemType Directory} 
+    Copy-Item -Path "$PSScriptRoot/ProductKeys.xml" -Destination $fPath -Force -ErrorAction SilentlyContinue
 }
 Set-PSFConfig -Module AutomatedLab -Name ProductKeyFilePath -Value $fPath -Initialize -Validation string -Description 'Destination of the ProductKeys file for Windows products'
 Set-PSFConfig -Module AutomatedLab -Name ProductKeyFilePathCustom -Value $fcPath -Initialize -Validation string -Description 'Destination of the ProductKeysCustom file for Windows products'
@@ -825,6 +826,7 @@ Register-PSFTeppScriptblock -Name AutomatedLab-SusePackage -ScriptBlock {
     (Get-LabAvailableOperatingSystem -UseOnlyCache -ErrorAction SilentlyContinue |
         Where-Object { $_.OperatingSystemType -eq 'Linux' -and $_.LinuxType -eq 'SuSE' } |
     Sort-Object Version | Select-Object -Last 1).LinuxPackageGroup
+
 }
 
 Register-PSFTeppArgumentCompleter -Command Add-LabMachineDefinition -Parameter Roles -Name AutomatedLab-Roles
