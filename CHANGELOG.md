@@ -3,6 +3,7 @@
 ## Unreleased (yyyy-MM-dd)
 
 ### Enhancements
+- Added auto-completer for parameter 'SnapshotName'.
 
 ### Bugs
 
