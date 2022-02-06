@@ -383,6 +383,9 @@ function Invoke-LabDscConfiguration
 
         [Parameter(Mandatory)]
         [string[]]$ComputerName,
+        
+        [Parameter()]
+        [hashtable]$Parameter,
 
         [Parameter(ParameterSetName = 'New')]
         [hashtable]$ConfigurationData,
@@ -454,15 +457,27 @@ function Invoke-LabDscConfiguration
             Pop-Location
 
             Write-Information -MessageData "Creating Configuration MOF '$($Configuration.Name)' for node '$c'" -Tags DSC
+            
+            $param = @{
+                OutputPath = $tempPath
+                WarningAction = 'SilentlyContinue'
+            }
             if ($Configuration.Parameters.ContainsKey('ComputerName'))
             {
-                $mof = & $Configuration.Name -OutputPath $tempPath -ConfigurationData $adaptedConfig -ComputerName $c -WarningAction SilentlyContinue
+                $param.ComputerName = $c
             }
-            else
+            if ($adaptedConfig)
             {
-                $mof = & $Configuration.Name -OutputPath $tempPath -ConfigurationData $adaptedConfig -WarningAction SilentlyContinue
+                $param.ConfigurationData = $adaptedConfig
             }
-
+            
+            if ($Parameter)
+            {
+                $param += $Parameter
+            }
+            
+            $mof = & $Configuration.Name @param
+            
             if ($mof.Count -gt 1)
             {
                 $mof = $mof | Where-Object { $_.Name -like "*$c*" }
