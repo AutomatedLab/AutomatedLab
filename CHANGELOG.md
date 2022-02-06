@@ -31,6 +31,7 @@
 - CustomRole does not pick up configured properties
 - Including ProductKeys file in module build for offline environments
 - Fixing a bug with Azure-based labs which would stall during Add-LabAzureSubscription
+- Fixed display bugs in 'Remove-Lab'.
 
 ## 5.40.0 (2021-10-13)
 

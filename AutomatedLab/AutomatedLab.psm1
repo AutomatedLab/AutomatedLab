@@ -1418,11 +1418,10 @@ function Remove-Lab
             Import-Lab -Name $Name -NoValidation -NoDisplay
             $labName = $Name
         }
-
-        if ($Path)
+        elseif ($Path)
         {
             Import-Lab -Path $Path -NoValidation -NoDisplay
-            $labName = (Get-Lab).Name
+            
         }
 
         if (-not $Script:data)
@@ -1431,9 +1430,11 @@ function Remove-Lab
             return
         }
 
-        if($pscmdlet.ShouldProcess((Get-Lab).Name, 'Remove the lab completely'))
+        $labName = (Get-Lab).Name
+
+        if($pscmdlet.ShouldProcess($labName, 'Remove the lab completely'))
         {
-            Write-ScreenInfo -Message "Removing lab '$($Script:data.Name)'" -Type Warning -TaskStart
+            Write-ScreenInfo -Message "Removing lab '$labName'" -Type Warning -TaskStart
             if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure' -and -not (Get-AzContext))
             {
                 Write-ScreenInfo -Type Info -Message "Your Azure session is expired. Please log in to remove your resource group"
