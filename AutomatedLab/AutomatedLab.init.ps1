@@ -162,6 +162,33 @@ Set-PSFConfig -Module 'AutomatedLab' -Name LabSourcesMaxFileSizeMb -Value 50 -In
 Set-PSFConfig -Module 'AutomatedLab' -Name AutoSyncLabSources -Value $false -Initialize -Validation bool -Description 'Toggle auto-sync of Azure lab sources in Azure labs'
 Set-PSFConfig -Module 'AutomatedLab' -Name LabSourcesSyncIntervalDays -Value 60 -Initialize -Validation integerpositive -Description 'Interval in days for lab sources auto-sync'
 Set-PSFConfig -Module 'AutomatedLab' -Name AzureDiskSkus -Value @('Standard_LRS', 'Premium_LRS', 'StandardSSD_LRS') # 'UltraSSD_LRS' is not allowed!
+Set-PSFConfig -Module 'AutomatedLab' -Name RequiredAzModules -Value @(
+    # Syntax: Name, MinimumVersion, RequiredVersion
+    @{
+        Name = 'Az.Accounts'
+        MinimumVersion = '2.7.1'
+    }
+    @{
+        Name = 'Az.Storage'
+        MinimumVersion = '4.1.1'
+    }
+    @{
+        Name = 'Az.Compute'
+        MinimumVersion = '4.17.1'
+    }
+    @{
+        Name = 'Az.Network'
+        MinimumVersion = '4.14.0'
+    }
+    @{
+        Name = 'Az.Resources'
+        MinimumVersion = '5.2.0'
+    }
+    @{
+        Name = 'Az.Websites'
+        MinimumVersion = '2.8.3'
+    }
+ ) -Initialize -Description 'Required Az modules'
 
 #Office
 Set-PSFConfig -Module 'AutomatedLab' -Name OfficeDeploymentTool -Value 'https://download.microsoft.com/download/2/7/A/27AF1BE6-DD20-4CB4-B154-EBAB8A7D4A7E/officedeploymenttool_12827-20268.exe' -Initialize -Validation string -Description 'Link to Microsoft Office deployment tool'

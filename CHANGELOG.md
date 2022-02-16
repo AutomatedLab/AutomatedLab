@@ -6,12 +6,15 @@
 - Added auto-completer for parameter 'SnapshotName'.
 - Added support for files in a folder copy in Copy-LabFileItem.
 - 'Invoke-LabDscConfiguration' accepts parameters for DSC configuration now.
+- AL now testing only for required Az modules
+- New function Install-LabAzureRequiredModule
 
 ### Bugs
 - Fixing issue with Get-LabAzureAvailableRoleSize by filtering earlier.
 - Corrected various issues in the SharePoint role installation script.
 - Corrected incorrect HERE string in the PrepareRootDomain script
 - Fixes #1273: Error calling 'Show-LabDeploymentSummary'.
+- Fix bug in New-LabPS/CIMSession where the IP address was not used even though it was preferred
 
 ## 5.41.0 (2022-01-31)
 

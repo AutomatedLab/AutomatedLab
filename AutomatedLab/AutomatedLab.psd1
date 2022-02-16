@@ -76,6 +76,7 @@
     FunctionsToExport      = @(
         'Install-LabScvmm',
         'Install-LabRdsCertificate',
+        'Install-LabAzureRequiredModule',
         'Uninstall-LabRdsCertificate',
         'New-LabSourcesFolder',
         'Add-LabAzureSubscription',

@@ -4,36 +4,71 @@ function Test-LabAzureModuleAvailability
     [CmdletBinding()]
     param ()
 
-    $minimumAzureModuleVersion = [version](Get-LabConfigurationItem -Name MinimumAzureModuleVersion)
-    [char]$split = if ($IsLinux -or $IsMacOs)
+    [hashtable[]] $modules = Get-LabConfigurationItem -Name RequiredAzModules
+    [hashtable[]] $modulesMissing = @()
+    foreach ($module in $modules)
     {
-        ':'
-    }
-    else
-    {
-        ';'
-    }
+        $isPresent = if ($module.MinimumVersion)
+        {
+            Get-Module -ListAvailable -Name $module.Name | Where-Object Version -ge $module.MinimumVersion
+        }
+        elseif ($module.RequiredVersion)
+        {
+            Get-Module -ListAvailable -Name $module.Name | Where-Object Version -eq $module.RequiredVersion
+        }
+        
+        if ($isPresent)
+        {
+            Write-PSFMessage -Message "$($module.Name) found"
+            continue
+        }
 
-    $paths = Join-Path -Path ($env:PSModulePath -split $split | Where-Object -FilterScript {-not [string]::IsNullOrWhiteSpace($_)}) -ChildPath Az
-
-    $moduleManifest = Get-ChildItem -Path $paths -File -Filter *.psd1 -Recurse -Force -ErrorAction SilentlyContinue |
-    Sort-Object -Property { Split-Path $_.DirectoryName -Leaf } -Descending |
-    Select-Object -First 1
-
-    if (-not $moduleManifest)
-    {
-        Stop-PSFFunction -Message "The Azure PowerShell module version $($minimumAzureModuleVersion) or greater is not available.`r`nPlease remove all old versions of Az and AzureRM, and reinstall using Install-Module Az" -EnableException $true
-        return $false
+        Write-PSFMessage -Message "$($module.Name) missing"
+        $modulesMissing += $module
     }
     
-    $availableVersion = [version](Split-Path -Path $moduleManifest.DirectoryName -Leaf)
-    if ($availableVersion -lt $minimumAzureModuleVersion)
+    if ($modulesMissing.Count -gt 0)
     {
-        Stop-PSFFunction -Message "The Azure PowerShell module version $($minimumAzureModuleVersion) or greater is not available.`r`nPlease remove all old versions of Az and AzureRM, and reinstall using Install-Module Az" -EnableException $true
-        return $false
+        $missingString = $modulesMissing.ForEach({"$($_.Name), Minimum: $($_.MinimumVersion) or required: $($_.RequiredVersion)"})
+        Write-PSFMessage -Level Error -Message "Missing Az modules: $missingString"
     }
 
-    $true
+    return ($modulesMissing.Count -eq 0)
+}
+
+function Install-LabAzureRequiredModule
+{
+    [CmdletBinding()]
+    param
+    (
+        [string]
+        $Repository = 'PSGallery',
+
+        [ValidateSet('CurrentUser', 'AllUsers')]
+        [string]
+        $Scope = 'CurrentUser'
+    )
+
+    [hashtable[]] $modules = Get-LabConfigurationItem -Name RequiredAzModules
+    foreach ($module in $modules)
+    {
+        $isPresent = if ($module.MinimumVersion)
+        {
+            Get-Module -ListAvailable -Name $module.Name | Where-Object Version -ge $module.MinimumVersion
+        }
+        elseif ($module.RequiredVersion)
+        {
+            Get-Module -ListAvailable -Name $module.Name | Where-Object Version -eq $module.RequiredVersion
+        }
+        
+        if ($isPresent)
+        {
+            Write-PSFMessage -Message "$($module.Name) already present"
+            continue
+        }
+
+        Install-Module @module -Repository $Repository -Scope $Scope -Force
+    }
 }
 
 function Update-LabAzureSettings
