@@ -10,7 +10,8 @@
 ### Bugs
 - Fixing issue with Get-LabAzureAvailableRoleSize by filtering earlier.
 - Corrected various issues in the SharePoint role installation script.
-- Corrected incorrect HERE string in the PrepareRootDomain script.
+- Corrected incorrect HERE string in the PrepareRootDomain script
+- Fixes #1273: Error calling 'Show-LabDeploymentSummary'.
 
 ## 5.41.0 (2022-01-31)
 

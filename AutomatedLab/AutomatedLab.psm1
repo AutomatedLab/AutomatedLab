@@ -3259,6 +3259,12 @@ function Show-LabDeploymentSummary
         [switch]$Detailed
     )
 
+    if (-not (Get-Lab -ErrorAction SilentlyContinue))
+    {
+        Write-ScreenInfo "There is no lab information available in the current PowerShell session. Deploy a lab with AutomatedLab or import an already deployed lab with the 'Import-Lab' cmdlet."
+        return
+    }
+
     $ts = New-TimeSpan -Start $Global:AL_DeploymentStart -End (Get-Date)
     $hoursPlural = ''
     $minutesPlural = ''
@@ -3268,7 +3274,6 @@ function Show-LabDeploymentSummary
     if ($ts.minutes -gt 1) { $minutesPlural = 's' }
     if ($ts.Seconds -gt 1) { $secondsPlural = 's' }
 
-    $lab = Get-Lab
     $machines = Get-LabVM -IncludeLinux
 
     Write-ScreenInfo -Message '---------------------------------------------------------------------------'
