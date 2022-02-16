@@ -4,11 +4,11 @@
 
 ### Enhancements
 - Added auto-completer for parameter 'SnapshotName'.
-
-- Added support for files in a folder copy in Copy-LabFileItem
+- Added support for files in a folder copy in Copy-LabFileItem.
+- 'Invoke-LabDscConfiguration' accepts parameters for DSC configuration now.
 
 ### Bugs
-- Fixing issue with Get-LabAzureAvailableRoleSize by filtering earlier
+- Fixing issue with Get-LabAzureAvailableRoleSize by filtering earlier.
 - Corrected various issues in the SharePoint role installation script.
 - Corrected incorrect HERE string in the PrepareRootDomain script
 - Fixes #1273: Error calling 'Show-LabDeploymentSummary'.
