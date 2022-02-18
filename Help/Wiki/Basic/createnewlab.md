@@ -7,7 +7,7 @@ New-LabDefinition -Name $labName -DefaultVirtualizationEngine HyperV -VmPath D:\
 ```
 
 - **New-LabDefinition** Parameters
-  - **Name**: The name if the lab to create. The name must be unique.
+  - **Name**: The name of the lab to create. The name must be unique.
   - **DefaultVirtualizationEngine**: HyperV for local deployments or Azure to deploy into the cloud.
   - **VmPath**: This is where AL creates the virtual machines. If this path is not defined AL will choose the fastest drive by trying not to use the system drive and create a folder there names "AutomatedLab-VMs".
 
