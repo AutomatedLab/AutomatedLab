@@ -799,12 +799,12 @@ function Set-LabDscLocalConfigurationManagerConfiguration
 
         try
         {
-            Test-DscConfiguration -ErrorAction Stop
-            Write-Error 'There was a problem resetting the Local Configuration Manger configuration'
+            Test-DscConfiguration -ErrorAction Stop | Out-Null
+            Write-Host 'DSC Local Configuration Manger was set to the new values'
         }
         catch
         {
-            Write-Host 'DSC Local Configuration Manger was set to the new values'
+            Write-Error 'There was a problem resetting the Local Configuration Manger configuration'
         }
     }
 
