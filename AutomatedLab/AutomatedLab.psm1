@@ -1287,7 +1287,7 @@ function Install-Lab
             minutes."
         }
 
-        if (-not $DelayBetweenComputers)
+        if ($null -eq $DelayBetweenComputers)
         {
             $hypervMachineCount = (Get-LabVM -IncludeLinux | Where-Object HostType -eq HyperV).Count
             if ($hypervMachineCount)
@@ -1298,8 +1298,7 @@ function Install-Lab
             else
             {
                 $DelayBetweenComputers = 0
-            }
-            
+            }            
         }
 
         Write-ScreenInfo -Message 'Waiting for machines to start up...' -NoNewLine
