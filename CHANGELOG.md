@@ -16,6 +16,7 @@
 - Fixes #1273: Error calling 'Show-LabDeploymentSummary'.
 - Fix bug in New-LabPS/CIMSession where the IP address was not used even though it was preferred.
 - Fixes #1293: Set-DscLocalConfigurationManagerConfiguration throws error when successful.
+- DelayBetweenComputers was ignored
 
 ## 5.41.0 (2022-01-31)
 
