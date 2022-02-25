@@ -531,9 +531,9 @@ function Import-Lab
         }
 
         $minimumAzureModuleVersion = Get-LabConfigurationItem -Name MinimumAzureModuleVersion
-        if (($Script:data.Machines | Where-Object HostType -eq Azure) -and -not (Get-InstalledModule -Name Az | Where-Object Version -ge $minimumAzureModuleVersion))
+        if (($Script:data.Machines | Where-Object HostType -eq Azure) -and -not (Test-LabAzureModuleAvailability))
         {
-            throw "The Azure PowerShell module version $($minimumAzureModuleVersion) or greater is not available. Please install it using the command 'Install-Module -Name Az -Force'"
+            throw "The Azure PowerShell modules required to run AutomatedLab are not available. Please install them using the command 'Install-LabAzureRequiredModule'"
         }
 
         if (($Script:data.Machines | Where-Object HostType -eq VMWare) -and ((Get-PSSnapin -Name VMware.VimAutomation.*).Count -ne 1))
