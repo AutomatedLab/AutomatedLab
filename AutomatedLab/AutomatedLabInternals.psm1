@@ -297,19 +297,25 @@ function Restart-ServiceResilient
 }
 #endregion Restart-ServiceResilient
 
-#region Remove-DeploymentFiles
-function Remove-DeploymentFiles
+#region Remove-LabDeploymentFiles
+function Remove-LabDeploymentFiles
 {
 
     Invoke-LabCommand -ComputerName (Get-LabVM) -ActivityName 'Remove deployment files (files used during deployment)' -AsJob -NoDisplay -ScriptBlock `
     {
-        Remove-Item -Path C:\unattend.xml
-        Remove-Item -Path C:\WSManRegKey.reg
-        Remove-Item -Path C:\AdditionalDisksOnline.ps1
-        Remove-Item -Path C:\DeployDebug -Recurse
+        $paths = 'C:\Unattend.xml',
+            'C:\WSManRegKey.reg',
+            'C:\AdditionalDisksOnline.ps1',
+            'C:\WinRmCustomization.ps1',
+            'C:\DeployDebug',
+            'C:\ALLibraries',
+            'C:\DeployDebug',
+            "C:\$($env:COMPUTERNAME).cer"
+            
+        $paths | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue
     }
 }
-#endregion Remove-DeploymentFiles
+#endregion Remove-LabDeploymentFiles
 
 #region Enable-LabVMFirewallGroup
 function Enable-LabVMFirewallGroup
@@ -523,8 +529,8 @@ function Get-LabInternetFile
                                     {
                                         $percentageCompletedPrev = $percentageCompleted
                                         Write-Progress -Activity "Downloading file '$FileName'" `
-                                            -Status ("{0:P} completed, {1:N2}MB of {2:N2}MB" -f ($percentageCompleted / 100), ($bytesProcessed / 1MB), ($response.ContentLength / 1MB)) `
-                                            -PercentComplete ($percentageCompleted)
+                                        -Status ("{0:P} completed, {1:N2}MB of {2:N2}MB" -f ($percentageCompleted / 100), ($bytesProcessed / 1MB), ($response.ContentLength / 1MB)) `
+                                        -PercentComplete ($percentageCompleted)
                                     }
                                 }
                                 else

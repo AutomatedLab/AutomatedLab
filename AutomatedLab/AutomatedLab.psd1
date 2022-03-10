@@ -177,7 +177,7 @@
         'New-LabVHDX',
         'New-LabVM',
         'New-LabAzureResourceGroupDeployment',
-        'Remove-DeploymentFiles',
+        'Remove-LabDeploymentFiles',
         'Remove-Lab',
         'Remove-LabAzureLabSourcesStorage',
         'Remove-LabAzureResourceGroup',
