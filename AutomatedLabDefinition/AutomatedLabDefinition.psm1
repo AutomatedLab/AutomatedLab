@@ -1174,8 +1174,11 @@ function Export-LabDefinition
     }
 
 
-    $lab.LabFilePath = Join-Path -Path $script:labPath -ChildPath (Get-LabConfigurationItem LabFileName)
-    $script:lab | Add-Member -Name Path -MemberType NoteProperty -Value $labFilePath -Force
+    if (-not $lab.LabFilePath)
+    {
+        $lab.LabFilePath = Join-Path -Path $script:labPath -ChildPath (Get-LabConfigurationItem LabFileName)
+        $script:lab | Add-Member -Name Path -MemberType NoteProperty -Value $labFilePath -Force
+    }
 
     if (-not (Test-Path $script:labPath))
     {
