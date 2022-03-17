@@ -140,6 +140,7 @@ Set-PSFConfig -Module 'AutomatedLab' -Name WinRmMaxConnections -Value 300 -Valid
 
 #Hyper-V VM Settings
 Set-PSFConfig -Module 'AutomatedLab' -Name SetLocalIntranetSites -Value 'All'  -Initialize -Validation string  -Description 'All, Forest, Domain, None'
+Set-PSFConfig -Module 'AutomatedLab' -Name DoNotAddVmsToCluster -Value $false -Initialize -Validation bool -Description 'Set to true to skip adding VMs to a cluster if AutomatedLab is being run on a cluster node'
 
 #Hyper-V Network settings
 Set-PSFConfig -Module 'AutomatedLab' -Name MacAddressPrefix -Value '0017FB' -Initialize -Validation string -Description 'The MAC address prefix for Hyper-V labs'

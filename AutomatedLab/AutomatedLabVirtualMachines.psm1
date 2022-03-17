@@ -47,6 +47,13 @@ function New-LabVM
         {
             $result = New-LWHypervVM -Machine $machine
 
+            $doNotAddToCluster = Get-LabConfigurationItem -Name DoNotAddVmsToCluster -Default $false
+            if (-not $doNotAddToCluster -and (Get-Command -Name Get-Cluster -ErrorAction SilentlyContinue) -and (Get-Cluster -ErrorAction SilentlyContinue))
+            {
+                Write-ScreenInfo -Message "Adding $($machine.Name) ($($machine.ResourceName)) to cluster $((Get-Cluster).Name)"
+                Add-ClusterVirtualMachineRole -VMName $machine.ResourceName -Name $machine.ResourceName
+            }
+
             if ('RootDC' -in $machine.Roles.Name)
             {
                 Start-LabVM -ComputerName $machine.Name -NoNewline
