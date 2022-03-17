@@ -741,26 +741,44 @@ Stop-Transcript
 
 function Get-LWHypervVM
 {
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification = "Not relevant on Linux")]
     [CmdletBinding()]
-    Param (
-        [Parameter(Mandatory)]
-        [string]$Name
+    Param
+    (
+        [Parameter()]
+        [string[]]
+        $Name
     )
 
     Write-LogFunctionEntry
 
-    $vm = Get-VM -Name $Name -ErrorAction SilentlyContinue
+    $param = @{
+        ErrorAction = 'SilentlyContinue'
+    }
+
+    if ($Name.Count -gt 0)
+    {        
+        $param['Name'] = $Name
+    }
+
+    $vm = Get-VM @param
 
     $doNotAddToCluster = Get-LabConfigurationItem -Name DoNotAddVmsToCluster -Default $false
-    if (-not $vm -and -not $doNotAddToCluster -and (Get-Command -Name Get-Cluster -ErrorAction SilentlyContinue) -and (Get-Cluster -ErrorAction SilentlyContinue))
+    $isCluster = (Get-Command -Name Get-Cluster -ErrorAction SilentlyContinue) -and (Get-Cluster -ErrorAction SilentlyContinue)
+    if ($Name.Count -gt 0 -and -not $vm -and $isCluster)
     {
-        $vm = Get-VM -Name $Name -CimSession (Get-ClusterGroup -Name $Name).OwnerNode.Name
+        Get-ClusterGroup | Where-Object -Property GroupType -eq 'VirtualMachine' | Get-VM
+    }
+
+    if (-not $vm -and -not $doNotAddToCluster -and $isCluster -and (Get-ClusterGroup @param))
+    {
+        $vm = Get-VM @param -CimSession (Get-ClusterGroup @param).OwnerNode.Name
     }
 
     if (-not $vm)
     {
-        throw "No virtual machine $Name found"
+        Write-Error -Message "No virtual machine $Name found"
+        return
     }
 
     $vm
@@ -1750,7 +1768,7 @@ function Set-LWHypervVMDescription
     $suffix = '#>AL#'
     $pattern = '{0}(?<ALNotes>[\s\S]+){1}' -f [regex]::Escape($prefix), [regex]::Escape($suffix)
 
-    $notes = (Get-LWHypervVM-Name $ComputerName).Notes
+    $notes = (Get-LWHypervVM -Name $ComputerName).Notes
 
     if ($notes -match $pattern) {
         $notes = $notes -replace $pattern, ''
@@ -1766,7 +1784,7 @@ function Set-LWHypervVMDescription
 
     $notes += $prefix + $disctionary.ExportToString() + $suffix
 
-    Get-LWHypervVM-Name $ComputerName | Set-VM -Notes $notes
+    Get-LWHypervVM -Name $ComputerName | Set-VM -Notes $notes
 
     Write-LogFunctionExit
 }

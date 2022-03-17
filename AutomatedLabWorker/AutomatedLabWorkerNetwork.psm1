@@ -182,7 +182,7 @@ function Remove-LWNetworkSwitch
         return
     }
 
-    if ((Get-LWHypervVM | Get-VMNetworkAdapter | Where-Object {$_.SwitchName -eq $Name} | Measure-Object).Count -eq 0)
+    if ((Get-LWHypervVM -ErrorAction SilentlyContinue | Get-VMNetworkAdapter | Where-Object {$_.SwitchName -eq $Name} | Measure-Object).Count -eq 0)
     {
         try
         {
