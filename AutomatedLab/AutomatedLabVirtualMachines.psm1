@@ -51,7 +51,7 @@ function New-LabVM
             if (-not $doNotAddToCluster -and (Get-Command -Name Get-Cluster -ErrorAction SilentlyContinue) -and (Get-Cluster -ErrorAction SilentlyContinue))
             {
                 Write-ScreenInfo -Message "Adding $($machine.Name) ($($machine.ResourceName)) to cluster $((Get-Cluster).Name)"
-                Add-ClusterVirtualMachineRole -VMName $machine.ResourceName -Name $machine.ResourceName
+                $null = Add-ClusterVirtualMachineRole -VMName $machine.ResourceName -Name $machine.ResourceName
             }
 
             if ('RootDC' -in $machine.Roles.Name)

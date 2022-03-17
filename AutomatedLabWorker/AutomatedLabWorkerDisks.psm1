@@ -327,7 +327,7 @@ function Add-LWVMVHDX
         return
     }
 
-    $vm = Get-VM -Name $VMName -ErrorAction SilentlyContinue
+    $vm = Get-LWHypervVM -Name $VMName -ErrorAction SilentlyContinue
     if (-not $vm)
     {
         Write-Error 'VM cannot be found'

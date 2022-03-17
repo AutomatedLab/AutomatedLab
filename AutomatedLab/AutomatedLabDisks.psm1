@@ -38,12 +38,12 @@ function New-LabBaseImages
             [int]$legacySize = (Get-Vhd -Path $legacyDiskPath).Size / 1GB
             $newName = Join-Path -Path $lab.Target.Path -ChildPath "BASE_$($os.OperatingSystemName.Replace(' ', ''))_$($os.Version)_$($legacySize).vhdx"
             $affectedDisks = @()
-            $affectedDisks += Get-VM | Get-VMHardDiskDrive | Get-VHD | Where-Object ParentPath -eq $legacyDiskPath
-            $affectedDisks += Get-VM | Get-VMSnapshot | Get-VMHardDiskDrive | Get-VHD | Where-Object ParentPath -eq $legacyDiskPath
+            $affectedDisks += Get-LWHypervVM | Get-VMHardDiskDrive | Get-VHD | Where-Object ParentPath -eq $legacyDiskPath
+            $affectedDisks += Get-LWHypervVM | Get-VMSnapshot | Get-VMHardDiskDrive | Get-VHD | Where-Object ParentPath -eq $legacyDiskPath
             
             if ($affectedDisks)
             {
-                $affectedVms = Get-VM | Where-Object {
+                $affectedVms = Get-LWHypervVM | Where-Object {
                     ($_ | Get-VMHardDiskDrive | Get-VHD | Where-Object { $_.ParentPath -eq $legacyDiskPath -and $_.Attached }) -or
                     ($_ | Get-VMSnapshot | Get-VMHardDiskDrive | Get-VHD | Where-Object { $_.ParentPath -eq $legacyDiskPath -and $_.Attached })                
                 }

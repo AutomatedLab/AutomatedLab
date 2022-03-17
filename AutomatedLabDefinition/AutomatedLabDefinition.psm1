@@ -1120,7 +1120,7 @@ function Export-LabDefinition
 
         $spaceNeededBaseDisks = ($hypervUsedOperatingSystems | Measure-Object -Property Size -Sum).Sum
         $spaceBaseDisksAlreadyClaimed = ($hypervUsedOperatingSystems | Measure-Object -Property size -Sum).Sum
-        $spaceNeededData = ($hypervMachines | Where-Object { -not (Get-VM -Name $_.ResourceName -ErrorAction SilentlyContinue) }).Count * 2GB
+        $spaceNeededData = ($hypervMachines | Where-Object { -not (Get-LWHypervVM -Name $_.ResourceName -ErrorAction SilentlyContinue) }).Count * 2GB
 
         $spaceNeeded = $spaceNeededBaseDisks + $spaceNeededData - $spaceBaseDisksAlreadyClaimed
 

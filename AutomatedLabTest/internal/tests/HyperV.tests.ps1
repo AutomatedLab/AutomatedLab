@@ -10,7 +10,7 @@ Describe "[$($Lab.Name)] HyperV" -Tag HyperV {
             {
                 It "[$vm] should have exposed virtualization extension" -TestCases @{vm = $vm } {
             
-                    (Get-VM -Name $vm.ResourceName| Get-VMProcessor).ExposeVirtualizationExtensions | Should -Be $true
+                    (Get-LWHypervVM -Name $vm.ResourceName| Get-VMProcessor).ExposeVirtualizationExtensions | Should -Be $true
                 }
             }
 
