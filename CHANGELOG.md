@@ -8,6 +8,8 @@
 - 'Invoke-LabDscConfiguration' accepts parameters for DSC configuration now.
 - AL now testing only for required Az modules
 - New function Install-LabAzureRequiredModule
+- Renamed 'Remove-DeploymentFiles' to 'Remove-LabDeploymentFiles' according to the naming convention and extended
+  the function's scope of work.
 
 ### Bugs
 - Fixing issue with Get-LabAzureAvailableRoleSize by filtering earlier.

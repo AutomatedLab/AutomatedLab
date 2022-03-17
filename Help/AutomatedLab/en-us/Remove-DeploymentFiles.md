@@ -5,7 +5,7 @@ online version:
 schema: 2.0.0
 ---
 
-# Remove-DeploymentFiles
+# Remove-LabDeploymentFiles
 
 ## SYNOPSIS
 Remove deployment data
@@ -13,7 +13,7 @@ Remove deployment data
 ## SYNTAX
 
 ```
-Remove-DeploymentFiles
+Remove-LabDeploymentFiles
 ```
 
 ## DESCRIPTION
@@ -27,7 +27,7 @@ C:\AdditionalDisksOnline.ps1
 
 ### Example 1
 ```powershell
-PS C:\> Remove-DeploymentFiles
+PS C:\> Remove-LabDeploymentFiles
 ```
 
 Removes the following files and folders used to deploy the machines from all running lab machines:

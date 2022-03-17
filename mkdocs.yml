@@ -262,7 +262,7 @@ nav:
     - New-LabVM: AutomatedLab/en-us/New-LabVM.md
     - Open-LabTfsSite: AutomatedLab/en-us/Open-LabTfsSite.md
     - Register-LabArgumentCompleters: AutomatedLab/en-us/Register-LabArgumentCompleters.md
-    - Remove-DeploymentFiles: AutomatedLab/en-us/Remove-DeploymentFiles.md
+    - Remove-LabDeploymentFiles: AutomatedLab/en-us/Remove-LabDeploymentFiles.md
     - Remove-Lab: AutomatedLab/en-us/Remove-Lab.md
     - Remove-LabAzureLabSourcesStorage: AutomatedLab/en-us/Remove-LabAzureLabSourcesStorage.md
     - Remove-LabAzureResourceGroup: AutomatedLab/en-us/Remove-LabAzureResourceGroup.md
