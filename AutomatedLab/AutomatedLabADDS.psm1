@@ -1070,6 +1070,7 @@ function Install-LabRootDcs
     {
         $machinesToJoin = Get-LabVM | Where-Object -FilterScript $filterScript
 
+        Write-ScreenInfo -Message ''
         Write-ScreenInfo "Restarting the $($machinesToJoin.Count) machines to complete the domain join of ($($machinesToJoin.Name -join ', ')). Retries remaining = $retries"
         Restart-LabVM -ComputerName $machinesToJoin -Wait -NoNewLine
         $retries--
@@ -2282,7 +2283,7 @@ function Install-LabDnsForwarder
     {
         Invoke-LabCommand -ActivityName 'Configuring DNS Forwarders on Azure Root DCs' -ComputerName $azureRootDCs -ScriptBlock {
             dnscmd /ResetForwarders 168.63.129.16
-        }
+        } -NoDisplay
     }
 }
 #endregion Install-LabDnsForwarder
