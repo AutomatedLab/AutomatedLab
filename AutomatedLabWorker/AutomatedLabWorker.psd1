@@ -27,7 +27,7 @@
         'PSFileTransfer',
         @{
             ModuleName    = "AutomatedLab.Common";
-            ModuleVersion = "1.1.87";
+            ModuleVersion = "2.1.230";
         }
     )
 

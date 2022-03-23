@@ -747,7 +747,11 @@ function Get-LWHypervVM
     (
         [Parameter()]
         [string[]]
-        $Name
+        $Name,
+
+        [Parameter()]
+        [bool]
+        $DisableClusterCheck = (Get-LabConfigurationItem -Name DoNotAddVmsToCluster -Default $false)
     )
 
     Write-LogFunctionEntry
@@ -763,14 +767,13 @@ function Get-LWHypervVM
 
     $vm = Get-VM @param
 
-    $doNotAddToCluster = Get-LabConfigurationItem -Name DoNotAddVmsToCluster -Default $false
     $isCluster = (Get-Command -Name Get-Cluster -ErrorAction SilentlyContinue) -and (Get-Cluster -ErrorAction SilentlyContinue)
     if ($Name.Count -gt 0 -and -not $vm -and $isCluster)
     {
         Get-ClusterGroup | Where-Object -Property GroupType -eq 'VirtualMachine' | Get-VM
     }
 
-    if (-not $vm -and -not $doNotAddToCluster -and $isCluster -and (Get-ClusterGroup @param))
+    if (-not $vm -and -not $DisableClusterCheck -and $isCluster -and (Get-ClusterGroup @param))
     {
         $vm = Get-VM @param -CimSession (Get-ClusterGroup @param).OwnerNode.Name
     }
@@ -1151,18 +1154,19 @@ function Save-LWHypervVM
     $runspaceScript = {
         param
         (
-            [string]$Name
+            [string]$Name,
+            [bool]$DisableClusterCheck
         )
         Write-LogFunctionEntry
-        Get-LWHypervVm -Name $Name | Save-VM
+        Get-LWHypervVm -Name $Name -DisableClusterCheck $DisableClusterCheck | Save-VM
         Write-LogFunctionExit
     }
 
-    $pool = New-RunspacePool -ThrottleLimit 50
+    $pool = New-RunspacePool -ThrottleLimit 50 -Function (Get-Command Get-LWHypervVM)
 
     $jobs = foreach ($Name in $ComputerName)
     {
-        Start-RunspaceJob -RunspacePool $pool -ScriptBlock $runspaceScript -Argument $Name
+        Start-RunspaceJob -RunspacePool $pool -ScriptBlock $runspaceScript -Argument $Name,(Get-LabConfigurationItem -Name DoNotAddVmsToCluster -Default $false)
     }
 
     [void] ($jobs | Wait-RunspaceJob)
@@ -1187,8 +1191,8 @@ function Checkpoint-LWHypervVM
     Write-LogFunctionEntry
 
     $step1 = {
-        param ($Name)
-        $vm = Get-LWHypervVM -Name $Name -ErrorAction SilentlyContinue
+        param ($Name, $DisableClusterCheck)
+        $vm = Get-LWHypervVM -Name $Name -DisableClusterCheck $DisableClusterCheck -ErrorAction SilentlyContinue
         if ($vm.State -eq 'Running' -and -not ($vm | Get-VMSnapshot -Name $SnapshotName -ErrorAction SilentlyContinue))
         {
             $vm | Suspend-VM -ErrorAction SilentlyContinue
@@ -1199,8 +1203,8 @@ function Checkpoint-LWHypervVM
         }
     }
     $step2 = {
-        param ($Name)
-        $vm = Get-LWHypervVM -Name $Name -ErrorAction SilentlyContinue
+        param ($Name, $DisableClusterCheck)
+        $vm = Get-LWHypervVM -Name $Name -DisableClusterCheck $DisableClusterCheck -ErrorAction SilentlyContinue
         if (-not ($vm | Get-VMSnapshot -Name $SnapshotName -ErrorAction SilentlyContinue))
         {
             $vm | Checkpoint-VM -SnapshotName $SnapshotName
@@ -1211,11 +1215,11 @@ function Checkpoint-LWHypervVM
         }
     }
     $step3 = {
-        param ($Name, $RunningMachines)
+        param ($Name, $RunningMachines, $DisableClusterCheck)
         if ($Name -in $RunningMachines)
         {
             Write-Verbose -Message "Machine '$Name' was running, starting it."
-            Get-LWHypervVM -Name $Name -ErrorAction SilentlyContinue | Start-VM -ErrorAction SilentlyContinue
+            Get-LWHypervVM -Name $Name -DisableClusterCheck $DisableClusterCheck -ErrorAction SilentlyContinue | Start-VM -ErrorAction SilentlyContinue
         }
         else
         {
@@ -1223,25 +1227,25 @@ function Checkpoint-LWHypervVM
         }
     }
 
-    $pool = New-RunspacePool -ThrottleLimit 20 -Variable (Get-Variable -Name SnapshotName)
+    $pool = New-RunspacePool -ThrottleLimit 20 -Variable (Get-Variable -Name SnapshotName) -Function (Get-Command Get-LWHypervVM)
 
     $jobsStep1 = foreach ($Name in $ComputerName)
     {
-        Start-RunspaceJob -RunspacePool $pool -ScriptBlock $step1 -Argument $Name
+        Start-RunspaceJob -RunspacePool $pool -ScriptBlock $step1 -Argument $Name,(Get-LabConfigurationItem -Name DoNotAddVmsToCluster -Default $false)
     }
 
     $runningMachines = $jobsStep1 | Receive-RunspaceJob
 
     $jobsStep2 = foreach ($Name in $ComputerName)
     {
-        Start-RunspaceJob -RunspacePool $pool -ScriptBlock $step2 -Argument $Name
+        Start-RunspaceJob -RunspacePool $pool -ScriptBlock $step2 -Argument $Name,(Get-LabConfigurationItem -Name DoNotAddVmsToCluster -Default $false)
     }
 
     [void] ($jobsStep2 | Wait-RunspaceJob)
 
     $jobsStep3 = foreach ($Name in $ComputerName)
     {
-        Start-RunspaceJob -RunspacePool $pool -ScriptBlock $step3 -Argument $Name, $runningMachines
+        Start-RunspaceJob -RunspacePool $pool -ScriptBlock $step3 -Argument $Name, $runningMachines,(Get-LabConfigurationItem -Name DoNotAddVmsToCluster -Default $false)
     }
 
     [void] ($jobsStep3 | Wait-RunspaceJob)
@@ -1270,13 +1274,13 @@ function Remove-LWHypervVMSnapshot
     )
 
     Write-LogFunctionEntry
-    $pool = New-RunspacePool -ThrottleLimit 20 -Variable (Get-Variable -Name SnapshotName,All -ErrorAction SilentlyContinue)
+    $pool = New-RunspacePool -ThrottleLimit 20 -Variable (Get-Variable -Name SnapshotName,All -ErrorAction SilentlyContinue) -Function (Get-Command Get-LWHypervVM)
 
     $jobs = foreach ($n in $ComputerName)
     {
-        Start-RunspaceJob -RunspacePool $pool -Argument $n -ScriptBlock {
-            param ($n)
-            $vm = Get-LWHypervVM -Name $n
+        Start-RunspaceJob -RunspacePool $pool -Argument $n,(Get-LabConfigurationItem -Name DoNotAddVmsToCluster -Default $false) -ScriptBlock {
+            param ($n, $DisableClusterCheck)
+            $vm = Get-LWHypervVM -Name $n -DisableClusterCheck $DisableClusterCheck
             if ($SnapshotName)
             {
                 $snapshot = $vm | Get-VMSnapshot | Where-Object -FilterScript {
@@ -1322,15 +1326,15 @@ function Restore-LWHypervVMSnapshot
 
     Write-LogFunctionEntry
 
-    $pool = New-RunspacePool -ThrottleLimit 20 -Variable (Get-Variable SnapshotName)
+    $pool = New-RunspacePool -ThrottleLimit 20 -Variable (Get-Variable SnapshotName) -Function (Get-Command Get-LWHypervVM)
 
     Write-PSFMessage -Message 'Remembering all running machines'
     $jobs = foreach ($n in $ComputerName)
     {
-        Start-RunspaceJob -RunspacePool $pool -Argument $n -ScriptBlock {
-            param ($n)
+        Start-RunspaceJob -RunspacePool $pool -Argument $n,(Get-LabConfigurationItem -Name DoNotAddVmsToCluster -Default $false) -ScriptBlock {
+            param ($n, $DisableClusterCheck)
 
-            if ((Get-LWHypervVM -Name $n -ErrorAction SilentlyContinue).State -eq 'Running')
+            if ((Get-LWHypervVM -Name $n -DisableClusterCheck $DisableClusterCheck -ErrorAction SilentlyContinue).State -eq 'Running')
             {
                 Write-Verbose -Message "    '$n' was running"
                 $n
