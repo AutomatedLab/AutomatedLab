@@ -763,7 +763,7 @@ function Set-LabVMDescription
 
     $d.WriteXml($xmlWriter)
 
-    Set-VM -Name $ComputerName -Notes $sb.ToString()
+    Get-LWHypervVm -Name $ComputerName -ErrorAction SilentlyContinue | Set-VM -Notes $sb.ToString()
 
     Write-LogFunctionExit
 }

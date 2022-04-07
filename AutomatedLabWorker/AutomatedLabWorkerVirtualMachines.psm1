@@ -30,7 +30,7 @@ function New-LWHypervVM
 
     $script:lab = Get-Lab
 
-    if (Get-VM -Name $Machine.ResourceName -ErrorAction SilentlyContinue)
+    if (Get-LWHypervVM -Name $Machine.ResourceName -ErrorAction SilentlyContinue)
     {
         Write-ProgressIndicatorEnd
         Write-ScreenInfo -Message "The machine '$Machine' does already exist" -Type Warning
@@ -739,6 +739,55 @@ Stop-Transcript
 }
 #endregion New-LWHypervVM
 
+function Get-LWHypervVM
+{
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification = "Not relevant on Linux")]
+    [CmdletBinding()]
+    Param
+    (
+        [Parameter()]
+        [string[]]
+        $Name,
+
+        [Parameter()]
+        [bool]
+        $DisableClusterCheck = (Get-LabConfigurationItem -Name DoNotAddVmsToCluster -Default $false)
+    )
+
+    Write-LogFunctionEntry
+
+    $param = @{
+        ErrorAction = 'SilentlyContinue'
+    }
+
+    if ($Name.Count -gt 0)
+    {        
+        $param['Name'] = $Name
+    }
+
+    $vm = Get-VM @param
+
+    $isCluster = (Get-Command -Name Get-Cluster -ErrorAction SilentlyContinue) -and (Get-Cluster -ErrorAction SilentlyContinue)
+    if ($Name.Count -gt 0 -and -not $vm -and $isCluster)
+    {
+        Get-ClusterGroup | Where-Object -Property GroupType -eq 'VirtualMachine' | Get-VM
+    }
+
+    if (-not $vm -and -not $DisableClusterCheck -and $isCluster -and (Get-ClusterGroup @param))
+    {
+        $vm = Get-VM @param -CimSession (Get-ClusterGroup @param).OwnerNode.Name
+    }
+
+    if (-not $vm)
+    {
+        Write-Error -Message "No virtual machine $Name found"
+        return
+    }
+
+    $vm
+    Write-LogFunctionExit
+}
+
 #region Remove-LWHypervVM
 function Remove-LWHypervVM
 {
@@ -750,28 +799,34 @@ function Remove-LWHypervVM
 
     Write-LogFunctionEntry
 
-    $vm = Get-VM -Name $Name -ErrorAction SilentlyContinue
-    if ($vm)
+    $vm = Get-LWHypervVM -Name $Name -ErrorAction SilentlyContinue
+
+    if (-not $vm) { Write-LogFunctionExit}
+
+    $vmPath = Split-Path -Path $vm.HardDrives[0].Path -Parent
+
+    if ($vm.State -eq 'Saved')
     {
-        $vmPath = Split-Path -Path $vm.HardDrives[0].Path -Parent
-
-        if ($vm.State -eq 'Saved')
-        {
-            Write-PSFMessage "Deleting saved state of VM '$($Name)'"
-            Remove-VMSavedState -VMName $Name
-        }
-        else
-        {
-            Write-PSFMessage "Stopping VM '$($Name)'"
-            Stop-VM -TurnOff -Name $Name -Force -WarningAction SilentlyContinue
-        }
-
-        Write-PSFMessage "Removing VM '$($Name)'"
-        Remove-VM -Name $Name -Force
-
-        Write-PSFMessage "Removing VM files for '$($Name)'"
-        Remove-Item -Path $vmPath -Force -Confirm:$false -Recurse
+        Write-PSFMessage "Deleting saved state of VM '$($Name)'"
+        $vm | Remove-VMSavedState
     }
+    else
+    {
+        Write-PSFMessage "Stopping VM '$($Name)'"
+        $vm | Stop-VM -TurnOff -Force -WarningAction SilentlyContinue
+    }
+
+    Write-PSFMessage "Removing VM '$($Name)'"
+    $vm | Remove-VM -Force
+
+    $doNotAddToCluster = Get-LabConfigurationItem -Name DoNotAddVmsToCluster -Default $false
+    if (-not $doNotAddToCluster -and (Get-Command -Name Get-Cluster -ErrorAction SilentlyContinue) -and (Get-Cluster -ErrorAction SilentlyContinue))
+    {
+        $null = Get-ClusterGroup -Name $machine.ResourceName | Remove-ClusterGroup -RemoveResources -Force
+    }
+
+    Write-PSFMessage "Removing VM files for '$($Name)'"
+    Remove-Item -Path $vmPath -Force -Confirm:$false -Recurse
 
     Write-LogFunctionExit
 }
@@ -804,7 +859,7 @@ function Wait-LWHypervVMRestart
     $machines | Add-Member -Name Uptime -MemberType NoteProperty -Value 0 -Force
     foreach ($machine in $machines)
     {
-        $machine.Uptime = (Get-VM -Name $machine.ResourceName).Uptime.TotalSeconds
+        $machine.Uptime = (Get-LWHypervVM -Name $machine.ResourceName).Uptime.TotalSeconds
     }
 
     $vmDrive = ((Get-Lab).Target.Path)[0]
@@ -879,7 +934,7 @@ function Wait-LWHypervVMRestart
 
         foreach ($machine in $machines)
         {
-            $currentMachineUptime = (Get-VM -Name $machine.ResourceName).Uptime.TotalSeconds
+            $currentMachineUptime = (Get-LWHypervVM -Name $machine.ResourceName).Uptime.TotalSeconds
             Write-Debug -Message "Uptime machine '$($machine.ResourceName)'=$currentMachineUptime, Saved uptime=$($machine.uptime)"
             if ($machine.Uptime -ne 0 -and $currentMachineUptime -lt $machine.Uptime)
             {
@@ -972,7 +1027,7 @@ function Start-LWHypervVM
 
         try
         {
-            Start-VM -Name $Name.ResourceName -ErrorAction Stop
+            Get-LWHypervVm -Name $Name.ResourceName | Start-VM -ErrorAction Stop
         }
         catch
         {
@@ -1065,7 +1120,7 @@ function Stop-LWHypervVM
         if ($stopFailures)
         {
             Write-ScreenInfo -Message "Force-stopping VMs: $($stopFailures -join ',')"
-            Stop-VM -Name $stopFailures -Force
+            Get-LWHypervVm -Name $stopFailures | Stop-VM -Force
         }
     }
     else
@@ -1073,16 +1128,7 @@ function Stop-LWHypervVM
         $jobs = @()
         foreach ($name in (Get-LabVm -ComputerName $ComputerName -IncludeLinux).ResourceName)
         {
-            $job = Start-Job -Name "AL_Shutdown_$name" -ScriptBlock {
-                try
-                {
-                    Stop-VM -Name $using:name -Force -ErrorAction Stop
-                }
-                catch
-                {
-                    Write-Error -Exception $_.Exception -TargetObject $using:name
-                }
-            }
+            $job = Get-LWHypervVm -Name $name -ErrorAction SilentlyContinue | Stop-VM -AsJob -Force -ErrorAction Stop
             $job | Add-Member -Name ComputerName -MemberType NoteProperty -Value $name
             $jobs += $job
         }
@@ -1108,18 +1154,19 @@ function Save-LWHypervVM
     $runspaceScript = {
         param
         (
-            [string]$Name
+            [string]$Name,
+            [bool]$DisableClusterCheck
         )
         Write-LogFunctionEntry
-        Save-VM -Name $Name
+        Get-LWHypervVm -Name $Name -DisableClusterCheck $DisableClusterCheck | Save-VM
         Write-LogFunctionExit
     }
 
-    $pool = New-RunspacePool -ThrottleLimit 50
+    $pool = New-RunspacePool -ThrottleLimit 50 -Function (Get-Command Get-LWHypervVM)
 
     $jobs = foreach ($Name in $ComputerName)
     {
-        Start-RunspaceJob -RunspacePool $pool -ScriptBlock $runspaceScript -Argument $Name
+        Start-RunspaceJob -RunspacePool $pool -ScriptBlock $runspaceScript -Argument $Name,(Get-LabConfigurationItem -Name DoNotAddVmsToCluster -Default $false)
     }
 
     [void] ($jobs | Wait-RunspaceJob)
@@ -1144,21 +1191,23 @@ function Checkpoint-LWHypervVM
     Write-LogFunctionEntry
 
     $step1 = {
-        param ($Name)
-        if ((Get-VM -Name $Name -ErrorAction SilentlyContinue).State -eq 'Running' -and -not (Get-VMSnapshot -VMName $Name -Name $SnapshotName -ErrorAction SilentlyContinue))
+        param ($Name, $DisableClusterCheck)
+        $vm = Get-LWHypervVM -Name $Name -DisableClusterCheck $DisableClusterCheck -ErrorAction SilentlyContinue
+        if ($vm.State -eq 'Running' -and -not ($vm | Get-VMSnapshot -Name $SnapshotName -ErrorAction SilentlyContinue))
         {
-            Suspend-VM -Name $Name -ErrorAction SilentlyContinue
-            Save-VM -Name $Name -ErrorAction SilentlyContinue
+            $vm | Suspend-VM -ErrorAction SilentlyContinue
+            $vm | Save-VM -ErrorAction SilentlyContinue
 
             Write-Verbose -Message "'$Name' was running"
             $Name
         }
     }
     $step2 = {
-        param ($Name)
-        if (-not (Get-VMSnapshot -VMName $Name -Name $SnapshotName -ErrorAction SilentlyContinue))
+        param ($Name, $DisableClusterCheck)
+        $vm = Get-LWHypervVM -Name $Name -DisableClusterCheck $DisableClusterCheck -ErrorAction SilentlyContinue
+        if (-not ($vm | Get-VMSnapshot -Name $SnapshotName -ErrorAction SilentlyContinue))
         {
-            Checkpoint-VM -Name $Name -SnapshotName $SnapshotName
+            $vm | Checkpoint-VM -SnapshotName $SnapshotName
         }
         else
         {
@@ -1166,11 +1215,11 @@ function Checkpoint-LWHypervVM
         }
     }
     $step3 = {
-        param ($Name, $RunningMachines)
+        param ($Name, $RunningMachines, $DisableClusterCheck)
         if ($Name -in $RunningMachines)
         {
             Write-Verbose -Message "Machine '$Name' was running, starting it."
-            Start-VM -Name $Name -ErrorAction SilentlyContinue
+            Get-LWHypervVM -Name $Name -DisableClusterCheck $DisableClusterCheck -ErrorAction SilentlyContinue | Start-VM -ErrorAction SilentlyContinue
         }
         else
         {
@@ -1178,25 +1227,25 @@ function Checkpoint-LWHypervVM
         }
     }
 
-    $pool = New-RunspacePool -ThrottleLimit 20 -Variable (Get-Variable -Name SnapshotName)
+    $pool = New-RunspacePool -ThrottleLimit 20 -Variable (Get-Variable -Name SnapshotName) -Function (Get-Command Get-LWHypervVM)
 
     $jobsStep1 = foreach ($Name in $ComputerName)
     {
-        Start-RunspaceJob -RunspacePool $pool -ScriptBlock $step1 -Argument $Name
+        Start-RunspaceJob -RunspacePool $pool -ScriptBlock $step1 -Argument $Name,(Get-LabConfigurationItem -Name DoNotAddVmsToCluster -Default $false)
     }
 
     $runningMachines = $jobsStep1 | Receive-RunspaceJob
 
     $jobsStep2 = foreach ($Name in $ComputerName)
     {
-        Start-RunspaceJob -RunspacePool $pool -ScriptBlock $step2 -Argument $Name
+        Start-RunspaceJob -RunspacePool $pool -ScriptBlock $step2 -Argument $Name,(Get-LabConfigurationItem -Name DoNotAddVmsToCluster -Default $false)
     }
 
     [void] ($jobsStep2 | Wait-RunspaceJob)
 
     $jobsStep3 = foreach ($Name in $ComputerName)
     {
-        Start-RunspaceJob -RunspacePool $pool -ScriptBlock $step3 -Argument $Name, $runningMachines
+        Start-RunspaceJob -RunspacePool $pool -ScriptBlock $step3 -Argument $Name, $runningMachines,(Get-LabConfigurationItem -Name DoNotAddVmsToCluster -Default $false)
     }
 
     [void] ($jobsStep3 | Wait-RunspaceJob)
@@ -1225,21 +1274,22 @@ function Remove-LWHypervVMSnapshot
     )
 
     Write-LogFunctionEntry
-    $pool = New-RunspacePool -ThrottleLimit 20 -Variable (Get-Variable -Name SnapshotName,All -ErrorAction SilentlyContinue)
+    $pool = New-RunspacePool -ThrottleLimit 20 -Variable (Get-Variable -Name SnapshotName,All -ErrorAction SilentlyContinue) -Function (Get-Command Get-LWHypervVM)
 
     $jobs = foreach ($n in $ComputerName)
     {
-        Start-RunspaceJob -RunspacePool $pool -Argument $n -ScriptBlock {
-            param ($n)
+        Start-RunspaceJob -RunspacePool $pool -Argument $n,(Get-LabConfigurationItem -Name DoNotAddVmsToCluster -Default $false) -ScriptBlock {
+            param ($n, $DisableClusterCheck)
+            $vm = Get-LWHypervVM -Name $n -DisableClusterCheck $DisableClusterCheck
             if ($SnapshotName)
             {
-                $snapshot = Get-VMSnapshot -VMName $n | Where-Object -FilterScript {
+                $snapshot = $vm | Get-VMSnapshot | Where-Object -FilterScript {
                     $_.Name -eq $SnapshotName
                 }
             }
             else
             {
-                $snapshot = Get-VMSnapshot -VMName $n
+                $snapshot = $vm | Get-VMSnapshot
             }
 
             if (-not $snapshot)
@@ -1248,7 +1298,7 @@ function Remove-LWHypervVMSnapshot
             }
             else
             {
-                Remove-VMSnapshot -VMName $n -Name $snapshot.Name -IncludeAllChildSnapshots -ErrorAction SilentlyContinue
+                $snapshot | Remove-VMSnapshot -IncludeAllChildSnapshots -ErrorAction SilentlyContinue
             }
         }
     }
@@ -1276,15 +1326,15 @@ function Restore-LWHypervVMSnapshot
 
     Write-LogFunctionEntry
 
-    $pool = New-RunspacePool -ThrottleLimit 20 -Variable (Get-Variable SnapshotName)
+    $pool = New-RunspacePool -ThrottleLimit 20 -Variable (Get-Variable SnapshotName) -Function (Get-Command Get-LWHypervVM)
 
     Write-PSFMessage -Message 'Remembering all running machines'
     $jobs = foreach ($n in $ComputerName)
     {
-        Start-RunspaceJob -RunspacePool $pool -Argument $n -ScriptBlock {
-            param ($n)
+        Start-RunspaceJob -RunspacePool $pool -Argument $n,(Get-LabConfigurationItem -Name DoNotAddVmsToCluster -Default $false) -ScriptBlock {
+            param ($n, $DisableClusterCheck)
 
-            if ((Get-VM -Name $n -ErrorAction SilentlyContinue).State -eq 'Running')
+            if ((Get-LWHypervVM -Name $n -DisableClusterCheck $DisableClusterCheck -ErrorAction SilentlyContinue).State -eq 'Running')
             {
                 Write-Verbose -Message "    '$n' was running"
                 $n
@@ -1298,8 +1348,9 @@ function Restore-LWHypervVMSnapshot
     {
         Start-RunspaceJob -RunspacePool $pool -Argument $n -ScriptBlock {
             param ($n)
-            Suspend-VM -Name $n -ErrorAction SilentlyContinue
-            Save-VM -Name $n -ErrorAction SilentlyContinue
+            $vm = Get-LWHypervVM -Name $n
+            $vm | Suspend-VM -ErrorAction SilentlyContinue
+            $vm | Save-VM -ErrorAction SilentlyContinue
             Start-Sleep -Seconds 5
         }
     }
@@ -1313,7 +1364,8 @@ function Restore-LWHypervVMSnapshot
                 [string]$n
             )
 
-            $snapshot = Get-VMSnapshot -VMName $n | Where-Object Name -eq $SnapshotName
+            $vm = Get-LWHypervVM -Name $n
+            $snapshot = $vm | Get-VMSnapshot | Where-Object Name -eq $SnapshotName
 
             if (-not $snapshot)
             {
@@ -1321,8 +1373,8 @@ function Restore-LWHypervVMSnapshot
             }
             else
             {
-                Restore-VMSnapshot -VMName $n -Name $SnapshotName -Confirm:$false
-                Set-VM -Name $n -Notes (Get-VMSnapshot -VMName $n -Name $SnapshotName).Notes
+                $snapshot | Restore-VMSnapshot -Confirm:$false
+                $vm | Set-VM -Notes $snapshot.Notes
 
                 Start-Sleep -Seconds 5
             }
@@ -1397,7 +1449,7 @@ function Get-LWHypervVMStatus
     Write-LogFunctionEntry
 
     $result = @{ }
-    $vms = Get-VM -Name $ComputerName
+    $vms = Get-LWHypervVM -Name $ComputerName -ErrorAction SilentlyContinue
     $vmTable = @{ }
     Get-LabVm -IncludeLinux | Where-Object FriendlyName -in $ComputerName | ForEach-Object {$vmTable[$_.FriendlyName] = $_.Name}
 
@@ -1507,22 +1559,23 @@ function Mount-LWIsoImage
         {
             try
             {
+                $vm = Get-LWHypervVM -Name $machine.ResourceName
                 if ($machine.OperatingSystem.Version -ge '6.2')
                 {
-                    $drive = Add-VMDvdDrive -VMName $machine.ResourceName -Path $IsoPath -ErrorAction Stop -Passthru
+                    $drive = $vm | Add-VMDvdDrive -Path $IsoPath -ErrorAction Stop -Passthru
                 }
                 else
                 {
-                    if (-not (Get-VMDvdDrive -VMName $machine.ResourceName))
+                    if (-not ($vm | Get-VMDvdDrive))
                     {
                         throw "No DVD drive exist for machine '$machine'. Machine is generation 1 and DVD drive needs to be crate in advance (during creation of the machine). Cannot continue."
                     }
-                    $drive = Set-VMDvdDrive -VMName $machine.ResourceName -Path $IsoPath -ErrorAction Stop -Passthru
+                    $drive = $vm | Set-VMDvdDrive -Path $IsoPath -ErrorAction Stop -Passthru
                 }
 
                 Start-Sleep -Seconds $delayBeforeCheck[$delayIndex]
 
-                if ((Get-VMDvdDrive -VMName $machine.ResourceName).Path -contains $IsoPath)
+                if (($vm | Get-VMDvdDrive).Path -contains $IsoPath)
                 {
                     $done = $true
                 }
@@ -1570,15 +1623,16 @@ function Dismount-LWIsoImage
 
     foreach ($machine in $machines)
     {
+        $vm = Get-LWHypervVM -Name $machine.ResourceName -ErrorAction SilentlyContinue
         if ($machine.OperatingSystem.Version -ge [System.Version]'6.2')
         {
             Write-PSFMessage -Message "Removing DVD drive for machine '$machine'"
-            Get-VMDvdDrive -VMName $machine.ResourceName | Remove-VMDvdDrive
+            $vm | Get-VMDvdDrive | Remove-VMDvdDrive
         }
         else
         {
             Write-PSFMessage -Message "Setting DVD drive for machine '$machine' to null"
-            Get-VMDvdDrive -VMName $machine.ResourceName | Set-VMDvdDrive -Path $null
+            $vm | Get-VMDvdDrive | Set-VMDvdDrive -Path $null
         }
     }
 }
@@ -1597,6 +1651,7 @@ function Repair-LWHypervNetworkConfig
     Write-LogFunctionEntry
 
     $machine = Get-LabVM -ComputerName $ComputerName
+    $vm = Get-LWHypervVM -Name $machine.ResourceName
 
     if (-not $machine) { return } # No fixing this on a Linux VM
 
@@ -1686,7 +1741,7 @@ function Repair-LWHypervNetworkConfig
 
     foreach ($adapterInfo in $machine.NetworkAdapters)
     {
-        $vmAdapter = Get-VMNetworkAdapter -VMName $machine.ResourceName -Name $adapterInfo.VirtualSwitch.ResourceName
+        $vmAdapter = $vm | Get-VMNetworkAdapter -Name $adapterInfo.VirtualSwitch.ResourceName
 
         if ($adapterInfo.VirtualSwitch.ResourceName -ne $vmAdapter.SwitchName)
         {
@@ -1717,7 +1772,7 @@ function Set-LWHypervVMDescription
     $suffix = '#>AL#'
     $pattern = '{0}(?<ALNotes>[\s\S]+){1}' -f [regex]::Escape($prefix), [regex]::Escape($suffix)
 
-    $notes = (Get-VM -Name $ComputerName).Notes
+    $notes = (Get-LWHypervVM -Name $ComputerName).Notes
 
     if ($notes -match $pattern) {
         $notes = $notes -replace $pattern, ''
@@ -1733,7 +1788,7 @@ function Set-LWHypervVMDescription
 
     $notes += $prefix + $disctionary.ExportToString() + $suffix
 
-    Set-VM -Name $ComputerName -Notes $notes
+    Get-LWHypervVM -Name $ComputerName | Set-VM -Notes $notes
 
     Write-LogFunctionExit
 }
@@ -1749,7 +1804,7 @@ function Get-LWHypervVMDescription
 
     Write-LogFunctionEntry
     
-    $vm = Get-VM -Name $ComputerName -ErrorAction SilentlyContinue
+    $vm = Get-LWHypervVM -Name $ComputerName -ErrorAction SilentlyContinue
     if (-not $vm)
     {
         return

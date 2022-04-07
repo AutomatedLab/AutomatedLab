@@ -14,11 +14,12 @@ function Install-LabHyperV
     if ($hyperVVms)
     {
         $enableVirt = $vms | Where-Object {-not (Get-VmProcessor -VMName $_.ResourceName).ExposeVirtualizationExtensions}
-        if ($null -ne $enableVirt)
+        $vmObjects = Get-LWHypervVM -Name $enableVirt.ResourceName -ErrorAction SilentlyContinue
+        if ($null -ne $vmObjects)
         {
             Stop-LabVm -Wait -ComputerName $enableVirt
-            Set-VMProcessor -VMName $enableVirt.ResourceName -ExposeVirtualizationExtensions $true
-            Get-VMNetworkAdapter -VMName $enableVirt.ResourceName | Set-VMNetworkAdapter -MacAddressSpoofing On
+            $vmObjects | Set-VMProcessor -ExposeVirtualizationExtensions $true
+            $vmObjects | Get-VMNetworkAdapter | Set-VMNetworkAdapter -MacAddressSpoofing On
         }
     }
 

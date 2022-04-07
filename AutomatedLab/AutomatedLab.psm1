@@ -1478,7 +1478,7 @@ function Remove-Lab
                 $removeMachines = foreach ($machine in $labMachines)
                 {
                     $machineMetadata = Get-LWHypervVMDescription -ComputerName $machine.ResourceName -ErrorAction SilentlyContinue
-                    $vm = Get-VM -Name $machine.ResourceName -ErrorAction SilentlyContinue
+                    $vm = Get-LWHypervVM -Name $machine.ResourceName -ErrorAction SilentlyContinue
                     if (-not $machineMetadata)
                     {
                         Write-Error -Message "Cannot remove machine '$machine' because lab meta data could not be retrieved"
@@ -2961,8 +2961,8 @@ function Update-LabMemorySettings
 
     if ($machines | Where-Object Memory -lt 32)
     {
-        $totalMemoryAlreadyReservedAndClaimed = ((Get-VM -Name $machines.ResourceName -ErrorAction SilentlyContinue) | Measure-Object -Sum -Property MemoryStartup).Sum
-        $machinesNotCreated = $machines | Where-Object { (-not (Get-VM -Name $_.ResourceName -ErrorAction SilentlyContinue)) }
+        $totalMemoryAlreadyReservedAndClaimed = ((Get-LWHypervVM -Name $machines.ResourceName -ErrorAction SilentlyContinue) | Measure-Object -Sum -Property MemoryStartup).Sum
+        $machinesNotCreated = $machines | Where-Object { (-not (Get-LWHypervVM -Name $_.ResourceName -ErrorAction SilentlyContinue)) }
 
         $totalMemoryAlreadyReserved = ($machines | Where-Object { $_.Memory -ge 128 -and $_.Name -notin $machinesNotCreated.Name } | Measure-Object -Property Memory -Sum).Sum
 
@@ -3031,7 +3031,7 @@ function Update-LabMemorySettings
             }
         }
 
-        ForEach ($machine in $machines | Where-Object { $_.Memory -lt 32 -and -not (Get-VM -Name $_.ResourceName -ErrorAction SilentlyContinue) })
+        ForEach ($machine in $machines | Where-Object { $_.Memory -lt 32 -and -not (Get-LWHypervVM -Name $_.ResourceName -ErrorAction SilentlyContinue) })
         {
             $memoryCalculated = ($totalMemory / $totalMemoryUnits * $machine.Memory / 64) * 64
             if ($memoryUsagePrediction -gt $totalMemory)

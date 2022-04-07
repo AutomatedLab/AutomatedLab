@@ -36,6 +36,7 @@ nav:
   - Exchanging data: Wiki/Basic/exchangedata.md
   - Notification system: Wiki/Advanced/notifications.md
   - Connecting two labs: Wiki/Advanced/connectlabs.md
+  - Running on a Cluster: Wiki/Advanced/runoncluster.md
 - Azure labs:
   - Adding a subscription: Wiki/Basic/addazuresubscription.md
   - Synchronise local lab sources: Wiki/Basic/synclabsources.md

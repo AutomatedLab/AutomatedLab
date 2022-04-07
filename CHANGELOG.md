@@ -10,6 +10,8 @@
 - New function Install-LabAzureRequiredModule
 - Renamed 'Remove-DeploymentFiles' to 'Remove-LabDeploymentFiles' according to the naming convention and extended
   the function's scope of work.
+- Finally adding cluster-awareness
+  - If AutomatedLab is executed locally on a cluster node, the lab VMs are added to the cluster
 
 ### Bugs
 - Fixing issue with Get-LabAzureAvailableRoleSize by filtering earlier.
