@@ -12,6 +12,9 @@
   the function's scope of work.
 - Finally adding cluster-awareness
   - If AutomatedLab is executed locally on a cluster node, the lab VMs are added to the cluster
+- Adding hidden setting DoNotPrompt as an attempt to not prompt.
+  - Does not include prompts that can be turned off like Enable-LabHostRemoting -Force
+- Updated docs
 
 ### Bugs
 - Fixing issue with Get-LabAzureAvailableRoleSize by filtering earlier.
@@ -22,6 +25,7 @@
 - Fixes #1293: Set-DscLocalConfigurationManagerConfiguration throws error when successful.
 - DelayBetweenComputers was ignored
 - Fixed lab location. Sometimes the 'Lab.xml' was stored in 'C:\ProgramData\AutomatedLab' directly.
+- Removing unsupported kickstart parameter for old CentOS versions
 
 ## 5.41.0 (2022-01-31)
 

@@ -393,7 +393,7 @@ function Add-LabAzureSubscription
     $syncMaxSize = Get-LabConfigurationItem -Name LabSourcesMaxFileSizeMb
     $syncIntervalDays = Get-LabConfigurationItem -Name LabSourcesSyncIntervalDays
 
-    if (-not $lastchecked)
+    if (-not (Get-LabConfigurationItem -Name DoNotPrompt -Default $false) -and -not $lastchecked)
     {
         $lastchecked = [datetime]0
         $syncText = @"

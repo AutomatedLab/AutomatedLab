@@ -13,7 +13,7 @@ Add-LabMachineDefinition -Name HV01 -Roles HyperV
 You can also customize many relevant settings by creating the role definition reference:
 
 ```powershell
-$role = Get-LabMachineRoleDefinition -Role HyperV -RoleProperties @{EnableEnhancedSessionMode = 'true'}
+$role = Get-LabMachineRoleDefinition -Role HyperV -Properties @{EnableEnhancedSessionMode = 'true'}
 Add-LabMachineDefinition -Name HV01 -Roles $role
 ```
 ## Role properties
