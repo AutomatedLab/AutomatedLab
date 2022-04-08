@@ -1245,6 +1245,7 @@ function Export-LabDefinition
             if ($Script:machines | Where-Object LinuxType -eq 'RedHat')
             {
                 $kickstartContent | Out-File -FilePath (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath ks_default.cfg) -Encoding unicode
+                $kickstartContent.Replace(' --non-interactive','') | Out-File -FilePath (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath ks_defaultLegacy.cfg) -Encoding unicode                
             }
             if ($Script:machines | Where-Object LinuxType -eq 'Suse')
             {
@@ -3626,7 +3627,11 @@ function Import-LabDefinition
                     {
                         $Path = Join-Path -Path (Get-Lab).Sources.UnattendedXml.Value -ChildPath 'Unattended2012.xml'
                     }
-                    if ($this.OperatingSystemType -eq 'Linux' -and $this.LinuxType -eq 'RedHat')
+                    if ($this.OperatingSystemType -eq 'Linux' -and $this.LinuxType -eq 'RedHat' -and $this.Version -lt 8.0)
+                    {
+                        $Path = Join-Path -Path (Get-Lab).Sources.UnattendedXml.Value -ChildPath ks_defaultLegacy.cfg
+                    }
+                    if ($this.OperatingSystemType -eq 'Linux' -and $this.LinuxType -eq 'RedHat' -and $this.Version -ge 8.0)
                     {
                         $Path = Join-Path -Path (Get-Lab).Sources.UnattendedXml.Value -ChildPath ks_default.cfg
                     }

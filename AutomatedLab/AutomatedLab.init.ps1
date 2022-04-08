@@ -118,6 +118,7 @@ else
 Set-PSFConfig -Module 'AutomatedLab' -Name OsRoot -Value $osroot -Initialize -Validation string
 Set-PSFConfig -Module 'AutomatedLab' -Name OverridePowerPlan -Value $true -Initialize -Validation bool -Description 'On Windows: Indicates that power settings will be set to High Power during lab deployment'
 Set-PSFConfig -Module 'AutomatedLab' -Name SendFunctionTelemetry -Value $false -Initialize -Validation bool -Description 'Indicates if function call telemetry is sent' -Hidden
+Set-PSFConfig -Module 'AutomatedLab' -Name DoNotPrompt -Value $false -Initialize -Validation bool -Description 'Indicates that AutomatedLab should not display prompts. Workaround for environments that register as interactive, even if they are not' -Hidden
 
 #PSSession settings
 Set-PSFConfig -Module 'AutomatedLab' -Name InvokeLabCommandRetries -Value 3 -Initialize -Validation integer -Description 'Number of retries for Invoke-LabCommand'

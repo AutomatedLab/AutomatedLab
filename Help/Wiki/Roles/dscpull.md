@@ -15,7 +15,7 @@ Add-LabMachineDefinition -Name Pulli -Roles DscPullServer
 You can optionally specify parameters by using the role definition:
 
 ```powershell
-$role = Get-LabMachineRoleDefinition -Role DscPullServer -RoleProperties @{
+$role = Get-LabMachineRoleDefinition -Role DscPullServer -Properties @{
     DatabaseEngine = 'mdb'
     DatabaseName = 'DSC'
     DatabaseServer = 'SQL01'

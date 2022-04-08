@@ -1240,9 +1240,10 @@ function Connect-LabVM
 
         if ($machine.OperatingSystemType -eq 'Linux')
         {
-            $sshBinary = Get-ChildItem $labsources\Tools\OpenSSH -Filter ssh.exe -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+            $sshBinary = Get-Command ssh.exe -ErrorAction SilentlyContinue
+            if (-not $sshBinary) { Get-ChildItem $labsources\Tools\OpenSSH -Filter ssh.exe -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1 }
 
-            if (-not $sshBinary)
+            if (-not $sshBinary -and -not (Get-LabConfigurationItem -Name DoNotPrompt))
             {
                 $download = Read-Choice -ChoiceList 'No','Yes' -Caption 'Download Win32-OpenSSH' -Message 'OpenSSH is necessary to connect to Linux VMs. Would you like us to download Win32-OpenSSH for you?' -Default 1
 

@@ -23,10 +23,14 @@ Tests if a given path is inside the Azure lab source storage share
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Test-LabPathIsOnLabAzureLabSourcesStorage -Path "$labSources\Tools\SomeTool.exe"
 ```
 
-{{ Add example description here }}
+Test if the path "$labSources\Tools\SomeTool.exe" is actually located on an Azure
+lab sources share.
+
+The dynamic $labSources variable may either point to a local path or an Azure
+file share depending on the Hypervisor that is used.
 
 ## PARAMETERS
 
