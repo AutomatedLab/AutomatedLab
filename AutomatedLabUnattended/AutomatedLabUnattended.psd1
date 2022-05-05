@@ -11,7 +11,7 @@
 
     CompanyName            = 'AutomatedLab Team'
 
-    Copyright              = '2019'
+    Copyright              = '2022'
 
     Description            = 'The module is managing settings inside an unattended.xml file'
 
@@ -22,6 +22,16 @@
     ModuleList             = @('AutomatedLabUnattended')
 
     FileList               = @('AutomatedLabUnattended.psm1')
+
+    PrivateData            = @{
+
+        PSData = @{
+            Prerelease   = ''
+            Tags         = @('UnattendedFile', 'Kickstart', 'AutoYast', 'Lab', 'LabAutomation', 'HyperV', 'Azure')
+            LicenseUri   = 'https://github.com/AutomatedLab/AutomatedLab/blob/main/LICENSE'
+            ProjectUri   = 'https://github.com/AutomatedLab/AutomatedLab'
+            IconUri      = 'https://github.com/AutomatedLab/AutomatedLab/blob/master/Assets/Automated-Lab_icon256.png'
+            ReleaseNotes = ''
+        }
+    }
 }
-
-

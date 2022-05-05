@@ -47,6 +47,13 @@ function New-LabVM
         {
             $result = New-LWHypervVM -Machine $machine
 
+            $doNotAddToCluster = Get-LabConfigurationItem -Name DoNotAddVmsToCluster -Default $false
+            if (-not $doNotAddToCluster -and (Get-Command -Name Get-Cluster -ErrorAction SilentlyContinue) -and (Get-Cluster -ErrorAction SilentlyContinue))
+            {
+                Write-ScreenInfo -Message "Adding $($machine.Name) ($($machine.ResourceName)) to cluster $((Get-Cluster).Name)"
+                $null = Add-ClusterVirtualMachineRole -VMName $machine.ResourceName -Name $machine.ResourceName
+            }
+
             if ('RootDC' -in $machine.Roles.Name)
             {
                 Start-LabVM -ComputerName $machine.Name -NoNewline
@@ -312,6 +319,17 @@ function Start-LabVM
         if ($hypervVMs)
         {
             Start-LWHypervVM -ComputerName $hypervVMs -DelayBetweenComputers $DelayBetweenComputers -ProgressIndicator $ProgressIndicator -PreDelaySeconds $PreDelaySeconds -PostDelaySeconds $PostDelaySeconds -NoNewLine:$NoNewline
+            
+            foreach ($vm in $hypervVMs)
+            {
+                $machineMetadata = Get-LWHypervVMDescription -ComputerName $vm.ResourceName
+                if (($machineMetadata.InitState -band [AutomatedLab.LabVMInitState]::NetworkAdapterBindingCorrected) -ne [AutomatedLab.LabVMInitState]::NetworkAdapterBindingCorrected)
+                {
+                    Repair-LWHypervNetworkConfig -ComputerName $vm
+                    $machineMetadata.InitState = [AutomatedLab.LabVMInitState]::NetworkAdapterBindingCorrected
+                    Set-LWHypervVMDescription -Hashtable $machineMetadata -ComputerName $vm.ResourceName
+                }
+            }
         }
 
         $azureVms = $vms | Where-Object HostType -eq 'Azure'
@@ -1222,9 +1240,10 @@ function Connect-LabVM
 
         if ($machine.OperatingSystemType -eq 'Linux')
         {
-            $sshBinary = Get-ChildItem $labsources\Tools\OpenSSH -Filter ssh.exe -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+            $sshBinary = Get-Command ssh.exe -ErrorAction SilentlyContinue
+            if (-not $sshBinary) { Get-ChildItem $labsources\Tools\OpenSSH -Filter ssh.exe -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1 }
 
-            if (-not $sshBinary)
+            if (-not $sshBinary -and -not (Get-LabConfigurationItem -Name DoNotPrompt))
             {
                 $download = Read-Choice -ChoiceList 'No','Yes' -Caption 'Download Win32-OpenSSH' -Message 'OpenSSH is necessary to connect to Linux VMs. Would you like us to download Win32-OpenSSH for you?' -Default 1
 

@@ -26,9 +26,9 @@
 
         if ($useAzure)
         {
-            if (-not (Get-Command -Name Set-AzStorageBlobContent -ErrorAction SilentlyContinue))
+            if (-not (Test-LabAzureModuleAvailability))
             {                
-                Write-ScreenInfo -Type Error -Message "Az.Storage is missing. To use Azure, ensure that the module Az is installed."
+                Write-ScreenInfo -Type Error -Message "Az.Storage is missing. To use Azure, try Install-LabAzureRequiredModule"
                 return
             }
 

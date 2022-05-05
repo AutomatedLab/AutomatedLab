@@ -11,7 +11,7 @@
 
     CompanyName            = 'AutomatedLab Team'
 
-    Copyright              = '2019'
+    Copyright              = '2022'
 
     Description            = 'This module encapsulates all the work activities to prepare the lab'
 
@@ -27,7 +27,7 @@
         'PSFileTransfer',
         @{
             ModuleName    = "AutomatedLab.Common";
-            ModuleVersion = "1.1.87";
+            ModuleVersion = "2.1.230";
         }
     )
 
@@ -53,5 +53,16 @@
         'AutomatedLabVMWareWorkerVirtualMachines.psm1',
         'AutomatedLabVMWareWorkerNetwork.psm1')
 
-    PrivateData            = @{ }
+
+    PrivateData            = @{
+
+        PSData = @{
+            Prerelease   = ''
+            Tags         = @('LabWorker', 'Lab', 'LabAutomation', 'HyperV', 'Azure')
+            LicenseUri   = 'https://github.com/AutomatedLab/AutomatedLab/blob/main/LICENSE'
+            ProjectUri   = 'https://github.com/AutomatedLab/AutomatedLab'
+            IconUri      = 'https://github.com/AutomatedLab/AutomatedLab/blob/master/Assets/Automated-Lab_icon256.png'
+            ReleaseNotes = ''
+        }
+    }
 }

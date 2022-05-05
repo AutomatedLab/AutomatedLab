@@ -32,7 +32,7 @@
                 else
                 {
                     Write-Verbose -Message "Module Installed, Importing $($moduleName)"
-                    Import-Module -Name $moduleName -Force -RequiredVersion $version
+                    Import-Module -ModuleInfo $module -Force
                 }
             }
             else
@@ -76,13 +76,13 @@ if (-not ($latestVersion.Version -ge '1.6.0'))
 
 if ($IsLinux)
 {
-    $null = sudo mkdir ./usr/share/AutomatedLab/Assets -p
-    $null = sudo mkdir ./usr/share/AutomatedLab/Stores -p
-    $null = sudo mkdir ./usr/share/AutomatedLab/Labs -p
-    $null = sudo mkdir ./usr/share/AutomatedLab/LabSources -p
+    $null = sudo mkdir /usr/share/AutomatedLab/Assets -p
+    $null = sudo mkdir /usr/share/AutomatedLab/Stores -p
+    $null = sudo mkdir /usr/share/AutomatedLab/Labs -p
+    $null = sudo mkdir /usr/share/AutomatedLab/LabSources -p
 }
 
-Resolve-Module -Name Psake, PSDeploy, Pester, BuildHelpers, AutomatedLab, Ships, PSFramework, xPSDesiredStateConfiguration, xDscDiagnostics, xWebAdministration
+Resolve-Module -Name Psake, PSDeploy, Pester, BuildHelpers, AutomatedLab.Common, AutomatedLab, Ships, PSFramework, xPSDesiredStateConfiguration, xDscDiagnostics, xWebAdministration
 
 Invoke-psake ./.build/psake.ps1
 exit ( [int]( -not $psake.build_success ) )

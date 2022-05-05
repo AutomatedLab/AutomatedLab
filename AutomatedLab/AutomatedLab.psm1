@@ -513,7 +513,11 @@ function Import-Lab
                     {
                         $Path = Join-Path -Path (Get-Lab).Sources.UnattendedXml.Value -ChildPath 'Unattended2012.xml'
                     }
-                    if ($this.OperatingSystemType -eq 'Linux' -and $this.LinuxType -eq 'RedHat')
+                    if ($this.OperatingSystemType -eq 'Linux' -and $this.LinuxType -eq 'RedHat' -and $this.Version -lt 8.0)
+                    {
+                        $Path = Join-Path -Path (Get-Lab).Sources.UnattendedXml.Value -ChildPath ks_defaultLegacy.cfg
+                    }
+                    if ($this.OperatingSystemType -eq 'Linux' -and $this.LinuxType -eq 'RedHat' -and $this.Version -ge 8.0)
                     {
                         $Path = Join-Path -Path (Get-Lab).Sources.UnattendedXml.Value -ChildPath ks_default.cfg
                     }
@@ -531,9 +535,9 @@ function Import-Lab
         }
 
         $minimumAzureModuleVersion = Get-LabConfigurationItem -Name MinimumAzureModuleVersion
-        if (($Script:data.Machines | Where-Object HostType -eq Azure) -and -not (Get-InstalledModule -Name Az | Where-Object Version -ge $minimumAzureModuleVersion))
+        if (($Script:data.Machines | Where-Object HostType -eq Azure) -and -not (Test-LabAzureModuleAvailability))
         {
-            throw "The Azure PowerShell module version $($minimumAzureModuleVersion) or greater is not available. Please install it using the command 'Install-Module -Name Az -Force'"
+            throw "The Azure PowerShell modules required to run AutomatedLab are not available. Please install them using the command 'Install-LabAzureRequiredModule'"
         }
 
         if (($Script:data.Machines | Where-Object HostType -eq VMWare) -and ((Get-PSSnapin -Name VMware.VimAutomation.*).Count -ne 1))
@@ -1287,7 +1291,7 @@ function Install-Lab
             minutes."
         }
 
-        if (-not $DelayBetweenComputers)
+        if ($null -eq $DelayBetweenComputers)
         {
             $hypervMachineCount = (Get-LabVM -IncludeLinux | Where-Object HostType -eq HyperV).Count
             if ($hypervMachineCount)
@@ -1298,8 +1302,7 @@ function Install-Lab
             else
             {
                 $DelayBetweenComputers = 0
-            }
-            
+            }            
         }
 
         Write-ScreenInfo -Message 'Waiting for machines to start up...' -NoNewLine
@@ -1418,11 +1421,10 @@ function Remove-Lab
             Import-Lab -Name $Name -NoValidation -NoDisplay
             $labName = $Name
         }
-
-        if ($Path)
+        elseif ($Path)
         {
             Import-Lab -Path $Path -NoValidation -NoDisplay
-            $labName = (Get-Lab).Name
+            
         }
 
         if (-not $Script:data)
@@ -1431,9 +1433,11 @@ function Remove-Lab
             return
         }
 
-        if($pscmdlet.ShouldProcess((Get-Lab).Name, 'Remove the lab completely'))
+        $labName = (Get-Lab).Name
+
+        if($pscmdlet.ShouldProcess($labName, 'Remove the lab completely'))
         {
-            Write-ScreenInfo -Message "Removing lab '$($Script:data.Name)'" -Type Warning -TaskStart
+            Write-ScreenInfo -Message "Removing lab '$labName'" -Type Warning -TaskStart
             if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure' -and -not (Get-AzContext))
             {
                 Write-ScreenInfo -Type Info -Message "Your Azure session is expired. Please log in to remove your resource group"
@@ -1478,7 +1482,7 @@ function Remove-Lab
                 $removeMachines = foreach ($machine in $labMachines)
                 {
                     $machineMetadata = Get-LWHypervVMDescription -ComputerName $machine.ResourceName -ErrorAction SilentlyContinue
-                    $vm = Get-VM -Name $machine.ResourceName -ErrorAction SilentlyContinue
+                    $vm = Get-LWHypervVM -Name $machine.ResourceName -ErrorAction SilentlyContinue
                     if (-not $machineMetadata)
                     {
                         Write-Error -Message "Cannot remove machine '$machine' because lab meta data could not be retrieved"
@@ -2961,8 +2965,8 @@ function Update-LabMemorySettings
 
     if ($machines | Where-Object Memory -lt 32)
     {
-        $totalMemoryAlreadyReservedAndClaimed = ((Get-VM -Name $machines.ResourceName -ErrorAction SilentlyContinue) | Measure-Object -Sum -Property MemoryStartup).Sum
-        $machinesNotCreated = $machines | Where-Object { (-not (Get-VM -Name $_.ResourceName -ErrorAction SilentlyContinue)) }
+        $totalMemoryAlreadyReservedAndClaimed = ((Get-LWHypervVM -Name $machines.ResourceName -ErrorAction SilentlyContinue) | Measure-Object -Sum -Property MemoryStartup).Sum
+        $machinesNotCreated = $machines | Where-Object { (-not (Get-LWHypervVM -Name $_.ResourceName -ErrorAction SilentlyContinue)) }
 
         $totalMemoryAlreadyReserved = ($machines | Where-Object { $_.Memory -ge 128 -and $_.Name -notin $machinesNotCreated.Name } | Measure-Object -Property Memory -Sum).Sum
 
@@ -3031,7 +3035,7 @@ function Update-LabMemorySettings
             }
         }
 
-        ForEach ($machine in $machines | Where-Object { $_.Memory -lt 32 -and -not (Get-VM -Name $_.ResourceName -ErrorAction SilentlyContinue) })
+        ForEach ($machine in $machines | Where-Object { $_.Memory -lt 32 -and -not (Get-LWHypervVM -Name $_.ResourceName -ErrorAction SilentlyContinue) })
         {
             $memoryCalculated = ($totalMemory / $totalMemoryUnits * $machine.Memory / 64) * 64
             if ($memoryUsagePrediction -gt $totalMemory)
@@ -3259,6 +3263,12 @@ function Show-LabDeploymentSummary
         [switch]$Detailed
     )
 
+    if (-not (Get-Lab -ErrorAction SilentlyContinue))
+    {
+        Write-ScreenInfo "There is no lab information available in the current PowerShell session. Deploy a lab with AutomatedLab or import an already deployed lab with the 'Import-Lab' cmdlet."
+        return
+    }
+
     $ts = New-TimeSpan -Start $Global:AL_DeploymentStart -End (Get-Date)
     $hoursPlural = ''
     $minutesPlural = ''
@@ -3268,7 +3278,6 @@ function Show-LabDeploymentSummary
     if ($ts.minutes -gt 1) { $minutesPlural = 's' }
     if ($ts.Seconds -gt 1) { $secondsPlural = 's' }
 
-    $lab = Get-Lab
     $machines = Get-LabVM -IncludeLinux
 
     Write-ScreenInfo -Message '---------------------------------------------------------------------------'

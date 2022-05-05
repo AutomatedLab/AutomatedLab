@@ -4,7 +4,7 @@ function Get-LabHyperVAvailableMemory
     # .ExternalHelp AutomatedLab.Help.xml
     if ($IsLinux -or $IsMacOS)
     {
-        return [int]((Get-Content -Path /proc/meminfo) -replace ':','=' -replace '\skB' | ConvertFrom-StringData).MemTotal
+        return [int]((Get-Content -Path /proc/meminfo) -replace ':', '=' -replace '\skB' | ConvertFrom-StringData).MemTotal
     }
 
     [int](((Get-CimInstance -Namespace Root\Cimv2 -Class win32_operatingsystem).TotalVisibleMemorySize) / 1kb)
@@ -65,7 +65,7 @@ function Save-FileList
         $Filename = 'C:\ALfiles.txt'
     )
 
-    Get-ChildItem $ModulePath -Recurse -Directory -Include 'AutomatedLab', 'AutomatedLabDefinition', 'AutomatedLabUnattended', 'AutomatedLabWorker', 'HostsFile', 'PSFileTransfer', 'PSLog' | ForEach-Object {Get-ChildItem $_.FullName | Select-Object FullName} | Export-Csv -Path $Filename
+    Get-ChildItem $ModulePath -Recurse -Directory -Include 'AutomatedLab', 'AutomatedLabDefinition', 'AutomatedLabUnattended', 'AutomatedLabWorker', 'HostsFile', 'PSFileTransfer', 'PSLog' | ForEach-Object { Get-ChildItem $_.FullName | Select-Object FullName } | Export-Csv -Path $Filename
 }
 #endregion Save-FileList
 
@@ -80,7 +80,7 @@ function Test-FileList
     )
 
     $StoredFiles = Import-Csv -Path $Filename
-    $Files = Get-ChildItem $ModulePath -Recurse -Directory -Include 'AutomatedLab', 'AutomatedLabDefinition', 'AutomatedLabUnattended', 'AutomatedLabWorker', 'HostsFile', 'PSFileTransfer', 'PSLog' | ForEach-Object {Get-ChildItem $_.FullName | Select-Object FullName}
+    $Files = Get-ChildItem $ModulePath -Recurse -Directory -Include 'AutomatedLab', 'AutomatedLabDefinition', 'AutomatedLabUnattended', 'AutomatedLabWorker', 'HostsFile', 'PSFileTransfer', 'PSLog' | ForEach-Object { Get-ChildItem $_.FullName | Select-Object FullName }
 
     if (Compare-Object -ReferenceObject $StoredFiles -DifferenceObject $Files)
     {
@@ -168,13 +168,13 @@ function Restart-ServiceResilient
 
             if ($WasStopped)
             {
-                $events = @(Get-EventLog -LogName System -Index ($Index..($Index+10000)) | Where-Object {$_.Message -like "*$serviceDisplayName*entered*stopped*"})
+                $events = @(Get-EventLog -LogName System -Index ($Index..($Index + 10000)) | Where-Object { $_.Message -like "*$serviceDisplayName*entered*stopped*" })
                 Write-Debug -Message "$(Get-Date -Format 'mm:dd:ss') - Events found: $($events.count)"
                 $result = ($events.count -gt 0)
             }
             if ($WasStarted)
             {
-                $events = @(Get-EventLog -LogName System -Index ($Index..($Index+10000)) | Where-Object {$_.Message -like "*$serviceDisplayName*entered*running*"})
+                $events = @(Get-EventLog -LogName System -Index ($Index..($Index + 10000)) | Where-Object { $_.Message -like "*$serviceDisplayName*entered*running*" })
                 Write-Debug -Message "$(Get-Date -Format 'mm:dd:ss') - Events found: $($events.count)"
                 $result = ($events.count -gt 0)
             }
@@ -185,13 +185,13 @@ function Restart-ServiceResilient
 
 
         $BackupVerbosePreference = $VerbosePreference
-        $BackupDebugPreference   = $DebugPreference
+        $BackupDebugPreference = $DebugPreference
         $VerbosePreference = 'Continue'
-        $DebugPreference   = 'Continue'
+        $DebugPreference = 'Continue'
 
         $ServiceName = 'nlasvc'
 
-        $dependentServices = Get-Service -Name $ServiceName -DependentServices | Where-Object {$_.Status -eq 'Running'} | Select-Object -ExpandProperty Name
+        $dependentServices = Get-Service -Name $ServiceName -DependentServices | Where-Object { $_.Status -eq 'Running' } | Select-Object -ExpandProperty Name
         Write-Verbose -Message "$(Get-Date -Format 'mm:dd:ss') - Dependent services: '$($dependentServices -join ',')'"
 
 
@@ -207,7 +207,7 @@ function Restart-ServiceResilient
                 $WAPbackup = $WarningPreference
 
                 $ErrorActionPreference = 'SilentlyContinue'
-                $WarningPreference     = 'SilentlyContinue'
+                $WarningPreference = 'SilentlyContinue'
                 Stop-Service -Name $ServiceName -Force
                 $ErrorActionPreference = $EAPbackup
                 $WarningPreference = $WAPbackup
@@ -288,7 +288,7 @@ function Restart-ServiceResilient
         }
 
         $VerbosePreference = $BackupVerbosePreference
-        $DebugPreference   = $BackupDebugPreference
+        $DebugPreference = $BackupDebugPreference
     } -ArgumentList $ServiceName
 
     Wait-LWLabJob -Job $jobs -NoDisplay -Timeout 30 -NoNewLine:$NoNewLine
@@ -297,19 +297,25 @@ function Restart-ServiceResilient
 }
 #endregion Restart-ServiceResilient
 
-#region Remove-DeploymentFiles
-function Remove-DeploymentFiles
+#region Remove-LabDeploymentFiles
+function Remove-LabDeploymentFiles
 {
 
     Invoke-LabCommand -ComputerName (Get-LabVM) -ActivityName 'Remove deployment files (files used during deployment)' -AsJob -NoDisplay -ScriptBlock `
     {
-        Remove-Item -Path C:\unattend.xml
-        Remove-Item -Path C:\WSManRegKey.reg
-        Remove-Item -Path C:\AdditionalDisksOnline.ps1
-        Remove-Item -Path C:\DeployDebug -Recurse
+        $paths = 'C:\Unattend.xml',
+            'C:\WSManRegKey.reg',
+            'C:\AdditionalDisksOnline.ps1',
+            'C:\WinRmCustomization.ps1',
+            'C:\DeployDebug',
+            'C:\ALLibraries',
+            'C:\DeployDebug',
+            "C:\$($env:COMPUTERNAME).cer"
+            
+        $paths | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue
     }
 }
-#endregion Remove-DeploymentFiles
+#endregion Remove-LabDeploymentFiles
 
 #region Enable-LabVMFirewallGroup
 function Enable-LabVMFirewallGroup
@@ -445,7 +451,7 @@ function Get-LabInternetFile
             }
 
             Write-Verbose "Uri is '$Uri'"
-            Write-Verbose "Path os '$Path'"
+            Write-Verbose "Path is '$Path'"
 
             try
             {
@@ -582,12 +588,12 @@ function Get-LabInternetFile
             # We need to test first, even if it takes a second longer.
             if (-not $doNotGetVm)
             {
-                $machine =  Invoke-LabCommand -PassThru -NoDisplay -ComputerName $(Get-LabVM -IsRunning) -ScriptBlock {
+                $machine = Invoke-LabCommand -PassThru -NoDisplay -ComputerName $(Get-LabVM -IsRunning) -ScriptBlock {
                     if (Get-NetConnectionProfile -IPv4Connectivity Internet -ErrorAction SilentlyContinue)
                     {
                         hostname
                     }
-                } -ErrorAction SilentlyContinue | Select-Object -First 1 
+                } -ErrorAction SilentlyContinue | Select-Object -First 1
                 Write-PSFMessage "Target path is on AzureLabSources, invoking the copy job on the first available Azure machine."
 
                 $argumentList = $Uri, $Path, $FileName
@@ -607,8 +613,8 @@ function Get-LabInternetFile
                 $param['Path'] = $Path.Replace((Get-LabSourcesLocation), (Get-LabSourcesLocation -Local))
                 $result = Get-LabInternetFileInternal @param
 
-                $fullName = Join-Path -Path $param.Path.Replace($FileName,'') -ChildPath (?? { $FileName } { $FileName } { $result.FileName })
-                $pathFilter = $fullName.Replace("$(Get-LabSourcesLocation -Local)\",'')
+                $fullName = Join-Path -Path $param.Path.Replace($FileName, '') -ChildPath (?? { $FileName } { $FileName } { $result.FileName })
+                $pathFilter = $fullName.Replace("$(Get-LabSourcesLocation -Local)\", '')
                 Sync-LabAzureLabSources -Filter $pathFilter -NoDisplay
             }
             else
@@ -645,11 +651,11 @@ function Get-LabInternetFile
     if ($PassThru)
     {
         New-Object PSObject -Property @{
-            Uri = $Uri
-            Path = $Path
+            Uri      = $Uri
+            Path     = $Path
             FileName = ?? { $FileName } { $FileName } { $result.FileName }
             FullName = Join-Path -Path $Path -ChildPath (?? { $FileName } { $FileName } { $result.FileName })
-            Length = $result.ContentLength
+            Length   = $result.ContentLength
         }
     }
 }
@@ -666,12 +672,12 @@ function Unblock-LabSources
     Write-LogFunctionEntry
 
     $lab = Get-Lab -ErrorAction SilentlyContinue
-    if(-not $lab)
+    if (-not $lab)
     {
         $lab = Get-LabDefinition -ErrorAction SilentlyContinue
     }
 
-    if($lab.DefaultVirtualizationEngine -eq 'Azure' -and $Path.StartsWith("\\"))
+    if ($lab.DefaultVirtualizationEngine -eq 'Azure' -and $Path.StartsWith("\\"))
     {
         Write-PSFMessage 'Skipping the unblocking of lab sources since we are on Azure and lab sources are unblocked during Sync-LabAzureLabSources'
         return
@@ -742,7 +748,7 @@ function Set-LabVMDescription
 
     Write-LogFunctionEntry
 
-    $t = Get-Type -GenericType AutomatedLab.SerializableDictionary -T String,String
+    $t = Get-Type -GenericType AutomatedLab.SerializableDictionary -T String, String
     $d = New-Object $t
 
     foreach ($kvp in $Hashtable.GetEnumerator())
@@ -757,7 +763,7 @@ function Set-LabVMDescription
 
     $d.WriteXml($xmlWriter)
 
-    Set-VM -Name $ComputerName -Notes $sb.ToString()
+    Get-LWHypervVm -Name $ComputerName -ErrorAction SilentlyContinue | Set-VM -Notes $sb.ToString()
 
     Write-LogFunctionExit
 }
@@ -836,14 +842,17 @@ function Update-LabSysinternalsTools
     #Update SysInternals suite if needed
     $type = Get-Type -GenericType AutomatedLab.DictionaryXmlStore -T String, DateTime
 
-    try {
+    try
+    {
         #https://docs.microsoft.com/en-us/dotnet/api/system.net.securityprotocoltype?view=netcore-2.0#System_Net_SecurityProtocolType_SystemDefault
-        if ($PSVersionTable.PSVersion.Major -lt 6 -and [Net.ServicePointManager]::SecurityProtocol -notmatch 'Tls12') {
+        if ($PSVersionTable.PSVersion.Major -lt 6 -and [Net.ServicePointManager]::SecurityProtocol -notmatch 'Tls12')
+        {
             Write-PSFMessage -Message 'Adding support for TLS 1.2'
             [Net.ServicePointManager]::SecurityProtocol += [Net.SecurityProtocolType]::Tls12
         }
     }
-    catch {
+    catch
+    {
         Write-PSFMessage -Level Warning -Message 'Adding TLS 1.2 to supported security protocols was unsuccessful.'
     }
 
@@ -924,7 +933,7 @@ function Update-LabSysinternalsTools
             {
                 Write-ScreenInfo -Message 'Performing update of SysInternals suite and lab sources directory now' -Type Warning -TaskStart
                 Start-Sleep -Seconds 1
-                
+
                 # Download Lab Sources
                 $null = New-LabSourcesFolder -Force -ErrorAction SilentlyContinue
 
@@ -1017,17 +1026,21 @@ function Test-FileName
         [Parameter(Mandatory)]
         [string]$Path
     )
-    
+
     $fi = $null
-    try {
+    try
+    {
         $fi = New-Object System.IO.FileInfo($Path)
     }
     catch [ArgumentException] { }
     catch [System.IO.PathTooLongException] { }
     catch [NotSupportedException] { }
-    if ([object]::ReferenceEquals($fi, $null) -or $fi.Name -eq '') {
+    if ([object]::ReferenceEquals($fi, $null) -or $fi.Name -eq '')
+    {
         return $false
-    } else {
+    }
+    else
+    {
         return $true
     }
 }

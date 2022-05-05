@@ -226,6 +226,8 @@ function New-LWVHDX
 
         [long]$AllocationUnitSize,
 
+        [string]$PartitionStyle,
+
         [switch]$SkipInitialize
     )
 
@@ -265,7 +267,7 @@ function New-LWVHDX
         $formatParams.NewFileSystemLabel = $Label
     }
 
-    $mountedVhd | Initialize-Disk
+    $mountedVhd | Initialize-Disk -PartitionStyle $PartitionStyle
     $mountedVhd | New-Partition -UseMaximumSize -AssignDriveLetter |
     Format-Volume @formatParams |
     Out-Null
@@ -327,7 +329,7 @@ function Add-LWVMVHDX
         return
     }
 
-    $vm = Get-VM -Name $VMName -ErrorAction SilentlyContinue
+    $vm = Get-LWHypervVM -Name $VMName -ErrorAction SilentlyContinue
     if (-not $vm)
     {
         Write-Error 'VM cannot be found'

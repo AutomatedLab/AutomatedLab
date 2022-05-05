@@ -11,9 +11,9 @@
 
     CompanyName            = 'AutomatedLab Team'
 
-    Copyright              = '2019'
+    Copyright              = '2022'
 
-    Description            = 'The module creates a Hyper-V visual lab automatically as defined in the XML files.'
+    Description            = 'Automated lab environments with ease - Linux and Windows, Hyper-V and Azure'
 
     PowerShellVersion      = '5.1'
 
@@ -66,7 +66,7 @@
         'HostsFile',
         'AutomatedLabUnattended',
         'AutomatedLabNotifications',
-        @{ModuleName='AutomatedLab.Common'; ModuleVersion='2.0.188'; }
+        @{ModuleName='AutomatedLab.Common'; ModuleVersion='2.1.230'; }
         'PSFramework'
         'AutomatedLabTest'
     )
@@ -76,6 +76,7 @@
     FunctionsToExport      = @(
         'Install-LabScvmm',
         'Install-LabRdsCertificate',
+        'Install-LabAzureRequiredModule',
         'Uninstall-LabRdsCertificate',
         'New-LabSourcesFolder',
         'Add-LabAzureSubscription',
@@ -176,7 +177,7 @@
         'New-LabVHDX',
         'New-LabVM',
         'New-LabAzureResourceGroupDeployment',
-        'Remove-DeploymentFiles',
+        'Remove-LabDeploymentFiles',
         'Remove-Lab',
         'Remove-LabAzureLabSourcesStorage',
         'Remove-LabAzureResourceGroup',
@@ -289,4 +290,16 @@
         'AutomatedLabDiskImageWindows.psm1',
         'AutomatedLabRds.psm1'
     )
+
+    PrivateData       = @{
+
+        PSData = @{
+            Prerelease   = ''
+            Tags         = @('Lab', 'LabAutomation', 'HyperV', 'Azure')
+            LicenseUri   = 'https://github.com/AutomatedLab/AutomatedLab/blob/main/LICENSE'
+            ProjectUri   = 'https://github.com/AutomatedLab/AutomatedLab'
+            IconUri      = 'https://github.com/AutomatedLab/AutomatedLab/blob/master/Assets/Automated-Lab_icon256.png'
+            ReleaseNotes = ''
+        }
+    }
 }

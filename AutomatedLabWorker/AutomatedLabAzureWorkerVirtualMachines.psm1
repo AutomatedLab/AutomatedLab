@@ -2205,7 +2205,7 @@ function Dismount-LWAzureIsoImage
             $_ | Dismount-DiskImage
         }
 
-    }
+    } -NoDisplay
 }
 #endregion
 

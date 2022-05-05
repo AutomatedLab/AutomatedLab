@@ -539,16 +539,25 @@ function Copy-LabFileItem
             foreach ($p in $Path)
             {
                 $session = New-LabPSSession -ComputerName $machine
-                $destination = if (-not $DestinationFolderPath)
+                $folderName = Split-Path -Path $p -Leaf
+                $targetFolder = if ($folderName -eq "*")
                 {
-                    Join-Path -Path (Get-LabConfigurationItem -Name OsRoot) -ChildPath (Split-Path -Path $p -Leaf)
+                    "\"
                 }
                 else
                 {
-                    Join-Path -Path $DestinationFolderPath -ChildPath (Split-Path -Path $p -Leaf)
+                    $folderName
+                }
+                $destination = if (-not $DestinationFolderPath)
+                {
+                    Join-Path -Path (Get-LabConfigurationItem -Name OsRoot) -ChildPath $targetFolder
+                }
+                else
+                {
+                    Join-Path -Path $DestinationFolderPath -ChildPath $targetFolder
                 }
 
-                Invoke-LabCommand -ComputerName $ComputerName -ActivityName Copy-LabFileItem -ScriptBlock {
+                Invoke-LabCommand -ComputerName $machine -ActivityName Copy-LabFileItem -ScriptBlock {
 
                     Copy-Item -Path $p -Destination $destination -Recurse -Force
 

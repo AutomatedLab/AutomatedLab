@@ -17,7 +17,7 @@ Add-LabMachineDefinition -Name SQL01 -Roles SQLServer2017
 If you need a little more control, simply use the role properties. The following example only installs the engine and tools:
 
 ```powershell
-$role = Get-LabMachineRoleDefinition -Role SQLServer2017 -RoleProperties @{Features = 'SQL,Tools'}
+$role = Get-LabMachineRoleDefinition -Role SQLServer2017 -Properties @{Features = 'SQL,Tools'}
 
 Add-LabMachineDefinition -Name SQL01 -Roles $role
 ```
