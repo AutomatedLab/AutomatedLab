@@ -169,27 +169,27 @@ Set-PSFConfig -Module 'AutomatedLab' -Name RequiredAzModules -Value @(
     # Syntax: Name, MinimumVersion, RequiredVersion
     @{
         Name = 'Az.Accounts'
-        MinimumVersion = '2.7.1'
+        MinimumVersion = '2.7.6'
     }
     @{
         Name = 'Az.Storage'
-        MinimumVersion = '4.1.1'
+        MinimumVersion = '4.5.0'
     }
     @{
         Name = 'Az.Compute'
-        MinimumVersion = '4.17.1'
+        MinimumVersion = '4.26.0'
     }
     @{
         Name = 'Az.Network'
-        MinimumVersion = '4.14.0'
+        MinimumVersion = '4.16.1'
     }
     @{
         Name = 'Az.Resources'
-        MinimumVersion = '5.2.0'
+        MinimumVersion = '5.6.0'
     }
     @{
         Name = 'Az.Websites'
-        MinimumVersion = '2.8.3'
+        MinimumVersion = '2.11.1'
     }
     @{
         Name = 'Az.Security'
