@@ -36,6 +36,13 @@ function New-LabPSSession
         #Due to a problem in Windows 10 not being able to reach VMs from the host
         if (-not ($IsLinux -or $IsMacOs)) { netsh.exe interface ip delete arpcache | Out-Null }
         $testPortTimeout = (Get-LabConfigurationItem -Name Timeout_TestPortInSeconds) * 1000
+
+        $jitTs = Get-LabConfigurationItem AzureJitTimestamp
+        if ((Get-LabConfigurationItem -Name AzureEnableJit) -and $lab.DefaultVirtualizationEngine -eq 'Azure' -and (-not $jitTs -or ((Get-Date) -ge $jitTs)) )
+        {
+            # Either JIT has not been requested, or current date exceeds timestamp
+            Request-LabAzureJitAccess
+        }
     }
 
     process
@@ -858,6 +865,13 @@ function New-LabCimSession
 
         #Due to a problem in Windows 10 not being able to reach VMs from the host
         $testPortTimeout = (Get-LabConfigurationItem -Name Timeout_TestPortInSeconds) * 1000
+
+        $jitTs = Get-LabConfigurationItem -Name AzureJitTimestamp
+        if ((Get-LabConfigurationItem -Name AzureEnableJit) -and $lab.DefaultVirtualizationEngine -eq 'Azure' -and (-not $jitTs -or ((Get-Date) -ge $jitTs)) )
+        {
+            # Either JIT has not been requested, or current date exceeds timestamp
+            Request-LabAzureJitAccess
+        }
     }
 
     process

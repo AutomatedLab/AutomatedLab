@@ -4,6 +4,8 @@
 
 ### Enhancements
 
+- New cmdlets Request-LabAzureJitAccess and Enable-LabAzureJitAccess to configure JIT access to Azure VMs, ports 22,3389,5985
+
 ### Bugs
 
 ## 5.42.0 (2022-05-05)
