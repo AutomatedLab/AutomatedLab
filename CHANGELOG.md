@@ -3,6 +3,12 @@
 ## Unreleased (yyyy-MM-dd)
 
 ### Enhancements
+
+### Bugs
+
+## 5.42.0 (2022-05-05)
+
+### Enhancements
 - Added auto-completer for parameter 'SnapshotName'.
 - Added support for files in a folder copy in Copy-LabFileItem.
 - 'Invoke-LabDscConfiguration' accepts parameters for DSC configuration now.
