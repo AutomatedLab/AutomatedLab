@@ -16,6 +16,7 @@
   - Does not include prompts that can be turned off like Enable-LabHostRemoting -Force
 - Updated docs
 - Disks now also support PartitionStyle parameter
+- Fixing issue with Hyper-V where network adapter MAC address went missing, breaking cmdlets like Repair-LWHyperVNetworkConfig
 
 ### Bugs
 - Fixing issue with Get-LabAzureAvailableRoleSize by filtering earlier.
