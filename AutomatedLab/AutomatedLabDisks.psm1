@@ -282,6 +282,7 @@ function New-LabVHDX
                 Label = $disk.Label
                 UseLargeFRS = $disk.UseLargeFRS
                 AllocationUnitSize = $disk.AllocationUnitSize
+                PartitionStyle = $disk.PartitionStyle
             }
             if ($disk.DriveLetter)
             {

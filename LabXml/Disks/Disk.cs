@@ -18,6 +18,8 @@
 
         public char DriveLetter { get; set; }
 
+        public PartitionStyle PartitionStyle {get; set;}
+
         // Specifically used on Azure to properly assign drive letters and partition/format
         public int Lun { get; set; }
 
