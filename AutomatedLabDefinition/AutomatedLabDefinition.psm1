@@ -1766,6 +1766,9 @@ function Add-LabDiskDefinition
 
         [long]$AllocationUnitSize = 4KB,
 
+        [ValidateSet('MBR','GPT')]
+        $PartitionStyle = 'GPT',
+
         [switch]$SkipInitialize,
 
         [switch]$PassThru
@@ -1799,6 +1802,7 @@ function Add-LabDiskDefinition
     $disk.AllocationUnitSize = $AllocationUnitSize
     $disk.UseLargeFRS = $UseLargeFRS
     $disk.DriveLetter = $DriveLetter
+    $disk.PartitionStyle = $PartitionStyle
     $disk.Label = if ($Label)
     {
         $Label

@@ -15,6 +15,7 @@
 - Adding hidden setting DoNotPrompt as an attempt to not prompt.
   - Does not include prompts that can be turned off like Enable-LabHostRemoting -Force
 - Updated docs
+- Disks now also support PartitionStyle parameter
 - Fixing issue with Hyper-V where network adapter MAC address went missing, breaking cmdlets like Repair-LWHyperVNetworkConfig
 
 ### Bugs

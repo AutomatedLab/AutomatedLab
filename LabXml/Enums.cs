@@ -10,6 +10,12 @@ namespace AutomatedLab
         Client = 2
     }
 
+    public enum PartitionStyle
+    {
+        MBR,
+        GPT
+    }
+
     public enum VirtualizationHost
     {
         HyperV = 1,

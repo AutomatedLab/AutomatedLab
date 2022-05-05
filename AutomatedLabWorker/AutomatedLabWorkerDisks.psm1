@@ -226,6 +226,8 @@ function New-LWVHDX
 
         [long]$AllocationUnitSize,
 
+        [string]$PartitionStyle,
+
         [switch]$SkipInitialize
     )
 
@@ -265,7 +267,7 @@ function New-LWVHDX
         $formatParams.NewFileSystemLabel = $Label
     }
 
-    $mountedVhd | Initialize-Disk
+    $mountedVhd | Initialize-Disk -PartitionStyle $PartitionStyle
     $mountedVhd | New-Partition -UseMaximumSize -AssignDriveLetter |
     Format-Volume @formatParams |
     Out-Null

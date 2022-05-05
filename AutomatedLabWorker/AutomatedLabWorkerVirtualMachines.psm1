@@ -553,9 +553,10 @@ function New-LWHypervVM
                 $file.Decrypt()
             }
         }
+
         Copy-Item -Path "$tempPath\*" -Destination "$vhdVolume\Windows" -Recurse
 
-        Remove-Item -Path $tempPath -Recurse
+        Remove-Item -Path $tempPath -Recurse -ErrorAction SilentlyContinue
 
         Write-PSFMessage '...done'
 
