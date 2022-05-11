@@ -771,10 +771,10 @@ function Get-LWHypervVM
     $isCluster = (Get-Command -Name Get-Cluster -ErrorAction SilentlyContinue) -and (Get-Cluster -ErrorAction SilentlyContinue)
     if ($Name.Count -gt 0 -and -not $vm -and $isCluster)
     {
-        Get-ClusterGroup | Where-Object -Property GroupType -eq 'VirtualMachine' | Get-VM
+        $ClusteredVMs = Get-ClusterGroup | Where-Object -Property GroupType -eq 'VirtualMachine' | Get-VM 
     }
 
-    if (-not $vm -and -not $DisableClusterCheck -and $isCluster -and (Get-ClusterGroup @param))
+    if ($ClusteredVMs.Name -like "$Name" -and -not $vm -and -not $DisableClusterCheck -and $isCluster -and (Get-ClusterGroup @param))
     {
         $vm = Get-VM @param -CimSession (Get-ClusterGroup @param).OwnerNode.Name
     }
