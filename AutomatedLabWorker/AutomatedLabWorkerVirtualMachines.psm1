@@ -1562,7 +1562,7 @@ function Mount-LWIsoImage
                 $vm = Get-LWHypervVM -Name $machine.ResourceName
                 if ($machine.OperatingSystem.Version -ge '6.2')
                 {
-                    $drive = $vm | Add-VMDvdDrive -Path $IsoPath -ErrorAction Stop -Passthru
+                    $drive = $vm | Add-VMDvdDrive -Path $IsoPath -ErrorAction Stop -Passthru -AllowUnverifiedPaths
                 }
                 else
                 {
@@ -1570,7 +1570,7 @@ function Mount-LWIsoImage
                     {
                         throw "No DVD drive exist for machine '$machine'. Machine is generation 1 and DVD drive needs to be crate in advance (during creation of the machine). Cannot continue."
                     }
-                    $drive = $vm | Set-VMDvdDrive -Path $IsoPath -ErrorAction Stop -Passthru
+                    $drive = $vm | Set-VMDvdDrive -Path $IsoPath -ErrorAction Stop -Passthru -AllowUnverifiedPaths
                 }
 
                 Start-Sleep -Seconds $delayBeforeCheck[$delayIndex]
