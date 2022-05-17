@@ -14,8 +14,8 @@ Adds Azure subscription data to lab
 
 ```
 Add-LabAzureSubscription [[-SubscriptionName] <String>] [-SubscriptionId <Guid>]
- [[-DefaultLocationName] <String>] [[-DefaultStorageAccountName] <String>]
- [[-DefaultResourceGroupName] <String>] [-AutoShutdownTime <TimeSpan>] [-AutoShutdownTimeZone <String>]
+ [[-DefaultLocationName] <String>] [[-DefaultResourceGroupName] <String>]
+  [-AutoShutdownTime <TimeSpan>] [-AutoShutdownTimeZone <String>]
  [-PassThru] [-AllowBastionHost] [<CommonParameters>]
 ```
 
@@ -62,21 +62,6 @@ Aliases:
 
 Required: False
 Position: 2
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -DefaultStorageAccountName
-The default storage account to choose
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 3
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

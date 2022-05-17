@@ -34,6 +34,7 @@
 - DelayBetweenComputers was ignored
 - Fixed lab location. Sometimes the 'Lab.xml' was stored in 'C:\ProgramData\AutomatedLab' directly.
 - Removing unsupported kickstart parameter for old CentOS versions
+- Removing unused DefaultStorageAccount-Cmdlets
 
 ## 5.41.0 (2022-01-31)
 

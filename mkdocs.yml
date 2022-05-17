@@ -177,7 +177,6 @@ nav:
     - Get-LabAzureCertificate: AutomatedLab/en-us/Get-LabAzureCertificate.md
     - Get-LabAzureDefaultLocation: AutomatedLab/en-us/Get-LabAzureDefaultLocation.md
     - Get-LabAzureDefaultResourceGroup: AutomatedLab/en-us/Get-LabAzureDefaultResourceGroup.md
-    - Get-LabAzureDefaultStorageAccount: AutomatedLab/en-us/Get-LabAzureDefaultStorageAccount.md
     - Get-LabAzureLabSourcesContent: AutomatedLab/en-us/Get-LabAzureLabSourcesContent.md
     - Get-LabAzureLabSourcesStorage: AutomatedLab/en-us/Get-LabAzureLabSourcesStorage.md
     - Get-LabAzureLocation: AutomatedLab/en-us/Get-LabAzureLocation.md
@@ -281,7 +280,6 @@ nav:
     - Restore-LabVMSnapshot: AutomatedLab/en-us/Restore-LabVMSnapshot.md
     - Save-LabVM: AutomatedLab/en-us/Save-LabVM.md
     - Set-LabAzureDefaultLocation: AutomatedLab/en-us/Set-LabAzureDefaultLocation.md
-    - Set-LabAzureDefaultStorageAccount: AutomatedLab/en-us/Set-LabAzureDefaultStorageAccount.md
     - Set-LabAzureWebAppContent: AutomatedLab/en-us/Set-LabAzureWebAppContent.md
     - Set-LabDefaultOperatingSystem: AutomatedLab/en-us/Set-LabDefaultOperatingSystem.md
     - Set-LabDefaultVirtualizationEngine: AutomatedLab/en-us/Set-LabDefaultVirtualizationEngine.md
