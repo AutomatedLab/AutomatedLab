@@ -164,31 +164,36 @@ Set-PSFConfig -Module 'AutomatedLab' -Name LabSourcesMaxFileSizeMb -Value 50 -In
 Set-PSFConfig -Module 'AutomatedLab' -Name AutoSyncLabSources -Value $false -Initialize -Validation bool -Description 'Toggle auto-sync of Azure lab sources in Azure labs'
 Set-PSFConfig -Module 'AutomatedLab' -Name LabSourcesSyncIntervalDays -Value 60 -Initialize -Validation integerpositive -Description 'Interval in days for lab sources auto-sync'
 Set-PSFConfig -Module 'AutomatedLab' -Name AzureDiskSkus -Value @('Standard_LRS', 'Premium_LRS', 'StandardSSD_LRS') # 'UltraSSD_LRS' is not allowed!
+Set-PSFConfig -Module 'AutomatedLab' -Name AzureEnableJit -Value $false -Initialize -Validation bool -Description 'Enable this setting to have AutomatedLab configure ports 22, 3389 and 5986 for JIT access. Can be done manually with Enable-LabAzureJitAccess and requested (after enabling) with Request-LabAzureJitAccess'
 Set-PSFConfig -Module 'AutomatedLab' -Name RequiredAzModules -Value @(
     # Syntax: Name, MinimumVersion, RequiredVersion
     @{
         Name = 'Az.Accounts'
-        MinimumVersion = '2.7.1'
+        MinimumVersion = '2.7.6'
     }
     @{
         Name = 'Az.Storage'
-        MinimumVersion = '4.1.1'
+        MinimumVersion = '4.5.0'
     }
     @{
         Name = 'Az.Compute'
-        MinimumVersion = '4.17.1'
+        MinimumVersion = '4.26.0'
     }
     @{
         Name = 'Az.Network'
-        MinimumVersion = '4.14.0'
+        MinimumVersion = '4.16.1'
     }
     @{
         Name = 'Az.Resources'
-        MinimumVersion = '5.2.0'
+        MinimumVersion = '5.6.0'
     }
     @{
         Name = 'Az.Websites'
-        MinimumVersion = '2.8.3'
+        MinimumVersion = '2.11.1'
+    }
+    @{
+        Name = 'Az.Security'
+        MinimumVersion = '1.2.0'
     }
  ) -Initialize -Description 'Required Az modules'
 

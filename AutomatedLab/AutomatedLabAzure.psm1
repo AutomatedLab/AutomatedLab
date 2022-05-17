@@ -29,7 +29,7 @@ function Test-LabAzureModuleAvailability
     
     if ($modulesMissing.Count -gt 0)
     {
-        $missingString = $modulesMissing.ForEach({"$($_.Name), Minimum: $($_.MinimumVersion) or required: $($_.RequiredVersion)"})
+        $missingString = $modulesMissing.ForEach({ "$($_.Name), Minimum: $($_.MinimumVersion) or required: $($_.RequiredVersion)" })
         Write-PSFMessage -Level Error -Message "Missing Az modules: $missingString"
     }
 
@@ -206,7 +206,7 @@ function Add-LabAzureSubscription
     #select default subscription subscription
     $selectedSubscription = if (-not $SubscriptionName -and -not $SubscriptionId)
     {
-         $AzureRmProfile.Subscription
+        $AzureRmProfile.Subscription
     }
     elseif ($SubscriptionName)
     {
@@ -310,7 +310,7 @@ function Add-LabAzureSubscription
     {
         Write-ScreenInfo -Message "Querying available vm sizes for Azure location '$DefaultLocationName' (using cache)" -Type Info
         $defaultSizes = (Get-LabAzureDefaultLocation).VirtualMachineRoleSizes
-        $roleSizes = $global:cacheAzureRoleSizes | Where-Object { $_.InstanceSize -in $defaultSizes}
+        $roleSizes = $global:cacheAzureRoleSizes | Where-Object { $_.InstanceSize -in $defaultSizes }
     }
     else
     {
@@ -334,7 +334,8 @@ function Add-LabAzureSubscription
     try
     {
         Write-PSFMessage -Message 'Get last ISO update time'
-        if ($IsLinux -or $IsMacOs) {
+        if ($IsLinux -or $IsMacOs)
+        {
             $timestamps = $type::Import((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/Timestamps.xml'))
         }
         else
@@ -607,7 +608,7 @@ function Get-LabAzureLocation
 
                 try
                 {
-                    (Test-Port -ComputerName $testUrl -Port 443 -Count 4 -ErrorAction Stop| Measure-Object -Property ResponseTime -Average).Average
+                    (Test-Port -ComputerName $testUrl -Port 443 -Count 4 -ErrorAction Stop | Measure-Object -Property ResponseTime -Average).Average
                 }
                 catch
                 {
@@ -621,7 +622,7 @@ function Get-LabAzureLocation
         foreach ($job in $jobs)
         {
             $result = Receive-Job -Keep -Job $job
-            ($azureLocations | Where-Object {$_.DisplayName -eq $job.Name}).Latency = $result
+            ($azureLocations | Where-Object { $_.DisplayName -eq $job.Name }).Latency = $result
         }
         $jobs | Remove-Job
 
@@ -682,7 +683,7 @@ function Set-LabAzureDefaultLocation
         return
     }
 
-    $script:lab.AzureSettings.DefaultLocation = $script:lab.AzureSettings.Locations | Where-Object {$_.DisplayName -eq $Name -or $_.Location -eq $Name}
+    $script:lab.AzureSettings.DefaultLocation = $script:lab.AzureSettings.Locations | Where-Object { $_.DisplayName -eq $Name -or $_.Location -eq $Name }
 
     Write-LogFunctionExit
 }
@@ -1275,7 +1276,7 @@ function Get-LabAzureLabSourcesContent
     $params = @{
         StorageContext = $azureShare
     }
-    if ($Path) {$params.Path = $Path}
+    if ($Path) { $params.Path = $Path }
 
     $content = Get-LabAzureLabSourcesContentRecursive @params
 
@@ -1366,15 +1367,15 @@ function Test-LabAzureSubscription
 
 function Get-LabAzureAvailableRoleSize
 {
-    [CmdletBinding(DefaultParameterSetName='DisplayName')]
+    [CmdletBinding(DefaultParameterSetName = 'DisplayName')]
     param
     (
-        [Parameter(Mandatory, ParameterSetName='DisplayName')]
+        [Parameter(Mandatory, ParameterSetName = 'DisplayName')]
         [Alias('Location')]
         [string]
         $DisplayName,
 
-        [Parameter(Mandatory, ParameterSetName='Name')]
+        [Parameter(Mandatory, ParameterSetName = 'Name')]
         [string]
         $LocationName
     )
@@ -1386,7 +1387,7 @@ function Get-LabAzureAvailableRoleSize
         [void] (Connect-AzAccount -UseDeviceAuthentication -WarningAction SilentlyContinue)
     }
 
-    $azLocation = Get-AzLocation | Where-Object {$_.DisplayName -eq $DisplayName -or $_.Location -eq $LocationName}
+    $azLocation = Get-AzLocation | Where-Object { $_.DisplayName -eq $DisplayName -or $_.Location -eq $LocationName }
     if (-not $azLocation)
     {
         Write-ScreenInfo -Type Error -Message "No location found matching DisplayName '$DisplayName' or Name '$LocationName'"
@@ -1401,15 +1402,15 @@ function Get-LabAzureAvailableRoleSize
 
 function Get-LabAzureAvailableSku
 {
-    [CmdletBinding(DefaultParameterSetName='DisplayName')]
+    [CmdletBinding(DefaultParameterSetName = 'DisplayName')]
     param
     (
-        [Parameter(Mandatory, ParameterSetName='DisplayName')]
+        [Parameter(Mandatory, ParameterSetName = 'DisplayName')]
         [Alias('Location')]
         [string]
         $DisplayName,
 
-        [Parameter(Mandatory, ParameterSetName='Name')]
+        [Parameter(Mandatory, ParameterSetName = 'Name')]
         [string]
         $LocationName
     )
@@ -1417,7 +1418,7 @@ function Get-LabAzureAvailableSku
     Test-LabHostConnected -Throw -Quiet
 
     # Server
-    $azLocation = Get-AzLocation | Where-Object {$_.DisplayName -eq $DisplayName -or $_.Location -eq $LocationName}
+    $azLocation = Get-AzLocation | Where-Object { $_.DisplayName -eq $DisplayName -or $_.Location -eq $LocationName }
     if (-not $azLocation)
     {
         Write-ScreenInfo -Type Error -Message "No location found matching DisplayName '$DisplayName' or Name '$LocationName'"
@@ -1480,4 +1481,119 @@ function Get-LabAzureAvailableSku
     Where-Object Offer -eq 'MicrosoftSharePointServer' |
     Group-Object -Property Skus, Offer |
     ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
+}
+
+function Enable-LabAzureJitAccess
+{
+    [CmdletBinding()]
+    param 
+    (
+        [timespan]
+        $MaximumAccessRequestDuration = '05:00:00',
+
+        [switch]
+        $PassThru
+    )
+
+    $vms = Get-LWAzureVm
+    $lab = Get-Lab
+    
+    $parameters = @{
+        Location          = $lab.AzureSettings.DefaultLocation.Location
+        Name              = 'AutomatedLabJIT'
+        ResourceGroupName = $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName
+    }
+
+    if (Get-AzJitNetworkAccessPolicy @parameters -ErrorAction SilentlyContinue)
+    {
+        Write-ScreenInfo -Type Verbose -Message 'JIT policy already configured'
+        return
+    }
+
+    $weirdTimestampFormat = [System.Xml.XmlConvert]::ToString($MaximumAccessRequestDuration)
+
+    $vmPolicies = foreach ($vm in $vms)
+    {
+        @{
+            id    = $vm.Id
+            ports = @{
+                number                     = 22;
+                protocol                   = "*";
+                allowedSourceAddressPrefix = @("*");
+                maxRequestAccessDuration   = $weirdTimestampFormat
+            },
+            @{
+                number                     = 3389;
+                protocol                   = "*";
+                allowedSourceAddressPrefix = @("*");
+                maxRequestAccessDuration   = $weirdTimestampFormat
+            },
+            @{
+                number                     = 5985;
+                protocol                   = "*";
+                allowedSourceAddressPrefix = @("*");
+                maxRequestAccessDuration   = $weirdTimestampFormat
+            }
+        }
+    }
+
+    $policy = Set-AzJitNetworkAccessPolicy -Kind "Basic" @parameters -VirtualMachine $vmPolicies
+    while ($policy.ProvisioningState -ne 'Succeeded')
+    {
+        $policy = Get-AzJitNetworkAccessPolicy @parameters
+    }
+
+    if ($PassThru) { $policy }
+}
+
+function Request-LabAzureJitAccess
+{
+    [CmdletBinding()]
+    param
+    (
+        [string[]]
+        $ComputerName,
+
+        # Local end time, will be converted to UTC for request
+        [timespan]
+        $Duration = '04:45:00'
+    )
+
+    $lab = Get-Lab
+
+    $parameters = @{
+        Location          = $lab.AzureSettings.DefaultLocation.Location
+        Name              = 'AutomatedLabJIT'
+        ResourceGroupName = $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName
+    }
+
+    $policy = Get-AzJitNetworkAccessPolicy @parameters -ErrorAction SilentlyContinue
+    if (-not $policy) { $policy = Enable-LabAzureJitAccess -MaximumAccessRequestDuration $Duration.Add('00:05:00') -PassThru }
+    $nodes = if ($ComputerName.Count -eq 0) { Get-LabVm } else { Get-LabVm -ComputerName $ComputerName }
+    $vms = Get-LWAzureVm -ComputerName $nodes.ResourceName
+    $end = (Get-Date).Add($Duration)
+    $utcEnd = $end.ToUniversalTime().ToString('u')
+
+    $jitRequests = foreach ($vm in $vms)
+    {
+        @{
+            id    = $vm.Id
+            ports = @{
+                number                     = 22;
+                endTimeUtc                 = $utcEnd
+                allowedSourceAddressPrefix = @('*')
+            }, @{
+                number                     = 3389;
+                endTimeUtc                 = $utcEnd
+                allowedSourceAddressPrefix = @('*')
+            }, @{
+                number                     = 5985;
+                endTimeUtc                 = $utcEnd
+                allowedSourceAddressPrefix = @('*')
+            }
+        }
+    }
+
+    Set-PSFConfig -Module AutomatedLab -Name AzureJitTimestamp -Value $end -Validation datetime -Hidden
+    $null = Start-AzJitNetworkAccessPolicy -ResourceId $policy.Id -VirtualMachine $jitRequests
 }

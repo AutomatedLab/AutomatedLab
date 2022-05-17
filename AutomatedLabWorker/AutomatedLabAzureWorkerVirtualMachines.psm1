@@ -2483,6 +2483,41 @@ function Get-LWAzureVmSnapshot
 }
 #endregion
 
+#region Get-LWAzureVm
+function Get-LWAzureVm
+{
+    [CmdletBinding()]
+    param (
+        [Parameter()]
+        [string[]]$ComputerName
+    )
+
+    Test-LabHostConnected -Throw -Quiet
+
+    #required to suporess verbose messages, warnings and errors
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
+    Write-LogFunctionEntry
+
+    $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
+
+    $result = @{ }
+    $azureVms = Get-AzVM -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -ErrorAction SilentlyContinue
+    if (-not $azureVms)
+    {
+        Start-Sleep -Seconds 2
+        $azureVms = Get-AzVM -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -ErrorAction SilentlyContinue
+        if (-not $azureVms)
+        {
+            throw 'Get-AzVM did not return anything, stopping lab deployment. Code will be added to handle this error soon'
+        }
+    }
+
+    if ($ComputerName.Count -eq 0) {return $azureVms}
+    $azureVms | Where-Object Name -in $ComputerName
+}
+#endregion
+
 #region Autoshutdown
 function Get-LWAzureAutoShutdown
 {

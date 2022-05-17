@@ -48,7 +48,7 @@ for:
       - provider: GitHub
         description: "This is an automated deployment"
         auth_token:
-          secure: 0gI2mQ864yW9/wSMzuKz4vqrHZ8hOEWcLdxTxvcH/U13he2WSmRyNIxN7Rebersx # your encrypted token from GitHub
+          secure: HsE6rIUR/bsL7wBhrBgfFf3HFDkiqASb96bKgW34XOZVjLUYVIq/yFAVs1a5Ydxy # your encrypted token from GitHub
         artifact: alinstaller
         draft: false
         force_update: true
@@ -63,7 +63,7 @@ for:
       - provider: GitHub
         description: "This is an automated deployment"
         auth_token:
-          secure: 0gI2mQ864yW9/wSMzuKz4vqrHZ8hOEWcLdxTxvcH/U13he2WSmRyNIxN7Rebersx # your encrypted token from GitHub
+          secure: HsE6rIUR/bsL7wBhrBgfFf3HFDkiqASb96bKgW34XOZVjLUYVIq/yFAVs1a5Ydxy # your encrypted token from GitHub
         artifact: aldebianpackage
         draft: false
         force_update: true
@@ -73,7 +73,7 @@ for:
       - provider: GitHub
         description: "This is an automated deployment"
         auth_token:
-          secure: 0gI2mQ864yW9/wSMzuKz4vqrHZ8hOEWcLdxTxvcH/U13he2WSmRyNIxN7Rebersx # your encrypted token from GitHub
+          secure: HsE6rIUR/bsL7wBhrBgfFf3HFDkiqASb96bKgW34XOZVjLUYVIq/yFAVs1a5Ydxy # your encrypted token from GitHub
         artifact: alrpmpackage
         draft: false
         force_update: true

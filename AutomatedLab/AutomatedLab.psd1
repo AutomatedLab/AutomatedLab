@@ -255,7 +255,10 @@
         'New-LabCimSession',
         'Get-LabCimSession',
         'Remove-LabCimSession',
-        'Enable-LabInternalRouting'
+        'Enable-LabInternalRouting',
+        'Request-LabAzureJitAccess',
+        'Enable-LabAzureJitAccess',
+        'Get-LWAzureVm'
     )
 
     AliasesToExport        = @(
