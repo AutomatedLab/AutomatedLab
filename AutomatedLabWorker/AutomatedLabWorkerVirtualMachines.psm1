@@ -818,12 +818,14 @@ function Remove-LWHypervVM
     }
 
     Write-PSFMessage "Removing VM '$($Name)'"
-    $vm | Remove-VM -Force
-
     $doNotAddToCluster = Get-LabConfigurationItem -Name DoNotAddVmsToCluster -Default $false
     if (-not $doNotAddToCluster -and (Get-Command -Name Get-Cluster -ErrorAction SilentlyContinue) -and (Get-Cluster -ErrorAction SilentlyContinue))
     {
-        $null = Get-ClusterGroup -Name $machine.ResourceName | Remove-ClusterGroup -RemoveResources -Force
+        $null = Get-ClusterGroup -Name $vm.Name | Remove-ClusterGroup -RemoveResources -Force
+    }
+    else
+    {
+        $vm | Remove-VM -Force
     }
 
     Write-PSFMessage "Removing VM files for '$($Name)'"
