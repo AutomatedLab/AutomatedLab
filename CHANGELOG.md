@@ -8,7 +8,8 @@
 
 ### Bugs
 
-- Fixed issue with cluster roles not being cleaned up properly
+- Fixed issue with cluster roles not being cleaned up properly (thanks @Trentent !)
+- Fixed issue with Get-LWHyperVVm and clusters (thanks @Trentent !)
 
 ## 5.42.0 (2022-05-05)
 
