@@ -235,12 +235,13 @@ function New-LWHypervVM
     {
         Add-UnattendedSynchronousCommand "mkdir -p /home/$($Machine.InstallationUser.UserName)/.ssh" -Description 'SSH'
         Add-UnattendedSynchronousCommand "mkdir -p /.ssh" -Description 'SSH'
-        Add-UnattendedSynchronousCommand "echo `"$($Machine.SshPublicKey)`" > /home/$($Machine.InstallationUser.UserName)/.ssh" -Description 'SSH'
-        Add-UnattendedSynchronousCommand "echo `"$($Machine.SshPublicKey)`" > /.ssh" -Description 'SSH'
+        Add-UnattendedSynchronousCommand "echo `"$($Machine.SshPublicKey)`" > /home/$($Machine.InstallationUser.UserName)/.ssh/authorized_keys" -Description 'SSH'
+        Add-UnattendedSynchronousCommand "echo `"$($Machine.SshPublicKey)`" > /.ssh/authorized_keys" -Description 'SSH'
         Add-UnattendedSynchronousCommand "chmod 700 /home/$($Machine.InstallationUser.UserName)/.ssh && chmod 600 /home/$($Machine.InstallationUser.UserName)/.ssh/authorized_keys" -Description 'SSH'
         Add-UnattendedSynchronousCommand "chmod 700 /.ssh && chmod 600 /.ssh/authorized_keys" -Description 'SSH'
         Add-UnattendedSynchronousCommand "chown -R $($Machine.InstallationUser.UserName):$($Machine.InstallationUser.UserName) /home/$($Machine.InstallationUser.UserName)/.ssh" -Description 'SSH'
         Add-UnattendedSynchronousCommand "chown -R root:root /.ssh" -Description 'SSH'
+        Add-UnattendedSynchronousCommand "sed -i 's|[#]*PubkeyAuthentication yes|PubkeyAuthentication yes|g' /etc/ssh/sshd_config" -Default 'PowerShell is so much better.'
     }
 
     if ($Machine.Roles.Name -contains 'RootDC' -or
@@ -285,7 +286,7 @@ function New-LWHypervVM
                 if (-not [string]::IsNullOrEmpty($Machine.SshPublicKey))
                 {
                     Add-UnattendedSynchronousCommand "mkdir -p /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh" -Description 'SSH'
-                    Add-UnattendedSynchronousCommand "echo `"$($Machine.SshPublicKey)`" > /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh" -Description 'SSH'
+                    Add-UnattendedSynchronousCommand "echo `"$($Machine.SshPublicKey)`" > /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/authorized_keys" -Description 'SSH'
                     Add-UnattendedSynchronousCommand "chmod 700 /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh && chmod 600 /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/authorized_keys" -Description 'SSH'
                     Add-UnattendedSynchronousCommand "chown -R $($Machine.InstallationUser.UserName)@$($Machine.DomainName):$($Machine.InstallationUser.UserName)@$($Machine.DomainName) /home/$($Machine.InstallationUser.UserName)@$($Machine.DomainName)/.ssh" -Description 'SSH'
                 }
