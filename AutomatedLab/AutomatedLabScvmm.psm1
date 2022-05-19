@@ -36,7 +36,6 @@ function Install-LabScvmm
     }
     $setupCommandLineServer = '/server /i /f C:\Server.ini /VmmServiceDomain {0} /VmmServiceUserName {1} /VmmServiceUserPassword {2} /SqlDBAdminDomain {0} /SqlDBAdminName {1} /SqlDBAdminPassword {2} /IACCEPTSCEULA'
 
-    #TODO ROlle aufteilen, Console braucht keine Komponenten, nur Konsole!
     $lab = Get-Lab
     # Prerequisites, all
     $all = Get-LabVM -Role SCVMM | Where-Object SkipDeployment -eq $false
@@ -98,10 +97,11 @@ function Install-ScvmmServer
 
     Install-LabSoftwarePackage -LocalPath C:\ADKOffline\adksetup.exe -ComputerName $Computer -CommandLine '/quiet /installpath C:\ADK'
     Install-LabSoftwarePackage -LocalPath C:\ADKPEOffline\adkwinpesetup.exe -ComputerName $Computer -CommandLine '/quiet /installpath C:\ADK'
+    Install-LabWindowsFeature -ComputerName $Computer -FeatureName RSAT-Clustering -IncludeAllSubFeature
     Restart-LabVM -ComputerName $Computer -Wait
 
     # Server, includes console
-    $jobs = foreach ($vm in (Get-LabVM -Role SCVMM))
+    $jobs = foreach ($vm in $Computer)
     {
         $iniServer = $iniContentServer.Clone()
         $role = $vm.Roles | Where-Object Name -in Scvmm2016, Scvmm2019
@@ -149,21 +149,19 @@ function Install-ScvmmServer
             if (-not $ouExists) { New-ADObject -Name $name -Path $path -Type Container -ProtectedFromAccidentalDeletion $true }
         } -ArgumentList $iniServer.TopContainerName
 
-        if (-not ([Convert]::ToBoolean($role.Properties['SkipServer'])))
-        {
-            $scvmmIso = Mount-LabIsoImage -ComputerName $vm -IsoPath ($lab.Sources.ISOs | Where-Object { $_.Name -eq $role.Name }).Path -SupressOutput -PassThru
-            $domainCredential = $vm.GetCredential((Get-Lab))
-            $commandLine = $setupCommandLineServer -f $vm.DomainName, $domainCredential.UserName.Replace("$($vm.DomainName)\", ''), $domainCredential.GetNetworkCredential().Password
+        $scvmmIso = Mount-LabIsoImage -ComputerName $vm -IsoPath ($lab.Sources.ISOs | Where-Object { $_.Name -eq $role.Name }).Path -SupressOutput -PassThru
+        $domainCredential = $vm.GetCredential((Get-Lab))
+        $commandLine = $setupCommandLineServer -f $vm.DomainName, $domainCredential.UserName.Replace("$($vm.DomainName)\", ''), $domainCredential.GetNetworkCredential().Password
 
-            Invoke-LabCommand -ComputerName $vm -Variable (Get-Variable iniServer, scvmmIso) -ActivityName 'Extracting SCVMM Server' -ScriptBlock {
-                $setup = Get-ChildItem -Path $scvmmIso.DriveLetter -Filter *.exe | Select-Object -First 1
-                Start-Process -FilePath $setup.FullName -ArgumentList '/VERYSILENT', '/DIR=C:\SCVMM' -Wait
-                '[OPTIONS]' | Set-Content C:\Server.ini
-                $iniServer.GetEnumerator() | ForEach-Object { "$($_.Key) = $($_.Value)" | Add-Content C:\Server.ini }
-            }
-            Install-LabSoftwarePackage -ComputerName $vm -LocalPath C:\SCVMM\setup.exe -CommandLine $commandLine -AsJob -PassThru -UseShellExecute -Timeout 20
+        Invoke-LabCommand -ComputerName $vm -Variable (Get-Variable iniServer, scvmmIso, commandLine) -ActivityName 'Extracting SCVMM Server' -ScriptBlock {
+            $setup = Get-ChildItem -Path $scvmmIso.DriveLetter -Filter *.exe | Select-Object -First 1
+            Start-Process -FilePath $setup.FullName -ArgumentList '/VERYSILENT', '/DIR=C:\SCVMM' -Wait
+            '[OPTIONS]' | Set-Content C:\Server.ini
+            $iniServer.GetEnumerator() | ForEach-Object { "$($_.Key) = $($_.Value)" | Add-Content C:\Server.ini }
+            "C:\SCVMM\setup.exe $commandline" | Set-Content C:\DeployDebug\VmmSetup.cmd
         }
-    }
+        Install-LabSoftwarePackage -ComputerName $vm -LocalPath C:\SCVMM\setup.exe -CommandLine $commandLine -AsJob -PassThru -UseShellExecute -Timeout 20
+     }
 
     if ($jobs) { Wait-LWLabJob -Job $jobs }
 
@@ -171,18 +169,19 @@ function Install-ScvmmServer
     Remove-LabPSSession
     Dismount-LabIsoImage -ComputerName (Get-LabVm -Role SCVMM) -SupressOutput
     Invoke-LabCommand -ComputerName (Get-LabVm -Role SCVMM) -ScriptBlock {        
-        $installer = Get-Process -Name SetupVM -ErrorAction SilentlyContinue
+        $installer = Get-Process -Name Setup,SetupVM -ErrorAction SilentlyContinue
         if ($installer)
         {
             $installer.WaitForExit((New-TimeSpan -Minutes 20).TotalMilliseconds)
         }
+
+        robocopy (Join-Path -Path $env:ProgramData VMMLogs) "C:\DeployDebug\VMMLogs" /S /E
     }
 
     # Onboard Hyper-V servers
-    foreach ($vm in (Get-LabVM -Role SCVMM))
+    foreach ($vm in $Computer)
     {
         $role = $vm.Roles | Where-Object Name -in Scvmm2016, Scvmm2019
-        if ([Convert]::ToBoolean($role.Properties['SkipServer'])) { continue }
 
         if ($role.Properties.ContainsKey('ConnectHyperVRoleVms') -or $role.Properties.ContainsKey('ConnectClusters'))
         {
