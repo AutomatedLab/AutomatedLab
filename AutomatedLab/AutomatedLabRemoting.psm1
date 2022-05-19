@@ -74,6 +74,7 @@ function New-LabPSSession
         foreach ($m in $Machine)
         {
             $machineRetries = $Retries
+            $connectionName = $m.Name
 
             if ($Credential)
             {
@@ -127,6 +128,7 @@ function New-LabPSSession
                 }
 
                 $param.Add('ComputerName', $m.AzureConnectionInfo.DnsName)
+                $connectionName = $m.AzureConnectionInfo.DnsName
                 Write-PSFMessage "Azure DNS name for machine '$m' is '$($m.AzureConnectionInfo.DnsName)'"
                 $param.Add('Port', $m.AzureConnectionInfo.Port)
                 if ($UseSSL)
@@ -153,11 +155,13 @@ function New-LabPSSession
                 {
                     Write-PSFMessage "Connecting to machine '$m' using the IP address '$name'"
                     $param.Add('ComputerName', $name)
+                    $connectionName = $name
                 }
                 else
                 {
                     Write-PSFMessage "Connecting to machine '$m' using the DNS name '$m'"
                     $param.Add('ComputerName', $m)
+                    $connectionName = $m.Name
                 }
                 $param.Add('Port', 5985)
             }
@@ -169,8 +173,10 @@ function New-LabPSSession
             if (((Get-Command New-PSSession).Parameters.Values.Name -contains 'HostName') -and $m.OperatingSystemType -eq 'Linux' -and -not [string]::IsNullOrWhiteSpace($m.SshPublicKeyPath))
             {
                 $param.Clear()
-                $param['HostName'] = $m.ComputerName
+                $param['HostName'] = $m.Name
                 $param['KeyFilePath'] = $m.SshPublicKeyPath
+                $param['Port'] = 22
+                $connectionName = $m.Name
             }
             elseif ($m.OperatingSystemType -eq 'Linux')
             {
@@ -186,11 +192,11 @@ function New-LabPSSession
                 $param['Authentication'] = 'Negotiate'
             }
 
-            Write-PSFMessage ("Creating a new PSSession to machine '{0}:{1}' (UserName='{2}', Password='{3}', DoNotUseCredSsp='{4}')" -f $param.ComputerName, $param.Port, $cred.UserName, $cred.GetNetworkCredential().Password, $DoNotUseCredSsp)
+            Write-PSFMessage ("Creating a new PSSession to machine '{0}:{1}' (UserName='{2}', Password='{3}', DoNotUseCredSsp='{4}')" -f $connectionName, $param.Port, $cred.UserName, $cred.GetNetworkCredential().Password, $DoNotUseCredSsp)
 
             #session reuse. If there is a session to the machine available, return it, otherwise create a new session
             $internalSession = Get-PSSession | Where-Object {
-                $_.ComputerName -eq $param.ComputerName -and
+                ($_.ComputerName -eq $param.ComputerName -or $_.ComputerName -eq $param.HostName) -and
                 $_.Runspace.ConnectionInfo.Port -eq $param.Port -and
                 $_.Availability -eq 'Available' -and
                 $_.Runspace.ConnectionInfo.AuthenticationMechanism -eq $param.Authentication -and
@@ -233,8 +239,8 @@ function New-LabPSSession
             {
                 if (-not ($IsLinux -or $IsMacOs)) { netsh.exe interface ip delete arpcache | Out-Null }
 
-                Write-PSFMessage "Testing port $($param.Port) on computer '$($param.ComputerName)'"
-                $portTest = Test-Port -ComputerName $param.ComputerName -Port $param.Port -TCP -TcpTimeout $testPortTimeout
+                Write-PSFMessage "Testing port $($param.Port) on computer '$connectionName'"
+                $portTest = Test-Port -ComputerName $connectionName -Port $param.Port -TCP -TcpTimeout $testPortTimeout
                 if ($portTest.Open)
                 {
                     Write-PSFMessage 'Port was open, trying to create the session'
@@ -244,7 +250,7 @@ function New-LabPSSession
                     # Additional check here for availability/state due to issues with Azure IaaS
                     if ($internalSession -and $internalSession.Availability -eq 'Available' -and $internalSession.State -eq 'Opened')
                     {
-                        Write-PSFMessage "Session to computer '$($param.ComputerName)' created"
+                        Write-PSFMessage "Session to computer '$connectionName' created"
                         $sessions += $internalSession
 
                         if ((Get-LabVM -ComputerName $internalSession.LabMachineName).HostType -eq 'Azure')
@@ -255,7 +261,7 @@ function New-LabPSSession
                     }
                     else
                     {
-                        Write-PSFMessage -Message "Session to computer '$($param.ComputerName)' could not be created, waiting $Interval seconds ($machineRetries retries). The error was: '$($sessionError[0].FullyQualifiedErrorId)'"
+                        Write-PSFMessage -Message "Session to computer '$connectionName' could not be created, waiting $Interval seconds ($machineRetries retries). The error was: '$($sessionError[0].FullyQualifiedErrorId)'"
                         if ($Retries -gt 1) { Start-Sleep -Seconds $Interval }
                         $machineRetries--
                     }

@@ -241,7 +241,7 @@ function New-LWHypervVM
         Add-UnattendedSynchronousCommand "chmod 700 /.ssh && chmod 600 /.ssh/authorized_keys" -Description 'SSH'
         Add-UnattendedSynchronousCommand "chown -R $($Machine.InstallationUser.UserName):$($Machine.InstallationUser.UserName) /home/$($Machine.InstallationUser.UserName)/.ssh" -Description 'SSH'
         Add-UnattendedSynchronousCommand "chown -R root:root /.ssh" -Description 'SSH'
-        Add-UnattendedSynchronousCommand "sed -i 's|[#]*PubkeyAuthentication yes|PubkeyAuthentication yes|g' /etc/ssh/sshd_config" -Default 'PowerShell is so much better.'
+        Add-UnattendedSynchronousCommand "sed -i 's|[#]*PubkeyAuthentication yes|PubkeyAuthentication yes|g' /etc/ssh/sshd_config" -Description 'PowerShell is so much better.'
     }
 
     if ($Machine.Roles.Name -contains 'RootDC' -or

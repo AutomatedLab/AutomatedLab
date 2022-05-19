@@ -29,7 +29,7 @@ function Export-UnattendedKickstartFile
             {
                 if (-not $line) { continue }
                 if ($line -like '*gpgcheck*') {$line = 'gpgcheck=0'}
-                'echo "{0}" >> /etc/yum.repos.d/microsoft.repo' -f $line.Replace('https://packages.microsoft.com/rhel/7/prod', 'https://packages.microsoft.com/rhel/$VERSION/prod')
+                'echo "{0}" >> /etc/yum.repos.d/microsoft.repo' -f $line
             }
             'echo "{0} packages.microsoft.com" >> /etc/hosts' -f $repoIp
             'yum install -y openssl'
