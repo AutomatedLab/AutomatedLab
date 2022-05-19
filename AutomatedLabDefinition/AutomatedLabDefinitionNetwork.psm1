@@ -372,7 +372,7 @@ function New-LabNetworkAdapterDefinition
     if ((Get-LabDefinition).DefaultVirtualizationEngine -eq 'HyperV' -and -not $MacAddress)
     {
         $macAddressPrefix = Get-LabConfigurationItem -Name MacAddressPrefix
-        [string[]]$macAddressesInUse = (Get-LWHypverVVM | Get-VMNetworkAdapter).MacAddress
+        [string[]]$macAddressesInUse = (Get-LWHyperVVM | Get-VMNetworkAdapter).MacAddress
         $macAddressesInUse += (Get-LabMachineDefinition -All).NetworkAdapters.MacAddress
         if (-not $script:macIdx) { $script:macIdx = 0 }
         $prefixlength = 12 - $macAddressPrefix.Length
