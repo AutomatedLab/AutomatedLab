@@ -162,16 +162,26 @@ function New-LabPSSession
                 $param.Add('Port', 5985)
             }
 
-            if ($m.OperatingSystemType -eq 'Linux')
+            if (((Get-Command New-PSSession).Parameters.Values.Name -notcontains 'HostName') -and $m.OperatingSystemType -eq 'Linux' -and -not [string]::IsNullOrWhiteSpace($m.SshPublicKeyPath))
+            {
+                Write-ScreenInfo -Type Warning -Message "SSH Transport is not available from within Windows PowerShell."
+            }
+            if (((Get-Command New-PSSession).Parameters.Values.Name -contains 'HostName') -and $m.OperatingSystemType -eq 'Linux' -and -not [string]::IsNullOrWhiteSpace($m.SshPublicKeyPath))
+            {
+                $param.Clear()
+                $param['HostName'] = $m.ComputerName
+                $param['KeyFilePath'] = $m.SshPublicKeyPath
+            }
+            elseif ($m.OperatingSystemType -eq 'Linux')
             {
                 Set-Item -Path WSMan:\localhost\Client\Auth\Basic -Value $true -Force
                 $param['SessionOption'] = New-PSSessionOption -SkipCACheck -SkipCNCheck -SkipRevocationCheck
                 $param['UseSSL'] = $true
-                $param['Port'] = 5986
+                $param['Port'] = if ($m.HostType -eq 'Azure') {$m.AzureConnectionInfo.HttpsPort} else {5986}
                 $param['Authentication'] = 'Basic'
             }
 
-            if ($IsLinux -or $IsMacOs)
+            if (($IsLinux -or $IsMacOs) -and [string]::IsNullOrWhiteSpace($m.SshPublicKeyPath))
             {
                 $param['Authentication'] = 'Negotiate'
             }

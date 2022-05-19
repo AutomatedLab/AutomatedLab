@@ -85,6 +85,8 @@ namespace AutomatedLab
         public int LoadBalancerWinrmHttpsPort { get; set; }
 
         public List<string> LinuxPackageGroup { get; set; }
+        public string SshPublicKey {get; set; }
+        public string SshPublicKeyPath {get; set; }
 
         public OperatingSystemType OperatingSystemType
         {

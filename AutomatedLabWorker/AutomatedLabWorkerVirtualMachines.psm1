@@ -230,6 +230,18 @@ function New-LWHypervVM
     }
 
     Set-UnattendedFirewallState -State $Machine.EnableWindowsFirewall
+    
+    if ($Machine.OperatingSystemType -eq 'Linux' -and -not [string]::IsNullOrEmpty($Machine.SshPublicKey))
+    {
+        Add-UnattendedSynchronousCommand "mkdir -p /home/$($Machine.InstallationUser.UserName)/.ssh" -Description 'SSH'
+        Add-UnattendedSynchronousCommand "mkdir -p /.ssh" -Description 'SSH'
+        Add-UnattendedSynchronousCommand "echo `"$($Machine.SshPublicKey)`" > /home/$($Machine.InstallationUser.UserName)/.ssh" -Description 'SSH'
+        Add-UnattendedSynchronousCommand "echo `"$($Machine.SshPublicKey)`" > /.ssh" -Description 'SSH'
+        Add-UnattendedSynchronousCommand "chmod 700 /home/$($Machine.InstallationUser.UserName)/.ssh && chmod 600 /home/$($Machine.InstallationUser.UserName)/.ssh/authorized_keys" -Description 'SSH'
+        Add-UnattendedSynchronousCommand "chmod 700 /.ssh && chmod 600 /.ssh/authorized_keys" -Description 'SSH'
+        Add-UnattendedSynchronousCommand "chown -R $($Machine.InstallationUser.UserName):$($Machine.InstallationUser.UserName) /home/$($Machine.InstallationUser.UserName)/.ssh" -Description 'SSH'
+        Add-UnattendedSynchronousCommand "chown -R root:root /.ssh" -Description 'SSH'
+    }
 
     if ($Machine.Roles.Name -contains 'RootDC' -or
         $Machine.Roles.Name -contains 'FirstChildDC' -or
@@ -269,6 +281,14 @@ function New-LWHypervVM
                 }
 
                 Add-UnattendedSynchronousCommand @sudoParam
+
+                if (-not [string]::IsNullOrEmpty($Machine.SshPublicKey))
+                {
+                    Add-UnattendedSynchronousCommand "mkdir -p /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh" -Description 'SSH'
+                    Add-UnattendedSynchronousCommand "echo `"$($Machine.SshPublicKey)`" > /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh" -Description 'SSH'
+                    Add-UnattendedSynchronousCommand "chmod 700 /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh && chmod 600 /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/authorized_keys" -Description 'SSH'
+                    Add-UnattendedSynchronousCommand "chown -R $($Machine.InstallationUser.UserName)@$($Machine.DomainName):$($Machine.InstallationUser.UserName)@$($Machine.DomainName) /home/$($Machine.InstallationUser.UserName)@$($Machine.DomainName)/.ssh" -Description 'SSH'
+                }
             }
         }
     }
@@ -346,7 +366,7 @@ function New-LWHypervVM
         if ($Machine.LinuxType -eq 'RedHat')
         {
             Export-UnattendedFile -Path (Join-Path -Path $drive.RootDirectory -ChildPath ks.cfg)
-            Export-UnattendedFile -Path (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath "ks_$($Machine.Name).cfg")
+            Copy-Item -Path (Join-Path -Path $drive.RootDirectory -ChildPath ks.cfg) -Destination (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath "ks_$($Machine.Name).cfg")
         }
         else
         {

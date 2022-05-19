@@ -17,20 +17,21 @@ function Export-UnattendedKickstartFile
         ([System.Net.Dns]::GetHostByName('packages.microsoft.com').AddressList | Where-Object AddressFamily -eq InterNetwork).IPAddressToString
     }
     catch
-    { }
+    { '104.214.230.139' }
 
     $repoContent = (Invoke-RestMethod -Method Get -Uri 'https://packages.microsoft.com/config/rhel/7/prod.repo' -ErrorAction SilentlyContinue) -split "`n"
     if ($script:un[$idx + 1] -ne '#start')
     {
         @(
             '#start'
-            'echo "nameserver 192.168.2.121" >> /etc/resolv.conf'
-            'systemctl restart NetworkManager'
+            '. /etc/os-release'
             foreach ($line in $repoContent)
             {
                 if (-not $line) { continue }
-                'echo "{0}" >> /etc/yum.repos.d/microsoft.repo' -f $line.Replace('packages.microsoft.com', $repoIp)
+                if ($line -like '*gpgcheck*') {$line = 'gpgcheck=0'}
+                'echo "{0}" >> /etc/yum.repos.d/microsoft.repo' -f $line.Replace('https://packages.microsoft.com/rhel/7/prod', 'https://packages.microsoft.com/rhel/$VERSION/prod')
             }
+            'echo "{0} packages.microsoft.com" >> /etc/hosts' -f $repoIp
             'yum install -y openssl'
             'yum install -y omi'
             'yum install -y powershell'

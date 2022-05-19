@@ -513,11 +513,11 @@ function Import-Lab
                     {
                         $Path = Join-Path -Path (Get-Lab).Sources.UnattendedXml.Value -ChildPath 'Unattended2012.xml'
                     }
-                    if ($this.OperatingSystemType -eq 'Linux' -and $this.LinuxType -eq 'RedHat' -and $this.Version -lt 8.0)
+                    if ($this.OperatingSystemType -eq 'Linux' -and $this.LinuxType -eq 'RedHat' -and $this.OperatingSystem.Version -lt 8.0)
                     {
                         $Path = Join-Path -Path (Get-Lab).Sources.UnattendedXml.Value -ChildPath ks_defaultLegacy.cfg
                     }
-                    if ($this.OperatingSystemType -eq 'Linux' -and $this.LinuxType -eq 'RedHat' -and $this.Version -ge 8.0)
+                    if ($this.OperatingSystemType -eq 'Linux' -and $this.LinuxType -eq 'RedHat' -and $this.OperatingSystem.Version -ge 8.0)
                     {
                         $Path = Join-Path -Path (Get-Lab).Sources.UnattendedXml.Value -ChildPath ks_default.cfg
                     }
