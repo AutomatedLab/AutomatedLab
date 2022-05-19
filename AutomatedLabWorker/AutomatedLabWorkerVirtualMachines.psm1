@@ -65,7 +65,8 @@ function New-LWHypervVM
     $macAddressesInUse += (Get-LabVm -IncludeLinux).NetworkAdapters.MacAddress
 
     $macIdx = 0
-    while ("$macAddressPrefix{0:X6}" -f $macIdx -in $macAddressesInUse) { $macIdx++ }
+    $prefixlength = 12 - $macAddressPrefix.Length
+    while ("$macAddressPrefix{0:X$prefixLength}" -f $macIdx -in $macAddressesInUse) { $macIdx++ }
 
     $type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.NetworkAdapter
     $adapters = New-Object $type
@@ -97,7 +98,8 @@ function New-LWHypervVM
     {
         $ipSettings = @{}
 
-        $mac = "$macAddressPrefix{0:X6}" -f $macIdx++
+        $prefixlength = 12 - $macAddressPrefix.Length
+        $mac = "$macAddressPrefix{0:X$prefixLength}" -f $macIdx++
 
         if (-not $adapter.MacAddress)
         {
