@@ -768,15 +768,13 @@ function Get-LWHypervVM
 
     $vm = Get-VM @param
 
-    $isCluster = (Get-Command -Name Get-Cluster -ErrorAction SilentlyContinue) -and (Get-Cluster -ErrorAction SilentlyContinue)
-    if ($Name.Count -gt 0 -and -not $vm -and $isCluster)
+    if (-not $DisableClusterCheck -and ((Get-Command -Name Get-Cluster -ErrorAction SilentlyContinue) -and (Get-Cluster -ErrorAction SilentlyContinue)))
     {
-        $ClusteredVMs = Get-ClusterGroup | Where-Object -Property GroupType -eq 'VirtualMachine' | Get-VM 
-    }
-
-    if ($ClusteredVMs.Name -like "$Name" -and -not $vm -and -not $DisableClusterCheck -and $isCluster -and (Get-ClusterGroup @param))
-    {
-        $vm = Get-VM @param -CimSession (Get-ClusterGroup @param).OwnerNode.Name
+        $vm = Get-ClusterGroup | Where-Object -Property GroupType -eq 'VirtualMachine' | Get-VM
+        if ($Name.Count -gt 0)
+        {
+            $vm = $vm | Where Name -in $Name
+        }
     }
 
     if (-not $vm)
@@ -784,8 +782,9 @@ function Get-LWHypervVM
         Write-Error -Message "No virtual machine $Name found"
         return
     }
-
+    
     $vm
+
     Write-LogFunctionExit
 }
 
