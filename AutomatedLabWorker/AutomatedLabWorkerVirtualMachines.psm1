@@ -768,15 +768,13 @@ function Get-LWHypervVM
 
     $vm = Get-VM @param
 
-    $isCluster = (Get-Command -Name Get-Cluster -ErrorAction SilentlyContinue) -and (Get-Cluster -ErrorAction SilentlyContinue)
-    if ($Name.Count -gt 0 -and -not $vm -and $isCluster)
+    if (-not $DisableClusterCheck -and ((Get-Command -Name Get-Cluster -ErrorAction SilentlyContinue) -and (Get-Cluster -ErrorAction SilentlyContinue)))
     {
-        Get-ClusterGroup | Where-Object -Property GroupType -eq 'VirtualMachine' | Get-VM
-    }
-
-    if (-not $vm -and -not $DisableClusterCheck -and $isCluster -and (Get-ClusterGroup @param))
-    {
-        $vm = Get-VM @param -CimSession (Get-ClusterGroup @param).OwnerNode.Name
+        $vm = Get-ClusterGroup | Where-Object -Property GroupType -eq 'VirtualMachine' | Get-VM
+        if ($Name.Count -gt 0)
+        {
+            $vm = $vm | Where Name -in $Name
+        }
     }
 
     if (-not $vm)
@@ -784,8 +782,9 @@ function Get-LWHypervVM
         Write-Error -Message "No virtual machine $Name found"
         return
     }
-
+    
     $vm
+
     Write-LogFunctionExit
 }
 
@@ -821,11 +820,8 @@ function Remove-LWHypervVM
     $doNotAddToCluster = Get-LabConfigurationItem -Name DoNotAddVmsToCluster -Default $false
     if (-not $doNotAddToCluster -and (Get-Command -Name Get-Cluster -ErrorAction SilentlyContinue) -and (Get-Cluster -ErrorAction SilentlyContinue))
     {
-        $null = Get-ClusterGroup -Name $vm.Name | Remove-ClusterGroup -RemoveResources -Force
-    }
-    else
-    {
-        $vm | Remove-VM -Force
+        Write-PSFMessage "Removing Clustered Resource: $Name"
+        $null = Get-ClusterGroup -Name $Name | Remove-ClusterGroup -RemoveResources -Force
     }
 
     Write-PSFMessage "Removing VM files for '$($Name)'"
@@ -1565,7 +1561,7 @@ function Mount-LWIsoImage
                 $vm = Get-LWHypervVM -Name $machine.ResourceName
                 if ($machine.OperatingSystem.Version -ge '6.2')
                 {
-                    $drive = $vm | Add-VMDvdDrive -Path $IsoPath -ErrorAction Stop -Passthru
+                    $drive = $vm | Add-VMDvdDrive -Path $IsoPath -ErrorAction Stop -Passthru -AllowUnverifiedPaths
                 }
                 else
                 {
@@ -1573,7 +1569,7 @@ function Mount-LWIsoImage
                     {
                         throw "No DVD drive exist for machine '$machine'. Machine is generation 1 and DVD drive needs to be crate in advance (during creation of the machine). Cannot continue."
                     }
-                    $drive = $vm | Set-VMDvdDrive -Path $IsoPath -ErrorAction Stop -Passthru
+                    $drive = $vm | Set-VMDvdDrive -Path $IsoPath -ErrorAction Stop -Passthru -AllowUnverifiedPaths
                 }
 
                 Start-Sleep -Seconds $delayBeforeCheck[$delayIndex]
