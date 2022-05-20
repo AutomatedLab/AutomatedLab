@@ -741,6 +741,7 @@ function Install-Lab
         [switch]$StartRemainingMachines,
         [switch]$CreateCheckPoints,
         [switch]$InstallRdsCertificates,
+        [switch]$InstallSshKnownHosts,
         [switch]$PostDeploymentTests,
         [switch]$NoValidation,
         [int]$DelayBetweenComputers
@@ -1352,6 +1353,15 @@ function Install-Lab
         Write-ScreenInfo -Message 'Installing RDS certificates of lab machines' -TaskStart
         
         Install-LabRdsCertificate
+        
+        Write-ScreenInfo -Message 'Done' -TaskEnd
+    }
+
+    if ($InstallSshKnownHosts -or $performAll)
+    {
+        Write-ScreenInfo -Message "Adding lab machines to $home/.ssh/known_hosts" -TaskStart
+        
+        Install-LabSshKnownHost
         
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }

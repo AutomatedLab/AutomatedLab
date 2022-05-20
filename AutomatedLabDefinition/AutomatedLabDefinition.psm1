@@ -2020,7 +2020,7 @@ function Add-LabMachineDefinition
             Write-ScreenInfo -Type Warning -Message "SSH Transport is not available from within Windows PowerShell. Please use PowerShell 6+ if you want to use remoting-cmdlets."
         }
 
-        if (-not [string]::IsNullOrWhiteSpace($SshPublicKeyPath) -or -not [string]::IsNullOrWhiteSpace($SshPrivateKeyPath) -and -not ([string]::IsNullOrWhiteSpace($SshPublicKeyPath) -and [string]::IsNullOrWhiteSpace($SshPrivateKeyPath)))
+        if ((-not [string]::IsNullOrWhiteSpace($SshPublicKeyPath) -and [string]::IsNullOrWhiteSpace($SshPrivateKeyPath)) -or ([string]::IsNullOrWhiteSpace($SshPublicKeyPath) -and -not [string]::IsNullOrWhiteSpace($SshPrivateKeyPath)))
         {
             Write-ScreenInfo -Type Warning -Message "Both SshPublicKeyPath and SshPrivateKeyPath need to be used to successfully remote to Linux VMs"
         }

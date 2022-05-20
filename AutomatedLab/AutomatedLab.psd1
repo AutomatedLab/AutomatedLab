@@ -258,7 +258,9 @@
         'Enable-LabInternalRouting',
         'Request-LabAzureJitAccess',
         'Enable-LabAzureJitAccess',
-        'Get-LWAzureVm'
+        'Get-LWAzureVm',
+        'Install-LabSshKnownHost',
+        'UnInstall-LabSshKnownHost'
     )
 
     AliasesToExport        = @(

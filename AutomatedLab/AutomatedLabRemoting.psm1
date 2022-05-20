@@ -172,8 +172,12 @@ function New-LabPSSession
             }
             if (((Get-Command New-PSSession).Parameters.Values.Name -contains 'HostName') -and $m.OperatingSystemType -eq 'Linux' -and -not [string]::IsNullOrWhiteSpace($m.SshPrivateKeyPath))
             {
-                $param.Clear()
-                $param['HostName'] = $m.Name
+                $param['HostName'] = $param['ComputerName']
+                $param.Remove('ComputerName')
+                $param.Remove('PSSessionOption')
+                $param.Remove('Authentication')
+                $param.Remove('Credential')
+                $param.Remove('UseSsl')
                 $param['KeyFilePath'] = $m.SshPrivateKeyPath
                 $param['Port'] = 22
                 $param['UserName'] = $cred.UserName
@@ -245,6 +249,10 @@ function New-LabPSSession
                 if ($portTest.Open)
                 {
                     Write-PSFMessage 'Port was open, trying to create the session'
+                    if ($IsLinux -and $param.HostName -and -not (Get-Item -ErrorAction SilentlyContinue "$home/.ssh/known_hosts" | Select-String -Pattern $param.HostName.Replace('.','\.')))
+                    {
+                        Install-LabSshKnownHost # First connect
+                    }
                     $internalSession = New-PSSession @param -ErrorAction SilentlyContinue -ErrorVariable sessionError
                     $internalSession | Add-Member -Name LabMachineName -MemberType ScriptProperty -Value { $this.Name.Substring(0, $this.Name.IndexOf('_')) }
 
@@ -406,6 +414,15 @@ function Remove-LabPSSession
                 $param.Add('ComputerName', (Get-HostEntry -Hostname $m).IpAddress.IpAddressToString)
             }
             $param.Add('Port', 5985)
+        }
+        if ($m.OperatingSystemType -eq 'Linux')
+        {
+            $param['HostName'] = $param['ComputerName']
+            $param.Remove('ComputerName')
+            $param.Remove('PSSessionOption')
+            $param.Remove('Authentication')
+            $param.Remove('Credential')
+            $param.Remove('UseSsl')
         }
 
         Get-PSSession | Where-Object {
@@ -1263,6 +1280,63 @@ function Install-LabRdsCertificate
         Receive-File -SourceFilePath "C:\$($session.LabMachineName).cer" -DestinationFilePath $fPath -Session $session
         $null = Import-Certificate -FilePath $fPath -CertStoreLocation 'Cert:\LocalMachine\Root'
     }
+}
+#endregion
+
+#region Install-LabSshKnownHost
+function Install-LabSshKnownHost
+{
+    [CmdletBinding()]
+    param ( )
+
+    $lab = Get-Lab
+    if (-not $lab)
+    {
+        return
+    }
+
+    $machines = Get-LabVM -All -IncludeLinux | Where-Object -FilterScript { $_.OperatingSystemType -eq 'Linux' -and -not $_.SkipDeployment }
+    if (-not $machines)
+    {
+        return
+    }
+
+    foreach ($machine in $machines)
+    {
+        ssh-keyscan $machine.Name | Add-Content $home/.ssh/known_hosts
+        if ($machine.IpV4Address) {ssh-keyscan $machine.IpV4Address | Add-Content $home/.ssh/known_hosts}
+    }
+}
+#endregion
+
+#region UnInstall-LabSshKnownHost
+function UnInstall-LabSshKnownHost
+{
+    [CmdletBinding()]
+    param ( )
+
+    $lab = Get-Lab
+    if (-not $lab)
+    {
+        return
+    }
+
+    $machines = Get-LabVM -All -IncludeLinux | Where-Object -FilterScript { $_.OperatingSystemType -eq 'Linux' -and -not $_.SkipDeployment }
+    if (-not $machines)
+    {
+        return
+    }
+
+    $content = Get-Content -Path $home/.ssh/known_hosts
+    foreach ($machine in $machines)
+    {
+        $content = $content | Where {$_ -notmatch "$($machine.Name)\s.*"}
+        if ($machine.IpV4Address)
+        {
+            $content = $content | Where {$_ -notmatch "$($machine.Ipv4Address.Replace('.','\.'))\s.*"}
+        }
+    }
+    $content | Set-Content -Path $home/.ssh/known_hosts
 }
 #endregion
 
