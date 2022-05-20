@@ -87,6 +87,7 @@ namespace AutomatedLab
         public List<string> LinuxPackageGroup { get; set; }
         public string SshPublicKey {get; set; }
         public string SshPublicKeyPath {get; set; }
+        public string SshPrivateKeyPath {get; set; }
 
         public OperatingSystemType OperatingSystemType
         {

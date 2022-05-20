@@ -166,16 +166,17 @@ function New-LabPSSession
                 $param.Add('Port', 5985)
             }
 
-            if (((Get-Command New-PSSession).Parameters.Values.Name -notcontains 'HostName') -and $m.OperatingSystemType -eq 'Linux' -and -not [string]::IsNullOrWhiteSpace($m.SshPublicKeyPath))
+            if (((Get-Command New-PSSession).Parameters.Values.Name -notcontains 'HostName') -and $m.OperatingSystemType -eq 'Linux' -and -not [string]::IsNullOrWhiteSpace($m.SshPrivateKeyPath))
             {
                 Write-ScreenInfo -Type Warning -Message "SSH Transport is not available from within Windows PowerShell."
             }
-            if (((Get-Command New-PSSession).Parameters.Values.Name -contains 'HostName') -and $m.OperatingSystemType -eq 'Linux' -and -not [string]::IsNullOrWhiteSpace($m.SshPublicKeyPath))
+            if (((Get-Command New-PSSession).Parameters.Values.Name -contains 'HostName') -and $m.OperatingSystemType -eq 'Linux' -and -not [string]::IsNullOrWhiteSpace($m.SshPrivateKeyPath))
             {
                 $param.Clear()
                 $param['HostName'] = $m.Name
-                $param['KeyFilePath'] = $m.SshPublicKeyPath
+                $param['KeyFilePath'] = $m.SshPrivateKeyPath
                 $param['Port'] = 22
+                $param['UserName'] = $cred.UserName
                 $connectionName = $m.Name
             }
             elseif ($m.OperatingSystemType -eq 'Linux')
@@ -187,7 +188,7 @@ function New-LabPSSession
                 $param['Authentication'] = 'Basic'
             }
 
-            if (($IsLinux -or $IsMacOs) -and [string]::IsNullOrWhiteSpace($m.SshPublicKeyPath))
+            if (($IsLinux -or $IsMacOs) -and [string]::IsNullOrWhiteSpace($m.SshPrivateKeyPath))
             {
                 $param['Authentication'] = 'Negotiate'
             }

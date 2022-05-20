@@ -1939,7 +1939,9 @@ function Add-LabMachineDefinition
 
         [string[]]$SusePackage,
 
-        [string]$SshPublicKeyPath
+        [string]$SshPublicKeyPath,
+
+        [string]$SshPrivateKeyPath
     )
 
     begin
@@ -2018,6 +2020,11 @@ function Add-LabMachineDefinition
             Write-ScreenInfo -Type Warning -Message "SSH Transport is not available from within Windows PowerShell. Please use PowerShell 6+ if you want to use remoting-cmdlets."
         }
 
+        if (-not [string]::IsNullOrWhiteSpace($SshPublicKeyPath) -or -not [string]::IsNullOrWhiteSpace($SshPrivateKeyPath) -and -not ([string]::IsNullOrWhiteSpace($SshPublicKeyPath) -and [string]::IsNullOrWhiteSpace($SshPrivateKeyPath)))
+        {
+            Write-ScreenInfo -Type Warning -Message "Both SshPublicKeyPath and SshPrivateKeyPath need to be used to successfully remote to Linux VMs"
+        }
+
         if ($AzureProperties)
         {
             $illegalKeys = Compare-Object -ReferenceObject $azurePropertiesValidKeys -DifferenceObject ($AzureProperties.Keys | Sort-Object -Unique) |
@@ -2092,6 +2099,19 @@ function Add-LabMachineDefinition
         {
             $machine.SshPublicKeyPath = $SshPublicKeyPath
             $machine.SshPublicKey = Get-Content -Raw -Path $SshPublicKeyPath
+        }
+
+        if ($OperatingSystem.OperatingSystemType -eq 'Windows' -and $SshPrivateKeyPath)
+        {
+            Write-ScreenInfo -Message "SSH Keys are ignored on Windows for the time being. Why not contribute to AutomatedLab and add the configuration of an ssh server?"
+        }
+        elseif ($OperatingSystem.OperatingSystemType -eq 'Linux' -and $SshPrivateKeyPath -and -not (Test-Path -Path $SshPrivateKeyPath))
+        {
+            throw "$SshPrivateKeyPath does not exist. Rethink your decision."
+        }
+        elseif ($OperatingSystem.OperatingSystemType -eq 'Linux' -and $SshPrivateKeyPath)
+        {
+            $machine.SshPrivateKeyPath = $SshPrivateKeyPath
         }
 
         if ((Get-LabDefinition).DefaultVirtualizationEngine -and (-not $PSBoundParameters.ContainsKey('VirtualizationHost')))
