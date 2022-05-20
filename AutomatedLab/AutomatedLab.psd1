@@ -260,7 +260,8 @@
         'Enable-LabAzureJitAccess',
         'Get-LWAzureVm',
         'Install-LabSshKnownHost',
-        'UnInstall-LabSshKnownHost'
+        'UnInstall-LabSshKnownHost',
+        'Get-LabSshKnownHost'
     )
 
     AliasesToExport        = @(

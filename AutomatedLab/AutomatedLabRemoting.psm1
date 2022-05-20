@@ -401,23 +401,23 @@ function Remove-LabPSSession
         }
         elseif ($m.HostType -eq 'HyperV' -or $m.HostType -eq 'VMWare')
         {
-            if (Get-LabConfigurationItem -Name DoNotUseGetHostEntryInNewLabPSSession)
+            $doNotUseGetHostEntry = Get-LabConfigurationItem -Name DoNotUseGetHostEntryInNewLabPSSession
+            if (-not $doNotUseGetHostEntry)
             {
-                $param.Add('ComputerName', $m.Name)
+                $name = (Get-HostEntry -Hostname $m).IpAddress.IpAddressToString
             }
-            elseif (-not [string]::IsNullOrEmpty($m.FriendlyName) -or (Get-LabConfigurationItem -Name SkipHostFileModification))
+            elseif ($doNotUseGetHostEntry -or -not [string]::IsNullOrEmpty($m.FriendlyName) -or (Get-LabConfigurationItem -Name SkipHostFileModification))
             {
-                $param.Add('ComputerName', $m.IpV4Address)
+                $name = $m.IpV4Address
             }
-            else
-            {
-                $param.Add('ComputerName', (Get-HostEntry -Hostname $m).IpAddress.IpAddressToString)
-            }
-            $param.Add('Port', 5985)
+            $param['ComputerName'] = $name
+            $param['Port'] = 5985
         }
+
         if ($m.OperatingSystemType -eq 'Linux')
         {
             $param['HostName'] = $param['ComputerName']
+            $param['Port'] = 22
             $param.Remove('ComputerName')
             $param.Remove('PSSessionOption')
             $param.Remove('Authentication')
@@ -426,8 +426,8 @@ function Remove-LabPSSession
         }
 
         Get-PSSession | Where-Object {
-            $_.ComputerName -eq $param.ComputerName -and
-            $_.Runspace.ConnectionInfo.Port -eq $param.Port -and
+            (($_.ComputerName -eq $param.ComputerName) -or ($_.ComputerName -eq $param.HostName)) -and
+            ($_.Runspace.ConnectionInfo.Port -eq $param.Port -or ($param.HostName -and $_.Transport -eq 'SSH')) -and
         $_.Name -like "$($m)_*" }
     }
 
@@ -1280,6 +1280,18 @@ function Install-LabRdsCertificate
         Receive-File -SourceFilePath "C:\$($session.LabMachineName).cer" -DestinationFilePath $fPath -Session $session
         $null = Import-Certificate -FilePath $fPath -CertStoreLocation 'Cert:\LocalMachine\Root'
     }
+}
+#endregion
+
+#region Get-LabSshKnownHost
+function Get-LabSshKnownHost
+{
+    [CmdletBinding()]
+    param ()
+
+    if (-not (Test-Path -Path $home/.ssh/known_hosts)) { return }
+
+    Get-Content -Path $home/.ssh/known_hosts | ConvertFrom-String -Delimiter ' ' -PropertyNames ComputerName,Cipher,Fingerprint -ErrorAction SilentlyContinue
 }
 #endregion
 
