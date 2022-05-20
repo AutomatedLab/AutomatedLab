@@ -719,7 +719,11 @@ function Wait-LabVM
 
     end
     {
-        $sshHosts = (Get-LabSshKnownHost -ErrorAction SilentlyContinue).ComputerName
+        if ((Get-Command -ErrorAction SilentlyContinue -Name New-PSSession).Parameters.Values.Name -contains 'HostName' )
+        {
+            # Quicker than reading in the file on unsupported configurations
+            $sshHosts = (Get-LabSshKnownHost -ErrorAction SilentlyContinue).ComputerName
+        }
         $jobs = foreach ($vm in $vms)
         {
             $session = $null
