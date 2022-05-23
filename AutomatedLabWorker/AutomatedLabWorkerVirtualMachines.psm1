@@ -507,12 +507,12 @@ function New-LWHypervVM
             PassThru         = $true
         }
 
-        if ((Get-Command Add-VMNetworkAdapter).Parameters.Values.Name -contains 'DeviceNaming' -and $vm.Generation -eq 2 -and $Machine.OperatingSystem.Version -ge 10.0)
+        if (-not (Get-LabConfigurationItem -Name DisableDeviceNaming -Default $false) -and (Get-Command Add-VMNetworkAdapter).Parameters.Values.Name -contains 'DeviceNaming' -and $vm.Generation -eq 2 -and $Machine.OperatingSystem.Version -ge 10.0)
         {
-            $parameters['DeviceNaming']
+            $parameters['DeviceNaming'] = 'On'
         }
 
-        $newAdapter = Add-VMNetworkAdapter 
+        $newAdapter = Add-VMNetworkAdapter @parameters
 
         if (-not $adapter.AccessVLANID -eq 0) {
 
