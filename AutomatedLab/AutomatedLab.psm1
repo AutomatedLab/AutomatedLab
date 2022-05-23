@@ -867,11 +867,17 @@ function Install-Lab
             $hostFileAddedEntries = 0
             foreach ($machine in ($Script:data.Machines | Where-Object {[string]::IsNullOrEmpty($_.FriendlyName)}))
             {
-                if ($machine.Hosttype -eq 'HyperV' -and $machine.NetworkAdapters[0].Ipv4Address -and -not (Get-LabConfigurationItem -Name SkipHostFileModification))
+                if ($machine.HostType -ne 'HyperV' -or (Get-LabConfigurationItem -Name SkipHostFileModification)) { continue }
+                $address = ($machine.NetworkAdapters | Where-Object Default)[0].Ipv4Address
+                if (-not $address)
                 {
-                    $hostFileAddedEntries += Add-HostEntry -HostName $machine.Name -IpAddress $machine.IpV4Address -Section $Script:data.Name
-                    $hostFileAddedEntries += Add-HostEntry -HostName $machine.FQDN -IpAddress $machine.IpV4Address -Section $Script:data.Name
+                    $address = $machine.NetworkAdapters[0].Ipv4Address
                 }
+
+                if (-not $address) { continue }
+
+                $hostFileAddedEntries += Add-HostEntry -HostName $machine.Name -IpAddress $address -Section $Script:data.Name
+                $hostFileAddedEntries += Add-HostEntry -HostName $machine.FQDN -IpAddress $address -Section $Script:data.Name
             }
 
             if ($hostFileAddedEntries)
@@ -1378,7 +1384,7 @@ function Install-Lab
 
     if (-not $NoValidation -and ($performAll -or $PostDeploymentTests))
     {
-        if (Get-InstalledModule -Name Pester -MinimumVersion 5.0 -ErrorAction SilentlyContinue)
+        if ((Get-Module -ListAvailable -Name Pester -ErrorAction SilentlyContinue).Version -ge [version]'5.0')
         {    
             Write-ScreenInfo -Type Verbose -Message "Testing deployment with Pester"
             $result = Invoke-LabPester -Lab (Get-Lab) -Show Normal -PassThru

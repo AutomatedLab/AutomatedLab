@@ -13,6 +13,7 @@
 - Fixed issue with cluster roles not being cleaned up properly (thanks @Trentent !)
 - Fixed issue with Get-LWHyperVVm and clusters (thanks @Trentent !)
 - Fixing the (once again) updated kickstart file content - we now carry around three different flavors.
+- NIC order now preserved, specification of default NIC possible as well for connections
 
 ## 5.42.0 (2022-05-05)
 
