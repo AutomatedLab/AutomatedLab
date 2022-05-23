@@ -70,8 +70,7 @@ function New-LWHypervVM
 
     $type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.NetworkAdapter
     $adapters = New-Object $type
-    $Machine.NetworkAdapters | Where-Object { $_.Ipv4Address } | Sort-Object -Property { $_.Ipv4Address[0] } | ForEach-Object {$adapters.Add($_)}
-    $Machine.NetworkAdapters | Where-Object { -not $_.Ipv4Address } | ForEach-Object {$adapters.Add($_)}
+    $Machine.NetworkAdapters | ForEach-Object {$adapters.Add($_)}
 
     if ($Machine.IsDomainJoined)
     {
@@ -500,7 +499,20 @@ function New-LWHypervVM
     foreach ($adapter in $adapters)
     {
         #bind all network adapters to their designated switches, Repair-LWHypervNetworkConfig will change the binding order if necessary
-        $newAdapter = Add-VMNetworkAdapter -Name $adapter.VirtualSwitch.ResourceName -SwitchName $adapter.VirtualSwitch.ResourceName -StaticMacAddress $adapter.MacAddress -VMName $vm.Name -PassThru
+        $parameters = @{
+            Name             = $adapter.VirtualSwitch.ResourceName
+            SwitchName       = $adapter.VirtualSwitch.ResourceName
+            StaticMacAddress = $adapter.MacAddress
+            VMName           = $vm.Name
+            PassThru         = $true
+        }
+
+        if ((Get-Command Add-VMNetworkAdapter).Parameters.Values.Name -contains 'DeviceNaming' -and $vm.Generation -eq 2 -and $Machine.OperatingSystem.Version -ge 10.0)
+        {
+            $parameters['DeviceNaming']
+        }
+
+        $newAdapter = Add-VMNetworkAdapter 
 
         if (-not $adapter.AccessVLANID -eq 0) {
 
