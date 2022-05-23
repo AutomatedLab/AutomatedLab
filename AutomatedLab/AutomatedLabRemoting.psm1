@@ -74,6 +74,7 @@ function New-LabPSSession
         foreach ($m in $Machine)
         {
             $machineRetries = $Retries
+            $connectionName = $m.Name
 
             if ($Credential)
             {
@@ -127,6 +128,7 @@ function New-LabPSSession
                 }
 
                 $param.Add('ComputerName', $m.AzureConnectionInfo.DnsName)
+                $connectionName = $m.AzureConnectionInfo.DnsName
                 Write-PSFMessage "Azure DNS name for machine '$m' is '$($m.AzureConnectionInfo.DnsName)'"
                 $param.Add('Port', $m.AzureConnectionInfo.Port)
                 if ($UseSSL)
@@ -153,34 +155,53 @@ function New-LabPSSession
                 {
                     Write-PSFMessage "Connecting to machine '$m' using the IP address '$name'"
                     $param.Add('ComputerName', $name)
+                    $connectionName = $name
                 }
                 else
                 {
                     Write-PSFMessage "Connecting to machine '$m' using the DNS name '$m'"
                     $param.Add('ComputerName', $m)
+                    $connectionName = $m.Name
                 }
                 $param.Add('Port', 5985)
             }
 
-            if ($m.OperatingSystemType -eq 'Linux')
+            if (((Get-Command New-PSSession).Parameters.Values.Name -notcontains 'HostName') -and $m.OperatingSystemType -eq 'Linux' -and -not [string]::IsNullOrWhiteSpace($m.SshPrivateKeyPath))
+            {
+                Write-ScreenInfo -Type Warning -Message "SSH Transport is not available from within Windows PowerShell."
+            }
+            if (((Get-Command New-PSSession).Parameters.Values.Name -contains 'HostName') -and $m.OperatingSystemType -eq 'Linux' -and -not [string]::IsNullOrWhiteSpace($m.SshPrivateKeyPath))
+            {
+                $param['HostName'] = $param['ComputerName']
+                $param.Remove('ComputerName')
+                $param.Remove('PSSessionOption')
+                $param.Remove('Authentication')
+                $param.Remove('Credential')
+                $param.Remove('UseSsl')
+                $param['KeyFilePath'] = $m.SshPrivateKeyPath
+                $param['Port'] = 22
+                $param['UserName'] = $cred.UserName
+                $connectionName = $m.Name
+            }
+            elseif ($m.OperatingSystemType -eq 'Linux')
             {
                 Set-Item -Path WSMan:\localhost\Client\Auth\Basic -Value $true -Force
                 $param['SessionOption'] = New-PSSessionOption -SkipCACheck -SkipCNCheck -SkipRevocationCheck
                 $param['UseSSL'] = $true
-                $param['Port'] = 5986
+                $param['Port'] = if ($m.HostType -eq 'Azure') {$m.AzureConnectionInfo.HttpsPort} else {5986}
                 $param['Authentication'] = 'Basic'
             }
 
-            if ($IsLinux -or $IsMacOs)
+            if (($IsLinux -or $IsMacOs) -and [string]::IsNullOrWhiteSpace($m.SshPrivateKeyPath))
             {
                 $param['Authentication'] = 'Negotiate'
             }
 
-            Write-PSFMessage ("Creating a new PSSession to machine '{0}:{1}' (UserName='{2}', Password='{3}', DoNotUseCredSsp='{4}')" -f $param.ComputerName, $param.Port, $cred.UserName, $cred.GetNetworkCredential().Password, $DoNotUseCredSsp)
+            Write-PSFMessage ("Creating a new PSSession to machine '{0}:{1}' (UserName='{2}', Password='{3}', DoNotUseCredSsp='{4}')" -f $connectionName, $param.Port, $cred.UserName, $cred.GetNetworkCredential().Password, $DoNotUseCredSsp)
 
             #session reuse. If there is a session to the machine available, return it, otherwise create a new session
             $internalSession = Get-PSSession | Where-Object {
-                $_.ComputerName -eq $param.ComputerName -and
+                ($_.ComputerName -eq $param.ComputerName -or $_.ComputerName -eq $param.HostName) -and
                 $_.Runspace.ConnectionInfo.Port -eq $param.Port -and
                 $_.Availability -eq 'Available' -and
                 $_.Runspace.ConnectionInfo.AuthenticationMechanism -eq $param.Authentication -and
@@ -223,18 +244,22 @@ function New-LabPSSession
             {
                 if (-not ($IsLinux -or $IsMacOs)) { netsh.exe interface ip delete arpcache | Out-Null }
 
-                Write-PSFMessage "Testing port $($param.Port) on computer '$($param.ComputerName)'"
-                $portTest = Test-Port -ComputerName $param.ComputerName -Port $param.Port -TCP -TcpTimeout $testPortTimeout
+                Write-PSFMessage "Testing port $($param.Port) on computer '$connectionName'"
+                $portTest = Test-Port -ComputerName $connectionName -Port $param.Port -TCP -TcpTimeout $testPortTimeout
                 if ($portTest.Open)
                 {
                     Write-PSFMessage 'Port was open, trying to create the session'
+                    if ($IsLinux -and $param.HostName -and -not (Get-Item -ErrorAction SilentlyContinue "$home/.ssh/known_hosts" | Select-String -Pattern $param.HostName.Replace('.','\.')))
+                    {
+                        Install-LabSshKnownHost # First connect
+                    }
                     $internalSession = New-PSSession @param -ErrorAction SilentlyContinue -ErrorVariable sessionError
                     $internalSession | Add-Member -Name LabMachineName -MemberType ScriptProperty -Value { $this.Name.Substring(0, $this.Name.IndexOf('_')) }
 
                     # Additional check here for availability/state due to issues with Azure IaaS
                     if ($internalSession -and $internalSession.Availability -eq 'Available' -and $internalSession.State -eq 'Opened')
                     {
-                        Write-PSFMessage "Session to computer '$($param.ComputerName)' created"
+                        Write-PSFMessage "Session to computer '$connectionName' created"
                         $sessions += $internalSession
 
                         if ((Get-LabVM -ComputerName $internalSession.LabMachineName).HostType -eq 'Azure')
@@ -245,7 +270,7 @@ function New-LabPSSession
                     }
                     else
                     {
-                        Write-PSFMessage -Message "Session to computer '$($param.ComputerName)' could not be created, waiting $Interval seconds ($machineRetries retries). The error was: '$($sessionError[0].FullyQualifiedErrorId)'"
+                        Write-PSFMessage -Message "Session to computer '$connectionName' could not be created, waiting $Interval seconds ($machineRetries retries). The error was: '$($sessionError[0].FullyQualifiedErrorId)'"
                         if ($Retries -gt 1) { Start-Sleep -Seconds $Interval }
                         $machineRetries--
                     }
@@ -376,24 +401,33 @@ function Remove-LabPSSession
         }
         elseif ($m.HostType -eq 'HyperV' -or $m.HostType -eq 'VMWare')
         {
-            if (Get-LabConfigurationItem -Name DoNotUseGetHostEntryInNewLabPSSession)
+            $doNotUseGetHostEntry = Get-LabConfigurationItem -Name DoNotUseGetHostEntryInNewLabPSSession
+            if (-not $doNotUseGetHostEntry)
             {
-                $param.Add('ComputerName', $m.Name)
+                $name = (Get-HostEntry -Hostname $m).IpAddress.IpAddressToString
             }
-            elseif (-not [string]::IsNullOrEmpty($m.FriendlyName) -or (Get-LabConfigurationItem -Name SkipHostFileModification))
+            elseif ($doNotUseGetHostEntry -or -not [string]::IsNullOrEmpty($m.FriendlyName) -or (Get-LabConfigurationItem -Name SkipHostFileModification))
             {
-                $param.Add('ComputerName', $m.IpV4Address)
+                $name = $m.IpV4Address
             }
-            else
-            {
-                $param.Add('ComputerName', (Get-HostEntry -Hostname $m).IpAddress.IpAddressToString)
-            }
-            $param.Add('Port', 5985)
+            $param['ComputerName'] = $name
+            $param['Port'] = 5985
+        }
+
+        if ($m.OperatingSystemType -eq 'Linux')
+        {
+            $param['HostName'] = $param['ComputerName']
+            $param['Port'] = 22
+            $param.Remove('ComputerName')
+            $param.Remove('PSSessionOption')
+            $param.Remove('Authentication')
+            $param.Remove('Credential')
+            $param.Remove('UseSsl')
         }
 
         Get-PSSession | Where-Object {
-            $_.ComputerName -eq $param.ComputerName -and
-            $_.Runspace.ConnectionInfo.Port -eq $param.Port -and
+            (($_.ComputerName -eq $param.ComputerName) -or ($_.ComputerName -eq $param.HostName)) -and
+            ($_.Runspace.ConnectionInfo.Port -eq $param.Port -or ($param.HostName -and $_.Transport -eq 'SSH')) -and
         $_.Name -like "$($m)_*" }
     }
 
@@ -1246,6 +1280,75 @@ function Install-LabRdsCertificate
         Receive-File -SourceFilePath "C:\$($session.LabMachineName).cer" -DestinationFilePath $fPath -Session $session
         $null = Import-Certificate -FilePath $fPath -CertStoreLocation 'Cert:\LocalMachine\Root'
     }
+}
+#endregion
+
+#region Get-LabSshKnownHost
+function Get-LabSshKnownHost
+{
+    [CmdletBinding()]
+    param ()
+
+    if (-not (Test-Path -Path $home/.ssh/known_hosts)) { return }
+
+    Get-Content -Path $home/.ssh/known_hosts | ConvertFrom-String -Delimiter ' ' -PropertyNames ComputerName,Cipher,Fingerprint -ErrorAction SilentlyContinue
+}
+#endregion
+
+#region Install-LabSshKnownHost
+function Install-LabSshKnownHost
+{
+    [CmdletBinding()]
+    param ( )
+
+    $lab = Get-Lab
+    if (-not $lab)
+    {
+        return
+    }
+
+    $machines = Get-LabVM -All -IncludeLinux | Where-Object -FilterScript { $_.OperatingSystemType -eq 'Linux' -and -not $_.SkipDeployment }
+    if (-not $machines)
+    {
+        return
+    }
+
+    foreach ($machine in $machines)
+    {
+        ssh-keyscan $machine.Name | Add-Content $home/.ssh/known_hosts
+        if ($machine.IpV4Address) {ssh-keyscan $machine.IpV4Address | Add-Content $home/.ssh/known_hosts}
+    }
+}
+#endregion
+
+#region UnInstall-LabSshKnownHost
+function UnInstall-LabSshKnownHost
+{
+    [CmdletBinding()]
+    param ( )
+
+    $lab = Get-Lab
+    if (-not $lab)
+    {
+        return
+    }
+
+    $machines = Get-LabVM -All -IncludeLinux | Where-Object -FilterScript { $_.OperatingSystemType -eq 'Linux' -and -not $_.SkipDeployment }
+    if (-not $machines)
+    {
+        return
+    }
+
+    $content = Get-Content -Path $home/.ssh/known_hosts
+    foreach ($machine in $machines)
+    {
+        $content = $content | Where {$_ -notmatch "$($machine.Name)\s.*"}
+        if ($machine.IpV4Address)
+        {
+            $content = $content | Where {$_ -notmatch "$($machine.Ipv4Address.Replace('.','\.'))\s.*"}
+        }
+    }
+    $content | Set-Content -Path $home/.ssh/known_hosts
 }
 #endregion
 
