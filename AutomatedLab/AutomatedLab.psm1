@@ -876,8 +876,8 @@ function Install-Lab
 
                 if (-not $address) { continue }
 
-                $hostFileAddedEntries += Add-HostEntry -HostName $machine.Name -IpAddress $machine.IpV4Address -Section $Script:data.Name
-                $hostFileAddedEntries += Add-HostEntry -HostName $machine.FQDN -IpAddress $machine.IpV4Address -Section $Script:data.Name
+                $hostFileAddedEntries += Add-HostEntry -HostName $machine.Name -IpAddress $address -Section $Script:data.Name
+                $hostFileAddedEntries += Add-HostEntry -HostName $machine.FQDN -IpAddress $address -Section $Script:data.Name
             }
 
             if ($hostFileAddedEntries)
