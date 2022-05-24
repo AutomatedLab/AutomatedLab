@@ -11,6 +11,9 @@
 		[Parameter(Mandatory = $true)]
 		[string]$Password,
 
+		[Parameter()]
+		[string]$OrganizationalUnit,
+
         [switch]
         $IsKickstart,
 

@@ -1941,7 +1941,9 @@ function Add-LabMachineDefinition
 
         [string]$SshPublicKeyPath,
 
-        [string]$SshPrivateKeyPath
+        [string]$SshPrivateKeyPath,
+
+        [string]$OrganizationalUnit
     )
 
     begin
@@ -2085,6 +2087,7 @@ function Add-LabMachineDefinition
         $machine = New-Object AutomatedLab.Machine
         $machine.Name = $Name
         $machine.FriendlyName = $ResourceName
+        $machine.OrganizationalUnit = $OrganizationalUnit
         $script:machines.Add($machine)
 
         if ($OperatingSystem.OperatingSystemType -eq 'Windows' -and $SshPublicKeyPath)

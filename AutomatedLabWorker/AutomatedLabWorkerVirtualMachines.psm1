@@ -270,6 +270,7 @@ function New-LWHypervVM
                 Username = $domain.Administrator.UserName
                 Password = $domain.Administrator.Password
             }
+            if ($Machine.OrganizationalUnit) {$param['OrganizationalUnit'] = $machine.OrganizationalUnit}
             if ($Machine.OperatingSystemType -eq 'Linux')
             {
                 $parameters['IsKickstart'] = $Machine.LinuxType -eq 'RedHat'
@@ -865,10 +866,8 @@ function Remove-LWHypervVM
         Write-PSFMessage "Removing Clustered Resource: $Name"
         $null = Get-ClusterGroup -Name $Name | Remove-ClusterGroup -RemoveResources -Force
     }
-    else
-    {
-        $vm | Remove-VM -Force
-    }
+
+    $vm | Remove-VM -Force
 
     Write-PSFMessage "Removing VM files for '$($Name)'"
     Remove-Item -Path $vmPath -Force -Confirm:$false -Recurse

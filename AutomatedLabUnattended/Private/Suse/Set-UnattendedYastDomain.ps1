@@ -8,7 +8,10 @@
 		[string]$Username,
 
 		[Parameter(Mandatory = $true)]
-		[string]$Password
+		[string]$Password,
+
+		[Parameter()]
+		[string]$OrganizationalUnit
     )
 
 	$smbClientNode = $script:un.CreateElement('samba-client', $script:nsm.LookupNamespace('un'))

@@ -8,7 +8,10 @@
 		[string]$Username,
 
 		[Parameter(Mandatory = $true)]
-		[string]$Password
+		[string]$Password,
+
+		[Parameter()]
+		[string]$OrganizationalUnit
 	)
 
 	$idNode = $script:un |
@@ -27,6 +30,13 @@
 	$userNameNode.InnerText = $Username
 	$passwordNode = $script:un.CreateElement('Password')
 	$passwordNode.InnerText = $Password
+
+	if ($OrganizationalUnit)
+	{
+		$ouNode = $script:un.CreateElement('MachineObjectOU')
+		$ouNode.InnerText = $OrganizationalUnit
+		$null = $idNode.AppendChild($ouNode)
+	}
 
 	[Void]$credentialsNode.AppendChild($domainNode)
 	[Void]$credentialsNode.AppendChild($userNameNode)
