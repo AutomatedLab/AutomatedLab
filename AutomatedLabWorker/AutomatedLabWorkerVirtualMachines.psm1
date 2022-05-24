@@ -805,16 +805,19 @@ function Get-LWHypervVM
         $param['Name'] = $Name
     }
 
-    $vm = Get-VM @param
+    [object[]]$vm = Get-VM @param
 
     if (-not $DisableClusterCheck -and ((Get-Command -Name Get-Cluster -ErrorAction SilentlyContinue) -and (Get-Cluster -ErrorAction SilentlyContinue)))
     {
-        $vm = Get-ClusterGroup | Where-Object -Property GroupType -eq 'VirtualMachine' | Get-VM
+        $vm += Get-ClusterGroup | Where-Object -Property GroupType -eq 'VirtualMachine' | Get-VM
         if ($Name.Count -gt 0)
         {
-            $vm = $vm | Where Name -in $Name
+            $vm += $vm | Where Name -in $Name
         }
     }
+
+    # In case VM was in cluster and has now been added a second time
+    $vm = $vm | Sort-Object -Unique -Property Name
 
     if (-not $vm)
     {
