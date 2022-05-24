@@ -868,7 +868,8 @@ function Install-Lab
             foreach ($machine in ($Script:data.Machines | Where-Object {[string]::IsNullOrEmpty($_.FriendlyName)}))
             {
                 if ($machine.HostType -ne 'HyperV' -or (Get-LabConfigurationItem -Name SkipHostFileModification)) { continue }
-                $address = ($machine.NetworkAdapters | Where-Object Default)[0].Ipv4Address
+                $defaultNic = $machine.NetworkAdapters | Where-Object Default
+                $address = if ($defaultNic) {($defaultNic | Select-Object -First 1).Ipv4Address}
                 if (-not $address)
                 {
                     $address = $machine.NetworkAdapters[0].Ipv4Address
