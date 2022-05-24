@@ -8,7 +8,10 @@
 		[string]$Username,
 
 		[Parameter(Mandatory = $true)]
-		[string]$Password
+		[string]$Password,
+
+		[Parameter()]
+		[string]$OrganizationalUnit
     )
 
 	$script:un.Add(("realm join --one-time-password='{0}' {1}" -f $Password, $DomainName))
