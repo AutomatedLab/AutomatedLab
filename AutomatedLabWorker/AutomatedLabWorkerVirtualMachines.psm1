@@ -61,7 +61,7 @@ function New-LWHypervVM
 
     #region network adapter settings
     $macAddressPrefix = Get-LabConfigurationItem -Name MacAddressPrefix
-    $macAddressesInUse = @(Get-VM | Get-VMNetworkAdapter | Select-Object -ExpandProperty MacAddress)
+    $macAddressesInUse = @(Get-LWHypervVM | Get-VMNetworkAdapter | Select-Object -ExpandProperty MacAddress)
     $macAddressesInUse += (Get-LabVm -IncludeLinux).NetworkAdapters.MacAddress
 
     $macIdx = 0
@@ -820,11 +820,13 @@ function Get-LWHypervVM
     # In case VM was in cluster and has now been added a second time
     $vm = $vm | Sort-Object -Unique -Property Name
 
-    if (-not $vm)
+    if ($Name.Count -gt 0 -and -not $vm)
     {
         Write-Error -Message "No virtual machine $Name found"
         return
     }
+
+    if ($vm.Count -eq 0) { return } # Get-VMNetworkAdapter does not take kindly to $null
     
     $vm
 
