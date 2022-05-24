@@ -869,10 +869,10 @@ function Install-Lab
             {
                 if ($machine.HostType -ne 'HyperV' -or (Get-LabConfigurationItem -Name SkipHostFileModification)) { continue }
                 $defaultNic = $machine.NetworkAdapters | Where-Object Default
-                $address = if ($defaultNic) {($defaultNic | Select-Object -First 1).Ipv4Address}
+                $address = if ($defaultNic) {($defaultNic | Select-Object -First 1).Ipv4Address.IpAddress.AddressAsString}
                 if (-not $address)
                 {
-                    $address = $machine.NetworkAdapters[0].Ipv4Address
+                    $address = $machine.NetworkAdapters[0].Ipv4Address.IpAddress.AddressAsString
                 }
 
                 if (-not $address) { continue }
