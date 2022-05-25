@@ -60,7 +60,7 @@ Start-PodeServer {
             }
         }
 
-        $labs = Get-Lab -List | Foreach-Object {Import-Lab -NoValidation -NoDisplay -Name $_ -PassThru}
+        $labs = Get-Lab -List | Foreach-Object { Import-Lab -NoValidation -NoDisplay -Name $_ -PassThru }
         if ($labs)
         {
             Write-PodeJsonResponse -Value $labs
@@ -82,14 +82,16 @@ Start-PodeServer {
         {
             [hashtable[]]$jobs = Get-ChildItem -Path C:\LabBuilder\LabJobs -File | Foreach-Object {
                 $scheduledTask = Get-ScheduledTask -TaskName "DeployAutomatedLab_$($_.BaseName)" -ErrorAction SilentlyContinue
+                $pPath = Join-Path -Path C:\LabBuilder\LabJobs -ChildPath "$($_)_Result.xml"
                 if ($scheduledTask)
                 {
                     $info = $scheduledTask | Get-ScheduledTaskInfo -ErrorAction SilentlyContinue
                     @{
-                        Status      = $scheduledTask.State -as [string]
-                        LastRunTime = $info.LastRunTime
-                        Result      = $info.LastTaskResult
-                        Name        = $jobGuid
+                        Status       = $scheduledTask.State -as [string]
+                        LastRunTime  = $info.LastRunTime
+                        Result       = $info.LastTaskResult
+                        PesterResult = if (Test-Path $pPath) { Get-Content $pPath } else { '' }
+                        Name         = $_
                     }
                 }
             }
@@ -106,11 +108,13 @@ Start-PodeServer {
         if ($scheduledTask)
         {
             $info = $scheduledTask | Get-ScheduledTaskInfo -ErrorAction SilentlyContinue
+            $pPath = Join-Path -Path C:\LabBuilder\LabJobs -ChildPath "$($jobGuid)_Result.xml"
             $jsonResponse = @{
-                Status      = $scheduledTask.State -as [string]
-                LastRunTime = $info.LastRunTime
-                Result      = $info.LastTaskResult
-                Name        = $jobGuid
+                Status       = $scheduledTask.State -as [string]
+                LastRunTime  = $info.LastRunTime
+                Result       = $info.LastTaskResult
+                PesterResult = if (Test-Path $pPath) { Get-Content $pPath } else { '' }
+                Name         = $jobGuid
             }
             Write-PodeJsonResponse -Value $jsonResponse
         }
@@ -132,10 +136,12 @@ Start-PodeServer {
         if ($scheduledTask)
         {
             $info = $scheduledTask | Get-ScheduledTaskInfo -ErrorAction SilentlyContinue
+            $pPath = Join-Path -Path C:\LabBuilder\LabJobs -ChildPath "$($jobGuid)_Result.xml"
             $jsonResponse = @{
                 Status      = $scheduledTask.State -as [string]
                 LastRunTime = $info.LastRunTime
                 Result      = $info.LastTaskResult
+                PesterResult = if (Test-Path $pPath) { Get-Content $pPath } else { '' }
                 Name        = $jobGuid
             }
             Write-PodeJsonResponse -Value $jsonResponse
@@ -156,6 +162,7 @@ Start-PodeServer {
         }
 
         $labGuid = (New-Guid).Guid
+        $labScript = -join @($labScript, "`r`nInvoke-LabPester -Lab (Get-Lab) -OutputFile C:\LabBuilder\LabJobs\$($labGuid)_Result.xml")
 
         if (-not (Test-Path -Path C:\LabBuilder\LabJobs))
         {
@@ -179,6 +186,7 @@ Start-PodeServer {
             Status      = $job.State -as [string]
             LastRunTime = $info.LastRunTime
             Result      = $info.LastTaskResult
+            PesterResult = ''
             Name        = $labGuid
         }
         Write-PodeJsonResponse -Value $jsonResponse

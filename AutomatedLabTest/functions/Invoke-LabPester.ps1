@@ -28,13 +28,16 @@
             $Lab = Import-Lab -Name $LabName -ErrorAction Stop -NoDisplay -NoValidation -PassThru
         }
 
-        if (($Lab.Machines.Roles).Count -eq 0) { return }
-
         $global:pesterLab = $Lab # No parameters in Pester v5 yet
         $configuration = [PesterConfiguration]::Default
         $configuration.Run.Path = Join-Path -Path $PSCmdlet.MyInvocation.MyCommand.Module.ModuleBase -ChildPath 'internal/tests'
         $configuration.Run.PassThru = $PassThru.IsPresent
-        $tags = [string[]]($Lab.Machines.Roles).Name
+        [string[]]$tags = 'General'
+        
+        if ($Lab.Machines.Roles.Name)
+        {
+            $tags += $Lab.Machines.Roles.Name
+        }
         if ($Lab.Machines.PostInstallationActivity | Where-Object IsCustomRole)
         {
             $tags += ($Lab.Machines.PostInstallationActivity | Where-Object IsCustomRole).RoleName
