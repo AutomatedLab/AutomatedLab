@@ -1,5 +1,5 @@
-﻿Import-Module Pode
-Import-Module AutomatedLab
+﻿Import-Module -Name Pode
+Import-Module -Name AutomatedLab
 Enable-LabHostRemoting -Force -NoDisplay
 
 Start-PodeServer {
@@ -9,10 +9,6 @@ Start-PodeServer {
     
     Enable-PodeSessionMiddleware -Duration 120 -Extend
     Add-PodeAuthIIS -Name 'IISAuth'
-
-    Add-PodeRoute -Method Get -Path '/test' -Authentication 'IISAuth' -ScriptBlock {
-        Write-PodeJsonResponse -Value @{ User = $WebEvent.Auth.User }
-    }
 
     Add-PodeRoute -Method Get -Path '/Lab/:Name' -Authentication 'IISAuth' -ScriptBlock {
         if ($WebEvent.Parameters['Name'])
@@ -28,14 +24,11 @@ Start-PodeServer {
                 return
             }
 
-            $lab = Import-Lab -Name $labName -PassThru
+            $lab = Import-Lab -Name $labName -NoValidation -NoDisplay -PassThru
 
             if ($lab)
             {
-                Write-PodeJsonResponse -Value @{ Labs = @(
-                        $lab
-                    ) 
-                }
+                Write-PodeJsonResponse -Value $lab
             }
         }
     }
@@ -59,25 +52,20 @@ Start-PodeServer {
                 return
             }
 
-            $lab = Import-Lab -Name $labName -PassThru
+            $lab = Import-Lab -Name $labName -PassThru -NoValidation -NoDisplay
 
             if ($lab)
             {
-                Write-PodeJsonResponse -Value @{ Labs = @(
-                        $lab
-                    ) 
-                }
+                Write-PodeJsonResponse -Value $lab
             }
         }
 
         $labs = Get-Lab -List
         if ($labs)
         {
-            Write-PodeJsonResponse -Value @{ Labs = $labs }
+            Write-PodeJsonResponse -Value $labs
             return
         }
-
-        Write-PodeJsonResponse -Value @{ Labs = @() }
     }
 
     Add-PodeRoute -Method Get -Path '/Job' -Authentication 'IISAuth' -ScriptBlock {
@@ -92,10 +80,17 @@ Start-PodeServer {
 
         if (-not $jobGuid)
         {
-            [hashtable[]]$jobs = Get-ChildItem -Path C:\LabBuilder\LabJobs -Directory | Foreach-Object {
-                @{
-                    Status = 'Running'
-                    Name   = $_.Name
+            [hashtable[]]$jobs = Get-ChildItem -Path C:\LabBuilder\LabJobs -File | Foreach-Object {
+                $scheduledTask = Get-ScheduledTask -TaskName "DeployAutomatedLab_$($_.BaseName)" -ErrorAction SilentlyContinue
+                if ($scheduledTask)
+                {
+                    $info = $scheduledTask | Get-ScheduledTaskInfo -ErrorAction SilentlyContinue
+                    @{
+                        Status      = $scheduledTask.State -as [string]
+                        LastRunTime = $info.LastRunTime
+                        Result      = $info.LastTaskResult
+                        Name        = $jobGuid
+                    }
                 }
             }
 
@@ -106,22 +101,16 @@ Start-PodeServer {
             return
         }
 
-        $scheduledJob = Get-ScheduledJob -Name $jobGuid -ErrorAction SilentlyContinue
-        $job = Get-Job -Name $jobGuid -ErrorAction SilentlyContinue
+        $scheduledTask = Get-ScheduledTask -TaskName "DeployAutomatedLab_$jobGuid" -ErrorAction SilentlyContinue
 
-        if ($scheduledJob -and -not $job)
+        if ($scheduledTask)
         {
+            $info = $scheduledTask | Get-ScheduledTaskInfo -ErrorAction SilentlyContinue
             $jsonResponse = @{
-                Status = 'Running'
-                Name   = $jobGuid
-            }
-            Write-PodeJsonResponse -Value $jsonResponse
-        }
-        elseif ($scheduledJob -and $job)
-        {
-            $jsonResponse = @{
-                Status = $job.State
-                Name   = $jobGuid
+                Status      = $scheduledTask.State -as [string]
+                LastRunTime = $info.LastRunTime
+                Result      = $info.LastTaskResult
+                Name        = $jobGuid
             }
             Write-PodeJsonResponse -Value $jsonResponse
         }
@@ -138,34 +127,34 @@ Start-PodeServer {
             $jobGuid = $WebEvent.Parameters['id']
         }
 
-        $scheduledJob = Get-ScheduledJob -Name $jobGuid -ErrorAction SilentlyContinue
-        $job = Get-Job -Name $jobGuid -ErrorAction SilentlyContinue
+        $scheduledTask = Get-ScheduledTask -TaskName "DeployAutomatedLab_$jobGuid" -ErrorAction SilentlyContinue
 
-        if ($scheduledJob -and -not $job)
+        if ($scheduledTask)
         {
+            $info = $scheduledTask | Get-ScheduledTaskInfo -ErrorAction SilentlyContinue
             $jsonResponse = @{
-                Status = 'Running'
-                Name   = $jobGuid
+                Status      = $scheduledTask.State -as [string]
+                LastRunTime = $info.LastRunTime
+                Result      = $info.LastTaskResult
+                Name        = $jobGuid
             }
             Write-PodeJsonResponse -Value $jsonResponse
             return
         }
-        elseif ($scheduledJob -and $job)
-        {
-            $jsonResponse = @{
-                Status = $job.State
-                Name   = $jobGuid
-            }
-            Write-PodeJsonResponse -Value $jsonResponse
-            return
-        }
+
         Write-PodeTextResponse -StatusCode 404 -Value "Job with ID '$jobGuid' not found"
         return
     }
 
     Add-PodeRoute -Method Post -Path '/Lab' -Authentication 'IISAuth' -ScriptBlock {
         [string]$labScript = $WebEvent.Data.LabScript
-        $labScriptBlock = [scriptblock]::Create($labScript)
+
+        if (-not $labScript)
+        {
+            Write-PodeTextResponse -StatusCode 404 -Value "No LabScript in JSON body!"
+            return
+        }
+
         $labGuid = (New-Guid).Guid
 
         if (-not (Test-Path -Path C:\LabBuilder\LabJobs))
@@ -174,14 +163,21 @@ Start-PodeServer {
         }
 
         New-Item -ItemType File -Path C:\LabBuilder\LabJobs\$labGuid
-        $t = New-JobTrigger -Once -At (Get-Date).AddSeconds(5)
-        $job = Register-ScheduledJob -ScriptBlock $labScriptBlock -Name $labGuid -Trigger $t
+        $command = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($labScript))
 
+        # Due to runspaces used, the international module is not reliably imported. Hence, we are using Windows PowerShell.
+        $action = New-ScheduledTaskAction -Execute 'C:\Windows\system32\WindowsPowerShell\v1.0\powershell.exe' -Argument "-NoProfile -WindowStyle hidden -NoLogo -EncodedCommand $command"
+        $opti = New-ScheduledTaskSettingsSet -DeleteExpiredTaskAfter '1.00:00:00' -AllowStartIfOnBatteries -Hidden
+        $job = Register-ScheduledTask -TaskName "DeployAutomatedLab_$labGuid" -Action $action -Force -Description "Deploying`r`n`r`n$labScript" -RunLevel Highest
+        $null = $job | Start-ScheduledTask
+        $job = $job | Get-ScheduledTask
+        $info = $job | Get-ScheduledTaskInfo
         $jsonResponse = @{
-            Status = 'Queued'
-            Name   = $labGuid
+            Status      = $job.State -as [string]
+            LastRunTime = $info.LastRunTime
+            Result      = $info.LastTaskResult
+            Name        = $labGuid
         }
-
         Write-PodeJsonResponse -Value $jsonResponse
     }
 

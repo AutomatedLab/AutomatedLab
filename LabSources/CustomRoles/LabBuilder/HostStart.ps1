@@ -167,6 +167,8 @@ Invoke-LabCommand -ComputerName $ComputerName -ActivityName 'Registering website
     Set-ItemProperty -Path IIS:\AppPools\LabBuilder -Name processmodel.identityType -Value 3
     Set-ItemProperty -Path IIS:\AppPools\LabBuilder -Name processmodel.userName -Value $credential.UserName
     Set-ItemProperty -Path IIS:\AppPools\LabBuilder -Name processmodel.password -Value $credential.GetNetworkCredential().Password
+    Set-ItemProperty -Path IIS:\AppPools\LabBuilder -Name processmodel.idleTimeout -Value '00:00:00'
+    Set-ItemProperty -Path IIS:\AppPools\LabBuilder -Name recycling.periodicRestart.time -Value '00:00:00'
 
     Restart-WebAppPool -Name LabBuilder
 
