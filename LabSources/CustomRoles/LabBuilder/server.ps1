@@ -4,8 +4,8 @@ Enable-LabHostRemoting -Force -NoDisplay
 
 Start-PodeServer {
     Add-PodeEndpoint -Address 127.0.0.1 -Protocol Http
-    New-PodeLoggingMethod -File -Path C:\LabBuilder -Name Pode.log | Enable-PodeRequestLogging
-    New-PodeLoggingMethod -File -Path C:\LabBuilder -Name PodeErr.log | Enable-PodeErrorLogging
+    New-PodeLoggingMethod -File -Path C:\LabBuilder -Name AlCapode_success | Enable-PodeRequestLogging
+    New-PodeLoggingMethod -File -Path C:\LabBuilder -Name AlCapode_error | Enable-PodeErrorLogging
     
     Enable-PodeSessionMiddleware -Duration 120 -Extend
     Add-PodeAuthIIS -Name 'IISAuth'
@@ -60,7 +60,7 @@ Start-PodeServer {
             }
         }
 
-        $labs = Get-Lab -List
+        $labs = Get-Lab -List | Foreach-Object {Import-Lab -NoValidation -NoDisplay -Name $_ -PassThru}
         if ($labs)
         {
             Write-PodeJsonResponse -Value $labs
@@ -167,8 +167,11 @@ Start-PodeServer {
 
         # Due to runspaces used, the international module is not reliably imported. Hence, we are using Windows PowerShell.
         $action = New-ScheduledTaskAction -Execute 'C:\Windows\system32\WindowsPowerShell\v1.0\powershell.exe' -Argument "-NoProfile -WindowStyle hidden -NoLogo -EncodedCommand $command"
+
+        $trigger = New-ScheduledTaskTrigger -Once -At (Get-Date)
+        $trigger.EndBoundary = (Get-Date -Format u).Replace(' ', 'T')
         $opti = New-ScheduledTaskSettingsSet -DeleteExpiredTaskAfter '1.00:00:00' -AllowStartIfOnBatteries -Hidden
-        $job = Register-ScheduledTask -TaskName "DeployAutomatedLab_$labGuid" -Action $action -Force -Description "Deploying`r`n`r`n$labScript" -RunLevel Highest
+        $job = Register-ScheduledTask -TaskName "DeployAutomatedLab_$labGuid" -Action $action -Trigger $trigger -Settings $opti -Force -Description "Deploying`r`n`r`n$labScript" -RunLevel Highest
         $null = $job | Start-ScheduledTask
         $job = $job | Get-ScheduledTask
         $info = $job | Get-ScheduledTaskInfo
@@ -206,7 +209,7 @@ Start-PodeServer {
             return
         }
     
-        Write-PodeTextResponse "$labName removed"
+        Write-PodeTextResponse -Value "$labName removed"
     }
 
     Add-PodeRoute -Method Delete -Path '/Lab/:Name' -Authentication 'IISAuth' -ScriptBlock {
@@ -238,6 +241,6 @@ Start-PodeServer {
             return
         }
     
-        Write-PodeTextResponse "$labName removed"
+        Write-PodeTextResponse -Value "$labName removed"
     }
 }
