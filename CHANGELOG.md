@@ -8,6 +8,8 @@
 - Flexible MAC Address prefix to better take care of MAC address pools
 - SCVMM role now handles Console setup better (less stuff is installed)
 - Added new OrganizationalUnit parameter to Add-LabMachineDefinition
+- LabBuilder migrated to Pode
+- New-LabBaseImages now supports creating base images for individual operating systems without having a lab
 
 ### Bugs
 

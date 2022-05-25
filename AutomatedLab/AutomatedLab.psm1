@@ -3882,32 +3882,3 @@ function Test-LabHostConnected
 #Register the $LabSources variable
 $dynamicLabSources = New-Object AutomatedLab.DynamicVariable 'global:labSources', { Get-LabSourcesLocationInternal }, { $null }
 $executioncontext.SessionState.PSVariable.Set($dynamicLabSources)
-
-#download the ProductKeys.xml file if it does not exist. The installer puts the file into 'C:\ProgramData\AutomatedLab\Assets'
-#but when installing AL using the PowerShell Gallery, this file is missing.
-$productKeyFileLink = 'https://raw.githubusercontent.com/AutomatedLab/AutomatedLab/master/Assets/ProductKeys.xml'
-$productKeyFileName = 'ProductKeys.xml'
-$productKeyFilePath = Get-PSFConfigValue AutomatedLab.ProductKeyFilePath
-
-if (-not (Test-Path -Path (Split-Path $productKeyFilePath -Parent)))
-{
-    New-Item -Path (Split-Path $productKeyFilePath -Parent) -ItemType Directory | Out-Null
-}
-
-if (-not (Test-Path -Path $productKeyFilePath))
-{
-    try { Invoke-RestMethod -Method Get -Uri $productKeyFileLink -OutFile $productKeyFilePath -ErrorAction Stop } catch {}
-}
-
-$productKeyCustomFilePath = Get-PSFConfigValue AutomatedLab.ProductKeyFilePathCustom
-
-if (-not (Test-Path -Path $productKeyCustomFilePath))
-{
-    $store = New-Object 'AutomatedLab.ListXmlStore[AutomatedLab.ProductKey]'
-
-    $dummyProductKey = New-Object AutomatedLab.ProductKey -Property @{ Key = '123'; OperatingSystemName = 'OS'; Version = '1.0' }
-    $store.Add($dummyProductKey)
-    $store.Export($productKeyCustomFilePath)
-}
-
-Register-PSFTeppArgumentCompleter -Command Add-LabMachineDefinition -Parameter OperatingSystem -Name 'AutomatedLab-OperatingSystem'
