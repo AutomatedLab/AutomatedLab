@@ -16,6 +16,7 @@
 - Fixing the (once again) updated kickstart file content - we now carry around three different flavors.
 - NIC order now preserved, specification of default NIC possible as well for connections
 - Fixed issue with cluster resources being added a second time
+- Fixed function importing for the HostsFile module
 
 ## 5.42.0 (2022-05-05)
 
