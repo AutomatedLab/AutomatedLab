@@ -1,16 +1,6 @@
 ﻿Write-Host "Publishing AutomatedLab library"
 $projPath = Join-Path $env:APPVEYOR_BUILD_FOLDER -ChildPath 'LabXml/LabXml.csproj' -Resolve -ErrorAction Stop
-if ($IsLinux)
-{
-    Push-Location
-    Set-Location (Join-Path $env:APPVEYOR_BUILD_FOLDER -ChildPath 'LabXml')
-    nuget restore
-    Pop-Location
-}
-else
-{
-    nuget restore
-}
+nuget restore
 dotnet publish $projPath -f net6.0 -o (Join-Path -Path $env:APPVEYOR_BUILD_FOLDER 'AutomatedLab/lib/core')
 if (-not $IsLinux)
 {
