@@ -11,6 +11,9 @@
 		[Parameter(Mandatory = $true)]
 		[string]$Password,
 
+		[Parameter()]
+		[string]$OrganizationalUnit,
+
         [switch]
         $IsKickstart,
 
@@ -24,7 +27,7 @@
 		return
 	}
 
-    if ($IsKickstart) { Set-UnattendedKickstartDomain -DomainName $DomainName -Username $Username -Password $Password; return }
-    if ($IsAutoYast) { Set-UnattendedYastDomain -DomainName $DomainName -Username $Username -Password $Password; return }
-    Set-UnattendedWindowsDomain -DomainName $DomainName -Username $Username -Password $Password
+    if ($IsKickstart) { Set-UnattendedKickstartDomain -DomainName $DomainName -Username $Username -Password $Password -OrganizationalUnit $OrganizationalUnit; return }
+    if ($IsAutoYast) { Set-UnattendedYastDomain -DomainName $DomainName -Username $Username -Password $Password -OrganizationalUnit $OrganizationalUnit; return }
+    Set-UnattendedWindowsDomain -DomainName $DomainName -Username $Username -Password $Password -OrganizationalUnit $OrganizationalUnit
 }

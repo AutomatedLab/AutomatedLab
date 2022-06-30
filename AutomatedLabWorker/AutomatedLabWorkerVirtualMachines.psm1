@@ -61,7 +61,7 @@ function New-LWHypervVM
 
     #region network adapter settings
     $macAddressPrefix = Get-LabConfigurationItem -Name MacAddressPrefix
-    $macAddressesInUse = @(Get-VM | Get-VMNetworkAdapter | Select-Object -ExpandProperty MacAddress)
+    $macAddressesInUse = @(Get-LWHypervVM | Get-VMNetworkAdapter | Select-Object -ExpandProperty MacAddress)
     $macAddressesInUse += (Get-LabVm -IncludeLinux).NetworkAdapters.MacAddress
 
     $macIdx = 0
@@ -270,6 +270,7 @@ function New-LWHypervVM
                 Username = $domain.Administrator.UserName
                 Password = $domain.Administrator.Password
             }
+            if ($Machine.OrganizationalUnit) {$param['OrganizationalUnit'] = $machine.OrganizationalUnit}
             if ($Machine.OperatingSystemType -eq 'Linux')
             {
                 $parameters['IsKickstart'] = $Machine.LinuxType -eq 'RedHat'
@@ -805,22 +806,27 @@ function Get-LWHypervVM
         $param['Name'] = $Name
     }
 
-    $vm = Get-VM @param
+    [object[]]$vm = Get-VM @param
 
     if (-not $DisableClusterCheck -and ((Get-Command -Name Get-Cluster -ErrorAction SilentlyContinue) -and (Get-Cluster -ErrorAction SilentlyContinue)))
     {
-        $vm = Get-ClusterGroup | Where-Object -Property GroupType -eq 'VirtualMachine' | Get-VM
+        $vm += Get-ClusterGroup | Where-Object -Property GroupType -eq 'VirtualMachine' | Get-VM
         if ($Name.Count -gt 0)
         {
-            $vm = $vm | Where Name -in $Name
+            $vm += $vm | Where Name -in $Name
         }
     }
 
-    if (-not $vm)
+    # In case VM was in cluster and has now been added a second time
+    $vm = $vm | Sort-Object -Unique -Property Name
+
+    if ($Name.Count -gt 0 -and -not $vm)
     {
         Write-Error -Message "No virtual machine $Name found"
         return
     }
+
+    if ($vm.Count -eq 0) { return } # Get-VMNetworkAdapter does not take kindly to $null
     
     $vm
 
@@ -862,10 +868,8 @@ function Remove-LWHypervVM
         Write-PSFMessage "Removing Clustered Resource: $Name"
         $null = Get-ClusterGroup -Name $Name | Remove-ClusterGroup -RemoveResources -Force
     }
-    else
-    {
-        $vm | Remove-VM -Force
-    }
+
+    $vm | Remove-VM -Force
 
     Write-PSFMessage "Removing VM files for '$($Name)'"
     Remove-Item -Path $vmPath -Force -Confirm:$false -Recurse

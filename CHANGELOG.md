@@ -8,6 +8,7 @@
 - Flexible MAC Address prefix to better take care of MAC address pools
 - SCVMM role now handles Console setup better (less stuff is installed)
 - Additional parameter for New-LabSourcesFolder to skip downloads.
+- Added new OrganizationalUnit parameter to Add-LabMachineDefinition
 
 ### Bugs
 
@@ -15,6 +16,7 @@
 - Fixed issue with Get-LWHyperVVm and clusters (thanks @Trentent !)
 - Fixing the (once again) updated kickstart file content - we now carry around three different flavors.
 - NIC order now preserved, specification of default NIC possible as well for connections
+- Fixed issue with cluster resources being added a second time
 
 ## 5.42.0 (2022-05-05)
 
