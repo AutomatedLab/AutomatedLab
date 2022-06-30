@@ -4,6 +4,12 @@
 
 ### Enhancements
 
+### Bugs
+
+## 5.43.0 (2022-06-30)
+
+### Enhancements
+
 - New cmdlets Request-LabAzureJitAccess and Enable-LabAzureJitAccess to configure JIT access to Azure VMs, ports 22,3389,5985
 - Flexible MAC Address prefix to better take care of MAC address pools
 - SCVMM role now handles Console setup better (less stuff is installed)
