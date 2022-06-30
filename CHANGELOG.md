@@ -9,6 +9,8 @@
 - SCVMM role now handles Console setup better (less stuff is installed)
 - Additional parameter for New-LabSourcesFolder to skip downloads.
 - Added new OrganizationalUnit parameter to Add-LabMachineDefinition
+- LabBuilder migrated to Pode
+- New-LabBaseImages now supports creating base images for individual operating systems without having a lab
 
 ### Bugs
 

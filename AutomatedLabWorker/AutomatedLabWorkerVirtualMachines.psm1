@@ -792,7 +792,10 @@ function Get-LWHypervVM
 
         [Parameter()]
         [bool]
-        $DisableClusterCheck = (Get-LabConfigurationItem -Name DoNotAddVmsToCluster -Default $false)
+        $DisableClusterCheck = (Get-LabConfigurationItem -Name DoNotAddVmsToCluster -Default $false),
+
+        [switch]
+        $NoError
     )
 
     Write-LogFunctionEntry
@@ -820,7 +823,7 @@ function Get-LWHypervVM
     # In case VM was in cluster and has now been added a second time
     $vm = $vm | Sort-Object -Unique -Property Name
 
-    if ($Name.Count -gt 0 -and -not $vm)
+    if (-not $NoError.IsPresent -and $Name.Count -gt 0 -and -not $vm)
     {
         Write-Error -Message "No virtual machine $Name found"
         return
