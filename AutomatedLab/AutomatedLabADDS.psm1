@@ -2329,7 +2329,7 @@ function Install-LabADDSTrust
                     [System.DirectoryServices.ActiveDirectory.DirectoryContextType]::Forest,
                     '$($trust.Destination)',
                     '$($domainAdministrator.UserName)',
-                    '$($domainAdministrator.Password)')
+                    '$($domainAdministrator.Password -replace "'","''" )')
                 `$otherForest = [System.DirectoryServices.ActiveDirectory.Forest]::GetForest(`$otherForestCtx)
 
                 Write-Verbose "Creating forest trust between forests '`$(`$thisForest.Name)' and '`$(`$otherForest.Name)'"
