@@ -57,7 +57,7 @@ for:
   - matrix:
       only:
         - image: Ubuntu2004
-    build_script: dotnet build -f netcoreapp2.2 LabXml/LabXml.csproj
+    build_script: dotnet build -f net6.0 LabXml/LabXml.csproj
     deploy:
       - provider: GitHub
         description: "This is an automated deployment"

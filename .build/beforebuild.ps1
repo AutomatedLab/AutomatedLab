@@ -11,7 +11,7 @@ else
 {
     nuget restore
 }
-dotnet publish $projPath -f netcoreapp2.2 -o (Join-Path -Path $env:APPVEYOR_BUILD_FOLDER 'AutomatedLab/lib/core')
+dotnet publish $projPath -f net6.0 -o (Join-Path -Path $env:APPVEYOR_BUILD_FOLDER 'AutomatedLab/lib/core')
 if (-not $IsLinux)
 {
     dotnet publish $projPath -f net462 -o (Join-Path -Path $env:APPVEYOR_BUILD_FOLDER 'AutomatedLab/lib/full')
