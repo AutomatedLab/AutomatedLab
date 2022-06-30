@@ -3595,6 +3595,9 @@ function New-LabSourcesFolder
         [switch]
         $Force,
 
+        [switch]
+        $FolderStructureOnly,
+
         [ValidateSet('master','develop')]
         [string]
         $Branch = 'master'
@@ -3641,6 +3644,21 @@ function New-LabSourcesFolder
 
     if ($PSCmdlet.ShouldProcess('Downloading module and creating new LabSources', $Path))
     {
+        if ($FolderStructureOnly.IsPresent)
+        {
+            $null = New-Item -Path (Join-Path -Path $Path -ChildPath ISOs\readme.md) -Force
+            $null = New-Item -Path (Join-Path -Path $Path -ChildPath SoftwarePackages\readme.md) -Force
+            $null = New-Item -Path (Join-Path -Path $Path -ChildPath PostInstallationActivities\readme.md) -Force
+            $null = New-Item -Path (Join-Path -Path $Path -ChildPath Tools\readme.md) -Force
+            $null = New-Item -Path (Join-Path -Path $Path -ChildPath CustomRoles\readme.md) -Force
+            'ISO files go here' | Set-Content -Force -Path (Join-Path -Path $Path -ChildPath ISOs\readme.md)
+            'Software packages (for example installers) go here. To prepare offline setups, visit https://automatedlab.org/en/latest/Wiki/Basic/fullyoffline' | Set-Content -Force -Path (Join-Path -Path $Path -ChildPath SoftwarePackages\readme.md)
+            'Pre- and Post-Installation activities go here. For more information, visit https://automatedlab.org/en/latest/AutomatedLabDefinition/en-us/Get-LabInstallationActivity' | Set-Content -Force -Path (Join-Path -Path $Path -ChildPath PostInstallationActivities\readme.md)
+            'Tools to copy to all lab VMs (if parameter ToolsPath is used) go here' | Set-Content -Force -Path (Join-Path -Path $Path -ChildPath Tools\readme.md)
+            'Custom roles go here. For more information, visit https://automatedlab.org/en/latest/Wiki/Advanced/customroles' | Set-Content -Force -Path (Join-Path -Path $Path -ChildPath CustomRoles\readme.md)
+            return $Path
+        }
+
         $temporaryPath = [System.IO.Path]::GetTempFileName().Replace('.tmp', '')
         [void] (New-Item -ItemType Directory -Path $temporaryPath -Force)
         $archivePath = (Join-Path -Path $temporaryPath -ChildPath "$Branch.zip")
