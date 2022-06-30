@@ -21,7 +21,7 @@
 
     ModuleList             = @('HostsFile')
 
-    FunctionsToExport      = 'Add-HostEntry', 'Clear-HostFile', 'Get-HostEntry', 'Open-HostFile', 'Remove-HostEntry', 'Save-HostFile'
+    FunctionsToExport      = 'Add-HostEntry', 'Clear-HostFile', 'Get-HostEntry', 'Get-HostFile', 'Remove-HostEntry'
 
     FileList               = @('HostsFile.psm1', 'HostsFile.psd1')
 
