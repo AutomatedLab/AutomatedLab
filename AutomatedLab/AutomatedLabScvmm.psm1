@@ -38,7 +38,33 @@ function Install-LabScvmm
 
     $lab = Get-Lab
     # Prerequisites, all
-    $all = Get-LabVM -Role SCVMM
+    $all = Get-LabVM -Role SCVMM | Where-Object SkipDeployment -eq $false
+    $server = $all | Where-Object { -not $_.Roles.Properties.ContainsKey('SkipServer') }
+    $consoles = $all | Where-Object { $_.Roles.Properties.ContainsKey('SkipServer') }
+
+    if ($consoles)
+    {
+        $jobs = Install-ScvmmConsole -Computer $consoles
+    }
+
+    if ($server)
+    {
+        Install-ScvmmServer -Computer $server
+    }
+
+    # In case console setup took longer than server...
+    if ($jobs) { Wait-LWLabJob -Job $jobs }
+}
+
+function Install-ScvmmServer
+{
+    [CmdletBinding()]
+    param
+    (
+        [AutomatedLab.Machine[]]
+        $Computer
+    )
+
     $sqlcmd = Get-LabConfigurationItem -Name SqlCommandLineUtils
     $adk = Get-LabConfigurationItem -Name WindowsAdk
     $adkpe = Get-LabConfigurationItem -Name WindowsAdkPe
@@ -51,31 +77,31 @@ function Install-LabScvmm
     $adkpeFile = Get-LabInternetFile -Uri $adkpe -Path $labsources\SoftwarePackages -FileName adkpe.exe -PassThru
     $cpp64File = Get-LabInternetFile -uri $cpp64 -Path $labsources\SoftwarePackages -FileName vcredist_64_2012.exe -PassThru
     $cpp32File = Get-LabInternetFile -uri $cpp32 -Path $labsources\SoftwarePackages -FileName vcredist_32_2012.exe -PassThru
-    Install-LabSoftwarePackage -Path $odbcFile.FullName -ComputerName $all -CommandLine '/QN ADDLOCAL=ALL IACCEPTMSODBCSQLLICENSETERMS=YES /L*v C:\odbc.log'
-    Install-LabSoftwarePackage -Path $sqlFile.FullName -ComputerName $all -CommandLine '/QN IACCEPTMSSQLCMDLNUTILSLICENSETERMS=YES /L*v C:\sqlcmd.log'
-    Install-LabSoftwarePackage -path $cpp64File.FullName -ComputerName $all -CommandLine '/quiet /norestart /log C:\DeployDebug\cpp64_2012.log'
-    Install-LabSoftwarePackage -path $cpp32File.FullName -ComputerName $all -CommandLine '/quiet /norestart /log C:\DeployDebug\cpp32_2012.log'
+    Install-LabSoftwarePackage -Path $odbcFile.FullName -ComputerName $Computer -CommandLine '/QN ADDLOCAL=ALL IACCEPTMSODBCSQLLICENSETERMS=YES /L*v C:\odbc.log'
+    Install-LabSoftwarePackage -Path $sqlFile.FullName -ComputerName $Computer -CommandLine '/QN IACCEPTMSSQLCMDLNUTILSLICENSETERMS=YES /L*v C:\sqlcmd.log'
+    Install-LabSoftwarePackage -path $cpp64File.FullName -ComputerName $Computer -CommandLine '/quiet /norestart /log C:\DeployDebug\cpp64_2012.log'
+    Install-LabSoftwarePackage -path $cpp32File.FullName -ComputerName $Computer -CommandLine '/quiet /norestart /log C:\DeployDebug\cpp32_2012.log'
 
-
-    if ($(Get-Lab).DefaultVirtualizationEngine -eq 'Azure' -or (Test-LabMachineInternetConnectivity -ComputerName $all[0]))
+    if ($(Get-Lab).DefaultVirtualizationEngine -eq 'Azure' -or (Test-LabMachineInternetConnectivity -ComputerName $Computer[0]))
     {
-        Install-LabSoftwarePackage -Path $adkFile.FullName -ComputerName $all -CommandLine '/quiet /layout c:\ADKoffline'
-        Install-LabSoftwarePackage -Path $adkpeFile.FullName -ComputerName $all -CommandLine '/quiet /layout c:\ADKPEoffline'
+        Install-LabSoftwarePackage -Path $adkFile.FullName -ComputerName $Computer -CommandLine '/quiet /layout c:\ADKoffline'
+        Install-LabSoftwarePackage -Path $adkpeFile.FullName -ComputerName $Computer -CommandLine '/quiet /layout c:\ADKPEoffline'
     }
     else
     {
         Start-Process -FilePath $adkFile.FullName -ArgumentList "/quiet /layout $(Join-Path (Get-LabSourcesLocation -Local) SoftwarePackages/ADKoffline)" -Wait -NoNewWindow
         Start-Process -FilePath $adkpeFile.FullName -ArgumentList " /quiet /layout $(Join-Path (Get-LabSourcesLocation -Local) SoftwarePackages/ADKPEoffline)" -Wait -NoNewWindow
-        Copy-LabFileItem -Path (Join-Path (Get-LabSourcesLocation -Local) SoftwarePackages/ADKoffline) -ComputerName $all
-        Copy-LabFileItem -Path (Join-Path (Get-LabSourcesLocation -Local) SoftwarePackages/ADKPEoffline) -ComputerName $all
+        Copy-LabFileItem -Path (Join-Path (Get-LabSourcesLocation -Local) SoftwarePackages/ADKoffline) -ComputerName $Computer
+        Copy-LabFileItem -Path (Join-Path (Get-LabSourcesLocation -Local) SoftwarePackages/ADKPEoffline) -ComputerName $Computer
     }
 
-    Install-LabSoftwarePackage -LocalPath C:\ADKOffline\adksetup.exe -ComputerName $all -CommandLine '/quiet /installpath C:\ADK'
-    Install-LabSoftwarePackage -LocalPath C:\ADKPEOffline\adkwinpesetup.exe -ComputerName $all -CommandLine '/quiet /installpath C:\ADK'
-    Restart-LabVM -ComputerName $all -Wait
+    Install-LabSoftwarePackage -LocalPath C:\ADKOffline\adksetup.exe -ComputerName $Computer -CommandLine '/quiet /installpath C:\ADK'
+    Install-LabSoftwarePackage -LocalPath C:\ADKPEOffline\adkwinpesetup.exe -ComputerName $Computer -CommandLine '/quiet /installpath C:\ADK'
+    Install-LabWindowsFeature -ComputerName $Computer -FeatureName RSAT-Clustering -IncludeAllSubFeature
+    Restart-LabVM -ComputerName $Computer -Wait
 
     # Server, includes console
-    $jobs = foreach ($vm in (Get-LabVM -Role SCVMM))
+    $jobs = foreach ($vm in $Computer)
     {
         $iniServer = $iniContentServer.Clone()
         $role = $vm.Roles | Where-Object Name -in Scvmm2016, Scvmm2019
@@ -123,21 +149,19 @@ function Install-LabScvmm
             if (-not $ouExists) { New-ADObject -Name $name -Path $path -Type Container -ProtectedFromAccidentalDeletion $true }
         } -ArgumentList $iniServer.TopContainerName
 
-        if (-not ([Convert]::ToBoolean($role.Properties['SkipServer'])))
-        {
-            $scvmmIso = Mount-LabIsoImage -ComputerName $vm -IsoPath ($lab.Sources.ISOs | Where-Object { $_.Name -eq $role.Name }).Path -SupressOutput -PassThru
-            $domainCredential = $vm.GetCredential((Get-Lab))
-            $commandLine = $setupCommandLineServer -f $vm.DomainName, $domainCredential.UserName.Replace("$($vm.DomainName)\", ''), $domainCredential.GetNetworkCredential().Password
+        $scvmmIso = Mount-LabIsoImage -ComputerName $vm -IsoPath ($lab.Sources.ISOs | Where-Object { $_.Name -eq $role.Name }).Path -SupressOutput -PassThru
+        $domainCredential = $vm.GetCredential((Get-Lab))
+        $commandLine = $setupCommandLineServer -f $vm.DomainName, $domainCredential.UserName.Replace("$($vm.DomainName)\", ''), $domainCredential.GetNetworkCredential().Password
 
-            Invoke-LabCommand -ComputerName $vm -Variable (Get-Variable iniServer, scvmmIso) -ActivityName 'Extracting SCVMM Server' -ScriptBlock {
-                $setup = Get-ChildItem -Path $scvmmIso.DriveLetter -Filter *.exe | Select-Object -First 1
-                Start-Process -FilePath $setup.FullName -ArgumentList '/VERYSILENT', '/DIR=C:\SCVMM' -Wait
-                '[OPTIONS]' | Set-Content C:\Server.ini
-                $iniServer.GetEnumerator() | ForEach-Object { "$($_.Key) = $($_.Value)" | Add-Content C:\Server.ini }
-            }
-            Install-LabSoftwarePackage -ComputerName $vm -LocalPath C:\SCVMM\setup.exe -CommandLine $commandLine -AsJob -PassThru -UseShellExecute -Timeout 20
+        Invoke-LabCommand -ComputerName $vm -Variable (Get-Variable iniServer, scvmmIso, commandLine) -ActivityName 'Extracting SCVMM Server' -ScriptBlock {
+            $setup = Get-ChildItem -Path $scvmmIso.DriveLetter -Filter *.exe | Select-Object -First 1
+            Start-Process -FilePath $setup.FullName -ArgumentList '/VERYSILENT', '/DIR=C:\SCVMM' -Wait
+            '[OPTIONS]' | Set-Content C:\Server.ini
+            $iniServer.GetEnumerator() | ForEach-Object { "$($_.Key) = $($_.Value)" | Add-Content C:\Server.ini }
+            "C:\SCVMM\setup.exe $commandline" | Set-Content C:\DeployDebug\VmmSetup.cmd
         }
-    }
+        Install-LabSoftwarePackage -ComputerName $vm -LocalPath C:\SCVMM\setup.exe -CommandLine $commandLine -AsJob -PassThru -UseShellExecute -Timeout 20
+     }
 
     if ($jobs) { Wait-LWLabJob -Job $jobs }
 
@@ -145,32 +169,33 @@ function Install-LabScvmm
     Remove-LabPSSession
     Dismount-LabIsoImage -ComputerName (Get-LabVm -Role SCVMM) -SupressOutput
     Invoke-LabCommand -ComputerName (Get-LabVm -Role SCVMM) -ScriptBlock {        
-        $installer = Get-Process -Name SetupVM -ErrorAction SilentlyContinue
+        $installer = Get-Process -Name Setup,SetupVM -ErrorAction SilentlyContinue
         if ($installer)
         {
             $installer.WaitForExit((New-TimeSpan -Minutes 20).TotalMilliseconds)
         }
+
+        robocopy (Join-Path -Path $env:ProgramData VMMLogs) "C:\DeployDebug\VMMLogs" /S /E
     }
 
     # Onboard Hyper-V servers
-    foreach ($vm in (Get-LabVM -Role SCVMM))
+    foreach ($vm in $Computer)
     {
         $role = $vm.Roles | Where-Object Name -in Scvmm2016, Scvmm2019
-        if ([Convert]::ToBoolean($role.Properties['SkipServer'])) { continue }
 
         if ($role.Properties.ContainsKey('ConnectHyperVRoleVms') -or $role.Properties.ContainsKey('ConnectClusters'))
         {
             $vmNames = $role.Properties['ConnectHyperVRoleVms'] -split '\s*(?:,|;)\s*'
             $clusterNames = $role.Properties['ConnectClusters'] -split '\s*(?:,|;)\s*'
             $hyperVisors = (Get-LabVm -Role HyperV -Filter { $_.Name -in $vmNames }).FQDN
-            $clusters = Get-LabVm | foreach {$_.Roles | Where Name -eq FailoverNode}
-            [string[]] $clusterNameProperties = $clusters.Foreach({$_.Properties['ClusterName']}) | Select-Object -Unique
-            if ($clusters.Where({-not $_.Properties.ContainsKey('ClusterName')}))
+            $clusters = Get-LabVm | foreach { $_.Roles | Where Name -eq FailoverNode }
+            [string[]] $clusterNameProperties = $clusters.Foreach({ $_.Properties['ClusterName'] }) | Select-Object -Unique
+            if ($clusters.Where({ -not $_.Properties.ContainsKey('ClusterName') }))
             {
                 $clusterNameProperties += 'ALCluster'
             }
 
-            $clusterNameProperties = $clusterNameProperties.Where({$_ -in $clusterNames})
+            $clusterNameProperties = $clusterNameProperties.Where({ $_ -in $clusterNames })
 
             $joinCred = $vm.GetCredential((Get-Lab))
             Invoke-LabCommand -ComputerName $vm -ActivityName "Registering Hypervisors with $vm" -ScriptBlock {
@@ -189,9 +214,18 @@ function Install-LabScvmm
             } -Variable (Get-Variable hyperVisors, joinCred, vm, clusterNameProperties)
         }
     }
+}
 
-    # Console, if SkipServer was chosen
-    $jobs = foreach ($vm in (Get-LabVM -Role SCVMM))
+function Install-ScvmmConsole
+{
+    [CmdletBinding()]
+    param
+    (
+        [AutomatedLab.Machine[]]
+        $Computer
+    )
+
+    foreach ($vm in $Computer)
     {
         $iniConsole = $iniContentConsole.Clone()
         $role = $vm.Roles | Where-Object Name -in Scvmm2016, Scvmm2019
@@ -217,6 +251,4 @@ function Install-LabScvmm
             Dismount-LabIsoImage -ComputerName $vm -SupressOutput
         }
     }
-
-    if ($jobs) { Wait-LWLabJob -Job $jobs }
 }

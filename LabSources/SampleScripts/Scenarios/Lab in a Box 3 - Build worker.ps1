@@ -9,14 +9,14 @@ param
     [string]
     $LabName = 'LabAsAService',
 
-    [ValidateSet('yes','no')]
-    $TelemetryOptOut = 'no' # Opt out of telemetry for build worker by saying yes here
+    [ValidateSet('yes', 'no')]
+    $TelemetryOptIn = 'no' # Opt out of telemetry for build worker by saying yes here
 )
 
 New-LabDefinition -Name $labName -DefaultVirtualizationEngine HyperV
 Add-LabVirtualNetworkDefinition -Name $labName -HyperVProperties @{ SwitchType = 'External'; AdapterName = 'Ethernet' }
 
-$role = Get-LabPostInstallationActivity -CustomRole LabBuilder -Properties @{TelemetryOptOut = $TelemetryOptOut}
+$role = Get-LabPostInstallationActivity -CustomRole LabBuilder -Properties @{TelemetryOptIn = $TelemetryOptIn }
 
 $machineParameters = @{
     Name                     = 'NestedBuilder'
@@ -25,6 +25,7 @@ $machineParameters = @{
     Memory                   = 16GB
     Network                  = $labName
     DiskName                 = 'vmDisk'
+    Roles                    = 'HyperV' # optional, will be configured otherwise
 }
 
 $estimatedSize = [Math]::Round(((Get-ChildItem $labsources -File -Recurse | Measure-Object -Property Length -Sum).Sum / 1GB + 20), 0)
@@ -39,22 +40,30 @@ break
 # REST-Methods to interact with
 
 # List
-$allLabs = Invoke-RestMethod -Method Get -Uri http://NestedBuilder/Labs
-$specificLab = Invoke-RestMethod -Method Get -Uri http://NestedBuilder/Lab?Name=Win10 # throws, does not exist yet
-$labCreationJob = Invoke-RestMethod -Method Get -Uri http://NestedBuilder/Lab?Id=5b89babb-7402-4a7a-9c16-86e1d52613fa # A lab installation job, if it exists
+$credential = (Get-LabVm -ComputerName NestedBuilder).GetCredential((Get-lab))
+$allLabs = Invoke-RestMethod -Method Get -Uri http://NestedBuilder/Lab -Credential $credential
+
+# throws, does not exist yet
+$specificLab = Invoke-RestMethod -Method Get -Uri http://NestedBuilder/Lab/Win10 -Credential $credential
+
+# throws, does not exist yet
+$specificLab = Invoke-RestMethod -Method Get -Uri http://NestedBuilder/Lab?Name=Win10 -Credential $credential
+
+# A lab installation job, if it exists
+$labCreationJob = Invoke-RestMethod -Method Get -Uri http://NestedBuilder/Job?Id=5b89babb-7402-4a7a-9c16-86e1d52613fa -Credential $credential
 
 # Create lab
 $request = @{
-    LabScript = Get-Content "$labsources\Sample Scripts\Introduction\01 Single Win10 Client.ps1" -Raw
+    LabScript = Get-Content "$labsources\SampleScripts\Introduction\01 Single Win10 Client.ps1" -Raw
 } | ConvertTo-Json
 
-$guid = Invoke-RestMethod -Method Post -Uri http://NestedBuilder/Lab -Body $request -ContentType application/json
+$guid = Invoke-RestMethod -Method Post -Uri http://NestedBuilder/Lab -Body $request -ContentType application/json -Credential $credential
 
 # Get Status
-$labCreationJob = Invoke-RestMethod -Method Get -Uri http://NestedBuilder/Lab?Id=$guid
+$labCreationJob = Invoke-RestMethod -Method Get -Uri "http://NestedBuilder/Job/$($guid.Name)" -Credential $credential
+
+# Retrieve lab properties
+Invoke-RestMethod -Method Get -Uri http://NestedBuilder/Lab/Win10 -Credential $credential
 
 # Remove lab
-Invoke-RestMethod -Method Get -Uri http://NestedBuilder/Lab?Name=Win10 # Retrieve lab properties
-
-$request = @{Name = 'Win10'} | ConvertTo-Json
-Invoke-RestMethod -Method Delete -Uri http://NestedBuilder/Lab -Body $request -ContentType application/json
+Invoke-RestMethod -Method Delete -Uri http://NestedBuilder/Lab/Win10 -Credential $credential

@@ -132,6 +132,8 @@ namespace AutomatedLab
             set { accessVLANID = value; }
         }
 
+        public bool Default {get; set;}
+
         public NetworkAdapter()
         {
             ipv4Address = new List<IPNetwork>();

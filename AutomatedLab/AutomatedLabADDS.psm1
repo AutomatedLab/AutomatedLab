@@ -853,33 +853,6 @@ function Install-LabRootDcs
                 'C:\Windows\NTDS'
             }
 
-            $netBiosDomainName = if ($dcRole.Properties.ContainsKey('NetBiosDomainName'))
-            {
-                $dcRole.Properties.NetBiosDomainName
-            }
-            else
-            {
-                $machine.DomainName.Substring(0, $machine.DomainName.IndexOf('.'))
-            }
-
-            $databasePath = if ($dcRole.Properties.ContainsKey('DatabasePath'))
-            {
-                $dcRole.Properties.DatabasePath
-            }
-            else
-            {
-                'C:\Windows\NTDS'
-            }
-
-            $logPath = if ($dcRole.Properties.ContainsKey('LogPath'))
-            {
-                $dcRole.Properties.LogPath
-            }
-            else
-            {
-                'C:\Windows\NTDS'
-            }
-
             $sysvolPath = if ($dcRole.Properties.ContainsKey('SysvolPath'))
             {
                 $dcRole.Properties.SysvolPath
@@ -2356,7 +2329,7 @@ function Install-LabADDSTrust
                     [System.DirectoryServices.ActiveDirectory.DirectoryContextType]::Forest,
                     '$($trust.Destination)',
                     '$($domainAdministrator.UserName)',
-                    '$($domainAdministrator.Password)')
+                    '$($domainAdministrator.Password -replace "'","''" )')
                 `$otherForest = [System.DirectoryServices.ActiveDirectory.Forest]::GetForest(`$otherForestCtx)
 
                 Write-Verbose "Creating forest trust between forests '`$(`$thisForest.Name)' and '`$(`$otherForest.Name)'"

@@ -39,9 +39,6 @@
         $DefaultLocationName,
 
         [string]
-        $DefaultStorageAccountName,
-
-        [string]
         $DefaultResourceGroupName,
 
         [timespan]

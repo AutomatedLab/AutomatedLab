@@ -513,11 +513,11 @@ function Import-Lab
                     {
                         $Path = Join-Path -Path (Get-Lab).Sources.UnattendedXml.Value -ChildPath 'Unattended2012.xml'
                     }
-                    if ($this.OperatingSystemType -eq 'Linux' -and $this.LinuxType -eq 'RedHat' -and $this.Version -lt 8.0)
+                    if ($this.OperatingSystemType -eq 'Linux' -and $this.LinuxType -eq 'RedHat' -and $this.OperatingSystem.Version -lt 8.0)
                     {
                         $Path = Join-Path -Path (Get-Lab).Sources.UnattendedXml.Value -ChildPath ks_defaultLegacy.cfg
                     }
-                    if ($this.OperatingSystemType -eq 'Linux' -and $this.LinuxType -eq 'RedHat' -and $this.Version -ge 8.0)
+                    if ($this.OperatingSystemType -eq 'Linux' -and $this.LinuxType -eq 'RedHat' -and $this.OperatingSystem.Version -ge 8.0)
                     {
                         $Path = Join-Path -Path (Get-Lab).Sources.UnattendedXml.Value -ChildPath ks_default.cfg
                     }
@@ -741,6 +741,7 @@ function Install-Lab
         [switch]$StartRemainingMachines,
         [switch]$CreateCheckPoints,
         [switch]$InstallRdsCertificates,
+        [switch]$InstallSshKnownHosts,
         [switch]$PostDeploymentTests,
         [switch]$NoValidation,
         [int]$DelayBetweenComputers
@@ -866,11 +867,18 @@ function Install-Lab
             $hostFileAddedEntries = 0
             foreach ($machine in ($Script:data.Machines | Where-Object {[string]::IsNullOrEmpty($_.FriendlyName)}))
             {
-                if ($machine.Hosttype -eq 'HyperV' -and $machine.NetworkAdapters[0].Ipv4Address -and -not (Get-LabConfigurationItem -Name SkipHostFileModification))
+                if ($machine.HostType -ne 'HyperV' -or (Get-LabConfigurationItem -Name SkipHostFileModification)) { continue }
+                $defaultNic = $machine.NetworkAdapters | Where-Object Default
+                $address = if ($defaultNic) {($defaultNic | Select-Object -First 1).Ipv4Address.IpAddress.AddressAsString}
+                if (-not $address)
                 {
-                    $hostFileAddedEntries += Add-HostEntry -HostName $machine.Name -IpAddress $machine.IpV4Address -Section $Script:data.Name
-                    $hostFileAddedEntries += Add-HostEntry -HostName $machine.FQDN -IpAddress $machine.IpV4Address -Section $Script:data.Name
+                    $address = $machine.NetworkAdapters[0].Ipv4Address.IpAddress.AddressAsString
                 }
+
+                if (-not $address) { continue }
+
+                $hostFileAddedEntries += Add-HostEntry -HostName $machine.Name -IpAddress $address -Section $Script:data.Name
+                $hostFileAddedEntries += Add-HostEntry -HostName $machine.FQDN -IpAddress $address -Section $Script:data.Name
             }
 
             if ($hostFileAddedEntries)
@@ -1356,6 +1364,15 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
+    if ($InstallSshKnownHosts -or $performAll)
+    {
+        Write-ScreenInfo -Message "Adding lab machines to $home/.ssh/known_hosts" -TaskStart
+        
+        Install-LabSshKnownHost
+        
+        Write-ScreenInfo -Message 'Done' -TaskEnd
+    }
+
     try
     {
         [AutomatedLab.LabTelemetry]::Instance.LabFinished((Get-Lab).Export())
@@ -1368,7 +1385,7 @@ function Install-Lab
 
     if (-not $NoValidation -and ($performAll -or $PostDeploymentTests))
     {
-        if (Get-InstalledModule -Name Pester -MinimumVersion 5.0 -ErrorAction SilentlyContinue)
+        if ((Get-Module -ListAvailable -Name Pester -ErrorAction SilentlyContinue).Version -ge [version]'5.0')
         {    
             Write-ScreenInfo -Type Verbose -Message "Testing deployment with Pester"
             $result = Invoke-LabPester -Lab (Get-Lab) -Show Normal -PassThru
@@ -3578,6 +3595,9 @@ function New-LabSourcesFolder
         [switch]
         $Force,
 
+        [switch]
+        $FolderStructureOnly,
+
         [ValidateSet('master','develop')]
         [string]
         $Branch = 'master'
@@ -3624,6 +3644,21 @@ function New-LabSourcesFolder
 
     if ($PSCmdlet.ShouldProcess('Downloading module and creating new LabSources', $Path))
     {
+        if ($FolderStructureOnly.IsPresent)
+        {
+            $null = New-Item -Path (Join-Path -Path $Path -ChildPath ISOs\readme.md) -Force
+            $null = New-Item -Path (Join-Path -Path $Path -ChildPath SoftwarePackages\readme.md) -Force
+            $null = New-Item -Path (Join-Path -Path $Path -ChildPath PostInstallationActivities\readme.md) -Force
+            $null = New-Item -Path (Join-Path -Path $Path -ChildPath Tools\readme.md) -Force
+            $null = New-Item -Path (Join-Path -Path $Path -ChildPath CustomRoles\readme.md) -Force
+            'ISO files go here' | Set-Content -Force -Path (Join-Path -Path $Path -ChildPath ISOs\readme.md)
+            'Software packages (for example installers) go here. To prepare offline setups, visit https://automatedlab.org/en/latest/Wiki/Basic/fullyoffline' | Set-Content -Force -Path (Join-Path -Path $Path -ChildPath SoftwarePackages\readme.md)
+            'Pre- and Post-Installation activities go here. For more information, visit https://automatedlab.org/en/latest/AutomatedLabDefinition/en-us/Get-LabInstallationActivity' | Set-Content -Force -Path (Join-Path -Path $Path -ChildPath PostInstallationActivities\readme.md)
+            'Tools to copy to all lab VMs (if parameter ToolsPath is used) go here' | Set-Content -Force -Path (Join-Path -Path $Path -ChildPath Tools\readme.md)
+            'Custom roles go here. For more information, visit https://automatedlab.org/en/latest/Wiki/Advanced/customroles' | Set-Content -Force -Path (Join-Path -Path $Path -ChildPath CustomRoles\readme.md)
+            return $Path
+        }
+
         $temporaryPath = [System.IO.Path]::GetTempFileName().Replace('.tmp', '')
         [void] (New-Item -ItemType Directory -Path $temporaryPath -Force)
         $archivePath = (Join-Path -Path $temporaryPath -ChildPath "$Branch.zip")
@@ -3865,32 +3900,3 @@ function Test-LabHostConnected
 #Register the $LabSources variable
 $dynamicLabSources = New-Object AutomatedLab.DynamicVariable 'global:labSources', { Get-LabSourcesLocationInternal }, { $null }
 $executioncontext.SessionState.PSVariable.Set($dynamicLabSources)
-
-#download the ProductKeys.xml file if it does not exist. The installer puts the file into 'C:\ProgramData\AutomatedLab\Assets'
-#but when installing AL using the PowerShell Gallery, this file is missing.
-$productKeyFileLink = 'https://raw.githubusercontent.com/AutomatedLab/AutomatedLab/master/Assets/ProductKeys.xml'
-$productKeyFileName = 'ProductKeys.xml'
-$productKeyFilePath = Get-PSFConfigValue AutomatedLab.ProductKeyFilePath
-
-if (-not (Test-Path -Path (Split-Path $productKeyFilePath -Parent)))
-{
-    New-Item -Path (Split-Path $productKeyFilePath -Parent) -ItemType Directory | Out-Null
-}
-
-if (-not (Test-Path -Path $productKeyFilePath))
-{
-    try { Invoke-RestMethod -Method Get -Uri $productKeyFileLink -OutFile $productKeyFilePath -ErrorAction Stop } catch {}
-}
-
-$productKeyCustomFilePath = Get-PSFConfigValue AutomatedLab.ProductKeyFilePathCustom
-
-if (-not (Test-Path -Path $productKeyCustomFilePath))
-{
-    $store = New-Object 'AutomatedLab.ListXmlStore[AutomatedLab.ProductKey]'
-
-    $dummyProductKey = New-Object AutomatedLab.ProductKey -Property @{ Key = '123'; OperatingSystemName = 'OS'; Version = '1.0' }
-    $store.Add($dummyProductKey)
-    $store.Export($productKeyCustomFilePath)
-}
-
-Register-PSFTeppArgumentCompleter -Command Add-LabMachineDefinition -Parameter OperatingSystem -Name 'AutomatedLab-OperatingSystem'

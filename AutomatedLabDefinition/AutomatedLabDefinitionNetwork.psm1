@@ -307,7 +307,10 @@ function New-LabNetworkAdapterDefinition
         [boolean]$ManagementAdapter = $false,
 
         [string]
-        $MacAddress
+        $MacAddress,
+
+        [bool]
+        $Default
     )
 
     Write-LogFunctionEntry
@@ -318,6 +321,7 @@ function New-LabNetworkAdapterDefinition
     }
 
     $adapter = New-Object -TypeName AutomatedLab.NetworkAdapter
+    $adapter.Default = $Default
     $MacAddress = $MacAddress -replace '[\.\-\:]'
 
     #If the defined interface is flagged as being a Management interface, ignore the virtual switch check as it will not exist yet
@@ -372,12 +376,13 @@ function New-LabNetworkAdapterDefinition
     if ((Get-LabDefinition).DefaultVirtualizationEngine -eq 'HyperV' -and -not $MacAddress)
     {
         $macAddressPrefix = Get-LabConfigurationItem -Name MacAddressPrefix
-        [string[]]$macAddressesInUse = (Get-VM | Get-VMNetworkAdapter).MacAddress
+        [string[]]$macAddressesInUse = (Get-LWHyperVVM | Get-VMNetworkAdapter).MacAddress
         $macAddressesInUse += (Get-LabMachineDefinition -All).NetworkAdapters.MacAddress
         if (-not $script:macIdx) { $script:macIdx = 0 }
-        while ("$macAddressPrefix{0:X6}" -f $macIdx -in $macAddressesInUse) { $script:macIdx++ }
+        $prefixlength = 12 - $macAddressPrefix.Length
+        while ("$macAddressPrefix{0:X$prefixLength}" -f $macIdx -in $macAddressesInUse) { $script:macIdx++ }
 
-        $MacAddress = "$macAddressPrefix{0:X6}" -f $script:macIdx++
+        $MacAddress = "$macAddressPrefix{0:X$prefixLength}" -f $script:macIdx++
     }
 
     if ($Ipv4Gateway) { $adapter.Ipv4Gateway = $Ipv4Gateway }

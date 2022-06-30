@@ -104,7 +104,6 @@
         'Get-LabAzureCertificate',
         'Get-LabAzureDefaultLocation',
         'Get-LabAzureDefaultResourceGroup',
-        'Get-LabAzureDefaultStorageAccount',
         'Get-LabAzureLabSourcesContent',
         'Get-LabAzureLabSourcesStorage',
         'Get-LabAzureLocation',
@@ -197,7 +196,6 @@
         'Enable-LabAutoLogon',
         'Disable-LabAutoLogon',
         'Set-LabAzureDefaultLocation',
-        'Set-LabAzureDefaultStorageAccount',
         'Set-LabAzureWebAppContent',
         'Set-LabDefaultOperatingSystem',
         'Set-LabDefaultVirtualizationEngine',
@@ -257,7 +255,13 @@
         'New-LabCimSession',
         'Get-LabCimSession',
         'Remove-LabCimSession',
-        'Enable-LabInternalRouting'
+        'Enable-LabInternalRouting',
+        'Request-LabAzureJitAccess',
+        'Enable-LabAzureJitAccess',
+        'Get-LWAzureVm',
+        'Install-LabSshKnownHost',
+        'UnInstall-LabSshKnownHost',
+        'Get-LabSshKnownHost'
     )
 
     AliasesToExport        = @(

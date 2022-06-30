@@ -6,6 +6,27 @@
 
 ### Bugs
 
+## 5.43.0 (2022-06-30)
+
+### Enhancements
+
+- New cmdlets Request-LabAzureJitAccess and Enable-LabAzureJitAccess to configure JIT access to Azure VMs, ports 22,3389,5985
+- Flexible MAC Address prefix to better take care of MAC address pools
+- SCVMM role now handles Console setup better (less stuff is installed)
+- Additional parameter for New-LabSourcesFolder to skip downloads.
+- Added new OrganizationalUnit parameter to Add-LabMachineDefinition
+- LabBuilder migrated to Pode
+- New-LabBaseImages now supports creating base images for individual operating systems without having a lab
+
+### Bugs
+
+- Fixed issue with cluster roles not being cleaned up properly (thanks @Trentent !)
+- Fixed issue with Get-LWHyperVVm and clusters (thanks @Trentent !)
+- Fixing the (once again) updated kickstart file content - we now carry around three different flavors.
+- NIC order now preserved, specification of default NIC possible as well for connections
+- Fixed issue with cluster resources being added a second time
+- Fixed function importing for the HostsFile module
+
 ## 5.42.0 (2022-05-05)
 
 ### Enhancements
@@ -34,6 +55,7 @@
 - DelayBetweenComputers was ignored
 - Fixed lab location. Sometimes the 'Lab.xml' was stored in 'C:\ProgramData\AutomatedLab' directly.
 - Removing unsupported kickstart parameter for old CentOS versions
+- Removing unused DefaultStorageAccount-Cmdlets
 
 ## 5.41.0 (2022-01-31)
 

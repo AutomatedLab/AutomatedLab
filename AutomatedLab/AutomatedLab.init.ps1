@@ -144,7 +144,8 @@ Set-PSFConfig -Module 'AutomatedLab' -Name SetLocalIntranetSites -Value 'All'  -
 Set-PSFConfig -Module 'AutomatedLab' -Name DoNotAddVmsToCluster -Value $false -Initialize -Validation bool -Description 'Set to true to skip adding VMs to a cluster if AutomatedLab is being run on a cluster node'
 
 #Hyper-V Network settings
-Set-PSFConfig -Module 'AutomatedLab' -Name MacAddressPrefix -Value '0017FB' -Initialize -Validation string -Description 'The MAC address prefix for Hyper-V labs'
+Set-PSFConfig -Module 'AutomatedLab' -Name MacAddressPrefix -Value '0017FB' -Initialize -Validation string -Description 'The MAC address prefix for Hyper-V labs' -Handler { if ($args[0].Length -eq 0 -or $args[0].Length -gt 11){Write-PSFMessage -Level Error -Message "Invalid prefix length for MacAddressPrefix! $($args[0]) needs to be at least one character and at most 11 characters"; throw "Invalid prefix length for MacAddressPrefix! $($args[0]) needs to be at least one character and at most 11 characters"} }
+Set-PSFConfig -Module 'AutomatedLab' -Name DisableDeviceNaming -Value $false -Validation bool -Initialize -Description 'Disables Device Naming for VM NICs. Enabled by default for Hosts > 2016 and Gen 2 Guests > 2016'
 
 #Hyper-V Disk Settings
 Set-PSFConfig -Module 'AutomatedLab' -Name CreateOnlyReferencedDisks -Value $true -Initialize -Validation bool -Description 'Disks that are not references by a VM will not be created'
@@ -164,31 +165,36 @@ Set-PSFConfig -Module 'AutomatedLab' -Name LabSourcesMaxFileSizeMb -Value 50 -In
 Set-PSFConfig -Module 'AutomatedLab' -Name AutoSyncLabSources -Value $false -Initialize -Validation bool -Description 'Toggle auto-sync of Azure lab sources in Azure labs'
 Set-PSFConfig -Module 'AutomatedLab' -Name LabSourcesSyncIntervalDays -Value 60 -Initialize -Validation integerpositive -Description 'Interval in days for lab sources auto-sync'
 Set-PSFConfig -Module 'AutomatedLab' -Name AzureDiskSkus -Value @('Standard_LRS', 'Premium_LRS', 'StandardSSD_LRS') # 'UltraSSD_LRS' is not allowed!
+Set-PSFConfig -Module 'AutomatedLab' -Name AzureEnableJit -Value $false -Initialize -Validation bool -Description 'Enable this setting to have AutomatedLab configure ports 22, 3389 and 5986 for JIT access. Can be done manually with Enable-LabAzureJitAccess and requested (after enabling) with Request-LabAzureJitAccess'
 Set-PSFConfig -Module 'AutomatedLab' -Name RequiredAzModules -Value @(
     # Syntax: Name, MinimumVersion, RequiredVersion
     @{
         Name = 'Az.Accounts'
-        MinimumVersion = '2.7.1'
+        MinimumVersion = '2.7.6'
     }
     @{
         Name = 'Az.Storage'
-        MinimumVersion = '4.1.1'
+        MinimumVersion = '4.5.0'
     }
     @{
         Name = 'Az.Compute'
-        MinimumVersion = '4.17.1'
+        MinimumVersion = '4.26.0'
     }
     @{
         Name = 'Az.Network'
-        MinimumVersion = '4.14.0'
+        MinimumVersion = '4.16.1'
     }
     @{
         Name = 'Az.Resources'
-        MinimumVersion = '5.2.0'
+        MinimumVersion = '5.6.0'
     }
     @{
         Name = 'Az.Websites'
-        MinimumVersion = '2.8.3'
+        MinimumVersion = '2.11.1'
+    }
+    @{
+        Name = 'Az.Security'
+        MinimumVersion = '1.2.0'
     }
  ) -Initialize -Description 'Required Az modules'
 
@@ -791,6 +797,35 @@ if ($IsLinux -or $IsMacOs -and -not (Test-Path (Join-Path -Path (Get-PSFConfigVa
 }
 #endregion
 
+
+
+#download the ProductKeys.xml file if it does not exist. The installer puts the file into 'C:\ProgramData\AutomatedLab\Assets'
+#but when installing AL using the PowerShell Gallery, this file is missing.
+$productKeyFileLink = 'https://raw.githubusercontent.com/AutomatedLab/AutomatedLab/master/Assets/ProductKeys.xml'
+$productKeyFileName = 'ProductKeys.xml'
+$productKeyFilePath = Get-PSFConfigValue AutomatedLab.ProductKeyFilePath
+
+if (-not (Test-Path -Path (Split-Path $productKeyFilePath -Parent)))
+{
+    New-Item -Path (Split-Path $productKeyFilePath -Parent) -ItemType Directory | Out-Null
+}
+
+if (-not (Test-Path -Path $productKeyFilePath))
+{
+    try { Invoke-RestMethod -Method Get -Uri $productKeyFileLink -OutFile $productKeyFilePath -ErrorAction Stop } catch {}
+}
+
+$productKeyCustomFilePath = Get-PSFConfigValue AutomatedLab.ProductKeyFilePathCustom
+
+if (-not (Test-Path -Path $productKeyCustomFilePath))
+{
+    $store = New-Object 'AutomatedLab.ListXmlStore[AutomatedLab.ProductKey]'
+
+    $dummyProductKey = New-Object AutomatedLab.ProductKey -Property @{ Key = '123'; OperatingSystemName = 'OS'; Version = '1.0' }
+    $store.Add($dummyProductKey)
+    $store.Export($productKeyCustomFilePath)
+}
+
 #region ArgumentCompleter
 Register-PSFTeppScriptblock -Name AutomatedLab-NotificationProviders -ScriptBlock {
     (Get-PSFConfig -Module AutomatedLab -Name Notifications.NotificationProviders*).FullName |
@@ -858,6 +893,7 @@ Register-PSFTeppScriptblock -Name AutomatedLab-SusePackage -ScriptBlock {
 
 }
 
+Register-PSFTeppArgumentCompleter -Command Add-LabMachineDefinition -Parameter OperatingSystem -Name 'AutomatedLab-OperatingSystem'
 Register-PSFTeppArgumentCompleter -Command Add-LabMachineDefinition -Parameter Roles -Name AutomatedLab-Roles
 Register-PSFTeppArgumentCompleter -Command Get-Lab, Remove-Lab, Import-Lab, Import-LabDefinition -Parameter Name -Name AutomatedLab-Labs
 Register-PSFTeppArgumentCompleter -Command Connect-Lab -Parameter SourceLab, DestinationLab -Name AutomatedLab-Labs

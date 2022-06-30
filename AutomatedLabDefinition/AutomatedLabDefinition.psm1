@@ -1242,7 +1242,12 @@ function Export-LabDefinition
             {
                 $unattendedXmlDefaultContent2012 | Out-File -FilePath (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath Unattended2012.xml) -Encoding unicode
             }
-            if ($Script:machines | Where-Object LinuxType -eq 'RedHat')
+            if ($Script:machines | Where-Object {$_.LinuxType -eq 'RedHat' -and $_.OperatingSystem.Version -ge 9.0})
+            {
+                $kickstartContent.Replace('install','').Trim() | Out-File -FilePath (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath ks_default.cfg) -Encoding unicode
+                $kickstartContent.Replace(' --non-interactive','') | Out-File -FilePath (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath ks_defaultLegacy.cfg) -Encoding unicode                
+            }
+            elseif ($Script:machines | Where-Object LinuxType -eq 'RedHat')
             {
                 $kickstartContent | Out-File -FilePath (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath ks_default.cfg) -Encoding unicode
                 $kickstartContent.Replace(' --non-interactive','') | Out-File -FilePath (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath ks_defaultLegacy.cfg) -Encoding unicode                
@@ -1932,7 +1937,13 @@ function Add-LabMachineDefinition
 
         [string[]]$RhelPackage,
 
-        [string[]]$SusePackage
+        [string[]]$SusePackage,
+
+        [string]$SshPublicKeyPath,
+
+        [string]$SshPrivateKeyPath,
+
+        [string]$OrganizationalUnit
     )
 
     begin
@@ -2006,6 +2017,16 @@ function Add-LabMachineDefinition
             }
         }
 
+        if (((Get-Command New-PSSession).Parameters.Values.Name -notcontains 'HostName') -and $OperatingSystem.OperatingSystemType -eq 'Linux' -and -not [string]::IsNullOrWhiteSpace($SshPublicKeyPath))
+        {
+            Write-ScreenInfo -Type Warning -Message "SSH Transport is not available from within Windows PowerShell. Please use PowerShell 6+ if you want to use remoting-cmdlets."
+        }
+
+        if ((-not [string]::IsNullOrWhiteSpace($SshPublicKeyPath) -and [string]::IsNullOrWhiteSpace($SshPrivateKeyPath)) -or ([string]::IsNullOrWhiteSpace($SshPublicKeyPath) -and -not [string]::IsNullOrWhiteSpace($SshPrivateKeyPath)))
+        {
+            Write-ScreenInfo -Type Warning -Message "Both SshPublicKeyPath and SshPrivateKeyPath need to be used to successfully remote to Linux VMs"
+        }
+
         if ($AzureProperties)
         {
             $illegalKeys = Compare-Object -ReferenceObject $azurePropertiesValidKeys -DifferenceObject ($AzureProperties.Keys | Sort-Object -Unique) |
@@ -2066,7 +2087,35 @@ function Add-LabMachineDefinition
         $machine = New-Object AutomatedLab.Machine
         $machine.Name = $Name
         $machine.FriendlyName = $ResourceName
+        $machine.OrganizationalUnit = $OrganizationalUnit
         $script:machines.Add($machine)
+
+        if ($OperatingSystem.OperatingSystemType -eq 'Windows' -and $SshPublicKeyPath)
+        {
+            Write-ScreenInfo -Message "SSH Keys are ignored on Windows for the time being. Why not contribute to AutomatedLab and add the configuration of an ssh server?"
+        }
+        elseif ($OperatingSystem.OperatingSystemType -eq 'Linux' -and $SshPublicKeyPath -and -not (Test-Path -Path $SshPublicKeyPath))
+        {
+            throw "$SshPublicKeyPath does not exist. Rethink your decision."
+        }
+        elseif ($OperatingSystem.OperatingSystemType -eq 'Linux' -and $SshPublicKeyPath)
+        {
+            $machine.SshPublicKeyPath = $SshPublicKeyPath
+            $machine.SshPublicKey = Get-Content -Raw -Path $SshPublicKeyPath
+        }
+
+        if ($OperatingSystem.OperatingSystemType -eq 'Windows' -and $SshPrivateKeyPath)
+        {
+            Write-ScreenInfo -Message "SSH Keys are ignored on Windows for the time being. Why not contribute to AutomatedLab and add the configuration of an ssh server?"
+        }
+        elseif ($OperatingSystem.OperatingSystemType -eq 'Linux' -and $SshPrivateKeyPath -and -not (Test-Path -Path $SshPrivateKeyPath))
+        {
+            throw "$SshPrivateKeyPath does not exist. Rethink your decision."
+        }
+        elseif ($OperatingSystem.OperatingSystemType -eq 'Linux' -and $SshPrivateKeyPath)
+        {
+            $machine.SshPrivateKeyPath = $SshPrivateKeyPath
+        }
 
         if ((Get-LabDefinition).DefaultVirtualizationEngine -and (-not $PSBoundParameters.ContainsKey('VirtualizationHost')))
         {
@@ -3631,11 +3680,11 @@ function Import-LabDefinition
                     {
                         $Path = Join-Path -Path (Get-Lab).Sources.UnattendedXml.Value -ChildPath 'Unattended2012.xml'
                     }
-                    if ($this.OperatingSystemType -eq 'Linux' -and $this.LinuxType -eq 'RedHat' -and $this.Version -lt 8.0)
+                    if ($this.OperatingSystemType -eq 'Linux' -and $this.LinuxType -eq 'RedHat' -and $this.OperatingSystem.Version -lt 8.0)
                     {
                         $Path = Join-Path -Path (Get-Lab).Sources.UnattendedXml.Value -ChildPath ks_defaultLegacy.cfg
                     }
-                    if ($this.OperatingSystemType -eq 'Linux' -and $this.LinuxType -eq 'RedHat' -and $this.Version -ge 8.0)
+                    if ($this.OperatingSystemType -eq 'Linux' -and $this.LinuxType -eq 'RedHat' -and $this.OperatingSystem.Version -ge 8.0)
                     {
                         $Path = Join-Path -Path (Get-Lab).Sources.UnattendedXml.Value -ChildPath ks_default.cfg
                     }

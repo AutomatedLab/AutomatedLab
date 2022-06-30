@@ -61,16 +61,16 @@ function New-LWHypervVM
 
     #region network adapter settings
     $macAddressPrefix = Get-LabConfigurationItem -Name MacAddressPrefix
-    $macAddressesInUse = @(Get-VM | Get-VMNetworkAdapter | Select-Object -ExpandProperty MacAddress)
+    $macAddressesInUse = @(Get-LWHypervVM | Get-VMNetworkAdapter | Select-Object -ExpandProperty MacAddress)
     $macAddressesInUse += (Get-LabVm -IncludeLinux).NetworkAdapters.MacAddress
 
     $macIdx = 0
-    while ("$macAddressPrefix{0:X6}" -f $macIdx -in $macAddressesInUse) { $macIdx++ }
+    $prefixlength = 12 - $macAddressPrefix.Length
+    while ("$macAddressPrefix{0:X$prefixLength}" -f $macIdx -in $macAddressesInUse) { $macIdx++ }
 
     $type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.NetworkAdapter
     $adapters = New-Object $type
-    $Machine.NetworkAdapters | Where-Object { $_.Ipv4Address } | Sort-Object -Property { $_.Ipv4Address[0] } | ForEach-Object {$adapters.Add($_)}
-    $Machine.NetworkAdapters | Where-Object { -not $_.Ipv4Address } | ForEach-Object {$adapters.Add($_)}
+    $Machine.NetworkAdapters | ForEach-Object {$adapters.Add($_)}
 
     if ($Machine.IsDomainJoined)
     {
@@ -97,7 +97,8 @@ function New-LWHypervVM
     {
         $ipSettings = @{}
 
-        $mac = "$macAddressPrefix{0:X6}" -f $macIdx++
+        $prefixlength = 12 - $macAddressPrefix.Length
+        $mac = "$macAddressPrefix{0:X$prefixLength}" -f $macIdx++
 
         if (-not $adapter.MacAddress)
         {
@@ -230,6 +231,22 @@ function New-LWHypervVM
     }
 
     Set-UnattendedFirewallState -State $Machine.EnableWindowsFirewall
+    
+    if ($Machine.OperatingSystemType -eq 'Linux' -and -not [string]::IsNullOrEmpty($Machine.SshPublicKey))
+    {
+        Add-UnattendedSynchronousCommand "restorecon -R /root/.ssh/" -Description 'Restore SELinux context'
+        Add-UnattendedSynchronousCommand "restorecon -R /$($Machine.InstallationUser.UserName)/.ssh/" -Description 'Restore SELinux context'
+        Add-UnattendedSynchronousCommand "sed -i 's|[#]*PubkeyAuthentication yes|PubkeyAuthentication yes|g' /etc/ssh/sshd_config" -Description 'PowerShell is so much better.'
+        Add-UnattendedSynchronousCommand "sed -i 's|[#]*PasswordAuthentication yes|PasswordAuthentication no|g' /etc/ssh/sshd_config" -Description 'PowerShell is so much better.'
+        Add-UnattendedSynchronousCommand "chmod 700 /home/$($Machine.InstallationUser.UserName)/.ssh && chmod 600 /home/$($Machine.InstallationUser.UserName)/.ssh/authorized_keys" -Description 'SSH'
+        Add-UnattendedSynchronousCommand "chmod 700 /root/.ssh && chmod 600 /root/.ssh/authorized_keys" -Description 'SSH'
+        Add-UnattendedSynchronousCommand "chown -R $($Machine.InstallationUser.UserName):$($Machine.InstallationUser.UserName) /home/$($Machine.InstallationUser.UserName)/.ssh" -Description 'SSH'
+        Add-UnattendedSynchronousCommand "chown -R root:root /root/.ssh" -Description 'SSH'        
+        Add-UnattendedSynchronousCommand "echo `"$($Machine.SshPublicKey)`" > /home/$($Machine.InstallationUser.UserName)/.ssh/authorized_keys" -Description 'SSH'
+        Add-UnattendedSynchronousCommand "echo `"$($Machine.SshPublicKey)`" > /root/.ssh/authorized_keys" -Description 'SSH'
+        Add-UnattendedSynchronousCommand "mkdir -p /home/$($Machine.InstallationUser.UserName)/.ssh" -Description 'SSH'
+        Add-UnattendedSynchronousCommand "mkdir -p /root/.ssh" -Description 'SSH'
+    }
 
     if ($Machine.Roles.Name -contains 'RootDC' -or
         $Machine.Roles.Name -contains 'FirstChildDC' -or
@@ -253,6 +270,7 @@ function New-LWHypervVM
                 Username = $domain.Administrator.UserName
                 Password = $domain.Administrator.Password
             }
+            if ($Machine.OrganizationalUnit) {$param['OrganizationalUnit'] = $machine.OrganizationalUnit}
             if ($Machine.OperatingSystemType -eq 'Linux')
             {
                 $parameters['IsKickstart'] = $Machine.LinuxType -eq 'RedHat'
@@ -269,6 +287,15 @@ function New-LWHypervVM
                 }
 
                 Add-UnattendedSynchronousCommand @sudoParam
+
+                if (-not [string]::IsNullOrEmpty($Machine.SshPublicKey))
+                {
+                    Add-UnattendedSynchronousCommand "restorecon -R /$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/" -Description 'Restore SELinux context'
+                    Add-UnattendedSynchronousCommand "echo `"$($Machine.SshPublicKey)`" > /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/authorized_keys" -Description 'SSH'
+                    Add-UnattendedSynchronousCommand "chmod 700 /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh && chmod 600 /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/authorized_keys" -Description 'SSH'
+                    Add-UnattendedSynchronousCommand "chown -R $($Machine.InstallationUser.UserName)@$($Machine.DomainName):$($Machine.InstallationUser.UserName)@$($Machine.DomainName) /home/$($Machine.InstallationUser.UserName)@$($Machine.DomainName)/.ssh" -Description 'SSH'
+                    Add-UnattendedSynchronousCommand "mkdir -p /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh" -Description 'SSH'
+                }
             }
         }
     }
@@ -346,7 +373,7 @@ function New-LWHypervVM
         if ($Machine.LinuxType -eq 'RedHat')
         {
             Export-UnattendedFile -Path (Join-Path -Path $drive.RootDirectory -ChildPath ks.cfg)
-            Export-UnattendedFile -Path (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath "ks_$($Machine.Name).cfg")
+            Copy-Item -Path (Join-Path -Path $drive.RootDirectory -ChildPath ks.cfg) -Destination (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath "ks_$($Machine.Name).cfg")
         }
         else
         {
@@ -473,7 +500,20 @@ function New-LWHypervVM
     foreach ($adapter in $adapters)
     {
         #bind all network adapters to their designated switches, Repair-LWHypervNetworkConfig will change the binding order if necessary
-        $newAdapter = Add-VMNetworkAdapter -Name $adapter.VirtualSwitch.ResourceName -SwitchName $adapter.VirtualSwitch.ResourceName -StaticMacAddress $adapter.MacAddress -VMName $vm.Name -PassThru
+        $parameters = @{
+            Name             = $adapter.VirtualSwitch.ResourceName
+            SwitchName       = $adapter.VirtualSwitch.ResourceName
+            StaticMacAddress = $adapter.MacAddress
+            VMName           = $vm.Name
+            PassThru         = $true
+        }
+
+        if (-not (Get-LabConfigurationItem -Name DisableDeviceNaming -Default $false) -and (Get-Command Add-VMNetworkAdapter).Parameters.Values.Name -contains 'DeviceNaming' -and $vm.Generation -eq 2 -and $Machine.OperatingSystem.Version -ge 10.0)
+        {
+            $parameters['DeviceNaming'] = 'On'
+        }
+
+        $newAdapter = Add-VMNetworkAdapter @parameters
 
         if (-not $adapter.AccessVLANID -eq 0) {
 
@@ -752,7 +792,10 @@ function Get-LWHypervVM
 
         [Parameter()]
         [bool]
-        $DisableClusterCheck = (Get-LabConfigurationItem -Name DoNotAddVmsToCluster -Default $false)
+        $DisableClusterCheck = (Get-LabConfigurationItem -Name DoNotAddVmsToCluster -Default $false),
+
+        [switch]
+        $NoError
     )
 
     Write-LogFunctionEntry
@@ -766,26 +809,30 @@ function Get-LWHypervVM
         $param['Name'] = $Name
     }
 
-    $vm = Get-VM @param
+    [object[]]$vm = Get-VM @param
 
-    $isCluster = (Get-Command -Name Get-Cluster -ErrorAction SilentlyContinue) -and (Get-Cluster -ErrorAction SilentlyContinue)
-    if ($Name.Count -gt 0 -and -not $vm -and $isCluster)
+    if (-not $DisableClusterCheck -and ((Get-Command -Name Get-Cluster -ErrorAction SilentlyContinue) -and (Get-Cluster -ErrorAction SilentlyContinue)))
     {
-        Get-ClusterGroup | Where-Object -Property GroupType -eq 'VirtualMachine' | Get-VM
+        $vm += Get-ClusterGroup | Where-Object -Property GroupType -eq 'VirtualMachine' | Get-VM
+        if ($Name.Count -gt 0)
+        {
+            $vm += $vm | Where Name -in $Name
+        }
     }
 
-    if (-not $vm -and -not $DisableClusterCheck -and $isCluster -and (Get-ClusterGroup @param))
-    {
-        $vm = Get-VM @param -CimSession (Get-ClusterGroup @param).OwnerNode.Name
-    }
+    # In case VM was in cluster and has now been added a second time
+    $vm = $vm | Sort-Object -Unique -Property Name
 
-    if (-not $vm)
+    if (-not $NoError.IsPresent -and $Name.Count -gt 0 -and -not $vm)
     {
         Write-Error -Message "No virtual machine $Name found"
         return
     }
 
+    if ($vm.Count -eq 0) { return } # Get-VMNetworkAdapter does not take kindly to $null
+    
     $vm
+
     Write-LogFunctionExit
 }
 
@@ -818,13 +865,14 @@ function Remove-LWHypervVM
     }
 
     Write-PSFMessage "Removing VM '$($Name)'"
-    $vm | Remove-VM -Force
-
     $doNotAddToCluster = Get-LabConfigurationItem -Name DoNotAddVmsToCluster -Default $false
     if (-not $doNotAddToCluster -and (Get-Command -Name Get-Cluster -ErrorAction SilentlyContinue) -and (Get-Cluster -ErrorAction SilentlyContinue))
     {
-        $null = Get-ClusterGroup -Name $machine.ResourceName | Remove-ClusterGroup -RemoveResources -Force
+        Write-PSFMessage "Removing Clustered Resource: $Name"
+        $null = Get-ClusterGroup -Name $Name | Remove-ClusterGroup -RemoveResources -Force
     }
+
+    $vm | Remove-VM -Force
 
     Write-PSFMessage "Removing VM files for '$($Name)'"
     Remove-Item -Path $vmPath -Force -Confirm:$false -Recurse
@@ -1563,7 +1611,7 @@ function Mount-LWIsoImage
                 $vm = Get-LWHypervVM -Name $machine.ResourceName
                 if ($machine.OperatingSystem.Version -ge '6.2')
                 {
-                    $drive = $vm | Add-VMDvdDrive -Path $IsoPath -ErrorAction Stop -Passthru
+                    $drive = $vm | Add-VMDvdDrive -Path $IsoPath -ErrorAction Stop -Passthru -AllowUnverifiedPaths
                 }
                 else
                 {
@@ -1571,7 +1619,7 @@ function Mount-LWIsoImage
                     {
                         throw "No DVD drive exist for machine '$machine'. Machine is generation 1 and DVD drive needs to be crate in advance (during creation of the machine). Cannot continue."
                     }
-                    $drive = $vm | Set-VMDvdDrive -Path $IsoPath -ErrorAction Stop -Passthru
+                    $drive = $vm | Set-VMDvdDrive -Path $IsoPath -ErrorAction Stop -Passthru -AllowUnverifiedPaths
                 }
 
                 Start-Sleep -Seconds $delayBeforeCheck[$delayIndex]

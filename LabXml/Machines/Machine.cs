@@ -85,6 +85,10 @@ namespace AutomatedLab
         public int LoadBalancerWinrmHttpsPort { get; set; }
 
         public List<string> LinuxPackageGroup { get; set; }
+        public string SshPublicKey { get; set; }
+        public string SshPublicKeyPath { get; set; }
+        public string SshPrivateKeyPath { get; set; }
+        public string OrganizationalUnit { get; set; }
 
         public OperatingSystemType OperatingSystemType
         {
@@ -331,7 +335,7 @@ namespace AutomatedLab
             set { autoLogonPassword = value; }
         }
 
-        public Azure.AzureConnectionInfo AzureConnectionInfo {get; set;}
+        public Azure.AzureConnectionInfo AzureConnectionInfo { get; set; }
 
         public SerializableDictionary<string, string> AzureProperties
         {
@@ -387,7 +391,7 @@ namespace AutomatedLab
         {
             roles = new List<Role>();
             LinuxPackageGroup = new List<string>();
-            postInstallationActivity = new List<InstallationActivity>();            
+            postInstallationActivity = new List<InstallationActivity>();
             PreInstallationActivity = new List<InstallationActivity>();
             networkAdapters = new List<NetworkAdapter>();
             internalNotes = new SerializableDictionary<string, string>();

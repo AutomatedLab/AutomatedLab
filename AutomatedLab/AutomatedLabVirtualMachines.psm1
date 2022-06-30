@@ -51,7 +51,10 @@ function New-LabVM
             if (-not $doNotAddToCluster -and (Get-Command -Name Get-Cluster -ErrorAction SilentlyContinue) -and (Get-Cluster -ErrorAction SilentlyContinue))
             {
                 Write-ScreenInfo -Message "Adding $($machine.Name) ($($machine.ResourceName)) to cluster $((Get-Cluster).Name)"
-                $null = Add-ClusterVirtualMachineRole -VMName $machine.ResourceName -Name $machine.ResourceName
+                if (-not (Get-ClusterGroup -Name $machine.ResourceName -ErrorAction SilentlyContinue))
+                {
+                    $null = Add-ClusterVirtualMachineRole -VMName $machine.ResourceName -Name $machine.ResourceName
+                }
             }
 
             if ('RootDC' -in $machine.Roles.Name)
@@ -719,10 +722,20 @@ function Wait-LabVM
 
     end
     {
+        if ((Get-Command -ErrorAction SilentlyContinue -Name New-PSSession).Parameters.Values.Name -contains 'HostName' )
+        {
+            # Quicker than reading in the file on unsupported configurations
+            $sshHosts = (Get-LabSshKnownHost -ErrorAction SilentlyContinue).ComputerName
+        }
         $jobs = foreach ($vm in $vms)
         {
             $session = $null
             #remove the existing sessions to ensure a new one is created and the existing one not reused.
+            if ((Get-Command -ErrorAction SilentlyContinue -Name New-PSSession).Parameters.Values.Name -contains 'HostName' -and $sshHosts -and $vm.Name -notin $sshHosts)
+            {
+                Install-LabSshKnownHost
+                $sshHosts = (Get-LabSshKnownHost -ErrorAction SilentlyContinue).ComputerName
+            }
             Remove-LabPSSession -ComputerName $vm
 
             if (-not ($IsLinux -or $IsMacOs)) { netsh.exe interface ip delete arpcache | Out-Null }
