@@ -25,7 +25,7 @@ else
 {
   # Ruby tool FPM can build packages for multiple distributions
   sudo apt update
-  sudo apt upgrade -y
+  #sudo apt upgrade -y
   sudo apt install alien -y
 }
 Install-Module PSFramework -Repo PSGallery -Force
