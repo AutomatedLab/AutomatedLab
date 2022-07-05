@@ -114,7 +114,7 @@
     $scomIso = ($lab.Sources.ISOs | Where-Object { $_.Name -like 'Scom*' }).Path
     $isos = Mount-LabIsoImage -ComputerName $all -IsoPath $scomIso -SupressOutput -PassThru
     Invoke-LabCommand -ComputerName $all -Variable (Get-Variable isos) -ActivityName 'Extracting SCOM Server' -ScriptBlock {
-        $setup = Get-ChildItem -Path $($isos.Where( { $_.InternalComputerName -eq $env:COMPUTERNAME })).DriveLetter -Filter *.exe | Select-Object -First 1
+        $setup = Get-ChildItem -Path $($isos | Where InternalComputerName -eq $env:COMPUTERNAME).DriveLetter -Filter *.exe | Select-Object -First 1
         Start-Process -FilePath $setup.FullName -ArgumentList '/VERYSILENT', '/DIR=C:\SCOM' -Wait
     } -NoDisplay
     
