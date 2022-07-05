@@ -6,6 +6,8 @@
 
 ### Bugs
 
+- Fixing serialization issue in SCOM role
+
 ## 5.43.0 (2022-06-30)
 
 ### Enhancements
