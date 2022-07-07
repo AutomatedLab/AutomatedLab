@@ -608,25 +608,29 @@
         $vmSize = Get-LWAzureVmSize -Machine $Machine
         $imageRef = Get-LWAzureSku -Machine $machine
 
-        if ($vmSize.Generation -contains 'v2')
+        if ($vmSize.Gen2Supported -and -not $vmSize.Gen1Supported)
         {
             $pattern = '{0}(-g2$|gen2|-gensecond$)' -f $imageRef.sku # Yes, why should the image names be consistent? Also of course we don't need a damn VMGeneration property...
-            $newImage = $lab.AzureSettings.VMImages | Where-Object Skus -match $pattern
+            $newImage = $lab.AzureSettings.VMImages | Where-Object { $_.PublisherName -eq $imageref.Publisher -and $_.Offer -eq $imageref.Offer -and $_.Skus -match $pattern }
             if (-not $newImage)
             {
-                Write-LogFunctionExitWithError -Message "Selected VM size $vmSize for $Machine only suppports G2 VMs, however no matching Generation 2 image was found for your selection: Publisher $($imageRef.publisher), offer $($imageRef.offer), sku $($imageRef.skus)!"
-                return
+                throw "Selected VM size $vmSize for $Machine only suppports G2 VMs, however no matching Generation 2 image was found for your selection: Publisher $($imageRef.publisher), offer $($imageRef.offer), sku $($imageRef.sku)!"
             }
-            $imageRef = $newImage
+
+            $imageRef = @{
+                publisher = $newImage.PublisherName
+                version   = $newImage.Version
+                offer     = $newImage.Offer
+                sku       = $newImage.Skus
+            }
         }
 
         if (-not $vmSize)
         {
-            Write-LogFunctionExitWithError -Message "No valid VM size found for $Machine!"
-            return
+            throw "No valid VM size found for $Machine!"
         }
 
-        Write-ScreenInfo -Type Info -Message "Adding $Machine with size $vmSize and SKU $imageRef"
+        Write-ScreenInfo -Type Verbose -Message "Adding $Machine with size $vmSize, publisher $($imageRef.publisher), offer $($imageRef.offer), sku $($imageRef.sku)!"
 
         $machNet = Get-LabVirtualNetworkDefinition -Name $machine.Network[0]
         $machTemplate = @{
