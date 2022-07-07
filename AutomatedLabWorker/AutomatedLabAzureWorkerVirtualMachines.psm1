@@ -605,6 +605,28 @@
         }
 
         Write-ScreenInfo -Type Verbose -Message ('Adding machine template')
+        $vmSize = Get-LWAzureVmSize -Machine $Machine
+        $imageRef = (Get-LWAzureSku -Machine $machine).sku
+        if ($vmSize.Generation -contains 'v2')
+        {
+            $pattern = '{0}(-g2$|gen2|-gensecond$)' -f $imageRef # Yes, why should the image names be consistent? Also of course we don't need a damn VMGeneration property...
+            $newImage = ($lab.AzureSettings.VMImages | Where-Object Skus -match $pattern).Skus
+            if (-not $newImage)
+            {
+                Write-LogFunctionExitWithError -Message "Selected VM size $vmSize for $Machine only suppports G2 VMs, however no matching Generation 2 image was found for your selection, $imageRef!"
+                return
+            }
+            $imageRef = $newImage
+        }
+
+        if (-not $vmSize)
+        {
+            Write-LogFunctionExitWithError -Message "No valid VM size found for $Machine!"
+            return
+        }
+
+        Write-ScreenInfo -Type Info -Message "Adding $Machine with size $vmSize and SKU $imageRef"
+
         $machNet = Get-LabVirtualNetworkDefinition -Name $machine.Network[0]
         $machTemplate = @{
             name       = $machine.ResourceName
@@ -625,7 +647,7 @@
                         osType       = "Windows"
                         caching      = "ReadWrite"
                     }
-                    imageReference = Get-LWAzureSku -Machine $machine
+                    imageReference = $imageRef
                     dataDisks      = @()
                 }
                 networkProfile  = @{
@@ -649,7 +671,7 @@
                     }
                 }
                 hardwareProfile = @{
-                    vmSize = (Get-LWAzureVmSize -Machine $Machine).Name
+                    vmSize = $vmSize.Name
                 }
             }
             type       = "Microsoft.Compute/virtualMachines"
@@ -752,6 +774,7 @@ function Get-LWAzureVmSize
             'A' { $pattern = '^(Standard_A\d{1,2}|Basic_A\d{1,2})' }
             'D' { $pattern = '^Standard_D\d{1,2}' }
             'DS' { $pattern = '^Standard_DS\d{1,2}' }
+            'DC' { $pattern = '^Standard_DC\d{1,2}' }
             'G' { $pattern = '^Standard_G\d{1,2}' }
             'F' { $pattern = '^Standard_F\d{1,2}' }
             default { $pattern = '^(Standard_A\d{1,2}|Basic_A\d{1,2})'}
