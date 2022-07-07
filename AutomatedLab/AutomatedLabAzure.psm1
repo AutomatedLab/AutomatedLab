@@ -1400,7 +1400,7 @@ function Get-LabAzureAvailableRoleSize
     foreach ($vms in Get-AzVMSize -Location $azLocation.Location | Where-Object -Property Name -in $availableRoleSizes.Name)
     {
         $rsInfo = $availableRoleSizes | Where-Object Name -eq $vms.Name
-        $vms | Add-Member -NotePropertyName Generation -NotePropertyValue (($rsInfo.Capabilities | Where-Object Name -eq HyperVGenerations).Value -split ',')
+        $vms | Add-Member -NotePropertyName Generation -NotePropertyValue (($rsInfo.Capabilities | Where-Object Name -eq HyperVGenerations).Value -split ',') -PassThru
     }
 }
 
