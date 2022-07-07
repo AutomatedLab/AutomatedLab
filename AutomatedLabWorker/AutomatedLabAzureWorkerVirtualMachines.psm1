@@ -606,14 +606,15 @@
 
         Write-ScreenInfo -Type Verbose -Message ('Adding machine template')
         $vmSize = Get-LWAzureVmSize -Machine $Machine
-        $imageRef = (Get-LWAzureSku -Machine $machine).sku
+        $imageRef = Get-LWAzureSku -Machine $machine
+
         if ($vmSize.Generation -contains 'v2')
         {
-            $pattern = '{0}(-g2$|gen2|-gensecond$)' -f $imageRef # Yes, why should the image names be consistent? Also of course we don't need a damn VMGeneration property...
-            $newImage = ($lab.AzureSettings.VMImages | Where-Object Skus -match $pattern).Skus
+            $pattern = '{0}(-g2$|gen2|-gensecond$)' -f $imageRef.sku # Yes, why should the image names be consistent? Also of course we don't need a damn VMGeneration property...
+            $newImage = $lab.AzureSettings.VMImages | Where-Object Skus -match $pattern
             if (-not $newImage)
             {
-                Write-LogFunctionExitWithError -Message "Selected VM size $vmSize for $Machine only suppports G2 VMs, however no matching Generation 2 image was found for your selection, $imageRef!"
+                Write-LogFunctionExitWithError -Message "Selected VM size $vmSize for $Machine only suppports G2 VMs, however no matching Generation 2 image was found for your selection: Publisher $($imageRef.publisher), offer $($imageRef.offer), sku $($imageRef.skus)!"
                 return
             }
             $imageRef = $newImage
@@ -769,15 +770,33 @@ function Get-LWAzureVmSize
     }
     else
     {
-        switch ($lab.AzureSettings.DefaultRoleSize)
+        $pattern = switch ($lab.AzureSettings.DefaultRoleSize)
         {
-            'A' { $pattern = '^(Standard_A\d{1,2}|Basic_A\d{1,2})' }
-            'D' { $pattern = '^Standard_D\d{1,2}' }
-            'DS' { $pattern = '^Standard_DS\d{1,2}' }
-            'DC' { $pattern = '^Standard_DC\d{1,2}' }
-            'G' { $pattern = '^Standard_G\d{1,2}' }
-            'F' { $pattern = '^Standard_F\d{1,2}' }
-            default { $pattern = '^(Standard_A\d{1,2}|Basic_A\d{1,2})'}
+            'A' { '^(Standard_A\d{1,2}|Basic_A\d{1,2})' }
+            'AS' { '^Standard_AS\d{1,2}' }
+            'AC' { '^Standard_AC\d{1,2}' }
+            'D' { '^Standard_D\d{1,2}' }
+            'DS' { '^Standard_DS\d{1,2}' }
+            'DC' { '^Standard_DC\d{1,2}' }
+            "E" { '^Standard_E\d{1,2}' }
+            "ES" { '^Standard_ES\d{1,2}' }
+            "EC" { '^Standard_EC\d{1,2}' }
+            'F' { '^Standard_F\d{1,2}' }
+            'FS' { '^Standard_FS\d{1,2}' }
+            'FC' { '^Standard_FC\d{1,2}' }
+            'G' { '^Standard_G\d{1,2}' }
+            'GS' { '^Standard_GS\d{1,2}' }
+            'GC' { '^Standard_GC\d{1,2}' }
+            'H' {'^Standard_H\d{1,2}'}
+            'HS' { '^Standard_HS\d{1,2}' }
+            'HC' { '^Standard_HC\d{1,2}' }
+            'L' {'^Standard_L\d{1,2}'}
+            'LS' { '^Standard_LS\d{1,2}' }
+            'LC' { '^Standard_LC\d{1,2}' }
+            'N' {'^Standard_N\d{1,2}'}
+            'NS' { '^Standard_NS\d{1,2}' }
+            'NC' { '^Standard_NC\d{1,2}' }
+            default { '^(Standard_A\d{1,2}|Basic_A\d{1,2})'}
         }
 
         $roleSize = $lab.AzureSettings.RoleSizes |
