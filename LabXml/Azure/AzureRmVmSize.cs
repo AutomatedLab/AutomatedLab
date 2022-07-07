@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace AutomatedLab.Azure
 {
@@ -11,9 +12,12 @@ namespace AutomatedLab.Azure
         public int? MaxDataDiskCount { get; set; }
         public int ResourceDiskSizeInMB { get; set; }
         public int OSDiskSizeInMB { get; set; }
+        public List<string> Generation {get; set;}
 
         public AzureRmVmSize()
-        { }
+        {
+            Generation = new List<string>(){ "v1" };
+        }
 
         public override string ToString()
         {

@@ -1395,9 +1395,13 @@ function Get-LabAzureAvailableRoleSize
 
     $availableRoleSizes = Get-AzComputeResourceSku -Location $azLocation.Location | Where-Object {
         $_.ResourceType -eq 'virtualMachines' -and $_.Restrictions.ReasonCode -notcontains 'NotAvailableForSubscription'
-    } | Select-Object -ExpandProperty Name
+    }
 
-    Get-AzVMSize -Location $azLocation.Location | Where-Object -Property Name -in $availableRoleSizes
+    foreach ($vms in Get-AzVMSize -Location $azLocation.Location | Where-Object -Property Name -in $availableRoleSizes.Name)
+    {
+        $rsInfo = $availableRoleSizes | Where-Object Name -eq $vms.Name
+        $vms | Add-Member -NotePropertyName Generation -NotePropertyValue (($rsInfo.Capabilities | Where-Object Name -eq HyperVGenerations).Value -split ',')
+    }
 }
 
 function Get-LabAzureAvailableSku
