@@ -4,6 +4,8 @@
 
 ### Enhancements
 
+- Set-LabDefaultOperatingSystem now supports Azure as well
+
 ### Bugs
 
 - Fixing serialization issue in SCOM role
