@@ -5,6 +5,7 @@
 ### Enhancements
 
 - Enabling additional role sizes, who are we to judge
+- Set-LabDefaultOperatingSystem now supports Azure as well
 
 ### Bugs
 
