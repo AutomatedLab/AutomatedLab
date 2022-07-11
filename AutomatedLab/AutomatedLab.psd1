@@ -259,7 +259,8 @@
         'Enable-LabAzureJitAccess',
         'Install-LabSshKnownHost',
         'UnInstall-LabSshKnownHost',
-        'Get-LabSshKnownHost'
+        'Get-LabSshKnownHost',
+        'Initialize-LabWindowsActivation'
     )
 
     AliasesToExport        = @(

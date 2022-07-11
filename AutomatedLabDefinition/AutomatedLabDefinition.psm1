@@ -1945,7 +1945,15 @@ function Add-LabMachineDefinition
 
         [string]$OrganizationalUnit,
         
-        [string]$ReferenceDisk
+        [string]$ReferenceDisk,
+
+        [string]$KmsServerName,
+
+        [uint16]$KmsPort,
+
+        [string]$KmsLookupDomain,
+
+        [switch]$ActivateWindows
     )
 
     begin
@@ -2877,6 +2885,26 @@ function Add-LabMachineDefinition
         $machine.Roles = $Roles
         $machine.PostInstallationActivity = $PostInstallationActivity
         $machine.PreInstallationActivity = $PreInstallationActivity
+
+        if (($KmsLookupDomain -or $KmsServerName -or $ActivateWindows.IsPresent) -and $null -eq $Notes)
+        {
+            $Notes = @{}
+        }
+
+        if ($KmsLookupDomain)
+        {
+            $Notes['KmsLookupDomain'] = $KmsLookupDomain
+        }
+        elseif ($KmsServerName)
+        {
+            $Notes['KmsServerName'] = $KmsServerName
+            $Notes['KmsPort'] = $KmsPort -as [string]
+        }
+
+        if ($ActivateWindows.IsPresent)
+        {
+            $Notes['ActivateWindows'] = '1'
+        }
 
         if ($HypervProperties)
         {

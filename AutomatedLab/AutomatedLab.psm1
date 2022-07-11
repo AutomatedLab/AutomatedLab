@@ -1383,6 +1383,8 @@ function Install-Lab
         Write-PSFMessage -Message ('Error sending telemetry: {0}' -f $_.Exception)
     }
 
+    Initialize-LabWindowsActivation -ErrorAction SilentlyContinue
+
     if (-not $NoValidation -and ($performAll -or $PostDeploymentTests))
     {
         if ((Get-Module -ListAvailable -Name Pester -ErrorAction SilentlyContinue).Version -ge [version]'5.0')
