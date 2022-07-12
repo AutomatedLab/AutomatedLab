@@ -431,7 +431,7 @@ function New-LWHypervVM
     }
     else
     {
-        $referenceDiskPath = $Machine.OperatingSystem.BaseDiskPath
+        $referenceDiskPath = if ($Machine.ReferenceDiskPath) { $Machine.ReferenceDiskPath } else { $Machine.OperatingSystem.BaseDiskPath }
         $systemDisk = New-VHD -Path $path -Differencing -ParentPath $referenceDiskPath -ErrorAction Stop
         Write-PSFMessage "`tcreated differencing disk '$($systemDisk.Path)' pointing to '$ReferenceVhdxPath'"
     }
