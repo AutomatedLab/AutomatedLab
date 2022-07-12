@@ -58,6 +58,7 @@ function New-LWHypervVM
     }
 
     Import-UnattendedContent -Content $Machine.UnattendedXmlContent
+    #endregion
 
     #region network adapter settings
     $macAddressPrefix = Get-LabConfigurationItem -Name MacAddressPrefix
@@ -778,8 +779,9 @@ Stop-Transcript
 
     return $true
 }
-#endregion New-LWHypervVM
+#endregion
 
+#region Get-LWHypervVM
 function Get-LWHypervVM
 {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification = "Not relevant on Linux")]
@@ -835,6 +837,7 @@ function Get-LWHypervVM
 
     Write-LogFunctionExit
 }
+#endregion
 
 #region Remove-LWHypervVM
 function Remove-LWHypervVM
