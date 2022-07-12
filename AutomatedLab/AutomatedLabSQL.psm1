@@ -36,7 +36,14 @@ function Install-LabSqlServers
         return
     }
 
-    $machines = Get-LabVM -Role SQLServer
+    $machines = Get-LabVM -Role SQLServer | Where-Object SkipDeployment -eq $false
+    
+    Invoke-LabCommand -ComputerName $machines -ScriptBlock {
+        if (-not (Test-Path C:\DeployDebug))
+        {
+            $null = New-Item -ItemType Directory -Path C:\DeployDebug
+        }
+    }
 
     #The default SQL installation in Azure does not give the standard buildin administrators group access.
     #This section adds the rights. As only the renamed Builtin Admin account has permissions, Invoke-LabCommand cannot be used.
