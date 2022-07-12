@@ -13,7 +13,7 @@ function New-LabBaseImages
         return
     }
 
-    $oses = (Get-LabVm -All).OperatingSystem
+    $oses = (Get-LabVm -All | Where-Object {[string]::IsNullOrWhiteSpace($_.ReferenceDiskPath)}).OperatingSystem
 
     if (-not $lab.Sources.AvailableOperatingSystems)
     {

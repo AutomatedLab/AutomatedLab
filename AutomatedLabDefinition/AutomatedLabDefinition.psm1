@@ -1943,7 +1943,9 @@ function Add-LabMachineDefinition
 
         [string]$SshPrivateKeyPath,
 
-        [string]$OrganizationalUnit
+        [string]$OrganizationalUnit,
+        
+        [string]$ReferenceDisk
     )
 
     begin
@@ -2085,6 +2087,11 @@ function Add-LabMachineDefinition
         }
 
         $machine = New-Object AutomatedLab.Machine
+        if ($ReferenceDisk)
+        {
+            Write-ScreenInfo -Type Warning -Message "Usage of the ReferenceDisk parameter makes your lab essentially unsupportable. Don't be mad at us if we cannot reproduce your random issue if you bring your own images."
+            $machine.ReferenceDiskPath = $ReferenceDisk
+        }
         $machine.Name = $Name
         $machine.FriendlyName = $ResourceName
         $machine.OrganizationalUnit = $OrganizationalUnit

@@ -6,6 +6,7 @@
 
 - Enabling additional role sizes, who are we to judge
 - Set-LabDefaultOperatingSystem now supports Azure as well
+- Supporting arbitrary reference disk paths for individual VMs
 
 ### Bugs
 
