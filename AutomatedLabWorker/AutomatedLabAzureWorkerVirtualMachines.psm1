@@ -1258,6 +1258,8 @@ function Initialize-LWAzureVM
             WinRmMaxConcurrentOperationsPerUser = 1500
             WinRmMaxConnections                 = 300
         }
+
+        $null = mkdir C:\DeployDebug -ErrorAction SilentlyContinue
     
         Start-Service WinRm
         foreach ($setting in $defaultSettings.GetEnumerator())
@@ -2062,6 +2064,7 @@ function Enable-LWAzureWinRm
 
     $tempFileName = Join-Path -Path ([IO.Path]::GetTempPath()) -ChildPath enableazurewinrm.labtempfile.ps1
     $customScriptContent = @'
+$null = mkdir C:\DeployDebug -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Path C:\ALAzure -ErrorAction SilentlyContinue
 'Trying to enable Remoting and CredSSP' | Out-File C:\ALAzure\WinRmActivation.log -Append
 try

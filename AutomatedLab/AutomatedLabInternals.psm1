@@ -309,7 +309,6 @@ function Remove-LabDeploymentFiles
             'C:\WinRmCustomization.ps1',
             'C:\DeployDebug',
             'C:\ALLibraries',
-            'C:\DeployDebug',
             "C:\$($env:COMPUTERNAME).cer"
             
         $paths | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue

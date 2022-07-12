@@ -87,6 +87,13 @@
 
     Start-LabVM -ComputerName $all -Wait
 
+    Invoke-LabCommand -ComputerName $all -ScriptBlock {
+        if (-not (Test-Path C:\DeployDebug))
+        {
+            $null = New-Item -ItemType Directory -Path C:\DeployDebug
+        }
+    }
+
     # Prerequisites, all
     $odbc = Get-LabConfigurationItem -Name SqlOdbc13
     $SQLSysClrTypes = Get-LabConfigurationItem -Name SqlClrType2014
@@ -215,16 +222,16 @@
             $iniManagement['DwSqlServerInstance'] = $sqlMachine.Name
         }
 
-         # Setup Command Line Management-Server
+        # Setup Command Line Management-Server
             
-            Invoke-LabCommand -ComputerName $vm -ScriptBlock {
+        Invoke-LabCommand -ComputerName $vm -ScriptBlock {
             Add-LocalGroupMember -Sid S-1-5-32-544 -Member $iniManagement['DASAccountUser']
-            } -Variable (Get-Variable iniManagement)
-            $CommandlineArgumentsServer = $iniManagement.GetEnumerator() | Where-Object Key -notin ProductKey, ScomAdminGroupName | ForEach-Object { '/{0}:"{1}"' -f $_.Key, $_.Value }
+        } -Variable (Get-Variable iniManagement)
+        $CommandlineArgumentsServer = $iniManagement.GetEnumerator() | Where-Object Key -notin ProductKey, ScomAdminGroupName | ForEach-Object { '/{0}:"{1}"' -f $_.Key, $_.Value }
             
-            $setupCommandlineServer = "/install /silent /components:OMServer $CommandlineArgumentsServer"
-            Install-LabSoftwarePackage -ComputerName $vm -LocalPath C:\SCOM\setup.exe -CommandLine $setupCommandlineServer -AsJob -PassThru -UseShellExecute -UseExplicitCredentialsForScheduledJob -AsScheduledJob -Timeout 20 -NoDisplay
-            $isPrimaryManagementServer = $isPrimaryManagementServer - 1
+        $setupCommandlineServer = "/install /silent /components:OMServer $CommandlineArgumentsServer"
+        Install-LabSoftwarePackage -ComputerName $vm -LocalPath C:\SCOM\setup.exe -CommandLine $setupCommandlineServer -AsJob -PassThru -UseShellExecute -UseExplicitCredentialsForScheduledJob -AsScheduledJob -Timeout 20 -NoDisplay
+        $isPrimaryManagementServer = $isPrimaryManagementServer - 1
         
     }
 
@@ -291,21 +298,21 @@
         }
 
         
-            # Setup Command Line Management-Server
-            Invoke-LabCommand -ComputerName $vm -ScriptBlock {
+        # Setup Command Line Management-Server
+        Invoke-LabCommand -ComputerName $vm -ScriptBlock {
             Add-LocalGroupMember -Sid S-1-5-32-544 -Member $iniManagement['DASAccountUser']
-            } -Variable (Get-Variable iniManagement)
-            $CommandlineArgumentsServer = $iniManagement.GetEnumerator() | Where-Object Key -notin ProductKey, ScomAdminGroupName | ForEach-Object { '/{0}:"{1}"' -f $_.Key, $_.Value }
+        } -Variable (Get-Variable iniManagement)
+        $CommandlineArgumentsServer = $iniManagement.GetEnumerator() | Where-Object Key -notin ProductKey, ScomAdminGroupName | ForEach-Object { '/{0}:"{1}"' -f $_.Key, $_.Value }
             
-            $setupCommandlineServer = "/install /silent /components:OMServer $CommandlineArgumentsServer"
-            Install-LabSoftwarePackage -ComputerName $vm -LocalPath C:\SCOM\setup.exe -CommandLine $setupCommandlineServer -AsJob -PassThru -UseShellExecute -UseExplicitCredentialsForScheduledJob -AsScheduledJob -Timeout 20 -NoDisplay
+        $setupCommandlineServer = "/install /silent /components:OMServer $CommandlineArgumentsServer"
+        Install-LabSoftwarePackage -ComputerName $vm -LocalPath C:\SCOM\setup.exe -CommandLine $setupCommandlineServer -AsJob -PassThru -UseShellExecute -UseExplicitCredentialsForScheduledJob -AsScheduledJob -Timeout 20 -NoDisplay
         
     }
 
     # After SCOM is set up, we need to wait a bit for it to "settle", otherwise there might be timing issues later on
     Start-Sleep -Seconds 30
     Remove-LabPSSession -ComputerName $firstmgmt
-    $cmdAvailable = Invoke-LabCommand -PassThru -NoDisplay -ComputerName $firstmgmt {Get-Command Get-ScomManagementServer -ErrorAction SilentlyContinue}
+    $cmdAvailable = Invoke-LabCommand -PassThru -NoDisplay -ComputerName $firstmgmt { Get-Command Get-ScomManagementServer -ErrorAction SilentlyContinue }
     if (-not $cmdAvailable)
     {
         Start-Sleep -Seconds 30
