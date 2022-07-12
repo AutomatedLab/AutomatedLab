@@ -2836,7 +2836,7 @@ function Remove-LWAzureRecoveryServicesVault
 
     try
     {
-        $null = Remove-AzRecoveryServicesVault -Vault $vaultDeleted -Confirm:$false -ErrorAction Stop
+        $null = Remove-AzRecoveryServicesVault -Vault $vaultToDelete -Confirm:$false -ErrorAction Stop
     }
     catch
     {
