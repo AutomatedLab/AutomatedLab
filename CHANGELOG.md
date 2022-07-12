@@ -4,11 +4,14 @@
 
 ### Enhancements
 
+- Enabling additional role sizes, who are we to judge
 - Set-LabDefaultOperatingSystem now supports Azure as well
 
 ### Bugs
 
 - Fixing serialization issue in SCOM role
+- Fixing issue with Azure role sizes requiring Gen 2 VMs
+- Fixing issue with Az.Storage module not being able to use backslashes
 
 ## 5.43.0 (2022-06-30)
 

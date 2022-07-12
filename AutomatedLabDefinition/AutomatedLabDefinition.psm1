@@ -1572,7 +1572,7 @@ function Add-LabIsoImageDefinition
 
                 if (-not $isoFiles -and $Name)
                 {
-                    $filterPath = Split-Path -Path $Path -Leaf
+                    $filterPath = (Split-Path -Path $Path -Leaf) -replace '\\','/' # Due to breaking changes introduced in Az.Storage 4.7.0
                     Write-ScreenInfo -Message "Syncing $filterPath with Azure lab sources storage as it did not exist"
                     Sync-LabAzureLabSources -Filter $filterPath -NoDisplay
 

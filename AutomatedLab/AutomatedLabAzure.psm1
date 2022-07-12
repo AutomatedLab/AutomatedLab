@@ -323,7 +323,8 @@ function Add-LabAzureSubscription
     {
         throw "No available role sizes in region '$DefaultLocationName'! Cannot continue."
     }
-    $script:lab.AzureSettings.RoleSizes = [AutomatedLab.Azure.AzureRmVmSize]::Create($roleSizes)
+
+    $script:lab.AzureSettings.RoleSizes = $rolesizes
 
     # Add LabSources storage
     New-LabAzureLabSourcesStorage
@@ -428,6 +429,16 @@ Get/Set/Register/Unregister-PSFConfig -Module AutomatedLab -Name AutoSyncLabSour
         elseif ($choice -eq 1)
         {
             Set-PSFConfig -Module AutomatedLab -Name AutoSyncLabSources -Value $false -PassThru | Register-PSFConfig
+        }
+
+        $timestamps.LabSourcesSynced = Get-Date
+        if ($IsLinux -or $IsMacOs)
+        {
+            $timestamps.Export((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/Timestamps.xml'))
+        }
+        else
+        {
+            $timestamps.ExportToRegistry('Cache', 'Timestamps')
         }
     }
 
@@ -1395,9 +1406,23 @@ function Get-LabAzureAvailableRoleSize
 
     $availableRoleSizes = Get-AzComputeResourceSku -Location $azLocation.Location | Where-Object {
         $_.ResourceType -eq 'virtualMachines' -and $_.Restrictions.ReasonCode -notcontains 'NotAvailableForSubscription'
-    } | Select-Object -ExpandProperty Name
+    }
 
-    Get-AzVMSize -Location $azLocation.Location | Where-Object -Property Name -in $availableRoleSizes
+    foreach ($vms in (Get-AzVMSize -Location $azLocation.Location | Where-Object -Property Name -in $availableRoleSizes.Name))
+    {
+        $rsInfo = $availableRoleSizes | Where-Object Name -eq $vms.Name
+
+            [AutomatedLab.Azure.AzureRmVmSize]@{
+                NumberOfCores = $vms.NumberOfCores
+                MemoryInMB = $vms.MemoryInMB
+                Name = $vms.Name
+                MaxDataDiskCount = $vms.MaxDataDiskCount
+                ResourceDiskSizeInMB = $vms.ResourceDiskSizeInMB
+                OSDiskSizeInMB = $vms.OSDiskSizeInMB
+                Gen1Supported = ($rsInfo.Capabilities | Where-Object Name -eq HyperVGenerations).Value -like '*v1*'
+                Gen2Supported = ($rsInfo.Capabilities | Where-Object Name -eq HyperVGenerations).Value -like '*v2*'
+            }
+    }
 }
 
 function Get-LabAzureAvailableSku
