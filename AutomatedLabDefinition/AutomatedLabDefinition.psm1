@@ -2087,11 +2087,17 @@ function Add-LabMachineDefinition
         }
 
         $machine = New-Object AutomatedLab.Machine
-        if ($ReferenceDisk)
+        if ($ReferenceDisk -and $script:lab.DefaultVirtualizationEngine -eq 'HyperV')
         {
             Write-ScreenInfo -Type Warning -Message "Usage of the ReferenceDisk parameter makes your lab essentially unsupportable. Don't be mad at us if we cannot reproduce your random issue if you bring your own images."
             $machine.ReferenceDiskPath = $ReferenceDisk
         }
+
+        if ($ReferenceDisk -and $script:lab.DefaultVirtualizationEngine -ne 'HyperV')
+        {
+            Write-ScreenInfo -Type Warning -Message "Sorry, no custom reference disk allowed on $($script:lab.DefaultVirtualizationEngine). This parameter will be ignored."
+        }
+
         $machine.Name = $Name
         $machine.FriendlyName = $ResourceName
         $machine.OrganizationalUnit = $OrganizationalUnit
