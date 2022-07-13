@@ -14,6 +14,7 @@
 - Fixing issue with Azure role sizes requiring Gen 2 VMs
 - Fixing issue with Az.Storage module not being able to use backslashes
 - Force-create DeployDebug folder in case it does not exist, which occasionally led to issues with msi installations
+- Fixing SharePoint issue if IP addresses are used instead of host names
 
 ## 5.43.0 (2022-06-30)
 
