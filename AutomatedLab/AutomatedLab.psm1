@@ -3288,6 +3288,7 @@ function Show-LabDeploymentSummary
         return
     }
 
+    $lab = Get-Lab
     $ts = New-TimeSpan -Start $Global:AL_DeploymentStart -End (Get-Date)
     $hoursPlural = ''
     $minutesPlural = ''
