@@ -235,6 +235,7 @@ function Install-LabSharePoint
 
     # Install SharePoint binaries
     Write-ScreenInfo -Message "Installing SharePoint binaries on server"
+    Restart-LabVM -ComputerName $machines -Wait
 
     $jobs = foreach ($group in $versionGroups)
     {
