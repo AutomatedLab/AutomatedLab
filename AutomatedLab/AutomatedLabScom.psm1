@@ -12,7 +12,7 @@
         SqlInstancePort               = '1433'
         DatabaseName                  = 'OperationsManager'
         DwSqlServerInstance           = ''
-        InstallLocation               = 'C:\Program Files\{0}'
+        InstallLocation               = 'C:\Program Files\Microsoft System Center\Operations Manager'
         DwSqlInstancePort             = '1433'
         DwDatabaseName                = 'OperationsManagerDW'
         ActionAccountUser             = 'OM19AA'
@@ -34,7 +34,7 @@
         SqlServerInstance             = ''
         SqlInstancePort               = '1433'
         DatabaseName                  = 'OperationsManager'
-        InstallLocation               = 'C:\Program Files\{0}'
+        InstallLocation               = 'C:\Program Files\Microsoft System Center\Operations Manager'
         ActionAccountUser             = 'OM19AA'
         ActionAccountPassword         = ''
         DASAccountUser                = 'OM19DAS' 
@@ -51,7 +51,7 @@
 
     $iniNativeConsole = @{
         EnableErrorReporting          = 'Never'
-        InstallLocation               = 'C:\Program Files\{0}'
+        InstallLocation               = 'C:\Program Files\Microsoft System Center\Operations Manager'
         SendCEIPReports               = '0'
         UseMicrosoftUpdate            = '0'
         AcceptEndUserLicenseAgreement = '1'
