@@ -175,6 +175,7 @@
         'New-LabPSSession',
         'New-LabVHDX',
         'New-LabVM',
+        'New-LabBaseImages',
         'Remove-LabDeploymentFiles',
         'Remove-Lab',
         'Remove-LabAzureLabSourcesStorage',
