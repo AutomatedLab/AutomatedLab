@@ -75,6 +75,10 @@ $pwshUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.2.4/Po
 $pwshPath = Get-LabInternetFile -uri $pwshUrl -Path $labsources/SoftwarePackages -PassThru
 Install-LabSoftwarePackage -Path $pwshPath.FullName -ComputerName $ComputerName -NoDisplay
 
+$netFullUrl = Get-LabConfigurationItem dotnet48DownloadLink
+$netFullPath = Get-LabInternetFile -uri $netFullUrl -Path $labsources/SoftwarePackages -PassThru
+Install-LabSoftwarePackage -Path $netFullPath.FullName -ComputerName $ComputerName -NoDisplay
+
 Write-ScreenInfo -Message "Downloading pode" -Type Verbose
 $downloadPath = Join-Path -Path (Get-LabSourcesLocationInternal -Local) -ChildPath SoftwarePackages\pode
 if (-not (Test-LabHostConnected) -and -not (Test-Path $downloadPath))
@@ -88,6 +92,7 @@ if (-not (Test-path -Path $downloadPath))
     Save-Module -Name pode -Path (Join-Path -Path (Get-LabSourcesLocationInternal -Local) -ChildPath SoftwarePackages) -Repository $Repository
 }
 Copy-LabFileItem -Path $downloadPath -ComputerName $vm -DestinationFolderPath (Join-Path $env:ProgramFiles -ChildPath PowerShell\Modules)
+Copy-LabFileItem -Path $downloadPath -ComputerName $vm -DestinationFolderPath (Join-Path $env:ProgramFiles -ChildPath WindowsPowerShell\Modules)
 
 
 $session = New-LabPSSession -Machine $vm
@@ -117,7 +122,7 @@ $webConfig = @"
         <remove name="WebDAVModule" />
       </modules>
 
-      <aspNetCore processPath="pwsh.exe" arguments=".\server.ps1" stdoutLogEnabled="true" stdoutLogFile=".\logs\stdout" hostingModel="OutOfProcess"/>
+      <aspNetCore processPath="powershell.exe" arguments=".\server.ps1" stdoutLogEnabled="true" stdoutLogFile=".\logs\stdout" hostingModel="OutOfProcess"/>
 
       <security>
         <authorization>
