@@ -177,9 +177,7 @@ Invoke-LabCommand -ComputerName $ComputerName -ActivityName 'Registering website
 
     Restart-WebAppPool -Name LabBuilder
 
-    # Pre-Create OSses
     $os = Get-LabAvailableOperatingSystem
-    New-LabBaseImages -OperatingSystem $os
 } -NoDisplay
 
 Copy-LabFileItem -Path $PSScriptRoot\server.ps1 -ComputerName $vm -DestinationFolderPath C:\LabBuilder
