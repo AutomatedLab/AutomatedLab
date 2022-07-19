@@ -57,7 +57,7 @@ $labCreationJob = Invoke-RestMethod -Method Get -Uri http://NestedBuilder/Job?Id
 
 # Create lab
 $request = @{
-    LabScript = Get-Content "$labsources\SampleScripts\Introduction\01 Single Win10 Client.ps1" -Raw
+    LabScript = [string](Get-Content "$labsources\SampleScripts\Introduction\01 Single Win10 Client.ps1" -Raw) # cast to string -> Workaround if this is ever executed in PowerShell_ISE
 } | ConvertTo-Json
 
 $guid = Invoke-RestMethod -Method Post -Uri http://NestedBuilder/Lab -Body $request -ContentType application/json -Credential $credential
