@@ -13,7 +13,7 @@ param
     $TelemetryOptIn = 'no', # Opt out of telemetry for build worker by saying yes here
 
     [char]
-    $LabSourcesDriveLetter
+    $LabSourcesDriveLetter = 'L'
 )
 
 New-LabDefinition -Name $labName -DefaultVirtualizationEngine HyperV

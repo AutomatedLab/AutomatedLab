@@ -7,6 +7,7 @@
 - Enabling additional role sizes, who are we to judge
 - Set-LabDefaultOperatingSystem now supports Azure as well
 - Supporting arbitrary reference disk paths for individual VMs
+- Enabling AutomatedLab to activate Windows VMs either online or via KMS (Active Directory based or standalone server)
 
 ### Bugs
 
