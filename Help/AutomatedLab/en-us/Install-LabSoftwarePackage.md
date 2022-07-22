@@ -49,17 +49,32 @@ PS C:\> {{ Add example code here }}
 
 ## PARAMETERS
 
-### -Path
-The source path of the package to install
+### -AsJob
+Indicates that the cmdlet should run in the background
 
 ```yaml
-Type: String
-Parameter Sets: SinglePackage
+Type: SwitchParameter
+Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: Named
-Default value: None
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -AsScheduledJob
+Indicates that the installation should be executed in a scheduled job, if it does not work otherwise
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -69,36 +84,6 @@ The package command line
 
 ```yaml
 Type: String
-Parameter Sets: SinglePackage, SingleLocalPackage
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Timeout
-The installation timeout in minutes
-
-```yaml
-Type: Int32
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -CopyFolder
-Indicates if the parent folder of the software package should be copied entirely to the target machine
-
-```yaml
-Type: Boolean
 Parameter Sets: SinglePackage, SingleLocalPackage
 Aliases:
 
@@ -124,8 +109,23 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -AsJob
-Indicates that the cmdlet should run in the background
+### -CopyFolder
+Indicates if the parent folder of the software package should be copied entirely to the target machine
+
+```yaml
+Type: Boolean
+Parameter Sets: SinglePackage, SingleLocalPackage
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DoNotUseCredSsp
+Indicates that CredSSP should not be used
 
 ```yaml
 Type: SwitchParameter
@@ -139,42 +139,12 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -PassThru
-Indicates if the results should be passed back to the caller
+### -ExpectedReturnCodes
+The list of expected return codes, e.g.
+0,3010
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -NoDisplay
-Indicates if output should be suppressed
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ProgressIndicator
-Every n seconds, print a .
-to the console
-
-```yaml
-Type: Int32
+Type: Int32[]
 Parameter Sets: (All)
 Aliases:
 
@@ -215,6 +185,67 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -NoDisplay
+Indicates if output should be suppressed
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -PassThru
+Indicates if the results should be passed back to the caller
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Path
+The source path of the package to install
+
+```yaml
+Type: String
+Parameter Sets: SinglePackage
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ProgressIndicator
+Every n seconds, print a .
+to the console
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -SoftwarePackage
 The lab software package
 
@@ -230,23 +261,23 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -DoNotUseCredSsp
-Indicates that CredSSP should not be used
+### -Timeout
+The installation timeout in minutes
 
 ```yaml
-Type: SwitchParameter
+Type: Int32
 Parameter Sets: (All)
 Aliases:
 
 Required: False
 Position: Named
-Default value: False
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -AsScheduledJob
-Indicates that the installation should be executed in a scheduled job, if it does not work otherwise
+### -UseExplicitCredentialsForScheduledJob
+Use credentials instead of logged on account for the scheduled job
 
 ```yaml
 Type: SwitchParameter
@@ -262,37 +293,6 @@ Accept wildcard characters: False
 
 ### -UseShellExecute
 Indicates that the ProcessStartInfo property UseShellExecute should be used
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ExpectedReturnCodes
-The list of expected return codes, e.g.
-0,3010
-
-```yaml
-Type: Int32[]
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -UseExplicitCredentialsForScheduledJob
-Use credentials instead of logged on account for the scheduled job
 
 ```yaml
 Type: SwitchParameter

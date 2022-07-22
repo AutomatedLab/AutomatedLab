@@ -13,7 +13,7 @@ Disable the transmission of telemetry
 ## SYNTAX
 
 ```
-Disable-LabTelemetry
+Disable-LabTelemetry [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -29,6 +29,9 @@ PS C:\> Disable-LabTelemetry
 Disable telemetry until Enable-LabTelemetry is used.
 
 ## PARAMETERS
+
+### CommonParameters
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 

@@ -101,116 +101,11 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -PostInstallationActivity
-Indicates if the post installation activities defined in the lab should be processed instead of a script block
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: PostInstallationActivity
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ComputerName
-The computer names
-
-```yaml
-Type: String[]
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: 0
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -ArgumentList
 The argument list for the script block or the script
 
 ```yaml
 Type: Object[]
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -UseLocalCredential
-Indicates if the machines' local credentials should be used
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Credential
-The credential that should be used
-
-```yaml
-Type: PSCredential
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Variable
-The names of the variables to add to the sessions executing the lab command
-
-```yaml
-Type: PSVariable[]
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Function
-The function definitions to add to the sessions executing the lab command
-
-```yaml
-Type: FunctionInfo[]
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ThrottleLimit
-The amount of parallel jobs to create
-
-```yaml
-Type: Int32
 Parameter Sets: (All)
 Aliases:
 
@@ -236,90 +131,46 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -PassThru
-Indicates if the resulting jobs should be passed back to the caller
+### -ComputerName
+The computer names
 
 ```yaml
-Type: SwitchParameter
+Type: String[]
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 0
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Credential
+The credential that should be used
+
+```yaml
+Type: PSCredential
 Parameter Sets: (All)
 Aliases:
 
 Required: False
 Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -NoDisplay
-Indicates if output should be suppressed
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ScriptBlock
-The script block to execute on the machines
-
-```yaml
-Type: ScriptBlock
-Parameter Sets: ScriptBlock, ScriptBlockFileContentDependency
-Aliases:
-
-Required: True
-Position: 1
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Retries
-The number of retries in case the script block fails
+### -CustomRoleName
+The custom role that should be deployed, e.g.
+ProGet
 
 ```yaml
-Type: Int32
-Parameter Sets: ScriptBlock, Script, ScriptFileNameContentDependency, ScriptFileContentDependency, ScriptBlockFileContentDependency
+Type: String[]
+Parameter Sets: PostInstallationActivity
 Aliases:
 
 Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -RetryIntervalInSeconds
-The amount of seconds to wait between each retry
-
-```yaml
-Type: Int32
-Parameter Sets: ScriptBlock, Script, ScriptFileNameContentDependency, ScriptFileContentDependency, ScriptBlockFileContentDependency
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -FilePath
-The script file path if a script file should be used
-
-```yaml
-Type: String
-Parameter Sets: Script, ScriptFileContentDependency
-Aliases:
-
-Required: True
 Position: Named
 Default value: None
 Accept pipeline input: False
@@ -383,13 +234,27 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -CustomRoleName
-The custom role that should be deployed, e.g.
-ProGet
+### -FilePath
+The script file path if a script file should be used
 
 ```yaml
-Type: String[]
-Parameter Sets: PostInstallationActivity
+Type: String
+Parameter Sets: Script, ScriptFileContentDependency
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Function
+The function definitions to add to the sessions executing the lab command
+
+```yaml
+Type: FunctionInfo[]
+Parameter Sets: (All)
 Aliases:
 
 Required: False
@@ -414,12 +279,147 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -NoDisplay
+Indicates if output should be suppressed
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -PassThru
+Indicates if the resulting jobs should be passed back to the caller
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -PostInstallationActivity
+Indicates if the post installation activities defined in the lab should be processed instead of a script block
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: PostInstallationActivity
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -PreInstallationActivity
 Any pre-installation activities before the role(s) are deployed
 
 ```yaml
 Type: SwitchParameter
 Parameter Sets: PostInstallationActivity
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Retries
+The number of retries in case the script block fails
+
+```yaml
+Type: Int32
+Parameter Sets: ScriptBlock, Script, ScriptFileNameContentDependency, ScriptFileContentDependency, ScriptBlockFileContentDependency
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -RetryIntervalInSeconds
+The amount of seconds to wait between each retry
+
+```yaml
+Type: Int32
+Parameter Sets: ScriptBlock, Script, ScriptFileNameContentDependency, ScriptFileContentDependency, ScriptBlockFileContentDependency
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ScriptBlock
+The script block to execute on the machines
+
+```yaml
+Type: ScriptBlock
+Parameter Sets: ScriptBlock, ScriptBlockFileContentDependency
+Aliases:
+
+Required: True
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ThrottleLimit
+The amount of parallel jobs to create
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -UseLocalCredential
+Indicates if the machines' local credentials should be used
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Variable
+The names of the variables to add to the sessions executing the lab command
+
+```yaml
+Type: PSVariable[]
+Parameter Sets: (All)
 Aliases:
 
 Required: False

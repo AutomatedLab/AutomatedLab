@@ -36,21 +36,6 @@ Tries to locate the network definition that has the address space 192.168.2.0/24
 
 ## PARAMETERS
 
-### -Name
-The name of the network
-
-```yaml
-Type: String
-Parameter Sets: ByName
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -AddressSpace
 The address space of the network in CIDR notation
 
@@ -60,6 +45,21 @@ Parameter Sets: ByAddressSpace
 Aliases:
 
 Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Name
+The name of the network
+
+```yaml
+Type: String
+Parameter Sets: ByName
+Aliases:
+
+Required: False
 Position: Named
 Default value: None
 Accept pipeline input: False

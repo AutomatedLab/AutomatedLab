@@ -13,7 +13,7 @@ Configure RRAS
 ## SYNTAX
 
 ```
-Install-LabRouting [[-InstallationTimeout] <Int32>] [-ProgressIndicator <Int32>] [<CommonParameters>]
+Install-LabRouting [[-InstallationTimeout] <Int32>] [[-ProgressIndicator] <Int32>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -56,7 +56,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: Named
+Position: 1
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

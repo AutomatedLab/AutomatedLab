@@ -61,8 +61,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -SupressOutput
-Indicates if output should be suppressed
+### -PassThru
+Indicates if a psobject containing drive info should be passed back to the caller
 
 ```yaml
 Type: SwitchParameter
@@ -76,8 +76,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -PassThru
-Indicates if a psobject containing drive info should be passed back to the caller
+### -SupressOutput
+Indicates if output should be suppressed
 
 ```yaml
 Type: SwitchParameter

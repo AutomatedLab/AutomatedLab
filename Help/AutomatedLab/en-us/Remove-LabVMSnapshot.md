@@ -46,17 +46,17 @@ Remove Snappy01 for all lab machines
 
 ## PARAMETERS
 
-### -SnapshotName
-The snapshot name
+### -AllMachines
+Indicates that the snapshot should be removed for all machines
 
 ```yaml
-Type: String
-Parameter Sets: ByNameSnapshotByName, AllMachinesSnapshotByName
+Type: SwitchParameter
+Parameter Sets: AllMachinesSnapshotByName, AllMachinesAllSnapshots
 Aliases:
 
-Required: True
+Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
 ```
@@ -76,27 +76,27 @@ Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
 ```
 
-### -AllMachines
-Indicates that the snapshot should be removed for all machines
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: AllMachinesSnapshotByName, AllMachinesAllSnapshots
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: True (ByPropertyName)
-Accept wildcard characters: False
-```
-
 ### -ComputerName
 The hosts to remove a snapshot from
 
 ```yaml
 Type: String[]
 Parameter Sets: ByNameSnapshotByName, ByNameAllSnapShots
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -SnapshotName
+The snapshot name
+
+```yaml
+Type: String
+Parameter Sets: ByNameSnapshotByName, AllMachinesSnapshotByName
 Aliases:
 
 Required: True

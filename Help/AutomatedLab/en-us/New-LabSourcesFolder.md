@@ -13,8 +13,8 @@ Create and populate a new labsources folder
 ## SYNTAX
 
 ```
-New-LabSourcesFolder [[-DriveLetter] <String>] [-Force] [-Branch <String>] [-WhatIf] [-Confirm]
- [<CommonParameters>]
+New-LabSourcesFolder [[-DriveLetter] <String>] [-Force] [-FolderStructureOnly] [[-Branch] <String>] [-WhatIf]
+ [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -48,6 +48,22 @@ Download lab sources content to D:\LabSources and overwrite any existing files
 
 ## PARAMETERS
 
+### -Branch
+Name of branch to use when downloading content. Defaults to master
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+Accepted values: master, develop
+
+Required: False
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -Confirm
 Prompts you for confirmation before running the cmdlet.
 
@@ -78,6 +94,21 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -FolderStructureOnly
+Only scaffold empty folder structure
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -Force
 Indicates that content will be replaced
 
@@ -101,21 +132,6 @@ The cmdlet is not run.
 Type: SwitchParameter
 Parameter Sets: (All)
 Aliases: wi
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Branch
-Name of branch to use when downloading content. Defaults to master
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
 
 Required: False
 Position: Named

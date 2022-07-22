@@ -14,7 +14,7 @@ Install root domain controllers
 
 ```
 Install-LabRootDcs [[-DcPromotionRestartTimeout] <Int32>] [[-AdwsReadyTimeout] <Int32>] [-CreateCheckPoints]
- [-ProgressIndicator <Int32>] [<CommonParameters>]
+ [[-ProgressIndicator] <Int32>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -30,22 +30,6 @@ PS C:\> {{ Add example code here }}
 {{ Add example description here }}
 
 ## PARAMETERS
-
-### -DcPromotionRestartTimeout
-The DC promo restart timeout, i.e.
-how long we should wait for the restart after the DC promo to complete
-
-```yaml
-Type: Int32
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 0
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
 
 ### -AdwsReadyTimeout
 The timeout to wait for the Active Directory Web Services
@@ -77,6 +61,22 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -DcPromotionRestartTimeout
+The DC promo restart timeout, i.e.
+how long we should wait for the restart after the DC promo to complete
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 0
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -ProgressIndicator
 After n seconds, print a .
 to the console
@@ -87,7 +87,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: Named
+Position: 2
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

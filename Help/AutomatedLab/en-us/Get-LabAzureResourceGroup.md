@@ -36,6 +36,21 @@ Returns the Resource Group of the current lab
 
 ## PARAMETERS
 
+### -CurrentLab
+Indicates that the Resource Group of the current lab should be returned
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: ByLab
+Aliases:
+
+Required: False
+Position: 0
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -ResourceGroupName
 The names of the resource groups to return
 
@@ -47,21 +62,6 @@ Aliases:
 Required: False
 Position: 0
 Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -CurrentLab
-Indicates that the Resource Group of the current lab should be returned
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: ByLab
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

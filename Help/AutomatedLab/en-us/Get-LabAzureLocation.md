@@ -24,7 +24,6 @@ Can also list all available Azure locations
 
 ### Example 1
 
-
 ```powershell
 Get-LabAzureLocation
 ```
@@ -34,7 +33,6 @@ Get the fastest responding Azure location
 UK South
 
 ### Example 2
-
 
 ```powershell
 Get-LabAzureLocation -List
@@ -72,21 +70,6 @@ South India            9999
 
 ## PARAMETERS
 
-### -LocationName
-The location display name to return
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 0
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -List
 Indicates whether all locations should be listed
 
@@ -97,6 +80,21 @@ Aliases:
 
 Required: False
 Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -LocationName
+The location display name to return
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 0
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

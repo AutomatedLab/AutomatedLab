@@ -71,6 +71,7 @@ Uses a dynamic ValidateSet over all possible providers.
 Type: String[]
 Parameter Sets: (All)
 Aliases:
+Accepted values: Toast, Ifttt, Mail, Voice
 
 Required: False
 Position: 2

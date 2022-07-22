@@ -34,8 +34,8 @@ Take care to select the same installation credentials, otherwise the domain cont
 
 ## PARAMETERS
 
-### -Name
-Name of Active Directory domain or forest in FQDN format.
+### -AdminPassword
+Desired password of the administrator when deploying a new lab or password of an existing administrator if adding to a lab or an existing external (not deployed by AutomatedLab) domain.
 
 ```yaml
 Type: String
@@ -43,7 +43,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: 0
+Position: 2
 Default value: None
 Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
@@ -64,8 +64,8 @@ Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
 ```
 
-### -AdminPassword
-Desired password of the administrator when deploying a new lab or password of an existing administrator if adding to a lab or an existing external (not deployed by AutomatedLab) domain.
+### -Name
+Name of Active Directory domain or forest in FQDN format.
 
 ```yaml
 Type: String
@@ -73,7 +73,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: 2
+Position: 0
 Default value: None
 Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False

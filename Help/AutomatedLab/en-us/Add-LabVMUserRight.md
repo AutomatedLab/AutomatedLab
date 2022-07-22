@@ -45,21 +45,6 @@ Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
 ```
 
-### -UserName
-The user name to be granted rights
-
-```yaml
-Type: String[]
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -Privilege
 A list of privileges to assign, e.g.
 SEDebug
@@ -68,6 +53,22 @@ SEDebug
 Type: String[]
 Parameter Sets: (All)
 Aliases: Priveleges
+Accepted values: SeNetworkLogonRight, SeRemoteInteractiveLogonRight, SeBatchLogonRight, SeInteractiveLogonRight, SeServiceLogonRight, SeDenyNetworkLogonRight, SeDenyInteractiveLogonRight, SeDenyBatchLogonRight, SeDenyServiceLogonRight, SeDenyRemoteInteractiveLogonRight, SeTcbPrivilege, SeMachineAccountPrivilege, SeIncreaseQuotaPrivilege, SeBackupPrivilege, SeChangeNotifyPrivilege, SeSystemTimePrivilege, SeCreateTokenPrivilege, SeCreatePagefilePrivilege, SeCreateGlobalPrivilege, SeDebugPrivilege, SeEnableDelegationPrivilege, SeRemoteShutdownPrivilege, SeAuditPrivilege, SeImpersonatePrivilege, SeIncreaseBasePriorityPrivilege, SeLoadDriverPrivilege, SeLockMemoryPrivilege, SeSecurityPrivilege, SeSystemEnvironmentPrivilege, SeManageVolumePrivilege, SeProfileSingleProcessPrivilege, SeSystemProfilePrivilege, SeUndockPrivilege, SeAssignPrimaryTokenPrivilege, SeRestorePrivilege, SeShutdownPrivilege, SeSynchAgentPrivilege, SeTakeOwnershipPrivilege
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -UserName
+The user name to be granted rights
+
+```yaml
+Type: String[]
+Parameter Sets: (All)
+Aliases:
 
 Required: False
 Position: Named

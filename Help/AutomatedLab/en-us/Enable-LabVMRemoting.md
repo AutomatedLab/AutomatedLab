@@ -36,21 +36,6 @@ Enable Windows Remote Management on lab VMs
 
 ## PARAMETERS
 
-### -ComputerName
-The computer names
-
-```yaml
-Type: String[]
-Parameter Sets: ByName
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: True (ByPropertyName)
-Accept wildcard characters: False
-```
-
 ### -All
 Indicates whether all lab machines should be used
 
@@ -62,6 +47,21 @@ Aliases:
 Required: True
 Position: Named
 Default value: False
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -ComputerName
+The computer names
+
+```yaml
+Type: String[]
+Parameter Sets: ByName
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
 Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
 ```

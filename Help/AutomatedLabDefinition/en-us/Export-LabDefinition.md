@@ -30,8 +30,8 @@ Export the current lab definition (Get-LabDefinition, Get-Lab) to $env:ProgramDa
 
 ## PARAMETERS
 
-### -Force
-Overwrite existing XML files
+### -ExportDefaultUnattendedXml
+Export the unattend.xml for all machines as well
 
 ```yaml
 Type: SwitchParameter
@@ -45,8 +45,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -ExportDefaultUnattendedXml
-Export the unattend.xml for all machines as well
+### -Force
+Overwrite existing XML files
 
 ```yaml
 Type: SwitchParameter

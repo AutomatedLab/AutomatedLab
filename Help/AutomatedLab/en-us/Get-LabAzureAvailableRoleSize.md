@@ -12,8 +12,14 @@ Get all available Azure Compute sizes
 
 ## SYNTAX
 
+### DisplayName (Default)
 ```
-Get-LabAzureAvailableRoleSize [-Location] <String> [<CommonParameters>]
+Get-LabAzureAvailableRoleSize -DisplayName <String> [<CommonParameters>]
+```
+
+### Name
+```
+Get-LabAzureAvailableRoleSize -LocationName <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -30,16 +36,31 @@ List all sizes we can deploy in West Europe
 
 ## PARAMETERS
 
-### -Location
+### -DisplayName
 Location display name
 
 ```yaml
 Type: String
-Parameter Sets: (All)
+Parameter Sets: DisplayName
+Aliases: Location
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -LocationName
+Location name
+
+```yaml
+Type: String
+Parameter Sets: Name
 Aliases:
 
 Required: True
-Position: 0
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

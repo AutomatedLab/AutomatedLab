@@ -46,8 +46,8 @@ Accept pipeline input: True (ByPropertyName, ByValue)
 Accept wildcard characters: False
 ```
 
-### -Wait
-Indicates that we should wait for the restart to complete
+### -NoDisplay
+Indicates that no console output should be displayed
 
 ```yaml
 Type: SwitchParameter
@@ -61,17 +61,17 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -ShutdownTimeoutInMinutes
-The restart timeout in minutes
+### -NoNewLine
+Indicates that no new lines should be inserted into the output
 
 ```yaml
-Type: Double
+Type: SwitchParameter
 Parameter Sets: (All)
 Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -92,23 +92,23 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -NoNewLine
-Indicates that no new lines should be inserted into the output
+### -ShutdownTimeoutInMinutes
+The restart timeout in minutes
 
 ```yaml
-Type: SwitchParameter
+Type: Double
 Parameter Sets: (All)
 Aliases:
 
 Required: False
 Position: Named
-Default value: False
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -NoDisplay
-Indicates that no console output should be displayed
+### -Wait
+Indicates that we should wait for the restart to complete
 
 ```yaml
 Type: SwitchParameter

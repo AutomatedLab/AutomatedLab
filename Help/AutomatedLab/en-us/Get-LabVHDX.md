@@ -36,21 +36,6 @@ Return all lab VHDX files
 
 ## PARAMETERS
 
-### -Name
-Name of the VHDX file
-
-```yaml
-Type: String[]
-Parameter Sets: ByName
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -All
 Switch parameter to return all disks
 
@@ -62,6 +47,21 @@ Aliases:
 Required: True
 Position: Named
 Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Name
+Name of the VHDX file
+
+```yaml
+Type: String[]
+Parameter Sets: ByName
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

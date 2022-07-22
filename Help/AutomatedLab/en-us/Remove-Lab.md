@@ -14,7 +14,7 @@ Remove the lab
 
 ### ByName (Default)
 ```
-Remove-Lab [[-Name] <String>] [-RemoveExternalSwitches] [-WhatIf] [-Confirm] [<CommonParameters>]
+Remove-Lab [-Name <String>] [-RemoveExternalSwitches] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ### ByPath
@@ -37,21 +37,6 @@ Removes the lab with the name MyOldLab
 
 ## PARAMETERS
 
-### -WhatIf
-Indicates if a trial run should be executed
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases: wi
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -Confirm
 Indicates that all actions need confirmation
 
@@ -64,6 +49,21 @@ Required: False
 Position: Named
 Default value: False
 Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Name
+The name of the lab
+
+```yaml
+Type: String
+Parameter Sets: ByName
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
 ```
 
@@ -82,21 +82,6 @@ Accept pipeline input: True (ByValue)
 Accept wildcard characters: False
 ```
 
-### -Name
-The name of the lab
-
-```yaml
-Type: String
-Parameter Sets: ByName
-Aliases:
-
-Required: False
-Position: 1
-Default value: None
-Accept pipeline input: True (ByPropertyName)
-Accept wildcard characters: False
-```
-
 ### -RemoveExternalSwitches
 Indicates that external switches should also be removed
 
@@ -104,6 +89,21 @@ Indicates that external switches should also be removed
 Type: SwitchParameter
 Parameter Sets: (All)
 Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -WhatIf
+Indicates if a trial run should be executed
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases: wi
 
 Required: False
 Position: Named

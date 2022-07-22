@@ -13,7 +13,7 @@ Remove an Azure VM
 ## SYNTAX
 
 ```
-Remove-LWAzureVM -Name <String> [-AsJob] [-PassThru] [<CommonParameters>]
+Remove-LWAzureVM [-Name] <String> [-AsJob] [-PassThru] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -45,6 +45,21 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -Name
+The host to remove
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 0
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -PassThru
 Indicates that a job object should be returned
 
@@ -56,21 +71,6 @@ Aliases:
 Required: False
 Position: Named
 Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Name
-The host to remove
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

@@ -30,13 +30,13 @@ Removes this subscription's lab sources storage account.
 
 ## PARAMETERS
 
-### -WhatIf
-Indicates that the operation should be tested before being executed
+### -Confirm
+Requests a user confirmation before continuing
 
 ```yaml
 Type: SwitchParameter
 Parameter Sets: (All)
-Aliases: wi
+Aliases: cf
 
 Required: False
 Position: Named
@@ -45,13 +45,13 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Confirm
-Requests a user confirmation before continuing
+### -WhatIf
+Indicates that the operation should be tested before being executed
 
 ```yaml
 Type: SwitchParameter
 Parameter Sets: (All)
-Aliases: cf
+Aliases: wi
 
 Required: False
 Position: Named

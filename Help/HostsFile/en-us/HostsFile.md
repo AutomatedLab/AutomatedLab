@@ -12,14 +12,14 @@ Helper module to work with the hosts file
 
 ## HostsFile Cmdlets
 ### [Add-HostEntry](Add-HostEntry.md)
-Add a new static host entry
+Add a entry to the hosts file
 
 ### [Clear-HostFile](Clear-HostFile.md)
-Clear a section of the hosts file
+Clear a section in the hosts file
 
 ### [Get-HostEntry](Get-HostEntry.md)
-Get one host entry
+Retreive a host entry by host name or IP
 
 ### [Remove-HostEntry](Remove-HostEntry.md)
-Remove a single host entry
+Remove a host entry
 

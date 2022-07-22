@@ -14,7 +14,7 @@ Create a new virtual disk
 
 ```
 New-LWVHDX [-VhdxPath] <String> [-SizeInGB] <Int32> [[-Label] <String>] [-UseLargeFRS] [[-DriveLetter] <Char>]
- [[-AllocationUnitSize] <Int64>] [-SkipInitialize] [<CommonParameters>]
+ [[-AllocationUnitSize] <Int64>] [[-PartitionStyle] <String>] [-SkipInitialize] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -72,6 +72,21 @@ Aliases:
 
 Required: False
 Position: 2
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -PartitionStyle
+MBR, GPT
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 5
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

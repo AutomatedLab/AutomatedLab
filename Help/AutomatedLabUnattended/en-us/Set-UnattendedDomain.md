@@ -13,8 +13,8 @@ Set the domain membership
 ## SYNTAX
 
 ```
-Set-UnattendedDomain [-DomainName] <String> [-Username] <String> [-Password] <String> [-IsKickstart]
- [-IsAutoYast] [<CommonParameters>]
+Set-UnattendedDomain [-DomainName] <String> [-Username] <String> [-Password] <String>
+ [[-OrganizationalUnit] <String>] [-IsKickstart] [-IsAutoYast] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -74,6 +74,21 @@ Aliases:
 Required: False
 Position: Named
 Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -OrganizationalUnit
+The organizational unit to add this computer to.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 3
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

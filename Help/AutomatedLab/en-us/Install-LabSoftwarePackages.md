@@ -46,6 +46,21 @@ Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
 ```
 
+### -PassThru
+Indicates if the resulting jobs should be passed back to the caller
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -SoftwarePackage
 The software packages to install
 
@@ -63,21 +78,6 @@ Accept wildcard characters: False
 
 ### -WaitForInstallation
 Indicates if the script should be waiting for the installation of all packages on all machines
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -PassThru
-Indicates if the resulting jobs should be passed back to the caller
 
 ```yaml
 Type: SwitchParameter

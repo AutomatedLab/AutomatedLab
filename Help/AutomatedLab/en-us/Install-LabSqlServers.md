@@ -13,7 +13,7 @@ Install SQL servers
 ## SYNTAX
 
 ```
-Install-LabSqlServers [[-InstallationTimeout] <Int32>] [-CreateCheckPoints] [-ProgressIndicator <Int32>]
+Install-LabSqlServers [[-InstallationTimeout] <Int32>] [-CreateCheckPoints] [[-ProgressIndicator] <Int32>]
  [<CommonParameters>]
 ```
 
@@ -48,21 +48,6 @@ PS C:\> {{ Add example code here }}
 
 ## PARAMETERS
 
-### -InstallationTimeout
-The timeout in minutes we should wait for the installation to finish
-
-```yaml
-Type: Int32
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 0
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -CreateCheckPoints
 Indicates if a checkpoint should be created after installing SQL
 
@@ -78,6 +63,21 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -InstallationTimeout
+The timeout in minutes we should wait for the installation to finish
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 0
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -ProgressIndicator
 After n seconds, print a . to the console
 
@@ -87,7 +87,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: Named
+Position: 1
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

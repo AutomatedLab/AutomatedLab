@@ -13,10 +13,8 @@ Adds Azure subscription data to lab
 ## SYNTAX
 
 ```
-Add-LabAzureSubscription [[-SubscriptionName] <String>] [-SubscriptionId <Guid>]
- [[-DefaultLocationName] <String>] [[-DefaultResourceGroupName] <String>]
-  [-AutoShutdownTime <TimeSpan>] [-AutoShutdownTimeZone <String>]
- [-PassThru] [-AllowBastionHost] [<CommonParameters>]
+Add-LabAzureSubscription [-SubscriptionName <String>] [-SubscriptionId <Guid>] [-DefaultLocationName <String>] [-DefaultResourceGroupName <String>] [-AutoShutdownTime <TimeSpan>]
+ [-AutoShutdownTimeZone <String>] [-PassThru] [-AllowBastionHost] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -36,66 +34,6 @@ Add-LabAzureSubscription -SubscriptionName JHPaaS -DefaultLocationName $azureDef
 Adds the subscription JHPaaS and creates a lab resource group $labname in the default location
 
 ## PARAMETERS
-
-### -SubscriptionName
-The name of the subscription to select, if necessary
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 1
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -DefaultLocationName
-The default location to choose
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 2
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -DefaultResourceGroupName
-The default resource group to choose
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 4
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -PassThru
-Returns the lab's subscription
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
 
 ### -AllowBastionHost
 Indicates that a Bastion host will be deployed
@@ -143,11 +81,71 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -DefaultLocationName
+The default location to choose
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DefaultResourceGroupName
+The default resource group to choose
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -PassThru
+Returns the lab's subscription
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -SubscriptionId
 Subscription GUID
 
 ```yaml
 Type: Guid
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -SubscriptionName
+The name of the subscription to select, if necessary
+
+```yaml
+Type: String
 Parameter Sets: (All)
 Aliases:
 
