@@ -31,36 +31,6 @@ Configure auto-enrollment for user and machine certificates
 
 ## PARAMETERS
 
-### -Computer
-Indicates that machine certificates should be auto-enrolled
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -User
-Indicates that user certificates should be auto-enrolled
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -CodeSigning
 Indicates that code-signing certificates should be auto-enrolled
 
@@ -87,6 +57,36 @@ Aliases:
 Required: False
 Position: 0
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Computer
+Indicates that machine certificates should be auto-enrolled
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -User
+Indicates that user certificates should be auto-enrolled
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

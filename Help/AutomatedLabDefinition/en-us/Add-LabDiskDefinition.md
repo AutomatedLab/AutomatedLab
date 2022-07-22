@@ -13,8 +13,9 @@ Add lab disk definition
 ## SYNTAX
 
 ```
-Add-LabDiskDefinition [-Name] <String> [-DiskSizeInGb] <Int32> [-Label <String>] [-DriveLetter <Char>]
- [-UseLargeFRS] [-AllocationUnitSize <Int64>] [-SkipInitialize] [-PassThru] [<CommonParameters>]
+Add-LabDiskDefinition [-Name] <String> [-DiskSizeInGb] <Int32> [[-Label] <String>] [[-DriveLetter] <Char>]
+ [-UseLargeFRS] [[-AllocationUnitSize] <Int64>] [[-PartitionStyle] <Object>] [-SkipInitialize] [-PassThru]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -33,18 +34,19 @@ Creates a new disk definition and attaches the disk to the machine definition SQ
 
 ## PARAMETERS
 
-### -Name
-The disk name
+### -AllocationUnitSize
+The allocation unit size in Byte to use, e.g.
+64kb
 
 ```yaml
-Type: String
+Type: Int64
 Parameter Sets: (All)
 Aliases:
 
-Required: True
-Position: 0
+Required: False
+Position: 4
 Default value: None
-Accept pipeline input: True (ByPropertyName)
+Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
@@ -63,37 +65,6 @@ Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
 ```
 
-### -PassThru
-Indicates that the disk object should be passed back to the caller
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -AllocationUnitSize
-The allocation unit size in Byte to use, e.g.
-64kb
-
-```yaml
-Type: Int64
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -DriveLetter
 The drive letter to assign
 
@@ -103,7 +74,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: Named
+Position: 3
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -118,8 +89,54 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: Named
+Position: 2
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Name
+The disk name
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 0
+Default value: None
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -PartitionStyle
+MBR, GPT
+
+```yaml
+Type: Object
+Parameter Sets: (All)
+Aliases:
+Accepted values: MBR, GPT
+
+Required: False
+Position: 5
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -PassThru
+Indicates that the disk object should be passed back to the caller
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

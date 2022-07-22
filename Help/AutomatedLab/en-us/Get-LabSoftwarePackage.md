@@ -35,21 +35,6 @@ Prepare a list of packages to install on all machines, utilizing the built-in va
 
 ## PARAMETERS
 
-### -Path
-The full file path to the software package to execute
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: 0
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -CommandLine
 The command line for the software package
 
@@ -60,6 +45,21 @@ Aliases:
 
 Required: False
 Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Path
+The full file path to the software package to execute
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 0
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

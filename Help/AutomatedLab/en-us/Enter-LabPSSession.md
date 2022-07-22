@@ -55,8 +55,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -UseLocalCredential
-Indicates whether the machine's local user credentials should be used
+### -DoNotUseCredSsp
+Indicates that CredSSP should not be used while connecting to the machine
 
 ```yaml
 Type: SwitchParameter
@@ -85,8 +85,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -DoNotUseCredSsp
-Indicates that CredSSP should not be used while connecting to the machine
+### -UseLocalCredential
+Indicates whether the machine's local user credentials should be used
 
 ```yaml
 Type: SwitchParameter

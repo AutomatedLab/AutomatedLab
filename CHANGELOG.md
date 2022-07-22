@@ -4,6 +4,12 @@
 
 ### Enhancements
 
+### Bugs
+
+## 5.44.0 (2022-07-22)
+
+### Enhancements
+
 - Enabling additional role sizes, who are we to judge
 - Set-LabDefaultOperatingSystem now supports Azure as well
 - Supporting arbitrary reference disk paths for individual VMs

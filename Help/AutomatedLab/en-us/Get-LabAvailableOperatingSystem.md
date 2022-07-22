@@ -14,7 +14,7 @@ Show available lab OS
 
 ### Local (Default)
 ```
-Get-LabAvailableOperatingSystem [[-Path] <String[]>] [-UseOnlyCache] [-NoDisplay] [<CommonParameters>]
+Get-LabAvailableOperatingSystem [-Path <String[]>] [-UseOnlyCache] [-NoDisplay] [<CommonParameters>]
 ```
 
 ### Azure
@@ -48,21 +48,6 @@ Windows Server 2016 Datacenter (Desktop Experience)        4   10.0.14393.0   12
 Windows Server 2012 R2 Datacenter (Server with a GUI)     1   6.3.9600.17415 21.11.2014 16:06:15 D:\LabSources\ISOs\UpdatedServer2...
 
 ## PARAMETERS
-
-### -Path
-Lab ISO folder path
-
-```yaml
-Type: String[]
-Parameter Sets: Local
-Aliases:
-
-Required: False
-Position: 0
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
 
 ### -Azure
 Indicates that we are looking for Azure SKUs and not local ISO files
@@ -106,6 +91,21 @@ Aliases:
 Required: False
 Position: Named
 Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Path
+Lab ISO folder path
+
+```yaml
+Type: String[]
+Parameter Sets: Local
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

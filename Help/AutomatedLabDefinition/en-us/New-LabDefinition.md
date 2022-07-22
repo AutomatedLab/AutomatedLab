@@ -83,6 +83,38 @@ All machines will be using static memory as opposed the default dynamic memory.
 
 ## PARAMETERS
 
+### -DefaultVirtualizationEngine
+Virtualization engine to use as default for the lab.
+When not specifying the -VirtualizationHost parameter
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+Accepted values: Azure, HyperV, VMWare
+
+Required: False
+Position: 5
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -MaxMemory
+Maximum memory to use for lab if using automatic configuration of memory for each machine (by not specifying the memory at all)
+
+```yaml
+Type: Int64
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 3
+Default value: 0
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -Name
 Name of lab.
 Name must only contain character a-z, A-Z and 0-9.
@@ -99,17 +131,32 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -VmPath
-Path of placement of Hyper-V based machines
+### -Notes
+Notes to add to the lab
 
 ```yaml
-Type: String
+Type: Hashtable
 Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 2
+Position: 4
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Passthru
+Indicates that the created definition should also be returned
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -123,38 +170,8 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 3
+Position: 2
 Default value: 50
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -MaxMemory
-Maximum memory to use for lab if using automatic configuration of memory for each machine (by not specifying the memory at all)
-
-```yaml
-Type: Int64
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 4
-Default value: 0
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Notes
-Notes to add to the lab
-
-```yaml
-Type: Hashtable
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 5
-Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -190,9 +207,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -DefaultVirtualizationEngine
-Virtualization engine to use as default for the lab.
-When not specifying the -VirtualizationHost parameter
+### -VmPath
+Path of placement of Hyper-V based machines
 
 ```yaml
 Type: String
@@ -200,23 +216,8 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 6
+Position: 1
 Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Passthru
-Indicates that the created definition should also be returned
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

@@ -71,12 +71,74 @@ Create objects in your lab domain: 5995 users, 138 OUs, 138 groups, sites and si
 
 ## PARAMETERS
 
+### -CustomRole
+Instead of a regular script, add this as a custom role. Custom roles adhere to a specific
+format. For more information, just have a look at $labsources\CustomRoles
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -DependencyFolder
 A folder of dependency files if necessary
 
 ```yaml
 Type: String
 Parameter Sets: FileContentDependencyLocalScript, FileContentDependencyRemoteScript
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DoNotUseCredSsp
+Indicates that CredSSP should not be used for connections. Useful in existing environments
+that you connected to with -SkipDeployment
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Function
+{{ Fill Function Description }}
+
+```yaml
+Type: FunctionInfo[]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -IsoImage
+The ISO image that should be mounted during post-installation
+
+```yaml
+Type: String
+Parameter Sets: IsoImageDependencyLocalScript, IsoImageDependencyRemoteScript
 Aliases:
 
 Required: True
@@ -101,15 +163,17 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -ScriptFilePath
-The script file path of the script that is executed
+### -Properties
+The hashtable of properties for your custom role, if a custom role was selected.
+Bear in mind that this is a Dictionary\<string,string\>, and requires your input
+to consist of strings only.
 
 ```yaml
-Type: String
-Parameter Sets: FileContentDependencyLocalScript, IsoImageDependencyLocalScript
+Type: Hashtable
+Parameter Sets: CustomRole
 Aliases:
 
-Required: True
+Required: False
 Position: Named
 Default value: None
 Accept pipeline input: False
@@ -131,12 +195,12 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -IsoImage
-The ISO image that should be mounted during post-installation
+### -ScriptFilePath
+The script file path of the script that is executed
 
 ```yaml
 Type: String
-Parameter Sets: IsoImageDependencyLocalScript, IsoImageDependencyRemoteScript
+Parameter Sets: FileContentDependencyLocalScript, IsoImageDependencyLocalScript
 Aliases:
 
 Required: True
@@ -146,46 +210,12 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -CustomRole
-Instead of a regular script, add this as a custom role. Custom roles adhere to a specific
-format. For more information, just have a look at $labsources\CustomRoles
+### -Variable
+{{ Fill Variable Description }}
 
 ```yaml
-Type: String
-Parameter Sets: CustomRole
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -DoNotUseCredSsp
-Indicates that CredSSP should not be used for connections. Useful in existing environments
-that you connected to with -SkipDeployment
-
-```yaml
-Type: SwitchParameter
+Type: PSVariable[]
 Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Properties
-The hashtable of properties for your custom role, if a custom role was selected.
-Bear in mind that this is a Dictionary\<string,string\>, and requires your input
-to consist of strings only.
-
-```yaml
-Type: Hashtable
-Parameter Sets: CustomRole
 Aliases:
 
 Required: False

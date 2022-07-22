@@ -36,17 +36,17 @@ PS C:\> {{ Add example code here }}
 
 ## PARAMETERS
 
-### -Name
-The names of the machines to create
+### -All
+Indicates that all lab machines should be created
 
 ```yaml
-Type: String[]
-Parameter Sets: ByName
+Type: SwitchParameter
+Parameter Sets: All
 Aliases:
 
-Required: True
+Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -66,17 +66,17 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -All
-Indicates that all lab machines should be created
+### -Name
+The names of the machines to create
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: All
+Type: String[]
+Parameter Sets: ByName
 Aliases:
 
-Required: False
+Required: True
 Position: Named
-Default value: False
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

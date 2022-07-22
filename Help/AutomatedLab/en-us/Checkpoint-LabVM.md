@@ -36,6 +36,21 @@ Creates a snapshot called FirstSnapshot for all machines of a given lab
 
 ## PARAMETERS
 
+### -All
+Switch parameter to snapshot all lab VMs
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: All
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
 ### -ComputerName
 The computer name
 
@@ -62,21 +77,6 @@ Aliases:
 Required: True
 Position: Named
 Default value: None
-Accept pipeline input: True (ByPropertyName)
-Accept wildcard characters: False
-```
-
-### -All
-Switch parameter to snapshot all lab VMs
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: All
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
 Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
 ```

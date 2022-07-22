@@ -36,21 +36,6 @@ PS C:\> {{ Add example code here }}
 
 ## PARAMETERS
 
-### -Name
-The names of the VHDX files to create
-
-```yaml
-Type: String[]
-Parameter Sets: ByName
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: True (ByPropertyName)
-Accept wildcard characters: False
-```
-
 ### -All
 Indicates if all disks defined in the lab should be created
 
@@ -62,6 +47,21 @@ Aliases:
 Required: False
 Position: Named
 Default value: False
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -Name
+The names of the VHDX files to create
+
+```yaml
+Type: String[]
+Parameter Sets: ByName
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
 Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
 ```

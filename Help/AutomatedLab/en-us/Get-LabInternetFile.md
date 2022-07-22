@@ -13,7 +13,7 @@ Download a file
 ## SYNTAX
 
 ```
-Get-LabInternetFile [-Uri] <String> [-Path] <String> [-FileName <String>] [-Force] [-NoDisplay] [-PassThru]
+Get-LabInternetFile [-Uri] <String> [-Path] <String> [[-FileName] <String>] [-Force] [-NoDisplay] [-PassThru]
  [<CommonParameters>]
 ```
 
@@ -31,16 +31,16 @@ Downloads the SQL Server Management Suite and saves it on a lab machine's file s
 
 ## PARAMETERS
 
-### -Uri
-The URI of the file to retrieve
+### -FileName
+The file name to save the file as
 
 ```yaml
 Type: String
 Parameter Sets: (All)
 Aliases:
 
-Required: True
-Position: 0
+Required: False
+Position: 2
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -48,6 +48,36 @@ Accept wildcard characters: False
 
 ### -Force
 If present, overwrite the file at the destination
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -NoDisplay
+Do not show console output
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -PassThru
+Indicates that the downloaded file should be returned
 
 ```yaml
 Type: SwitchParameter
@@ -76,47 +106,17 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -PassThru
-Indicates that the downloaded file should be returned
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -FileName
-The file name to save the file as
+### -Uri
+The URI of the file to retrieve
 
 ```yaml
 Type: String
 Parameter Sets: (All)
 Aliases:
 
-Required: False
-Position: Named
+Required: True
+Position: 0
 Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -NoDisplay
-Do not show console output
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

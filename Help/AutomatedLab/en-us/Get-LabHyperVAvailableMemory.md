@@ -13,7 +13,7 @@ Get available HyperV memory
 ## SYNTAX
 
 ```
-Get-LabHyperVAvailableMemory
+Get-LabHyperVAvailableMemory [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -29,6 +29,9 @@ PS C:\> Get-LabHyperVAvailableMemory
 Gets the available of the amount of RAM the local HyperV manages (TotalVisibleMemorySize of the Win32_OperatingSystem WMI class)
 
 ## PARAMETERS
+
+### CommonParameters
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 

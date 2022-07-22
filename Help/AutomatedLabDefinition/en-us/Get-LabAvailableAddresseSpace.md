@@ -13,7 +13,7 @@ Get available address space
 ## SYNTAX
 
 ```
-Get-LabAvailableAddresseSpace
+Get-LabAvailableAddresseSpace [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -29,6 +29,9 @@ PS C:\> Get-LabAvailableAddressSpace
 On a fresh Hyper-V without any deployed virtual switches, should return 192.168.10.0/24, or the value of Get-PSFConfig -FullName AutomatedLab.DefaultAddressSpace
 
 ## PARAMETERS
+
+### CommonParameters
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 

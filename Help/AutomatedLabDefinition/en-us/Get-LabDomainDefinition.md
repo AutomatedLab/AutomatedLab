@@ -13,7 +13,7 @@ Returns all definitions of Active Directory domains/forest in the lab
 ## SYNTAX
 
 ```
-Get-LabDomainDefinition
+Get-LabDomainDefinition [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -29,6 +29,9 @@ PS C:\> Get-LabDomainDefinition
 Return the current domain definition that has been added to a lab.
 
 ## PARAMETERS
+
+### CommonParameters
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 

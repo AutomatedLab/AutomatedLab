@@ -36,6 +36,21 @@ Restore the snapshot from before destroying the world.
 
 ## PARAMETERS
 
+### -All
+Indicates that the snapshot should be restored on all machines
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: All
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
 ### -ComputerName
 The computer names
 
@@ -62,21 +77,6 @@ Aliases:
 Required: True
 Position: Named
 Default value: None
-Accept pipeline input: True (ByPropertyName)
-Accept wildcard characters: False
-```
-
-### -All
-Indicates that the snapshot should be restored on all machines
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: All
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
 Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
 ```

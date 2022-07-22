@@ -15,8 +15,8 @@ Adds a definition of a virtual network
 ```
 Add-LabVirtualNetworkDefinition [[-Name] <String>] [[-AddressSpace] <IPNetwork>]
  [[-VirtualizationEngine] <VirtualizationHost>] [[-HyperVProperties] <Hashtable[]>]
- [[-AzureProperties] <Hashtable[]>] [-ManagementAdapter <NetworkAdapter>] [-ResourceName <String>] [-PassThru]
- [<CommonParameters>]
+ [[-AzureProperties] <Hashtable[]>] [[-ManagementAdapter] <NetworkAdapter>] [[-ResourceName] <String>]
+ [-PassThru] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -73,21 +73,6 @@ Machines can then be configured (defined) to use this network using -Network par
 
 ## PARAMETERS
 
-### -Name
-Name of virtual network
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 0
-Default value: (Get-LabDefinition).Name
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -AddressSpace
 Address space of virtual network defined in the format '192.168.10.0/24'
 
@@ -98,37 +83,6 @@ Aliases:
 
 Required: False
 Position: 1
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -VirtualizationEngine
-Virtualization engine for network
-
-```yaml
-Type: VirtualizationHost
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 2
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -HyperVProperties
-Extra properties for Hyper-V based virtual network.
-Options are; type of virtual switch and name of physical adapter to connect to (if type of virtual switch is 'External')
-
-```yaml
-Type: Hashtable[]
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 3
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -155,6 +109,52 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -HyperVProperties
+Extra properties for Hyper-V based virtual network.
+Options are; type of virtual switch and name of physical adapter to connect to (if type of virtual switch is 'External')
+
+```yaml
+Type: Hashtable[]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 3
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ManagementAdapter
+{{ Fill ManagementAdapter Description }}
+
+```yaml
+Type: NetworkAdapter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 5
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Name
+Name of virtual network
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 0
+Default value: (Get-LabDefinition).Name
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -PassThru
 Wheter or not the virtual network will be returned as an object
 
@@ -170,21 +170,6 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -ManagementAdapter
-{{ Fill ManagementAdapter Description }}
-
-```yaml
-Type: NetworkAdapter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -ResourceName
 Name of the resource in the resource group
 
@@ -194,7 +179,23 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: Named
+Position: 6
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -VirtualizationEngine
+Virtualization engine for network
+
+```yaml
+Type: VirtualizationHost
+Parameter Sets: (All)
+Aliases:
+Accepted values: HyperV, Azure, VMWare
+
+Required: False
+Position: 2
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
