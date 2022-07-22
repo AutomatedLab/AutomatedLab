@@ -36,6 +36,21 @@ PS C:\> {{ Add example code here }}
 
 ## PARAMETERS
 
+### -All
+Indicates if all lab machines should be selected except for 'DC', 'RootDC', 'FirstChildDC', 'DSCPullServer'
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: All
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -ComputerName
 The computer names
 
@@ -62,21 +77,6 @@ Aliases:
 Required: False
 Position: Named
 Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -All
-Indicates if all lab machines should be selected except for 'DC', 'RootDC', 'FirstChildDC', 'DSCPullServer'
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: All
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

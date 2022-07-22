@@ -39,6 +39,12 @@ function Install-LabScvmm
     $lab = Get-Lab
     # Prerequisites, all
     $all = Get-LabVM -Role SCVMM | Where-Object SkipDeployment -eq $false
+    Invoke-LabCommand -ComputerName $all -ScriptBlock {
+        if (-not (Test-Path C:\DeployDebug))
+        {
+            $null = New-Item -ItemType Directory -Path C:\DeployDebug
+        }
+    }
     $server = $all | Where-Object { -not $_.Roles.Properties.ContainsKey('SkipServer') }
     $consoles = $all | Where-Object { $_.Roles.Properties.ContainsKey('SkipServer') }
 

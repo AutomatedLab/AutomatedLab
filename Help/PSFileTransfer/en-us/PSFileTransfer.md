@@ -12,17 +12,17 @@ This module facilitates file transfer to and from hosts.
 
 ## PSFileTransfer Cmdlets
 ### [Copy-LabFileItem](Copy-LabFileItem.md)
-For use with AutomatedLab, this function copies data to machines
+Copy files to lab machines
 
 ### [Receive-Directory](Receive-Directory.md)
-Receive an entire directory from a remote host.
+Receive a directory from a remote session
 
 ### [Receive-File](Receive-File.md)
-Receive a file from a remote host
+Receives a file from a remote session.
 
 ### [Send-Directory](Send-Directory.md)
-Transmit a directory to a remote host
+Send a directory to a remote session
 
 ### [Send-File](Send-File.md)
-Transfer a file to a remote host
+Sends a file to a remote session.
 

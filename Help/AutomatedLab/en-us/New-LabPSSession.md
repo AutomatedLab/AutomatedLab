@@ -67,21 +67,6 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -UseLocalCredential
-Indicates if the machine credential should be used
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -Credential
 The credential used to connect
 
@@ -91,82 +76,6 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Retries
-The number of retries to enable a sessions
-
-```yaml
-Type: Int32
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Interval
-The retry interval in seconds
-
-```yaml
-Type: Int32
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -UseSSL
-Indicates if SSL should be used to connect the sessions
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Machine
-The lab VMs
-
-```yaml
-Type: Machine[]
-Parameter Sets: ByMachine
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Session
-An existing session.
-Used to recreate a broken session
-
-```yaml
-Type: PSSession
-Parameter Sets: BySession
-Aliases:
-
-Required: True
 Position: Named
 Default value: None
 Accept pipeline input: False
@@ -190,6 +99,97 @@ Accept wildcard characters: False
 
 ### -IgnoreAzureLabSources
 Indicates that Invoke-LabCommand does not need to map LabSources share
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Interval
+The retry interval in seconds
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Machine
+The lab VMs
+
+```yaml
+Type: Machine[]
+Parameter Sets: ByMachine
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Retries
+The number of retries to enable a sessions
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Session
+An existing session.
+Used to recreate a broken session
+
+```yaml
+Type: PSSession
+Parameter Sets: BySession
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -UseLocalCredential
+Indicates if the machine credential should be used
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -UseSSL
+Indicates if SSL should be used to connect the sessions
 
 ```yaml
 Type: SwitchParameter

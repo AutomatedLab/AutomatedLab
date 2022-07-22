@@ -12,7 +12,7 @@
         SqlInstancePort               = '1433'
         DatabaseName                  = 'OperationsManager'
         DwSqlServerInstance           = ''
-        InstallLocation               = 'C:\Program Files\{0}'
+        InstallLocation               = 'C:\Program Files\Microsoft System Center\Operations Manager'
         DwSqlInstancePort             = '1433'
         DwDatabaseName                = 'OperationsManagerDW'
         ActionAccountUser             = 'OM19AA'
@@ -34,7 +34,7 @@
         SqlServerInstance             = ''
         SqlInstancePort               = '1433'
         DatabaseName                  = 'OperationsManager'
-        InstallLocation               = 'C:\Program Files\{0}'
+        InstallLocation               = 'C:\Program Files\Microsoft System Center\Operations Manager'
         ActionAccountUser             = 'OM19AA'
         ActionAccountPassword         = ''
         DASAccountUser                = 'OM19DAS' 
@@ -51,7 +51,7 @@
 
     $iniNativeConsole = @{
         EnableErrorReporting          = 'Never'
-        InstallLocation               = 'C:\Program Files\{0}'
+        InstallLocation               = 'C:\Program Files\Microsoft System Center\Operations Manager'
         SendCEIPReports               = '0'
         UseMicrosoftUpdate            = '0'
         AcceptEndUserLicenseAgreement = '1'
@@ -87,6 +87,13 @@
 
     Start-LabVM -ComputerName $all -Wait
 
+    Invoke-LabCommand -ComputerName $all -ScriptBlock {
+        if (-not (Test-Path C:\DeployDebug))
+        {
+            $null = New-Item -ItemType Directory -Path C:\DeployDebug
+        }
+    }
+
     # Prerequisites, all
     $odbc = Get-LabConfigurationItem -Name SqlOdbc13
     $SQLSysClrTypes = Get-LabConfigurationItem -Name SqlClrType2014
@@ -114,7 +121,7 @@
     $scomIso = ($lab.Sources.ISOs | Where-Object { $_.Name -like 'Scom*' }).Path
     $isos = Mount-LabIsoImage -ComputerName $all -IsoPath $scomIso -SupressOutput -PassThru
     Invoke-LabCommand -ComputerName $all -Variable (Get-Variable isos) -ActivityName 'Extracting SCOM Server' -ScriptBlock {
-        $setup = Get-ChildItem -Path $($isos.Where( { $_.InternalComputerName -eq $env:COMPUTERNAME })).DriveLetter -Filter *.exe | Select-Object -First 1
+        $setup = Get-ChildItem -Path $($isos | Where InternalComputerName -eq $env:COMPUTERNAME).DriveLetter -Filter *.exe | Select-Object -First 1
         Start-Process -FilePath $setup.FullName -ArgumentList '/VERYSILENT', '/DIR=C:\SCOM' -Wait
     } -NoDisplay
     
@@ -215,16 +222,17 @@
             $iniManagement['DwSqlServerInstance'] = $sqlMachine.Name
         }
 
-         # Setup Command Line Management-Server
+        # Setup Command Line Management-Server
             
-            Invoke-LabCommand -ComputerName $vm -ScriptBlock {
+        Invoke-LabCommand -ComputerName $vm -ScriptBlock {
             Add-LocalGroupMember -Sid S-1-5-32-544 -Member $iniManagement['DASAccountUser']
-            } -Variable (Get-Variable iniManagement)
-            $CommandlineArgumentsServer = $iniManagement.GetEnumerator() | Where-Object Key -notin ProductKey, ScomAdminGroupName | ForEach-Object { '/{0}:"{1}"' -f $_.Key, $_.Value }
+        } -Variable (Get-Variable iniManagement)
+        $CommandlineArgumentsServer = $iniManagement.GetEnumerator() | Where-Object Key -notin ProductKey, ScomAdminGroupName | ForEach-Object { '/{0}:"{1}"' -f $_.Key, $_.Value }
             
-            $setupCommandlineServer = "/install /silent /components:OMServer $CommandlineArgumentsServer"
-            Install-LabSoftwarePackage -ComputerName $vm -LocalPath C:\SCOM\setup.exe -CommandLine $setupCommandlineServer -AsJob -PassThru -UseShellExecute -UseExplicitCredentialsForScheduledJob -AsScheduledJob -Timeout 20 -NoDisplay
-            $isPrimaryManagementServer = $isPrimaryManagementServer - 1
+        $setupCommandlineServer = "/install /silent /components:OMServer $CommandlineArgumentsServer"
+        Invoke-LabCommand -ComputerName $vm -ScriptBlock {Set-Content -Path C:\DeployDebug\SetupScomManagement.cmd -Value "C:\SCOM\setup.exe $setupCommandLineServer"} -Variable (Get-Variable setupCommandlineServer) -NoDisplay
+        Install-LabSoftwarePackage -ComputerName $vm -LocalPath C:\SCOM\setup.exe -CommandLine $setupCommandlineServer -AsJob -PassThru -UseShellExecute -UseExplicitCredentialsForScheduledJob -AsScheduledJob -Timeout 20 -NoDisplay
+        $isPrimaryManagementServer = $isPrimaryManagementServer - 1
         
     }
 
@@ -291,21 +299,22 @@
         }
 
         
-            # Setup Command Line Management-Server
-            Invoke-LabCommand -ComputerName $vm -ScriptBlock {
+        # Setup Command Line Management-Server
+        Invoke-LabCommand -ComputerName $vm -ScriptBlock {
             Add-LocalGroupMember -Sid S-1-5-32-544 -Member $iniManagement['DASAccountUser']
-            } -Variable (Get-Variable iniManagement)
-            $CommandlineArgumentsServer = $iniManagement.GetEnumerator() | Where-Object Key -notin ProductKey, ScomAdminGroupName | ForEach-Object { '/{0}:"{1}"' -f $_.Key, $_.Value }
+        } -Variable (Get-Variable iniManagement)
+        $CommandlineArgumentsServer = $iniManagement.GetEnumerator() | Where-Object Key -notin ProductKey, ScomAdminGroupName | ForEach-Object { '/{0}:"{1}"' -f $_.Key, $_.Value }
             
-            $setupCommandlineServer = "/install /silent /components:OMServer $CommandlineArgumentsServer"
-            Install-LabSoftwarePackage -ComputerName $vm -LocalPath C:\SCOM\setup.exe -CommandLine $setupCommandlineServer -AsJob -PassThru -UseShellExecute -UseExplicitCredentialsForScheduledJob -AsScheduledJob -Timeout 20 -NoDisplay
+        $setupCommandlineServer = "/install /silent /components:OMServer $CommandlineArgumentsServer"
+        Invoke-LabCommand -ComputerName $vm -ScriptBlock {Set-Content -Path C:\DeployDebug\SetupScomManagement.cmd -Value "C:\SCOM\setup.exe $setupCommandLineServer"} -Variable (Get-Variable setupCommandlineServer) -NoDisplay
+        Install-LabSoftwarePackage -ComputerName $vm -LocalPath C:\SCOM\setup.exe -CommandLine $setupCommandlineServer -AsJob -PassThru -UseShellExecute -UseExplicitCredentialsForScheduledJob -AsScheduledJob -Timeout 20 -NoDisplay
         
     }
 
     # After SCOM is set up, we need to wait a bit for it to "settle", otherwise there might be timing issues later on
     Start-Sleep -Seconds 30
     Remove-LabPSSession -ComputerName $firstmgmt
-    $cmdAvailable = Invoke-LabCommand -PassThru -NoDisplay -ComputerName $firstmgmt {Get-Command Get-ScomManagementServer -ErrorAction SilentlyContinue}
+    $cmdAvailable = Invoke-LabCommand -PassThru -NoDisplay -ComputerName $firstmgmt { Get-Command Get-ScomManagementServer -ErrorAction SilentlyContinue }
     if (-not $cmdAvailable)
     {
         Start-Sleep -Seconds 30
@@ -348,6 +357,7 @@
 
         $CommandlineArgumentsNativeConsole = $iniNativeConsole.GetEnumerator() | ForEach-Object { '/{0}:"{1}"' -f $_.Key, $_.Value }
         $setupCommandlineNativeConsole = "/install /silent /components:OMConsole $CommandlineArgumentsNativeConsole"
+        Invoke-LabCommand -ComputerName $vm -ScriptBlock {Set-Content -Path C:\DeployDebug\SetupScomConsole.cmd -Value "C:\SCOM\setup.exe $setupCommandlineNativeConsole"} -Variable (Get-Variable setupCommandlineNativeConsole) -NoDisplay
 
         Install-LabSoftwarePackage -ComputerName $vm -LocalPath C:\SCOM\setup.exe -CommandLine $setupCommandlineNativeConsole -AsJob -PassThru -UseShellExecute -UseExplicitCredentialsForScheduledJob -AsScheduledJob -Timeout 20 -NoDisplay
     }
@@ -382,6 +392,7 @@
 
         $CommandlineArgumentsWebConsole = $iniWeb.GetEnumerator() | ForEach-Object { '/{0}:"{1}"' -f $_.Key, $_.Value }
         $setupCommandlineWebConsole = "/install /silent /components:OMWebConsole $commandlineArgumentsWebConsole"
+        Invoke-LabCommand -ComputerName $vm -ScriptBlock {Set-Content -Path C:\DeployDebug\SetupScomWebConsole.cmd -Value "C:\SCOM\setup.exe $setupCommandlineWebConsole"} -Variable (Get-Variable setupCommandlineWebConsole) -NoDisplay
 
         Install-LabSoftwarePackage -ComputerName $vm -LocalPath C:\SCOM\setup.exe -CommandLine $setupCommandlineWebConsole -AsJob -PassThru -UseShellExecute -UseExplicitCredentialsForScheduledJob -AsScheduledJob -Timeout 20 -NoDisplay
     }
@@ -468,6 +479,7 @@
 
         $CommandlineArgumentsReportServer = $iniReport.GetEnumerator() | ForEach-Object { '/{0}:"{1}"' -f $_.Key, $_.Value }
         $setupCommandlineReportServer = "/install /silent /components:OMReporting $commandlineArgumentsReportServer"
+        Invoke-LabCommand -ComputerName $vm -ScriptBlock {Set-Content -Path C:\DeployDebug\SetupScomReporting.cmd -Value "C:\SCOM\setup.exe $setupCommandlineReportServer"} -Variable (Get-Variable setupCommandlineReportServer) -NoDisplay
         Invoke-LabCommand -ComputerName $scomReportingServer -ScriptBlock {
             Get-Service -Name SQLSERVERAGENT* | Set-Service -StartupType Automatic -Status Running
         } -NoDisplay

@@ -6,6 +6,23 @@
 
 ### Bugs
 
+## 5.44.0 (2022-07-22)
+
+### Enhancements
+
+- Enabling additional role sizes, who are we to judge
+- Set-LabDefaultOperatingSystem now supports Azure as well
+- Supporting arbitrary reference disk paths for individual VMs
+- Enabling AutomatedLab to activate Windows VMs either online or via KMS (Active Directory based or standalone server)
+
+### Bugs
+
+- Fixing serialization issue in SCOM role
+- Fixing issue with Azure role sizes requiring Gen 2 VMs
+- Fixing issue with Az.Storage module not being able to use backslashes
+- Force-create DeployDebug folder in case it does not exist, which occasionally led to issues with msi installations
+- Fixing SharePoint issue if IP addresses are used instead of host names
+
 ## 5.43.0 (2022-06-30)
 
 ### Enhancements

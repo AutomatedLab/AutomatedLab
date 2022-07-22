@@ -43,6 +43,21 @@ Adds a definition of ISO file to be used when installing SQL Server 2014.
 
 ## PARAMETERS
 
+### -IsOperatingSystem
+Indicates that the ISO is an OS installation disk
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -Name
 Logical name for reference.
 Names are case sensitive.
@@ -63,36 +78,6 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Path
-Path of ISO file
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 1
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -IsOperatingSystem
-Indicates that the ISO is an OS installation disk
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -NoDisplay
 Indicates that no output should be visible
 
@@ -104,6 +89,21 @@ Aliases:
 Required: False
 Position: Named
 Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Path
+Path of ISO file
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 1
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

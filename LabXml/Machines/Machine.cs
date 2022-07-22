@@ -89,6 +89,7 @@ namespace AutomatedLab
         public string SshPublicKeyPath { get; set; }
         public string SshPrivateKeyPath { get; set; }
         public string OrganizationalUnit { get; set; }
+        public string ReferenceDiskPath {get; set;}
 
         public OperatingSystemType OperatingSystemType
         {

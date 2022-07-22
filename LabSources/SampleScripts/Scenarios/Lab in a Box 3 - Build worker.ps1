@@ -10,13 +10,16 @@ param
     $LabName = 'LabAsAService',
 
     [ValidateSet('yes', 'no')]
-    $TelemetryOptIn = 'no' # Opt out of telemetry for build worker by saying yes here
+    $TelemetryOptIn = 'no', # Opt out of telemetry for build worker by saying yes here
+
+    [char]
+    $LabSourcesDriveLetter = 'L'
 )
 
 New-LabDefinition -Name $labName -DefaultVirtualizationEngine HyperV
 Add-LabVirtualNetworkDefinition -Name $labName -HyperVProperties @{ SwitchType = 'External'; AdapterName = 'Ethernet' }
 
-$role = Get-LabPostInstallationActivity -CustomRole LabBuilder -Properties @{TelemetryOptIn = $TelemetryOptIn }
+$role = Get-LabPostInstallationActivity -CustomRole LabBuilder -Properties @{TelemetryOptIn = $TelemetryOptIn; LabSourcesDrive = "$LabSourcesDriveLetter" }
 
 $machineParameters = @{
     Name                     = 'NestedBuilder'
@@ -29,7 +32,7 @@ $machineParameters = @{
 }
 
 $estimatedSize = [Math]::Round(((Get-ChildItem $labsources -File -Recurse | Measure-Object -Property Length -Sum).Sum / 1GB + 20), 0)
-$disk = Add-LabDiskDefinition -Name vmDisk -DiskSizeInGb $estimatedSize -PassThru
+$disk = Add-LabDiskDefinition -Name vmDisk -DiskSizeInGb $estimatedSize -PassThru -DriveLetter $LabSourcesDriveLetter
 
 Add-LabMachineDefinition @machineParameters
 
@@ -54,7 +57,7 @@ $labCreationJob = Invoke-RestMethod -Method Get -Uri http://NestedBuilder/Job?Id
 
 # Create lab
 $request = @{
-    LabScript = Get-Content "$labsources\SampleScripts\Introduction\01 Single Win10 Client.ps1" -Raw
+    LabScript = [string](Get-Content "$labsources\SampleScripts\Introduction\01 Single Win10 Client.ps1" -Raw) # cast to string -> Workaround if this is ever executed in PowerShell_ISE
 } | ConvertTo-Json
 
 $guid = Invoke-RestMethod -Method Post -Uri http://NestedBuilder/Lab -Body $request -ContentType application/json -Credential $credential

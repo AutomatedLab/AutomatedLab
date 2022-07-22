@@ -13,7 +13,7 @@ Get the file content of the Azure lab sources file share
 ## SYNTAX
 
 ```
-Get-LabAzureLabSourcesContent [[-RegexFilter] <String>] [-Path <String>] [-File] [-Directory]
+Get-LabAzureLabSourcesContent [[-RegexFilter] <String>] [[-Path] <String>] [-File] [-Directory]
  [<CommonParameters>]
 ```
 
@@ -62,21 +62,6 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -RegexFilter
-The regular expression to filter the list of files on
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 0
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -Path
 The path to look in, e.g.
 $labsources - speeds up this cmdlet significantly.
@@ -87,7 +72,22 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: Named
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -RegexFilter
+The regular expression to filter the list of files on
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 0
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

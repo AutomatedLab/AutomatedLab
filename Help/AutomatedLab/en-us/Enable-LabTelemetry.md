@@ -13,7 +13,7 @@ Enable the transmission of telemetry
 ## SYNTAX
 
 ```
-Enable-LabTelemetry
+Enable-LabTelemetry [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -39,6 +39,9 @@ PS C:\> Enable-LabTelemetry
 Enables telemetry
 
 ## PARAMETERS
+
+### CommonParameters
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 

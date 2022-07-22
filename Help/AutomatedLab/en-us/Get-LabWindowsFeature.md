@@ -31,6 +31,21 @@ Get the installation status of the optional feature RSAT-AD-Tools on DC01 and FS
 
 ## PARAMETERS
 
+### -AsJob
+Indicates that the cmdlet should run in the background
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -ComputerName
 The computer names
 
@@ -61,8 +76,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -UseLocalCredential
-Indicates whether local credentials should be used
+### -NoDisplay
+Indicates if output should be suppressed
 
 ```yaml
 Type: SwitchParameter
@@ -92,23 +107,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -NoDisplay
-Indicates if output should be suppressed
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -AsJob
-Indicates that the cmdlet should run in the background
+### -UseLocalCredential
+Indicates whether local credentials should be used
 
 ```yaml
 Type: SwitchParameter

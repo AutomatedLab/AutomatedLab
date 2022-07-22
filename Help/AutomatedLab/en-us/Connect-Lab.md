@@ -53,16 +53,32 @@ Requests to one of the address spaces "192.168.30.0/24", "192.168.60.0/24" and "
 
 ## PARAMETERS
 
-### -SourceLab
-The source lab name
+### -AddressSpace
+One or more address spaces to be routed in case you are connecting to an external VPN gateway and not to another lab.
+Example: 192.168.2.30/24
+
+```yaml
+Type: String[]
+Parameter Sets: Site2Site
+Aliases:
+
+Required: False
+Position: 3
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DestinationIpAddress
+S2S VPN: The IP address of the remote VPN gateway
 
 ```yaml
 Type: String
-Parameter Sets: (All)
+Parameter Sets: Site2Site
 Aliases:
 
 Required: True
-Position: 0
+Position: 1
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -98,37 +114,6 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -AddressSpace
-One or more address spaces to be routed in case you are connecting to an external VPN gateway and not to another lab.
-Example: 192.168.2.30/24
-
-```yaml
-Type: String[]
-Parameter Sets: Site2Site
-Aliases:
-
-Required: False
-Position: 3
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -DestinationIpAddress
-S2S VPN: The IP address of the remote VPN gateway
-
-```yaml
-Type: String
-Parameter Sets: Site2Site
-Aliases:
-
-Required: True
-Position: 1
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -PreSharedKey
 The pre-shared key for the S2S VPN
 
@@ -139,6 +124,21 @@ Aliases:
 
 Required: True
 Position: 2
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -SourceLab
+The source lab name
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 0
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

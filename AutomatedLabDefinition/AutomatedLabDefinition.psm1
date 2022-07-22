@@ -1572,7 +1572,7 @@ function Add-LabIsoImageDefinition
 
                 if (-not $isoFiles -and $Name)
                 {
-                    $filterPath = Split-Path -Path $Path -Leaf
+                    $filterPath = (Split-Path -Path $Path -Leaf) -replace '\\','/' # Due to breaking changes introduced in Az.Storage 4.7.0
                     Write-ScreenInfo -Message "Syncing $filterPath with Azure lab sources storage as it did not exist"
                     Sync-LabAzureLabSources -Filter $filterPath -NoDisplay
 
@@ -1943,7 +1943,17 @@ function Add-LabMachineDefinition
 
         [string]$SshPrivateKeyPath,
 
-        [string]$OrganizationalUnit
+        [string]$OrganizationalUnit,
+        
+        [string]$ReferenceDisk,
+
+        [string]$KmsServerName,
+
+        [uint16]$KmsPort,
+
+        [string]$KmsLookupDomain,
+
+        [switch]$ActivateWindows
     )
 
     begin
@@ -2085,6 +2095,17 @@ function Add-LabMachineDefinition
         }
 
         $machine = New-Object AutomatedLab.Machine
+        if ($ReferenceDisk -and $script:lab.DefaultVirtualizationEngine -eq 'HyperV')
+        {
+            Write-ScreenInfo -Type Warning -Message "Usage of the ReferenceDisk parameter makes your lab essentially unsupportable. Don't be mad at us if we cannot reproduce your random issue if you bring your own images."
+            $machine.ReferenceDiskPath = $ReferenceDisk
+        }
+
+        if ($ReferenceDisk -and $script:lab.DefaultVirtualizationEngine -ne 'HyperV')
+        {
+            Write-ScreenInfo -Type Warning -Message "Sorry, no custom reference disk allowed on $($script:lab.DefaultVirtualizationEngine). This parameter will be ignored."
+        }
+
         $machine.Name = $Name
         $machine.FriendlyName = $ResourceName
         $machine.OrganizationalUnit = $OrganizationalUnit
@@ -2864,6 +2885,26 @@ function Add-LabMachineDefinition
         $machine.Roles = $Roles
         $machine.PostInstallationActivity = $PostInstallationActivity
         $machine.PreInstallationActivity = $PreInstallationActivity
+
+        if (($KmsLookupDomain -or $KmsServerName -or $ActivateWindows.IsPresent) -and $null -eq $Notes)
+        {
+            $Notes = @{}
+        }
+
+        if ($KmsLookupDomain)
+        {
+            $Notes['KmsLookupDomain'] = $KmsLookupDomain
+        }
+        elseif ($KmsServerName)
+        {
+            $Notes['KmsServerName'] = $KmsServerName
+            $Notes['KmsPort'] = $KmsPort -as [string]
+        }
+
+        if ($ActivateWindows.IsPresent)
+        {
+            $Notes['ActivateWindows'] = '1'
+        }
 
         if ($HypervProperties)
         {

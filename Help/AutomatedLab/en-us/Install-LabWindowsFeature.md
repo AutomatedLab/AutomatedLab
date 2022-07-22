@@ -32,6 +32,21 @@ Installs the full Remote Server Admin Tools on all running lab machines
 
 ## PARAMETERS
 
+### -AsJob
+Indicates that the cmdlet should run in the background
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -ComputerName
 The computer names
 
@@ -77,8 +92,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -UseLocalCredential
-Indicates whether the machine's local credentials should be used
+### -IncludeManagementTools
+Indicates that the management tools should be included
 
 ```yaml
 Type: SwitchParameter
@@ -88,22 +103,6 @@ Aliases:
 Required: False
 Position: Named
 Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ProgressIndicator
-Every n seconds, print a .
-to the console
-
-```yaml
-Type: Int32
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 2
-Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -138,23 +137,24 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -AsJob
-Indicates that the cmdlet should run in the background
+### -ProgressIndicator
+Every n seconds, print a .
+to the console
 
 ```yaml
-Type: SwitchParameter
+Type: Int32
 Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: Named
-Default value: False
+Position: 2
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -IncludeManagementTools
-Indicates that the management tools should be included
+### -UseLocalCredential
+Indicates whether the machine's local credentials should be used
 
 ```yaml
 Type: SwitchParameter

@@ -41,7 +41,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 5
+Position: 1
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -58,7 +58,7 @@ Aliases:
 Required: True
 Position: 0
 Default value: None
-Accept pipeline input: False
+Accept pipeline input: True (ByPropertyName, ByValue)
 Accept wildcard characters: False
 ```
 
@@ -85,7 +85,7 @@ Type: ScriptBlock
 Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: 4
 Default value: None
 Accept pipeline input: False
@@ -116,7 +116,7 @@ Parameter Sets: (All)
 Aliases:
 Accepted values: Sample, Snippet, CustomRole
 
-Required: True
+Required: False
 Position: 2
 Default value: None
 Accept pipeline input: False

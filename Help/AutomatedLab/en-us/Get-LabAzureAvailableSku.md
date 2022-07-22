@@ -12,8 +12,14 @@ List all available operating systems on Azure
 
 ## SYNTAX
 
+### DisplayName (Default)
 ```
-Get-LabAzureAvailableSku [-Location] <String> [<CommonParameters>]
+Get-LabAzureAvailableSku -DisplayName <String> [<CommonParameters>]
+```
+
+### Name
+```
+Get-LabAzureAvailableSku -LocationName <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -30,16 +36,31 @@ List all available Operating Systems for AutomatedLab in West Europ
 
 ## PARAMETERS
 
-### -Location
+### -DisplayName
 Location display name
 
 ```yaml
 Type: String
-Parameter Sets: (All)
+Parameter Sets: DisplayName
+Aliases: Location
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -LocationName
+Location name
+
+```yaml
+Type: String
+Parameter Sets: Name
 Aliases:
 
 Required: True
-Position: 0
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

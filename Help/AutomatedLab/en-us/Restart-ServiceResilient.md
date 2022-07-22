@@ -46,21 +46,6 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -ServiceName
-The service to restart
-
-```yaml
-Type: Object
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 1
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -NoNewLine
 Indicates that no new lines should be present in the output
 
@@ -72,6 +57,21 @@ Aliases:
 Required: False
 Position: Named
 Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ServiceName
+The service to restart
+
+```yaml
+Type: Object
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 1
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

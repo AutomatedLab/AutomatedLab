@@ -175,7 +175,7 @@
         'New-LabPSSession',
         'New-LabVHDX',
         'New-LabVM',
-        'New-LabAzureResourceGroupDeployment',
+        'New-LabBaseImages',
         'Remove-LabDeploymentFiles',
         'Remove-Lab',
         'Remove-LabAzureLabSourcesStorage',
@@ -237,7 +237,6 @@
         'Get-LabReleaseStep',
         'Get-LabCache',
         'New-LabReleasePipeline',
-        'Get-LabAzureLoadBalancedPort',
         'Get-LabTfsParameter',
         'Open-LabTfsSite'
         'Enable-LabTelemetry',
@@ -258,10 +257,10 @@
         'Enable-LabInternalRouting',
         'Request-LabAzureJitAccess',
         'Enable-LabAzureJitAccess',
-        'Get-LWAzureVm',
         'Install-LabSshKnownHost',
         'UnInstall-LabSshKnownHost',
-        'Get-LabSshKnownHost'
+        'Get-LabSshKnownHost',
+        'Initialize-LabWindowsActivation'
     )
 
     AliasesToExport        = @(

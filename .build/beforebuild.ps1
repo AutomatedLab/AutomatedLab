@@ -1,6 +1,7 @@
 ﻿Write-Host "Publishing AutomatedLab library"
 $projPath = Join-Path $env:APPVEYOR_BUILD_FOLDER -ChildPath 'LabXml/LabXml.csproj' -Resolve -ErrorAction Stop
-dotnet publish $projPath -f netcoreapp2.2 -o (Join-Path -Path $env:APPVEYOR_BUILD_FOLDER 'AutomatedLab/lib/core')
+nuget restore
+dotnet publish $projPath -f net6.0 -o (Join-Path -Path $env:APPVEYOR_BUILD_FOLDER 'AutomatedLab/lib/core')
 if (-not $IsLinux)
 {
     dotnet publish $projPath -f net462 -o (Join-Path -Path $env:APPVEYOR_BUILD_FOLDER 'AutomatedLab/lib/full')

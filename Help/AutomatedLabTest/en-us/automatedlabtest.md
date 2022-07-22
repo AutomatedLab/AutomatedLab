@@ -8,13 +8,18 @@ Locale: en-US
 
 # automatedlabtest Module
 ## Description
-This simple module is capable of running one or more lab scripts and aggregating the
-results to do a test of AutomatedLab's functionality
+This simple module is capable of running one or more lab scripts and aggregating the results to do a test of AutomatedLab's functionality
 
 ## automatedlabtest Cmdlets
 ### [Import-LabTestResult](Import-LabTestResult.md)
-After running a test suite, import the results and examine them
+Import the results from Test-LabDeployment
+
+### [Invoke-LabPester](Invoke-LabPester.md)
+Invoke all role-specific pester tests for a lab
+
+### [New-LabPesterTest](New-LabPesterTest.md)
+Helper to create new test harness for a new role
 
 ### [Test-LabDeployment](Test-LabDeployment.md)
-Run one or more lab deployments to test if some functions of AutomatedLab broke.
+Test a lab deployment
 

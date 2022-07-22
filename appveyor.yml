@@ -1,7 +1,7 @@
-version: 5.43.{build}
+version: 5.44.{build}
 image:
-  - Visual Studio 2017
-  - Ubuntu
+  - Visual Studio 2022
+  - Ubuntu2004
 
 environment:
   AppVeyorApi:
@@ -35,13 +35,12 @@ assembly_info:
   assembly_informational_version: "{version}"
 
 before_build:
-  - nuget restore
   - ps: "& $env:APPVEYOR_BUILD_FOLDER/.build/beforebuild.ps1"
 
 for:
   - matrix:
       only:
-        - image: Visual Studio 2017
+        - image: Visual Studio 2022
     build:
       project: AutomatedLab.sln
     deploy:
@@ -57,8 +56,8 @@ for:
           branch: master
   - matrix:
       only:
-        - image: Ubuntu
-    build_script: dotnet build -f netcoreapp2.2 LabXml/LabXml.csproj
+        - image: Ubuntu2004
+    build_script: dotnet build -f net6.0 LabXml/LabXml.csproj
     deploy:
       - provider: GitHub
         description: "This is an automated deployment"

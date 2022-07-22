@@ -14,7 +14,7 @@ if ( (Get-PackageProvider nuget -Erroraction SilentlyContinue).Version -lt 2.8.5
 $mainModuleCore = Join-Path $env:APPVEYOR_BUILD_FOLDER 'AutomatedLab/lib/core/AutomatedLab.dll'
 $mainModule = Join-Path $env:APPVEYOR_BUILD_FOLDER 'AutomatedLab/lib/full/AutomatedLab.dll'
 $sourceLibraryPath = Join-Path $env:APPVEYOR_BUILD_FOLDER 'LabXml/bin/Debug/net462'
-$sourceLibraryPathCore = Join-Path $env:APPVEYOR_BUILD_FOLDER 'LabXml/bin/Debug/netcoreapp2.2'
+$sourceLibraryPathCore = Join-Path $env:APPVEYOR_BUILD_FOLDER 'LabXml/bin/Debug/net6.0'
 
 
 if (-not (Test-Path $mainModule))

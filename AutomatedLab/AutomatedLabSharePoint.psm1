@@ -223,11 +223,11 @@ function Install-LabSharePoint
     {
         Write-ScreenInfo -Type Verbose -Message "Some machines require a second pass at installing prerequisites: $($rebootRequired.HostName -join ',')"
         Restart-LabVM -ComputerName $rebootRequired.HostName -Wait
-        $instResult = Invoke-LabCommand -PassThru -ComputerName $rebootRequired.PSComputerName -ActivityName "Install $($group.Name) Prerequisites" -ScriptBlock { & C:\DeployDebug\SPPrereq.ps1 -Mode '/unattended /continue' } | Where-Object { $_ -eq 3010 }
+        $instResult = Invoke-LabCommand -PassThru -ComputerName $rebootRequired.HostName -ActivityName "Install $($group.Name) Prerequisites" -ScriptBlock { & C:\DeployDebug\SPPrereq.ps1 -Mode '/unattended /continue' } | Where-Object { $_ -eq 3010 }
         $failed = $instResult | Where-Object { $_.ExitCode -notin 0, 3010 }
         if ($null -ne $failed)
         {
-            Write-ScreenInfo -Type Error -Message "The following SharePoint servers failed installing prerequisites $($failed.PSComputerName)"
+            Write-ScreenInfo -Type Error -Message "The following SharePoint servers failed installing prerequisites $($failed.HostName)"
         }
 
         $rebootRequired = $instResult | Where-Object { $_.ExitCode -eq 3010 }
@@ -235,6 +235,7 @@ function Install-LabSharePoint
 
     # Install SharePoint binaries
     Write-ScreenInfo -Message "Installing SharePoint binaries on server"
+    Restart-LabVM -ComputerName $machines -Wait
 
     $jobs = foreach ($group in $versionGroups)
     {

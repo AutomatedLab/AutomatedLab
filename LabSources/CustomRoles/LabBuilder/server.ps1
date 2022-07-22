@@ -1,11 +1,22 @@
 ﻿Import-Module -Name Pode
-Import-Module -Name AutomatedLab
-Enable-LabHostRemoting -Force -NoDisplay
 
 Start-PodeServer {
     Add-PodeEndpoint -Address 127.0.0.1 -Protocol Http
     New-PodeLoggingMethod -File -Path C:\LabBuilder -Name AlCapode_success | Enable-PodeRequestLogging
     New-PodeLoggingMethod -File -Path C:\LabBuilder -Name AlCapode_error | Enable-PodeErrorLogging
+
+    Import-PodeModule -Name Pester
+    Import-PodeModule -Name PSFramework
+    Import-PodeModule -Name PSLog
+    Import-PodeModule -Name HostsFile
+    Import-PodeModule -Name AutomatedLab.Common
+    Import-PodeModule -Name AutomatedLabUnattended
+    Import-PodeModule -Name AutomatedLabDefinition
+    Import-PodeModule -Name PSFileTransfer
+    Import-PodeModule -Name AutomatedLabWorker
+    Import-PodeModule -Name AutomatedLabNotifications
+    Import-PodeModule -Name AutomatedLabTest
+    Import-PodeModule -Name AutomatedLab
     
     Enable-PodeSessionMiddleware -Duration 120 -Extend
     Add-PodeAuthIIS -Name 'IISAuth'
@@ -153,15 +164,38 @@ Start-PodeServer {
     }
 
     Add-PodeRoute -Method Post -Path '/Lab' -Authentication 'IISAuth' -ScriptBlock {
-        [string]$labScript = $WebEvent.Data.LabScript
-
-        if (-not $labScript)
+        if ($WebEvent.Data.LabScript)
         {
-            Write-PodeTextResponse -StatusCode 404 -Value "No LabScript in JSON body!"
+            [string]$labScript = $WebEvent.Data.LabScript
+        }
+        if ($WebEvent.Data.LabBytes)
+        {
+            [byte[]]$labDefinition = $WebEvent.Data.LabBytes
+        }
+        
+        Enable-LabHostRemoting -Force -NoDisplay
+
+        if ($labScript -and $labDefinition)
+        {
+            Write-PodeTextResponse -StatusCode 404 -Value "Both LabScript and LabBytes in JSON body!"
+            return
+        }
+
+        if (-not $labScript -and -not $labDefinition)
+        {
+            Write-PodeTextResponse -StatusCode 404 -Value "No LabScript or LabBytes in JSON body!"
             return
         }
 
         $labGuid = (New-Guid).Guid
+
+        if (-not $labScript -and $labDefinition)
+        {
+            $labDefinition | Export-Clixml -Path "C:\LabBuilder\$($labGuid).xml"
+            [string] $labScript = "[byte[]]`$labDefinition = Import-Clixml -Path 'C:\LabBuilder\$($labGuid).xml'; Import-Module AutomatedLab; Remove-Item -Path -Path 'C:\LabBuilder\$($labGuid).xml'"
+            $labScript = -join @($labScript, "`r`n[AutomatedLab.Lab]::Import(`$labDefinition); Install-Lab")
+        }
+
         $labScript = -join @($labScript, "`r`nInvoke-LabPester -Lab (Get-Lab) -OutputFile C:\LabBuilder\LabJobs\$($labGuid)_Result.xml")
 
         if (-not (Test-Path -Path C:\LabBuilder\LabJobs))
@@ -173,6 +207,7 @@ Start-PodeServer {
         $command = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($labScript))
 
         # Due to runspaces used, the international module is not reliably imported. Hence, we are using Windows PowerShell.
+        Import-Module -Name C:\WINDOWS\system32\WindowsPowerShell\v1.0\Modules\ScheduledTasks\ScheduledTasks.psd1
         $action = New-ScheduledTaskAction -Execute 'C:\Windows\system32\WindowsPowerShell\v1.0\powershell.exe' -Argument "-NoProfile -WindowStyle hidden -NoLogo -EncodedCommand $command"
 
         $trigger = New-ScheduledTaskTrigger -Once -At (Get-Date)

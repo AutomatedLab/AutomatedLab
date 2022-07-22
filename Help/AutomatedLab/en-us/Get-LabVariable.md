@@ -13,7 +13,7 @@ Get lab variables
 ## SYNTAX
 
 ```
-Get-LabVariable
+Get-LabVariable [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -29,6 +29,9 @@ PS C:\> Get-LabVariable
 Returns all runtime variables starting with AL_
 
 ## PARAMETERS
+
+### CommonParameters
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 

@@ -31,21 +31,6 @@ Create three new resource groups in West Europe
 
 ## PARAMETERS
 
-### -ResourceGroupNames
-Resource groups to create
-
-```yaml
-Type: String[]
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: 1
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -LocationName
 Location to create resource in
 
@@ -55,7 +40,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: 2
+Position: 1
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -72,6 +57,21 @@ Aliases:
 Required: False
 Position: Named
 Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ResourceGroupNames
+Resource groups to create
+
+```yaml
+Type: String[]
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 0
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

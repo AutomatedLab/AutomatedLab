@@ -30,21 +30,6 @@ In case of changed public IP addresses restore the lab connection
 
 ## PARAMETERS
 
-### -SourceLab
-The source lab that has been used for the first connection
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: 0
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -DestinationLab
 The destination lab that has been used
 
@@ -55,6 +40,21 @@ Aliases:
 
 Required: True
 Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -SourceLab
+The source lab that has been used for the first connection
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 0
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

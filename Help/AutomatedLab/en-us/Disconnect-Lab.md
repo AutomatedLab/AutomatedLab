@@ -32,21 +32,6 @@ Removes the VPN connection between OnPrem and AzLab
 
 ## PARAMETERS
 
-### -SourceLab
-The source lab name
-
-```yaml
-Type: Object
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: 0
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -DestinationLab
 The destination lab name
 
@@ -57,6 +42,21 @@ Aliases:
 
 Required: True
 Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -SourceLab
+The source lab name
+
+```yaml
+Type: Object
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 0
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

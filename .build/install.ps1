@@ -25,12 +25,12 @@ else
 {
   # Ruby tool FPM can build packages for multiple distributions
   sudo apt update
-  sudo apt upgrade -y
+  #sudo apt upgrade -y
   sudo apt install alien -y
 }
 Install-Module PSFramework -Repo PSGallery -Force
 
-if ($env:APPVEYOR_REPO_BRANCH -eq "master" -and $currVersion -gt $compareVersion)
+if ($env:APPVEYOR_REPO_BRANCH -eq "master" -and [string]::IsNullOrWhiteSpace($env:APPVEYOR_PULL_REQUEST_TITLE) -and $currVersion -gt $compareVersion)
 {
   $properVersion = $compareVersion.ToString(3)
   Add-AppVeyorMessage -Category Warning "Resetting version from $env:APPVEYOR_BUILD_VERSION to $properVersion"

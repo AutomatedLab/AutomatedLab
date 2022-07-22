@@ -49,18 +49,47 @@ PS C:\> {{ Add example code here }}
 
 ## PARAMETERS
 
-### -SearchString
-The search string to use.
-For more information, see: https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.x509certificates.x509certificate2collection.find
+### -All
+Retrieve all certificates
 
 ```yaml
-Type: String
-Parameter Sets: FindCer, FindPfx
+Type: SwitchParameter
+Parameter Sets: AllPfx, AllCer
+Aliases:
+
+Required: True
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ComputerName
+The hosts to get certificates from
+
+```yaml
+Type: String[]
+Parameter Sets: (All)
 Aliases:
 
 Required: True
 Position: Named
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ExportPrivateKey
+Indicates that the private key should be exported
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: FindPfx, AllPfx
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -73,10 +102,26 @@ FindBySubjectName
 Type: X509FindType
 Parameter Sets: FindCer, FindPfx
 Aliases:
+Accepted values: FindByThumbprint, FindBySubjectName, FindBySubjectDistinguishedName, FindByIssuerName, FindByIssuerDistinguishedName, FindBySerialNumber, FindByTimeValid, FindByTimeNotYetValid, FindByTimeExpired, FindByTemplateName, FindByApplicationPolicy, FindByCertificatePolicy, FindByExtension, FindByKeyUsage, FindBySubjectKeyIdentifier
 
 Required: True
 Position: Named
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -IncludeServices
+Indicates that services will be included
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: AllPfx, AllCer
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -89,37 +134,7 @@ Possible values CERT_SYSTEM_STORE_CURRENT_USER, CERT_SYSTEM_STORE_LOCAL_MACHINE,
 Type: CertStoreLocation
 Parameter Sets: (All)
 Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Store
-The store to look in, e.g.
-My
-
-```yaml
-Type: StoreName
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ServiceName
-The name of the service
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
+Accepted values: CERT_SYSTEM_STORE_CURRENT_USER_ID, CERT_SYSTEM_STORE_LOCAL_MACHINE_ID, CERT_SYSTEM_STORE_CURRENT_SERVICE_ID, CERT_SYSTEM_STORE_SERVICES_ID, CERT_SYSTEM_STORE_USERS_ID, CERT_SYSTEM_STORE_CURRENT_USER_GROUP_POLICY_ID, CERT_SYSTEM_STORE_LOCAL_MACHINE_GROUP_POLICY_ID, CERT_SYSTEM_STORE_LOCAL_MACHINE_ENTERPRISE_ID, CERT_SYSTEM_STORE_LOCATION_SHIFT, CERT_SYSTEM_STORE_CURRENT_USER, CERT_SYSTEM_STORE_LOCAL_MACHINE, CERT_SYSTEM_STORE_CURRENT_SERVICE, CERT_SYSTEM_STORE_SERVICES, CERT_SYSTEM_STORE_USERS, CERT_SYSTEM_STORE_CURRENT_USER_GROUP_POLICY, CERT_SYSTEM_STORE_LOCAL_MACHINE_GROUP_POLICY, CERT_SYSTEM_STORE_LOCAL_MACHINE_ENTERPRISE, CERT_SYSTEM_STORE_LOCATION_MASK
 
 Required: False
 Position: Named
@@ -143,12 +158,13 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -ComputerName
-The hosts to get certificates from
+### -SearchString
+The search string to use.
+For more information, see: https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.x509certificates.x509certificate2collection.find
 
 ```yaml
-Type: String[]
-Parameter Sets: (All)
+Type: String
+Parameter Sets: FindCer, FindPfx
 Aliases:
 
 Required: True
@@ -158,47 +174,34 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -All
-Retrieve all certificates
+### -ServiceName
+The name of the service
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: AllPfx, AllCer
-Aliases:
-
-Required: True
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -IncludeServices
-Indicates that services will be included
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: AllPfx, AllCer
+Type: String
+Parameter Sets: (All)
 Aliases:
 
 Required: False
 Position: Named
-Default value: False
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -ExportPrivateKey
-Indicates that the private key should be exported
+### -Store
+The store to look in, e.g.
+My
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: FindPfx, AllPfx
+Type: StoreName
+Parameter Sets: (All)
 Aliases:
+Accepted values: AddressBook, AuthRoot, CertificateAuthority, Disallowed, My, Root, TrustedPeople, TrustedPublisher
 
 Required: False
 Position: Named
-Default value: False
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

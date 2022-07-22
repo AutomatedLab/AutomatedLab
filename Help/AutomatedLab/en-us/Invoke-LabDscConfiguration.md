@@ -14,13 +14,14 @@ Invoke a DSC configuration on one or more nodes
 
 ### New (Default)
 ```
-Invoke-LabDscConfiguration -Configuration <ConfigurationInfo> -ComputerName <String[]>
+Invoke-LabDscConfiguration -Configuration <ConfigurationInfo> -ComputerName <String[]> [-Parameter <Hashtable>]
  [-ConfigurationData <Hashtable>] [-Wait] [-Force] [<CommonParameters>]
 ```
 
 ### UseExisting
 ```
-Invoke-LabDscConfiguration -ComputerName <String[]> [-UseExisting] [-Wait] [-Force] [<CommonParameters>]
+Invoke-LabDscConfiguration -ComputerName <String[]> [-Parameter <Hashtable>] [-UseExisting] [-Wait] [-Force]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -95,6 +96,36 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -Force
+Indicates that the force is used
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Parameter
+{{ Fill Parameter Description }}
+
+```yaml
+Type: Hashtable
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -UseExisting
 The parameter UseExisting of Start-DscConfiguration
 
@@ -112,21 +143,6 @@ Accept wildcard characters: False
 
 ### -Wait
 Wait for the configuration to finish
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Force
-Indicates that the force is used
 
 ```yaml
 Type: SwitchParameter

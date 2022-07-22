@@ -58,6 +58,7 @@ function New-LWHypervVM
     }
 
     Import-UnattendedContent -Content $Machine.UnattendedXmlContent
+    #endregion
 
     #region network adapter settings
     $macAddressPrefix = Get-LabConfigurationItem -Name MacAddressPrefix
@@ -430,7 +431,7 @@ function New-LWHypervVM
     }
     else
     {
-        $referenceDiskPath = $Machine.OperatingSystem.BaseDiskPath
+        $referenceDiskPath = if ($Machine.ReferenceDiskPath) { $Machine.ReferenceDiskPath } else { $Machine.OperatingSystem.BaseDiskPath }
         $systemDisk = New-VHD -Path $path -Differencing -ParentPath $referenceDiskPath -ErrorAction Stop
         Write-PSFMessage "`tcreated differencing disk '$($systemDisk.Path)' pointing to '$ReferenceVhdxPath'"
     }
@@ -778,8 +779,9 @@ Stop-Transcript
 
     return $true
 }
-#endregion New-LWHypervVM
+#endregion
 
+#region Get-LWHypervVM
 function Get-LWHypervVM
 {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification = "Not relevant on Linux")]
@@ -835,6 +837,7 @@ function Get-LWHypervVM
 
     Write-LogFunctionExit
 }
+#endregion
 
 #region Remove-LWHypervVM
 function Remove-LWHypervVM
