@@ -1,5 +1,6 @@
 ﻿$null = mkdir D:\AL
 
+$ProgressPreference = 'SilentlyContinue'
 New-LabDefinition -Name Integrator -DefaultVirtualizationEngine HyperV -VmPath D:\AL
 
 # These tests should eventually cover EVERY role, so that Invoke-LabPester creates a valid test file

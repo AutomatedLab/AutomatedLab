@@ -85,7 +85,7 @@ Task Test -Depends Init {
         # Prereq: $secret = $principal | New-AzADSpCredential -EndDate (Get-Date).AddYears(5)
         # Prereq: $account = get-azstorageaccount -ResourceGroupName AutomatedLabSources
         # Prereq: $saKey = ( $account | Get-AzStorageAccountKey)[0].Value
-        # Store in AppVeyor: @{ApplicationId = $principal.AppId; Password = $secret.SecretText; TenantId = (Get-AzContext).Tenant.Id; StorageAccountKey = $saKey; StorageAccountName = $account.StorageAccountName} | ConvertTo-Json -Compress | Set-Clipboard
+        # Store in AppVeyor: @{ApplicationId = $principal.AppId; Password = $secret.SecretText; TenantId = (Get-AzContext).Tenant.Id; StorageAccountKey = $saKey; StorageAccountName = $account.StorageAccountName; SubscriptionId = (Get-AzContext).Subscription.Id} | ConvertTo-Json -Compress | Set-Clipboard
         # Create and sync lab sources
         if ($env:APPVEYOR_REPO_BRANCH -eq 'master')
         {
@@ -96,11 +96,10 @@ Task Test -Depends Init {
                 $credential = [PSCredential]::new($principal.ApplicationId, $securePassword)
                 $vmCredential = [PSCredential]::new('al', $securePassword)
                 $null = Connect-AzAccount -ServicePrincipal -TenantId $principal.TenantId -Credential $credential -Subscription $principal.SubscriptionId
-                $curr = Get-PublicIpAddress
-                $depp = New-AzResourceGroupDeployment -ResourceGroupName automatedlabintegration -Name "Integration$(Get-Date -Format yyyymMdd)" -TemplateFile "$ProjectRoot\.build\arm.json" -currIp $curr -adminPassword $securePassword
+                $depp = New-AzResourceGroupDeployment -ResourceGroupName automatedlabintegration -Name "Integration$(Get-Date -Format yyyymMdd)" -TemplateFile "$ProjectRoot\.build\arm.json" -adminPassword $securePassword
             
                 # Prepare VM
-                $tmpScript = New-Item ./prep.ps1 -Value 'Enable-PSRemoting -Force -SkipNetwork; Set-NetFirewallProfile -All -Enabled False; $null = Install-WindowsFeature Hyper-V -IncludeAll -IncludeMan;'
+                $tmpScript = New-Item ./prep.ps1 -Value 'Enable-PSRemoting -Force -SkipNetwork; Set-NetFirewallProfile -All -Enabled False; $null = Install-WindowsFeature Hyper-V -IncludeAll -IncludeMan;' -Force
                 $null = Invoke-AzVmRunCommand -ResourceGroupName automatedlabintegration -VMName inttestvm -CommandId 'RunPowerShellScript' -ScriptPath $tmpScript.FullName
                 $tmpScript | Remove-Item
                 Set-Item wsman:\localhost\Client\TrustedHosts $depp.Outputs.hostname.Value -Force
@@ -109,12 +108,15 @@ Task Test -Depends Init {
                 $session = New-PSSession -ComputerName $depp.Outputs.hostname.Value -Credential $vmCredential
 
                 Add-VariableToPSSession -Session $session -PSVariable (Get-Variable principal)
-                Send-ModuleToPSSession -Session $session -Module (Get-Module -ListAvailable AutomatedLab)[0] -IncludeDependencies -Force -Scope AllUsers
+                $msifile = Get-ChildItem -Path $env:APPVEYOR_BUILD_FOLDER -Recurse -Filter AutomatedLab.msi | Select-Object -First 1
+                Copy-Item -ToSession $session -Path $msifile -Destination C:\al.msi
+                Invoke-Command -Session $session -ScriptBlock {msiexec /i C:\al.msi /L*v al.log}
+                Send-ModuleToPSSession -Session $session -Module (Get-Module -ListAvailable Pester)[0] -IncludeDependencies -Force -Scope AllUsers
                 Copy-Item -ToSession $session -Path "$ProjectRoot\.build\AlIntegrationEnv.ps1" -Destination C:\AlIntegrationEnv.ps1
                 Invoke-Command -Session $session -ScriptBlock {
-                    [Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPT_IN', '1', 'Machine')
+                    [Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTIN', '1', 'Machine')
                     Set-ExecutionPolicy Bypass -Scope LocalMachine -Force
-                    $env:AUTOMATEDLAB_TELEMETRY_OPT_IN = 1
+                    $env:AUTOMATEDLAB_TELEMETRY_OPTIN = 1
                     $credential = [PSCredential]::new($principal.StorageAccountName, ($principal.StorageAccountKey | ConvertTo-SecureString -AsPlainText -Force))
                     New-PSDrive -Name Z -PSProvider FileSystem -Root "\\$($principal.StorageAccountName).file.core.windows.net\labsources" -Credential $credential
                     Enable-LabHostRemoting -Force

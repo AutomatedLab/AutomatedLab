@@ -7,12 +7,6 @@
             "metadata": {
                 "description": "VM Admin"
             }
-        },
-        "currIp": {
-            "type": "string",
-            "metadata": {
-                "description": "Current IP for WinRm access"
-            }
         }
     },
     "functions": [],
@@ -47,7 +41,7 @@
                             "protocol": "Tcp",
                             "sourcePortRange": "*",
                             "destinationPortRange": "5985",
-                            "sourceAddressPrefix": "[parameters('currIp')]",
+                            "sourceAddressPrefix": "*",
                             "destinationAddressPrefix": "*",
                             "access": "Allow",
                             "priority": 100,
