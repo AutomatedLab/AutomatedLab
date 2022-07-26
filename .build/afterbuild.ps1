@@ -28,9 +28,9 @@ if ($IsLinux)
 }
 
 # Do not publish artifacts anywhere if not on master or develop
-if ($env:APPVEYOR_REPO_BRANCH -in 'master', 'develop')
+if ($env:APPVEYOR_REPO_BRANCH -notin 'master', 'develop')
 {
-    Add-AppveyorMessage "$env:APPVEYOR_REPO_BRANCH -in 'master', 'develop' - Exiting build" -Category Information
+    Add-AppveyorMessage "$env:APPVEYOR_REPO_BRANCH -notin 'master', 'develop' - Exiting build" -Category Information
     Exit-AppveyorBuild
 }
 
