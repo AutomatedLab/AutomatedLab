@@ -93,39 +93,50 @@ Task Test -Depends Init {
             {
                 Write-Host -ForegroundColor DarkYellow "Is AzureServicePrincipal filled? $(-not [string]::IsNullOrWhiteSpace($env:AzureServicePrincipal))"
                 $principal = $env:AzureServicePrincipal | ConvertFrom-Json
-                $props = $principal.PSObject.Properties.Name
-                Write-Host -ForegroundColor DarkYellow "AppId: $($prop -contains 'AppplicationId'), Password $($prop -contains 'Password'), TenantId $($prop -contains 'TenantId'), SAKey $($prop -contains 'StorageAccountKey'), SAName $($prop -contains 'StorageAccountName'), Subscription $($prop -contains 'SubscriptionId')"
+
                 $securePassword = $principal.Password | ConvertTo-SecureString -AsPlainText -Force
                 $credential = [PSCredential]::new($principal.ApplicationId, $securePassword)
                 $vmCredential = [PSCredential]::new('al', $securePassword)
                 $null = Connect-AzAccount -ServicePrincipal -TenantId $principal.TenantId -Credential $credential -Subscription $principal.SubscriptionId -ErrorAction Stop
-                $depp = New-AzResourceGroupDeployment -ResourceGroupName automatedlabintegration -Name "Integration$(Get-Date -Format yyyymMdd)" -TemplateFile "$ProjectRoot\.build\arm.json" -adminPassword $securePassword
+
+                Write-Host -ForegroundColor DarkYellow "Deploying to RG automatedlabintegration"
+                $depp = New-AzResourceGroupDeployment -ResourceGroupName automatedlabintegration -Name "Integration$(Get-Date -Format yyyyMMdd)" -TemplateFile "$ProjectRoot\.build\arm.json" -adminPassword $securePassword
             
                 # Prepare VM
+                Write-Host -ForegroundColor DarkYellow "Attempting to enable PSRemoting and install Hyper-V"
                 $tmpScript = New-Item ./prep.ps1 -Value 'Enable-PSRemoting -Force -SkipNetwork; Set-NetFirewallProfile -All -Enabled False; $null = Install-WindowsFeature Hyper-V -IncludeAll -IncludeMan;' -Force
                 $null = Invoke-AzVmRunCommand -ResourceGroupName automatedlabintegration -VMName inttestvm -CommandId 'RunPowerShellScript' -ScriptPath $tmpScript.FullName
                 $tmpScript | Remove-Item
-                Set-Item wsman:\localhost\Client\TrustedHosts $depp.Outputs.hostname.Value -Force
+                Set-Item wsman:\localhost\Client\TrustedHosts $depp.Outputs.hostname.Value -Force -ErrorAction SilentlyContinue
 
-                try
+                Write-Host -ForegroundColor DarkYellow "Restarting VM"
+                Restart-AzVM -ResourceGroupName automatedlabintegration -Name inttestvm -Confirm:$false
+                
+                
+                while (-not $session -and $retryCount -lt 3)
                 {
-                    Restart-Computer -Force -Wait -For WinRm -Protocol WSMan -ComputerName $depp.Outputs.hostname.Value -Credential $vmCredential -ErrorAction Stop
+                    try
+                    {
+                        $session = New-PSSession -ComputerName $depp.Outputs.hostname.Value -Credential $vmCredential -ErrorAction Stop
+                    }
+                    catch
+                    {
+                        $tmpScript = New-Item ./prep.ps1 -Value 'Enable-PSRemoting -Force -SkipNetwork; Set-NetFirewallProfile -All -Enabled False; $null = Install-WindowsFeature Hyper-V -IncludeAll -IncludeMan;' -Force
+                        $null = Invoke-AzVmRunCommand -ResourceGroupName automatedlabintegration -VMName inttestvm -CommandId 'RunPowerShellScript' -ScriptPath $tmpScript.FullName
+                        $tmpScript | Remove-Item
+                        Restart-AzVM -ResourceGroupName automatedlabintegration -Name inttestvm -Confirm:$false
+                    }
                 }
-                catch
-                {
-                    $tmpScript = New-Item ./prep.ps1 -Value 'Enable-PSRemoting -Force -SkipNetwork; Set-NetFirewallProfile -All -Enabled False; $null = Install-WindowsFeature Hyper-V -IncludeAll -IncludeMan;' -Force
-                    $null = Invoke-AzVmRunCommand -ResourceGroupName automatedlabintegration -VMName inttestvm -CommandId 'RunPowerShellScript' -ScriptPath $tmpScript.FullName
-                    $tmpScript | Remove-Item
-                    Restart-Computer -Force -Wait -For WinRm -Protocol WSMan -ComputerName $depp.Outputs.hostname.Value -Credential $vmCredential -ErrorAction SilentlyContinue
-                }
-                $session = New-PSSession -ComputerName $depp.Outputs.hostname.Value -Credential $vmCredential -ErrorAction Stop
 
+                Write-Host -ForegroundColor DarkYellow "Pushing MSI package"
                 Add-VariableToPSSession -Session $session -PSVariable (Get-Variable principal)
                 $msifile = Get-ChildItem -Path $env:APPVEYOR_BUILD_FOLDER -Recurse -Filter AutomatedLab.msi | Select-Object -First 1
                 Copy-Item -ToSession $session -Path $msifile -Destination C:\al.msi
                 Invoke-Command -Session $session -ScriptBlock {msiexec /i C:\al.msi /L*v al.log}
                 Send-ModuleToPSSession -Session $session -Module (Get-Module -ListAvailable Pester)[0] -IncludeDependencies -Force -Scope AllUsers
                 Copy-Item -ToSession $session -Path "$ProjectRoot\.build\AlIntegrationEnv.ps1" -Destination C:\AlIntegrationEnv.ps1
+
+                Write-Host -ForegroundColor DarkYellow "Running tests"
                 Invoke-Command -Session $session -ScriptBlock {
                     [Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTIN', '1', 'Machine')
                     Set-ExecutionPolicy Bypass -Scope LocalMachine -Force
@@ -137,6 +148,7 @@ Task Test -Depends Init {
                     & C:\AlIntegrationEnv.ps1
                 }
 
+                Write-Host -ForegroundColor DarkYellow "Receiving test results"
                 Copy-Item -FromSession $session -Path C:\Integrator.xml -Destination "$ProjectRoot\Integrator.xml"
                 If ($ENV:APPVEYOR_JOB_ID)
                 {
@@ -149,6 +161,7 @@ Task Test -Depends Init {
             finally
             {
                 # After tests
+                Write-Host -ForegroundColor DarkYellow "Deleting stuff from automatedlabintegration"
                 $null = Get-AzVm -ResourceGroupName automatedlabintegration | Remove-AzVm -Force -ForceDeletion $true
                 $null = Get-AzNetworkInterface -ResourceGroupName automatedlabintegration | Remove-AzNetworkInterface -Force
                 $null = Get-AzVirtualNetwork -ResourceGroupName automatedlabintegration | Remove-AzVirtualNetwork -Force
