@@ -32,6 +32,7 @@ if ($env:APPVEYOR_REPO_BRANCH -notin 'master', 'develop')
 {
     Add-AppveyorMessage "$env:APPVEYOR_REPO_BRANCH -notin 'master', 'develop' - Exiting build" -Category Information
     Exit-AppveyorBuild
+    return
 }
 
 # Do not publish artifacts to Gallery or GitHub with every PR
@@ -39,4 +40,5 @@ if ($env:APPVEYOR_REPO_BRANCH -in 'master', 'develop' -and -not [string]::IsNull
 {
     Add-AppveyorMessage "$env:APPVEYOR_REPO_BRANCH -in 'master', 'develop', PR coming in from $env:APPVEYOR_PULL_REQUEST_HEAD_REPO_BRANCH - Exiting build" -Category Information
     Exit-AppveyorBuild
+    return
 }

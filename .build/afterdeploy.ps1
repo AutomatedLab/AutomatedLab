@@ -26,20 +26,6 @@ if (-not (Test-Path $mainModuleCore))
     $null = robocopy /S /E $sourceLibraryPathCore (Split-Path $mainModuleCore)
 }
 
-# Do not publish artifacts anywhere if not on master or develop
-if ($env:APPVEYOR_REPO_BRANCH -notin 'master', 'develop')
-{
-    Add-AppveyorMessage "$env:APPVEYOR_REPO_BRANCH -notin 'master', 'develop' - Exiting build" -Category Information
-    Exit-AppveyorBuild
-}
-
-# Do not publish artifacts to Gallery or GitHub with every PR
-if ($env:APPVEYOR_REPO_BRANCH -in 'master', 'develop' -and -not [string]::IsNullOrWhitespace($env:APPVEYOR_PULL_REQUEST_HEAD_REPO_BRANCH) )
-{
-    Add-AppveyorMessage "$env:APPVEYOR_REPO_BRANCH -in 'master', 'develop', PR coming in from $env:APPVEYOR_PULL_REQUEST_HEAD_REPO_BRANCH - Exiting build" -Category Information
-    Exit-AppveyorBuild
-}
-
 $env:PSModulePath += ";$env:APPVEYOR_BUILD_FOLDER"
 foreach ($m in (Get-ChildItem -Path $env:APPVEYOR_BUILD_FOLDER -Directory -Exclude AutomatedLab.Common, scriptanalyzer))
 {
