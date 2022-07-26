@@ -91,11 +91,14 @@ Task Test -Depends Init {
         {
             try
             {
+                Write-Host -ForegroundColor DarkYellow "Is AzureServicePrincipal filled? $(-not [string]::IsNullOrWhiteSpace($env:AzureServicePrincipal))"
                 $principal = $env:AzureServicePrincipal | ConvertFrom-Json
+                $props = $principal.PSObject.Properties.Name
+                Write-Host -ForegroundColor DarkYellow "AppId: $($prop -contains 'AppplicationId'), Password $($prop -contains 'Password'), TenantId $($prop -contains 'TenantId'), SAKey $($prop -contains 'StorageAccountKey'), SAName $($prop -contains 'StorageAccountName'), Subscription $($prop -contains 'SubscriptionId')"
                 $securePassword = $principal.Password | ConvertTo-SecureString -AsPlainText -Force
                 $credential = [PSCredential]::new($principal.ApplicationId, $securePassword)
                 $vmCredential = [PSCredential]::new('al', $securePassword)
-                $null = Connect-AzAccount -ServicePrincipal -TenantId $principal.TenantId -Credential $credential -Subscription $principal.SubscriptionId
+                $null = Connect-AzAccount -ServicePrincipal -TenantId $principal.TenantId -Credential $credential -Subscription $principal.SubscriptionId -ErrorAction Stop
                 $depp = New-AzResourceGroupDeployment -ResourceGroupName automatedlabintegration -Name "Integration$(Get-Date -Format yyyymMdd)" -TemplateFile "$ProjectRoot\.build\arm.json" -adminPassword $securePassword
             
                 # Prepare VM
@@ -104,8 +107,18 @@ Task Test -Depends Init {
                 $tmpScript | Remove-Item
                 Set-Item wsman:\localhost\Client\TrustedHosts $depp.Outputs.hostname.Value -Force
 
-                Restart-Computer -Force -Wait -For WinRm -Protocol WSMan -ComputerName $depp.Outputs.hostname.Value -Credential $vmCredential
-                $session = New-PSSession -ComputerName $depp.Outputs.hostname.Value -Credential $vmCredential
+                try
+                {
+                    Restart-Computer -Force -Wait -For WinRm -Protocol WSMan -ComputerName $depp.Outputs.hostname.Value -Credential $vmCredential -ErrorAction Stop
+                }
+                catch
+                {
+                    $tmpScript = New-Item ./prep.ps1 -Value 'Enable-PSRemoting -Force -SkipNetwork; Set-NetFirewallProfile -All -Enabled False; $null = Install-WindowsFeature Hyper-V -IncludeAll -IncludeMan;' -Force
+                    $null = Invoke-AzVmRunCommand -ResourceGroupName automatedlabintegration -VMName inttestvm -CommandId 'RunPowerShellScript' -ScriptPath $tmpScript.FullName
+                    $tmpScript | Remove-Item
+                    Restart-Computer -Force -Wait -For WinRm -Protocol WSMan -ComputerName $depp.Outputs.hostname.Value -Credential $vmCredential -ErrorAction SilentlyContinue
+                }
+                $session = New-PSSession -ComputerName $depp.Outputs.hostname.Value -Credential $vmCredential -ErrorAction Stop
 
                 Add-VariableToPSSession -Session $session -PSVariable (Get-Variable principal)
                 $msifile = Get-ChildItem -Path $env:APPVEYOR_BUILD_FOLDER -Recurse -Filter AutomatedLab.msi | Select-Object -First 1
