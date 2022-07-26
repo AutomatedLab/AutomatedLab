@@ -1708,18 +1708,15 @@ function Repair-LWHypervNetworkConfig
     if (-not $machine) { return } # No fixing this on a Linux VM
 
     Wait-LabVM -ComputerName $machine -NoNewLine
-
-    #remoting does serialization with a depth of 1. Here we need more
-    $machineStream = [System.Management.Automation.PSSerializer]::Serialize($machine, 4)
+    $machineOs = $machine.OperatingSystem
+    $machineAdapterStream = [System.Management.Automation.PSSerializer]::Serialize($machine.NetworkAdapters,2)
 
     Invoke-LabCommand -ComputerName $machine -ActivityName "Network config on '$machine' (renaming and ordering)" -ScriptBlock {
-        $machine = [System.Management.Automation.PSSerializer]::Deserialize($machineStream)
-
         Write-Verbose "Renaming network adapters"
         #rename the adapters as defined in the lab
-
+        $machineAdapter = [System.Management.Automation.PSSerializer]::Deserialize($machineAdapterStream)
         $newNames = @()
-        foreach ($adapterInfo in $machine.NetworkAdapters)
+        foreach ($adapterInfo in $machineAdapter)
         {
             $newName = if ($adapterInfo.InterfaceName)
             {
@@ -1745,7 +1742,7 @@ function Repair-LWHypervNetworkConfig
                 $adapterInfo.VirtualSwitch.Name = $newName
             }
 
-            if ($machine.OperatingSystem.Version.Major -lt 6 -and $machine.OperatingSystem.Version.Minor -lt 2)
+            if ($machineOs.Version.Major -lt 6 -and $machineOs.Version.Minor -lt 2)
             {
                 $mac = (Get-StringSection -String $adapterInfo.MacAddress -SectionSize 2) -join ':'
                 $filter = 'MACAddress = "{0}"' -f $mac
@@ -1768,15 +1765,15 @@ function Repair-LWHypervNetworkConfig
         #Adjusting the Network Protocol Bindings in Windows 10 https://blogs.technet.microsoft.com/networking/2015/08/14/adjusting-the-network-protocol-bindings-in-windows-10/
         if ([System.Environment]::OSVersion.Version.Major -lt 10)
         {
-            $retries = $machine.NetworkAdapters.Count * $machine.NetworkAdapters.Count * 2
+            $retries = $machineAdapter.Count * $machineAdapter.Count * 2
             $i = 0
 
             $sortedAdapters = New-Object System.Collections.ArrayList
-            $sortedAdapters.AddRange(@($machine.NetworkAdapters | Where-Object { $_.VirtualSwitch.SwitchType.Value -ne 'Internal' }))
-            $sortedAdapters.AddRange(@($machine.NetworkAdapters | Where-Object { $_.VirtualSwitch.SwitchType.Value -eq 'Internal' }))
+            $sortedAdapters.AddRange(@($machineAdapter | Where-Object { $_.VirtualSwitch.SwitchType.Value -ne 'Internal' }))
+            $sortedAdapters.AddRange(@($machineAdapter | Where-Object { $_.VirtualSwitch.SwitchType.Value -eq 'Internal' }))
 
             Write-Verbose "Setting the network order"
-            [array]::Reverse($machine.NetworkAdapters)
+            [array]::Reverse($machineAdapter)
             foreach ($adapterInfo in $sortedAdapters)
             {
                 Write-Verbose "Setting the order for adapter '$($adapterInfo.VirtualSwitch.ResourceName)'"
@@ -1789,9 +1786,9 @@ function Repair-LWHypervNetworkConfig
             }
         }
 
-    } -Function (Get-Command -Name Get-StringSection, Add-StringIncrement) -Variable (Get-Variable -Name machineStream) -NoDisplay
+    } -Function (Get-Command -Name Get-StringSection, Add-StringIncrement) -Variable (Get-Variable -Name machineOs, machineAdapterStream) -NoDisplay
 
-    foreach ($adapterInfo in $machine.NetworkAdapters)
+    foreach ($adapterInfo in $machineAdapter)
     {
         $vmAdapter = $vm | Get-VMNetworkAdapter -Name $adapterInfo.VirtualSwitch.ResourceName
 

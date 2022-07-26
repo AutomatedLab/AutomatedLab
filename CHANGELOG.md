@@ -4,7 +4,11 @@
 
 ### Enhancements
 
+- Build process includes integration tests
+
 ### Bugs
+
+- Repair-LWHyperVNetworkConfig: WSMAN EnvelopeSize caused issues
 
 ## 5.44.0 (2022-07-22)
 
