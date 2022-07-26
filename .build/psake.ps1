@@ -80,6 +80,67 @@ Task Test -Depends Init {
     {
         Import-Module -Name Pester -MinimumVersion 5.0.0 -Force
 
+        # On master: Create resource group deployment, run expensive stuff
+        # Prereq: $principal = New-AzADServicePrincipal -DisplayName 'automatedlabintegrationtester'
+        # Prereq: $secret = $principal | New-AzADSpCredential -EndDate (Get-Date).AddYears(5)
+        # Prereq: $account = get-azstorageaccount -ResourceGroupName AutomatedLabSources
+        # Prereq: $saKey = ( $account | Get-AzStorageAccountKey)[0].Value
+        # Store in AppVeyor: @{ApplicationId = $principal.AppId; Password = $secret.SecretText; TenantId = (Get-AzContext).Tenant.Id; StorageAccountKey = $saKey; StorageAccountName = $account.StorageAccountName} | ConvertTo-Json -Compress | Set-Clipboard
+        # Create and sync lab sources
+        if ($env:APPVEYOR_REPO_BRANCH -eq 'master')
+        {
+            try
+            {
+                $principal = $env:AzureServicePrincipal | ConvertFrom-Json
+                $securePassword = $principal.Password | ConvertTo-SecureString -AsPlainText -Force
+                $credential = [PSCredential]::new($principal.ApplicationId, $securePassword)
+                $vmCredential = [PSCredential]::new('al', $securePassword)
+                $null = Connect-AzAccount -ServicePrincipal -TenantId $principal.TenantId -Credential $credential -Subscription $principal.SubscriptionId
+                $curr = Get-PublicIpAddress
+                $depp = New-AzResourceGroupDeployment -ResourceGroupName automatedlabintegration -Name "Integration$(Get-Date -Format yyyymMdd)" -TemplateFile "$ProjectRoot\.build\arm.json" -currIp $curr -adminPassword $securePassword
+            
+                # Prepare VM
+                $tmpScript = New-Item ./prep.ps1 -Value 'Enable-PSRemoting -Force -SkipNetwork; Set-NetFirewallProfile -All -Enabled False; $null = Install-WindowsFeature Hyper-V -IncludeAll -IncludeMan;'
+                $null = Invoke-AzVmRunCommand -ResourceGroupName automatedlabintegration -VMName inttestvm -CommandId 'RunPowerShellScript' -ScriptPath $tmpScript.FullName
+                $tmpScript | Remove-Item
+                Set-Item wsman:\localhost\Client\TrustedHosts $depp.Outputs.hostname.Value -Force
+
+                Restart-Computer -Force -Wait -For WinRm -Protocol WSMan -ComputerName $depp.Outputs.hostname.Value -Credential $vmCredential
+                $session = New-PSSession -ComputerName $depp.Outputs.hostname.Value -Credential $vmCredential
+
+                Add-VariableToPSSession -Session $session -PSVariable (Get-Variable principal)
+                Send-ModuleToPSSession -Session $session -Module (Get-Module -ListAvailable AutomatedLab)[0] -IncludeDependencies -Force -Scope AllUsers
+                Copy-Item -ToSession $session -Path "$ProjectRoot\.build\AlIntegrationEnv.ps1" -Destination C:\AlIntegrationEnv.ps1
+                Invoke-Command -Session $session -ScriptBlock {
+                    [Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPT_IN', '1', 'Machine')
+                    Set-ExecutionPolicy Bypass -Scope LocalMachine -Force
+                    $env:AUTOMATEDLAB_TELEMETRY_OPT_IN = 1
+                    $credential = [PSCredential]::new($principal.StorageAccountName, ($principal.StorageAccountKey | ConvertTo-SecureString -AsPlainText -Force))
+                    New-PSDrive -Name Z -PSProvider FileSystem -Root "\\$($principal.StorageAccountName).file.core.windows.net\labsources" -Credential $credential
+                    Enable-LabHostRemoting -Force
+                    Set-PSFConfig -FullName AutomatedLab.LabSourcesLocation -Value Z: -PassThru | Register-PSFConfig
+                    & C:\AlIntegrationEnv.ps1
+                }
+
+                Copy-Item -FromSession $session -Path C:\Integrator.xml -Destination "$ProjectRoot\Integrator.xml"
+                If ($ENV:APPVEYOR_JOB_ID)
+                {
+                (New-Object 'System.Net.WebClient').UploadFile(
+                        "https://ci.appveyor.com/api/testresults/nunit/$($env:APPVEYOR_JOB_ID)",
+                        "$ProjectRoot\Integrator.xml" )
+                }
+
+            }
+            finally
+            {
+                # After tests
+                $null = Get-AzVm -ResourceGroupName automatedlabintegration | Remove-AzVm -Force -ForceDeletion $true
+                $null = Get-AzNetworkInterface -ResourceGroupName automatedlabintegration | Remove-AzNetworkInterface -Force
+                $null = Get-AzVirtualNetwork -ResourceGroupName automatedlabintegration | Remove-AzVirtualNetwork -Force
+                $null = Get-AzResource -ResourceGroupName automatedlabintegration | Remove-AzResource -Force
+            }
+        }
+
         # Gather test results. Store them in a variable and file
         $pesterOptions = [PesterConfiguration]::Default
         $pesterOptions.Run.Path = "$ProjectRoot\Tests"
