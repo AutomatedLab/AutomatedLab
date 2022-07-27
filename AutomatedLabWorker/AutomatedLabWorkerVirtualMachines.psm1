@@ -818,7 +818,7 @@ function Get-LWHypervVM
         $vm += Get-ClusterGroup | Where-Object -Property GroupType -eq 'VirtualMachine' | Get-VM
         if ($Name.Count -gt 0)
         {
-            $vm += $vm | Where Name -in $Name
+            $vm = $vm | Where Name -in $Name
         }
     }
 

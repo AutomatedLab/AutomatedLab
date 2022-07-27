@@ -121,6 +121,7 @@ Task Test -Depends Init {
                     }
                     catch
                     {
+                        Write-HOst -Fore Magenta $_.Exception.Message
                         $tmpScript = New-Item ./prep.ps1 -Value 'Enable-PSRemoting -Force -SkipNetwork; Set-NetFirewallProfile -All -Enabled False; $null = Install-WindowsFeature Hyper-V -IncludeAll -IncludeMan;' -Force
                         $null = Invoke-AzVmRunCommand -ResourceGroupName automatedlabintegration -VMName inttestvm -CommandId 'RunPowerShellScript' -ScriptPath $tmpScript.FullName -ErrorAction SilentlyContinue
                         $tmpScript | Remove-Item
