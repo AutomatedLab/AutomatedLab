@@ -108,9 +108,10 @@ Task Test -Depends Init {
                 $null = Invoke-AzVmRunCommand -ResourceGroupName automatedlabintegration -VMName inttestvm -CommandId 'RunPowerShellScript' -ScriptPath $tmpScript.FullName -ErrorAction SilentlyContinue
                 $tmpScript | Remove-Item
 
+                Start-Service WinRm -ErrorAction SilentlyContinue -Verbose
                 Write-Host -ForegroundColor DarkYellow "Restarting VM"
+                Get-ChildItem wsman:\localhost\Client | Out-Host
                 Restart-AzVM -ResourceGroupName automatedlabintegration -Name inttestvm -Confirm:$false
-                Start-Service WinRm -ErrorAction SilentlyContinue
                 $retryCount = 0
                 while (-not $session -and $retryCount -lt 10)
                 {
