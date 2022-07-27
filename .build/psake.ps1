@@ -153,10 +153,10 @@ Task Test -Depends Init {
                     Enable-LabHostRemoting -Force
                     Set-PSFConfig -FullName AutomatedLab.LabSourcesLocation -Value Z: -PassThru | Register-PSFConfig
                     & C:\AlIntegrationEnv.ps1
-                }
+                } -ErrorAction SilentlyContinue
 
                 Write-Host -ForegroundColor DarkYellow "Receiving test results"
-                Copy-Item -FromSession $session -Path C:\Integrator.xml -Destination "$ProjectRoot\Integrator.xml"
+                Copy-Item -FromSession $session -Path C:\Integrator.xml -Destination "$ProjectRoot\Integrator.xml" -ErrorAction SilentlyContinue
                 If ($ENV:APPVEYOR_JOB_ID)
                 {
                 (New-Object 'System.Net.WebClient').UploadFile(
