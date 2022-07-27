@@ -271,7 +271,7 @@ function New-LWHypervVM
                 Username = $domain.Administrator.UserName
                 Password = $domain.Administrator.Password
             }
-            if ($Machine.OrganizationalUnit) {$param['OrganizationalUnit'] = $machine.OrganizationalUnit}
+            if ($Machine.OrganizationalUnit) {$parameters['OrganizationalUnit'] = $machine.OrganizationalUnit}
             if ($Machine.OperatingSystemType -eq 'Linux')
             {
                 $parameters['IsKickstart'] = $Machine.LinuxType -eq 'RedHat'
@@ -1817,29 +1817,19 @@ function Set-LWHypervVMDescription
         [string]$ComputerName
     )
 
-    Write-LogFunctionEntry    
+    Write-LogFunctionEntry
 
-    $prefix = '#AL<#'
-    $suffix = '#>AL#'
-    $pattern = '{0}(?<ALNotes>[\s\S]+){1}' -f [regex]::Escape($prefix), [regex]::Escape($suffix)
-
-    $notes = (Get-LWHypervVM -Name $ComputerName).Notes
-
-    if ($notes -match $pattern) {
-        $notes = $notes -replace $pattern, ''
-    }
+    $notePath = Join-Path -Path (Get-Lab).LabPath -ChildPath "$ComputerName.xml"
 
     $type = Get-Type -GenericType AutomatedLab.DictionaryXmlStore -T string, string
-    $disctionary = New-Object $type
+    $dictionary = New-Object $type
 
     foreach ($kvp in $Hashtable.GetEnumerator())
     {
-        $disctionary.Add($kvp.Key, $kvp.Value)
+        $dictionary.Add($kvp.Key, $kvp.Value)
     }
 
-    $notes += $prefix + $disctionary.ExportToString() + $suffix
-
-    Get-LWHypervVM -Name $ComputerName | Set-VM -Notes $notes
+    $dictionary.Export($notePath)
 
     Write-LogFunctionExit
 }
@@ -1855,28 +1845,14 @@ function Get-LWHypervVMDescription
 
     Write-LogFunctionEntry
     
-    $vm = Get-LWHypervVM -Name $ComputerName -ErrorAction SilentlyContinue
-    if (-not $vm)
-    {
-        return
-    }
-    
-    $prefix = '#AL<#'
-    $suffix = '#>AL#'
-    $pattern = '{0}(?<ALNotes>[\s\S]+){1}' -f [regex]::Escape($prefix), [regex]::Escape($suffix)
-    
-    $notes = if ($vm.Notes -match $pattern) {
-        $Matches.ALNotes
-    }
-    else {
-        $vm.Notes
-    }
+    $notePath = Join-Path -Path (Get-Lab).LabPath -ChildPath "$ComputerName.xml"
 
     $type = Get-Type -GenericType AutomatedLab.DictionaryXmlStore -T string, string
+    $dictionary = New-Object $type
     try
     {
-        $importMethodInfo = $type.GetMethod('ImportFromString', [System.Reflection.BindingFlags]::Public -bor [System.Reflection.BindingFlags]::Static)
-        $dictionary = $importMethodInfo.Invoke($null, $notes.Trim())
+        $importMethodInfo = $type.GetMethod('Import', [System.Reflection.BindingFlags]::Public -bor [System.Reflection.BindingFlags]::Static)
+        $dictionary = $importMethodInfo.Invoke($null, $notePath)
         $dictionary
     }
     catch
