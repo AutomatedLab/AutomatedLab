@@ -138,7 +138,7 @@ Task Test -Depends Init {
                 Write-Host -ForegroundColor DarkYellow "Pushing MSI package"
                 Add-VariableToPSSession -Session $session -PSVariable (Get-Variable principal)
                 $msifile = Get-ChildItem -Path $env:APPVEYOR_BUILD_FOLDER -Recurse -Filter AutomatedLab.msi | Select-Object -First 1
-                Copy-Item -ToSession $session -Path $msifile -Destination C:\al.msi
+                Copy-Item -ToSession $session -Path $msifile.FullName -Destination C:\al.msi
                 Invoke-Command -Session $session -ScriptBlock {msiexec /i C:\al.msi /L*v al.log}
                 Send-ModuleToPSSession -Session $session -Module (Get-Module -ListAvailable Pester)[0] -IncludeDependencies -Force -Scope AllUsers
                 Copy-Item -ToSession $session -Path "$ProjectRoot\.build\AlIntegrationEnv.ps1" -Destination C:\AlIntegrationEnv.ps1
