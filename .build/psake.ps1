@@ -110,6 +110,7 @@ Task Test -Depends Init {
 
                 Write-Host -ForegroundColor DarkYellow "Restarting VM"
                 Restart-AzVM -ResourceGroupName automatedlabintegration -Name inttestvm -Confirm:$false
+                Start-Service WinRm -ErrorAction SilentlyContinue
                 $retryCount = 0
                 while (-not $session -and $retryCount -lt 10)
                 {
