@@ -141,6 +141,7 @@ Set-PSFConfig -Module 'AutomatedLab' -Name WinRmMaxConnections -Value 300 -Valid
 
 #Hyper-V VM Settings
 Set-PSFConfig -Module 'AutomatedLab' -Name SetLocalIntranetSites -Value 'All'  -Initialize -Validation string  -Description 'All, Forest, Domain, None'
+Set-PSFConfig -Module 'AutomatedLab' -Name DisableClusterCheck -Value $false -Initialize -Validation bool -Description 'Set to true to disable checking cluster with Get-LWHyperVVM in case you are suffering from performance issues. Caution: While this speeds up deployment, the likelihood for errors increases when machines are migrated away from the host!'
 Set-PSFConfig -Module 'AutomatedLab' -Name DoNotAddVmsToCluster -Value $false -Initialize -Validation bool -Description 'Set to true to skip adding VMs to a cluster if AutomatedLab is being run on a cluster node'
 
 #Hyper-V Network settings

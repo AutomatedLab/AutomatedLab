@@ -794,7 +794,7 @@ function Get-LWHypervVM
 
         [Parameter()]
         [bool]
-        $DisableClusterCheck = (Get-LabConfigurationItem -Name DoNotAddVmsToCluster -Default $false),
+        $DisableClusterCheck = (Get-LabConfigurationItem -Name DisableClusterCheck -Default $false),
 
         [switch]
         $NoError

@@ -5,10 +5,13 @@
 ### Enhancements
 
 - Build process includes integration tests
+- Get-LWHyperVVM: Additional setting to skip checking cluster in Get-LWHyperVVM to improve performance.
+  - Mainly useful during deployments, and would not be registered, but rather just set before `Install-Lab`
 
 ### Bugs
 
 - Repair-LWHyperVNetworkConfig: WSMAN EnvelopeSize caused issues
+- Get-LWHyperVVM: Issue with too many VMs returned in a cluster
 
 ## 5.44.0 (2022-07-22)
 
