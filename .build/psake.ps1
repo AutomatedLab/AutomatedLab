@@ -110,7 +110,7 @@ Task Test -Depends Init {
 
                 Start-Service WinRm -ErrorAction SilentlyContinue -Verbose
                 Write-Host -ForegroundColor DarkYellow "Restarting VM"
-                winrm set winrm/config/client @{TrustedHosts="*"}
+                winrm --% set winrm/config/client @{TrustedHosts="*"}
                 Restart-AzVM -ResourceGroupName automatedlabintegration -Name inttestvm -Confirm:$false
                 $retryCount = 0
                 while (-not $session -and $retryCount -lt 10)
