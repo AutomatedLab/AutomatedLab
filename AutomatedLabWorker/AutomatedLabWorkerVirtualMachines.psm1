@@ -1713,7 +1713,6 @@ function Repair-LWHypervNetworkConfig
     if (-not $machine) { return } # No fixing this on a Linux VM
 
     Wait-LabVM -ComputerName $machine -NoNewLine
-    $machineOs = $machine.OperatingSystem
     $machineAdapterStream = [System.Management.Automation.PSSerializer]::Serialize($machine.NetworkAdapters,2)
 
     Invoke-LabCommand -ComputerName $machine -ActivityName "Network config on '$machine' (renaming and ordering)" -ScriptBlock {
@@ -1747,6 +1746,7 @@ function Repair-LWHypervNetworkConfig
                 $adapterInfo.VirtualSwitch.Name = $newName
             }
 
+            $machineOs = [Environment]::OSVersion
             if ($machineOs.Version.Major -lt 6 -and $machineOs.Version.Minor -lt 2)
             {
                 $mac = (Get-StringSection -String $adapterInfo.MacAddress -SectionSize 2) -join ':'
@@ -1791,7 +1791,7 @@ function Repair-LWHypervNetworkConfig
             }
         }
 
-    } -Function (Get-Command -Name Get-StringSection, Add-StringIncrement) -Variable (Get-Variable -Name machineOs, machineAdapterStream) -NoDisplay
+    } -Function (Get-Command -Name Get-StringSection, Add-StringIncrement) -Variable (Get-Variable -Name machineAdapterStream) -NoDisplay
 
     foreach ($adapterInfo in $machineAdapter)
     {
