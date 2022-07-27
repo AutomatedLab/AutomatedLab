@@ -813,9 +813,11 @@ function Get-LWHypervVM
 
     [object[]]$vm = Get-VM @param
 
-    if (-not $DisableClusterCheck -and ((Get-Command -Name Get-Cluster -ErrorAction SilentlyContinue) -and (Get-Cluster -ErrorAction SilentlyContinue)))
+    if (-not $script:clusterDetected -and (Get-Command -Name Get-Cluster -ErrorAction SilentlyContinue)) { $script:clusterDetected = Get-Cluster -ErrorAction SilentlyContinue}
+
+    if (-not $DisableClusterCheck -and $script:clusterDetected)
     {
-        $vm += Get-ClusterGroup | Where-Object -Property GroupType -eq 'VirtualMachine' | Get-VM
+        $vm += Get-ClusterResource | Where-Object -Property ResourceType -eq 'Virtual Machine' | Get-VM
         if ($Name.Count -gt 0)
         {
             $vm = $vm | Where Name -in $Name
