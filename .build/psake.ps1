@@ -110,7 +110,7 @@ Task Test -Depends Init {
 
                 Start-Service WinRm -ErrorAction SilentlyContinue -Verbose
                 Write-Host -ForegroundColor DarkYellow "Restarting VM"
-                Get-ChildItem wsman:\localhost\Client | Out-Host
+                winrm set winrm/config/client @{TrustedHosts="*"}
                 Restart-AzVM -ResourceGroupName automatedlabintegration -Name inttestvm -Confirm:$false
                 $retryCount = 0
                 while (-not $session -and $retryCount -lt 10)
@@ -120,8 +120,6 @@ Task Test -Depends Init {
                         Write-Host -ForegroundColor DarkYellow "Attempting to connect to $($depp.Outputs.hostname.Value)"
                         Test-WSMan -ComputerName $depp.Outputs.hostname.Value
                         Test-NetConnection -ComputerName $depp.Outputs.hostname.Value -CommonTCPPort WINRM
-                        Set-Item wsman:\localhost\Client\TrustedHosts $depp.Outputs.hostname.Value -Force -ErrorAction SilentlyContinue
-                        Get-ChildItem wsman:\localhost\Client | Out-Host
                         $session = New-PSSession -ComputerName $depp.Outputs.hostname.Value -Credential $vmCredential -ErrorAction Stop
                     }
                     catch
