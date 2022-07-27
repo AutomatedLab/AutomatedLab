@@ -108,6 +108,7 @@ Task Test -Depends Init {
                 $null = Invoke-AzVmRunCommand -ResourceGroupName automatedlabintegration -VMName inttestvm -CommandId 'RunPowerShellScript' -ScriptPath $tmpScript.FullName -ErrorAction SilentlyContinue
                 $tmpScript | Remove-Item
 
+                Set-Service WinRm -StartupType Manual -ErrorAction SilentlyContinue
                 Start-Service WinRm -ErrorAction SilentlyContinue -Verbose
                 Write-Host -ForegroundColor DarkYellow "Restarting VM"
                 Enable-LabHostRemoting -Force
