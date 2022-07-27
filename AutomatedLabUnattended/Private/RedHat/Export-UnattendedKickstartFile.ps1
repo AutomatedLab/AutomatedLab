@@ -19,7 +19,12 @@ function Export-UnattendedKickstartFile
     catch
     { '104.214.230.139' }
 
-    $repoContent = (Invoke-RestMethod -Method Get -Uri 'https://packages.microsoft.com/config/rhel/7/prod.repo' -ErrorAction SilentlyContinue) -split "`n"
+    try
+    {
+        $repoContent = (Invoke-RestMethod -Method Get -Uri 'https://packages.microsoft.com/config/rhel/7/prod.repo' -ErrorAction Stop) -split "`n"
+    }
+    catch { }
+
     if ($script:un[$idx + 1] -ne '#start')
     {
         @(
