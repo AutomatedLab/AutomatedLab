@@ -111,14 +111,14 @@ Task Test -Depends Init {
                 Write-Host -ForegroundColor DarkYellow "Restarting VM"
                 Restart-AzVM -ResourceGroupName automatedlabintegration -Name inttestvm -Confirm:$false
                 $retryCount = 0
-                while (-not $session -and $retryCount -lt 3)
+                while (-not $session -and $retryCount -lt 10)
                 {
                     try
                     {
                         Write-Host -ForegroundColor DarkYellow "Attempting to connect to $($depp.Outputs.hostname.Value)"
                         Test-WSMan -ComputerName $depp.Outputs.hostname.Value
                         Test-NetConnection -ComputerName $depp.Outputs.hostname.Value -CommonTCPPort WINRM
-                        Set-Item wsman:\localhost\Client\TrustedHosts $depp.Outputs.hostname.Value -Force -ErrorAction SilentlyContinue
+                        Set-Item wsman:\localhost\Client\TrustedHosts $depp.Outputs.hostname.Value -Force -ErrorAction SilentlyContinue -PassThru
                         $session = New-PSSession -ComputerName $depp.Outputs.hostname.Value -Credential $vmCredential -ErrorAction Stop
                     }
                     catch
@@ -127,7 +127,6 @@ Task Test -Depends Init {
                         $tmpScript = New-Item ./prep.ps1 -Value 'Enable-PSRemoting -Force -SkipNetwork; Set-NetFirewallProfile -All -Enabled False; $null = Install-WindowsFeature Hyper-V -IncludeAll -IncludeMan;' -Force
                         $null = Invoke-AzVmRunCommand -ResourceGroupName automatedlabintegration -VMName inttestvm -CommandId 'RunPowerShellScript' -ScriptPath $tmpScript.FullName -ErrorAction SilentlyContinue
                         $tmpScript | Remove-Item
-                        Restart-AzVM -ResourceGroupName automatedlabintegration -Name inttestvm -Confirm:$false
                     }
 
                     Start-Sleep -Seconds 10
