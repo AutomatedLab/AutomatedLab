@@ -156,7 +156,7 @@ foreach ($mod in $InternalModules)
 {
     $modP = Join-Path $SolutionDir $mod
     $destination = Join-Path -Path $scratch -ChildPath "$($mod)\$($alDllVersion.FileVersion)"
-    robocopy "`"$modP`"" "`"$destination`"" /MIR
+    $null = robocopy "`"$modP`"" "`"$destination`"" /MIR
 }
 
 # Save external modules to tmp

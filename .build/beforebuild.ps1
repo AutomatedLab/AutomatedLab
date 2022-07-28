@@ -1,10 +1,10 @@
 ﻿Write-Host "Publishing AutomatedLab library"
 $projPath = Join-Path $env:APPVEYOR_BUILD_FOLDER -ChildPath 'LabXml/LabXml.csproj' -Resolve -ErrorAction Stop
-nuget restore
-dotnet publish $projPath -f net6.0 -o (Join-Path -Path $env:APPVEYOR_BUILD_FOLDER 'AutomatedLab/lib/core')
+$null = nuget restore
+$null = dotnet publish $projPath -f net6.0 -o (Join-Path -Path $env:APPVEYOR_BUILD_FOLDER 'AutomatedLab/lib/core')
 if (-not $IsLinux)
 {
-    dotnet publish $projPath -f net462 -o (Join-Path -Path $env:APPVEYOR_BUILD_FOLDER 'AutomatedLab/lib/full')
+    $null = dotnet publish $projPath -f net462 -o (Join-Path -Path $env:APPVEYOR_BUILD_FOLDER 'AutomatedLab/lib/full')
 }
 
 Write-Host "'before_build' block"

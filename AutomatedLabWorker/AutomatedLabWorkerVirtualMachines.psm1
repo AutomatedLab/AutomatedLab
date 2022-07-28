@@ -271,7 +271,7 @@ function New-LWHypervVM
                 Username = $domain.Administrator.UserName
                 Password = $domain.Administrator.Password
             }
-            if ($Machine.OrganizationalUnit) {$param['OrganizationalUnit'] = $machine.OrganizationalUnit}
+            if ($Machine.OrganizationalUnit) {$parameters['OrganizationalUnit'] = $machine.OrganizationalUnit}
             if ($Machine.OperatingSystemType -eq 'Linux')
             {
                 $parameters['IsKickstart'] = $Machine.LinuxType -eq 'RedHat'
@@ -794,7 +794,7 @@ function Get-LWHypervVM
 
         [Parameter()]
         [bool]
-        $DisableClusterCheck = (Get-LabConfigurationItem -Name DoNotAddVmsToCluster -Default $false),
+        $DisableClusterCheck = (Get-LabConfigurationItem -Name DisableClusterCheck -Default $false),
 
         [switch]
         $NoError
@@ -813,12 +813,14 @@ function Get-LWHypervVM
 
     [object[]]$vm = Get-VM @param
 
-    if (-not $DisableClusterCheck -and ((Get-Command -Name Get-Cluster -ErrorAction SilentlyContinue) -and (Get-Cluster -ErrorAction SilentlyContinue)))
+    if (-not $script:clusterDetected -and (Get-Command -Name Get-Cluster -ErrorAction SilentlyContinue)) { $script:clusterDetected = Get-Cluster -ErrorAction SilentlyContinue}
+
+    if (-not $DisableClusterCheck -and $script:clusterDetected)
     {
-        $vm += Get-ClusterGroup | Where-Object -Property GroupType -eq 'VirtualMachine' | Get-VM
+        $vm += Get-ClusterResource | Where-Object -Property ResourceType -eq 'Virtual Machine' | Get-VM
         if ($Name.Count -gt 0)
         {
-            $vm += $vm | Where Name -in $Name
+            $vm = $vm | Where Name -in $Name
         }
     }
 
@@ -879,6 +881,9 @@ function Remove-LWHypervVM
 
     Write-PSFMessage "Removing VM files for '$($Name)'"
     Remove-Item -Path $vmPath -Force -Confirm:$false -Recurse
+    
+    $vmDescription = Join-Path -Path (Get-Lab).LabPath -ChildPath "$ComputerName.xml"
+    if (Test-Path $vmDescription) {Remove-Item -Path $vmDescription}
 
     Write-LogFunctionExit
 }
@@ -1708,18 +1713,14 @@ function Repair-LWHypervNetworkConfig
     if (-not $machine) { return } # No fixing this on a Linux VM
 
     Wait-LabVM -ComputerName $machine -NoNewLine
-
-    #remoting does serialization with a depth of 1. Here we need more
-    $machineStream = [System.Management.Automation.PSSerializer]::Serialize($machine, 4)
+    $machineAdapterStream = [System.Management.Automation.PSSerializer]::Serialize($machine.NetworkAdapters,2)
 
     Invoke-LabCommand -ComputerName $machine -ActivityName "Network config on '$machine' (renaming and ordering)" -ScriptBlock {
-        $machine = [System.Management.Automation.PSSerializer]::Deserialize($machineStream)
-
         Write-Verbose "Renaming network adapters"
         #rename the adapters as defined in the lab
-
+        $machineAdapter = [System.Management.Automation.PSSerializer]::Deserialize($machineAdapterStream)
         $newNames = @()
-        foreach ($adapterInfo in $machine.NetworkAdapters)
+        foreach ($adapterInfo in $machineAdapter)
         {
             $newName = if ($adapterInfo.InterfaceName)
             {
@@ -1745,7 +1746,8 @@ function Repair-LWHypervNetworkConfig
                 $adapterInfo.VirtualSwitch.Name = $newName
             }
 
-            if ($machine.OperatingSystem.Version.Major -lt 6 -and $machine.OperatingSystem.Version.Minor -lt 2)
+            $machineOs = [Environment]::OSVersion
+            if ($machineOs.Version.Major -lt 6 -and $machineOs.Version.Minor -lt 2)
             {
                 $mac = (Get-StringSection -String $adapterInfo.MacAddress -SectionSize 2) -join ':'
                 $filter = 'MACAddress = "{0}"' -f $mac
@@ -1768,15 +1770,15 @@ function Repair-LWHypervNetworkConfig
         #Adjusting the Network Protocol Bindings in Windows 10 https://blogs.technet.microsoft.com/networking/2015/08/14/adjusting-the-network-protocol-bindings-in-windows-10/
         if ([System.Environment]::OSVersion.Version.Major -lt 10)
         {
-            $retries = $machine.NetworkAdapters.Count * $machine.NetworkAdapters.Count * 2
+            $retries = $machineAdapter.Count * $machineAdapter.Count * 2
             $i = 0
 
             $sortedAdapters = New-Object System.Collections.ArrayList
-            $sortedAdapters.AddRange(@($machine.NetworkAdapters | Where-Object { $_.VirtualSwitch.SwitchType.Value -ne 'Internal' }))
-            $sortedAdapters.AddRange(@($machine.NetworkAdapters | Where-Object { $_.VirtualSwitch.SwitchType.Value -eq 'Internal' }))
+            $sortedAdapters.AddRange(@($machineAdapter | Where-Object { $_.VirtualSwitch.SwitchType.Value -ne 'Internal' }))
+            $sortedAdapters.AddRange(@($machineAdapter | Where-Object { $_.VirtualSwitch.SwitchType.Value -eq 'Internal' }))
 
             Write-Verbose "Setting the network order"
-            [array]::Reverse($machine.NetworkAdapters)
+            [array]::Reverse($machineAdapter)
             foreach ($adapterInfo in $sortedAdapters)
             {
                 Write-Verbose "Setting the order for adapter '$($adapterInfo.VirtualSwitch.ResourceName)'"
@@ -1789,9 +1791,9 @@ function Repair-LWHypervNetworkConfig
             }
         }
 
-    } -Function (Get-Command -Name Get-StringSection, Add-StringIncrement) -Variable (Get-Variable -Name machineStream) -NoDisplay
+    } -Function (Get-Command -Name Get-StringSection, Add-StringIncrement) -Variable (Get-Variable -Name machineAdapterStream) -NoDisplay
 
-    foreach ($adapterInfo in $machine.NetworkAdapters)
+    foreach ($adapterInfo in $machineAdapter)
     {
         $vmAdapter = $vm | Get-VMNetworkAdapter -Name $adapterInfo.VirtualSwitch.ResourceName
 
@@ -1818,29 +1820,19 @@ function Set-LWHypervVMDescription
         [string]$ComputerName
     )
 
-    Write-LogFunctionEntry    
+    Write-LogFunctionEntry
 
-    $prefix = '#AL<#'
-    $suffix = '#>AL#'
-    $pattern = '{0}(?<ALNotes>[\s\S]+){1}' -f [regex]::Escape($prefix), [regex]::Escape($suffix)
-
-    $notes = (Get-LWHypervVM -Name $ComputerName).Notes
-
-    if ($notes -match $pattern) {
-        $notes = $notes -replace $pattern, ''
-    }
+    $notePath = Join-Path -Path (Get-Lab).LabPath -ChildPath "$ComputerName.xml"
 
     $type = Get-Type -GenericType AutomatedLab.DictionaryXmlStore -T string, string
-    $disctionary = New-Object $type
+    $dictionary = New-Object $type
 
     foreach ($kvp in $Hashtable.GetEnumerator())
     {
-        $disctionary.Add($kvp.Key, $kvp.Value)
+        $dictionary.Add($kvp.Key, $kvp.Value)
     }
 
-    $notes += $prefix + $disctionary.ExportToString() + $suffix
-
-    Get-LWHypervVM -Name $ComputerName | Set-VM -Notes $notes
+    $dictionary.Export($notePath)
 
     Write-LogFunctionExit
 }
@@ -1856,28 +1848,48 @@ function Get-LWHypervVMDescription
 
     Write-LogFunctionEntry
     
-    $vm = Get-LWHypervVM -Name $ComputerName -ErrorAction SilentlyContinue
-    if (-not $vm)
+    $notePath = Join-Path -Path (Get-Lab).LabPath -ChildPath "$ComputerName.xml"
+    $type = Get-Type -GenericType AutomatedLab.DictionaryXmlStore -T string, string
+
+    if (-not (Test-Path $notePath))
     {
-        return
-    }
-    
-    $prefix = '#AL<#'
-    $suffix = '#>AL#'
-    $pattern = '{0}(?<ALNotes>[\s\S]+){1}' -f [regex]::Escape($prefix), [regex]::Escape($suffix)
-    
-    $notes = if ($vm.Notes -match $pattern) {
-        $Matches.ALNotes
-    }
-    else {
-        $vm.Notes
+        # Old labs still use the previous, slow method
+        $vm = Get-LWHypervVM -Name $ComputerName -ErrorAction SilentlyContinue
+        if (-not $vm)
+        {
+            return
+        }
+
+        $prefix = '#AL<#'
+        $suffix = '#>AL#'
+        $pattern = '{0}(?<ALNotes>[\s\S]+){1}' -f [regex]::Escape($prefix), [regex]::Escape($suffix)
+
+        $notes = if ($vm.Notes -match $pattern) {
+            $Matches.ALNotes
+        }
+        else {
+            $vm.Notes
+        }
+
+        try
+        {
+            $dictionary = New-Object $type
+            $importMethodInfo = $type.GetMethod('ImportFromString', [System.Reflection.BindingFlags]::Public -bor [System.Reflection.BindingFlags]::Static)
+            $dictionary = $importMethodInfo.Invoke($null, $notes.Trim())
+            return $dictionary
+        }
+        catch
+        {
+            Write-ScreenInfo -Message "The notes field of the virtual machine '$ComputerName' could not be read as XML" -Type Warning
+            return
+        }
     }
 
-    $type = Get-Type -GenericType AutomatedLab.DictionaryXmlStore -T string, string
+    $dictionary = New-Object $type
     try
     {
-        $importMethodInfo = $type.GetMethod('ImportFromString', [System.Reflection.BindingFlags]::Public -bor [System.Reflection.BindingFlags]::Static)
-        $dictionary = $importMethodInfo.Invoke($null, $notes.Trim())
+        $importMethodInfo = $type.GetMethod('Import', [System.Reflection.BindingFlags]::Public -bor [System.Reflection.BindingFlags]::Static)
+        $dictionary = $importMethodInfo.Invoke($null, $notePath)
         $dictionary
     }
     catch

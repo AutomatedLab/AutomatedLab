@@ -8,6 +8,12 @@ environment:
     secure: e9BtF4uHDk3PxumsQHVK6I5GXlIh0IN2Gq1BBetSJx8=
   NuGetApiKey:
     secure: tAdUQmRiZ270LOPN8SwbjISLfu6ldDTw6LWvdtsk+pQR7r5bJnGrG8Ntyt87edJ/
+  AzureServicePrincipal:
+    secure: Kk48Oy97Tk9Ap9F9/2wbBSaFG/TDgJgpCnUduc9fR8cNq/t75PzvjTdrLDCW86YiaHTHWClx5ePCdLhwAWCGS7YG8fh/sPZBjKpbNpoaM0iFkCtWfEhjWNZv7dg6pvLaZzcY7hAmH5Wp/JkPMlqVmCo2seJUAe6RI94765L8lhhBMXuSm54o0yUPxfq/gwp/kpGixKJioWUfvK7dFvCakT70JTFjcWILv7I2LzrtohDLnU+FeAXcx8ypEUvYnqJArLNlKrgz2TpZ3FMqm7PzgQAodsgPYR/Vtn3E5AsQwJAcsfYzYNxjwEp/lkXs2ik66o1gxg0oHo5qzPmfCtNTyCdjJRleRdKWLKejRM2W3tpEsQYz+EiCphiCbq4JPN0Kf2EqLHwPGx7SuQcLvrlCcCG3llkfI2EuuNvjULsUPdLvRWL9N9apQRLAxZ91JbClPgirRld1pswZSyXR8wtRVFSOtcJ9/T/HsNULTq9uLVlGXMw3oDyBm8k1ij+ENLPm # JHPs Dingen Xv5c67hAbxVu2WJ1slcsAwJfhjPsy8TYvz2PfkUbVbJYKxkXb2nB5tCneDr4vSZ4F4f3SfhS+uMfyWsXCAyFytawM9xqKCSL7D81JADj24FlzBbg3M2MRala7bv7A77nuuEcjXdz9W6e4aI8gY21XIfM7d2Dwk6A0FM17mA2BMxJvqlP4rA8g7SzQbXlhWJ4jl1dOloZ34gLT9LIcfPc5i9Q0waWxceeFchm9qf8oBj0qd63dAXkd2O8GmNGWY3I7QUNl7sfAiOa31zO4MAOGJ1pVHQrazuchwMXTu8q2SozNmV1ZOZGtVcy7ZAKfD/kxCAcpZnfmjYuGd6yrP36yjXfpIBlKANNA55OOCpGws8d8VYzHGlemXaf7H2gf7kBbKl6exgBiA2jW6uBwEA9AJIwqLphorbmAF8gwhBk3U1nt4mxGK/XzI/hkCnF9mkgysMg78MO59CRsn+8axt4e+SjECcPzyOfqwj/0RkFcP8hv/PdFxBRp05+J+/ZlSPV
+
+#environment:
+#  AzureServicePrincipal:
+#    secure: Xv5c67hAbxVu2WJ1slcsAwJfhjPsy8TYvz2PfkUbVbJYKxkXb2nB5tCneDr4vSZ4F4f3SfhS+uMfyWsXCAyFytawM9xqKCSL7D81JADj24FlzBbg3M2MRala7bv7A77nuuEcjXdz9W6e4aI8gY21XIfM7d2Dwk6A0FM17mA2BMxJvqlP4rA8g7SzQbXlhWJ4jl1dOloZ34gLT9LIcfPc5i9Q0waWxceeFchm9qf8oBj0qd63dAXkd2O8GmNGWY3I7QUNl7sfAiOa31zO4MAOGJ1pVHQrazuchwMXTu8q2SozNmV1ZOZGtVcy7ZAKfD/kxCAcpZnfmjYuGd6yrP36yjXfpIBlKANNA55OOCpGws8d8VYzHGlemXaf7H2gf7kBbKl6exgBiA2jW6uBwEA9AJIwqLphorbmAF8gwhBk3U1nt4mxGK/XzI/hkCnF9mkgysMg78MO59CRsn+8axt4e+SjECcPzyOfqwj/0RkFcP8hv/PdFxBRp05+J+/ZlSPV
 
 branches:
   except:
@@ -81,8 +87,8 @@ for:
           branch: master
 
 after_build:
-  - ps: "& $env:APPVEYOR_BUILD_FOLDER/.build/afterdeploy.ps1"
   - ps: "& $env:APPVEYOR_BUILD_FOLDER/.build/afterbuild.ps1"
+  - ps: "& $env:APPVEYOR_BUILD_FOLDER/.build/afterdeploy.ps1"
 
 on_finish:
   - ps: "& $env:APPVEYOR_BUILD_FOLDER/.build/onfinish.ps1"

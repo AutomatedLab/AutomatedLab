@@ -6,7 +6,9 @@
         [string]$TimeZone
     )
 
-    $tzInfo = Get-TimeZone -Id $TimeZone
+    $tzInfo = Get-TimeZone -Id $TimeZone -ErrorAction SilentlyContinue
+
+    if (not $tzInfo) { Get-TimeZone }
 
     Write-PSFMessage -Message ('Since non-standard timezone names are used, we revert to Etc/GMT{0}' -f $tzInfo.BaseUtcOffset.TotalHours)
     if ($tzInfo.BaseUtcOffset.TotalHours -gt 0)
