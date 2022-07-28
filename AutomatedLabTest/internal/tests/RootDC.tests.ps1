@@ -19,7 +19,7 @@ Describe "[$($Lab.Name)] DC Generic" -Tag RootDC, DC, FirstChildDC {
         {
             It "$vm should respond to ADWS calls" -TestCases @{vm = $vm } {
             
-                { Invoke-LabCommand -ComputerName $vm -ScriptBlock { Get-ADUser -Identity $env:USERNAME } -PassThru -NoDisplay } | Should -Not -Throw
+                { Invoke-LabCommand -ComputerName $vm -ScriptBlock { Import-Module ActiveDirectory; Get-ADUser -Identity $env:USERNAME } -PassThru -NoDisplay } | Should -Not -Throw
             }
         }
     }
@@ -31,7 +31,7 @@ Describe "[$($Lab.Name)] RootDC specific" -Tag RootDC {
     {
         It "$(Get-LabVM -Role RootDC) should hold PDC emulator FSMO role" -TestCases @{vm = $vm } {
         
-            Invoke-LabCommand -ComputerName $vm -ScriptBlock { (Get-ADDomain).PDCEmulator } -PassThru -NoDisplay | Should -Be $vm.FQDN
+            Invoke-LabCommand -ComputerName $vm -ScriptBlock { Import-Module ActiveDirectory; (Get-ADDomain).PDCEmulator } -PassThru -NoDisplay | Should -Be $vm.FQDN
         }
     }
 }
