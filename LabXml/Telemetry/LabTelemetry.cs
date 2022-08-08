@@ -34,7 +34,7 @@ namespace AutomatedLab
             TelemetryEnabled = GetEnvironmentVariableAsBool(_telemetryOptInVar, false);
 
             // Initialize EventLog
-            if (Environment.OSVersion.Platform == (PlatformID.Unix | PlatformID.MacOSX)) return;
+            if (Environment.OSVersion.Platform == PlatformID.Unix || Environment.OSVersion.Platform == PlatformID.MacOSX) return;
             if (!EventLog.SourceExists("AutomatedLab")) EventLog.CreateEventSource("AutomatedLab", "Application");
         }
 
