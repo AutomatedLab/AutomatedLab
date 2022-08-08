@@ -139,7 +139,19 @@ Task Test -Depends Init {
                 Add-VariableToPSSession -Session $session -PSVariable (Get-Variable principal)
                 $msifile = Get-ChildItem -Path $env:APPVEYOR_BUILD_FOLDER -Recurse -Filter AutomatedLab.msi | Select-Object -First 1
                 Copy-Item -ToSession $session -Path $msifile.FullName -Destination C:\al.msi
-                Invoke-Command -Session $session -ScriptBlock {msiexec /i C:\al.msi /L*v al.log}
+                Invoke-Command -Session $session -ScriptBlock {
+                    $release = Invoke-RestMethod -Uri 'https://api.github.com/repos/powershell/powershell/releases/latest' -UseBasicParsing -ErrorAction SilentlyContinue
+                    msiexec /i C:\al.msi /L*v al.log
+                    $uri = ($release.assets | Where-Object name -like '*-win-x64.msi').browser_download_url
+                    if (-not $uri)
+                    {
+                        $uri = 'https://github.com/PowerShell/PowerShell/releases/download/v7.2.5/PowerShell-7.2.5-win-x64.msi'
+                    }
+                
+                    Invoke-WebRequest -Uri $uri -UseBasicParsing -OutFile C:\PS7.msi -ErrorAction SilentlyContinue
+             
+                    Start-Process -Wait -FilePath msiexec '/package C:\PS7.msi /quiet ADD_EXPLORER_CONTEXT_MENU_OPENPOWERSHELL=0 ENABLE_PSREMOTING=0 REGISTER_MANIFEST=0 USE_MU=0 ENABLE_MU=0' -NoNewWindow -PassThru -ErrorAction SilentlyContinue
+                }
                 Send-ModuleToPSSession -Session $session -Module (Get-Module -ListAvailable Pester)[0] -IncludeDependencies -Force -Scope AllUsers
                 Copy-Item -ToSession $session -Path "$ProjectRoot\.build\AlIntegrationEnv.ps1" -Destination C:\AlIntegrationEnv.ps1
 
@@ -156,7 +168,7 @@ Task Test -Depends Init {
                 } -ErrorAction SilentlyContinue
 
                 Write-Host -ForegroundColor DarkYellow "Receiving test results"
-                Copy-Item -FromSession $session -Path C:\Integrator.xml -Destination "$ProjectRoot\Integrator.xml" -ErrorAction SilentlyContinue
+                Copy-Item -FromSession $session -Path C:\Integrator.xml -Destination "$ProjectRoot\Integrator*.xml" -ErrorAction SilentlyContinue
                 If ($ENV:APPVEYOR_JOB_ID)
                 {
                 (New-Object 'System.Net.WebClient').UploadFile(

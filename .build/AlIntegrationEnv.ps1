@@ -1,7 +1,8 @@
 ﻿$null = mkdir D:\AL
 
 $ProgressPreference = 'SilentlyContinue'
-New-LabDefinition -Name Integrator -DefaultVirtualizationEngine HyperV -VmPath D:\AL
+$labname = "Integrator$($PSVersionTable.PSVersion.Major)$($PSVersionTable.PSVersion.Minor)"
+New-LabDefinition -Name $labname -DefaultVirtualizationEngine HyperV -VmPath D:\AL
 
 # These tests should eventually cover EVERY role, so that Invoke-LabPester creates a valid test file
 # They should also cover every combination of Operating Systems
@@ -11,4 +12,4 @@ Add-LabMachineDefinition -Name CL1 -Memory 1GB -OperatingSystem 'Windows Server 
 
 Install-Lab -NoValidation
 
-Invoke-LabPester -OutputFile C:\Integrator.xml -LabName Integrator -ErrorAction SilentlyContinue
+Invoke-LabPester -OutputFile "C:\$labname.xml" -LabName $labname -ErrorAction SilentlyContinue
