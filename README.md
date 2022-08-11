@@ -36,12 +36,15 @@ Apart from the module itself your system needs to meet the following requirement
 
 #### Linux
 
-- WSL supported, Azure Cloud Shell supported
-- Tested on Fedora and Ubuntu, should run on any system capable of running PowerShell
-- PowerShell 6+
-- gss-ntlmssp to enable remoting (mandatory - no remoting, no way for AutomatedLab to do its thing)
-- ip and route commands available
-- Azure subscription - At the moment, AutomatedLab only works using Azure. KVM is planned for a later date.
+- Ubuntu, Ubuntu WSL & Azure Cloud Shell supported
+- Tested on Ubuntu. Due to fragmented nature of Linux distributions, we cannot support anything else.
+- PowerShell Core 6+
+- gss-ntlmssp to enable remoting (*mandatory - no remoting, no way for AutomatedLab to do its thing*)
+  - If in doubt, try to `Install-Module PSWSMAN; Install-WSMAN` - no success warranted
+- IP and route commands available
+- **Azure subscription**
+  - At the moment, AutomatedLab only works using Azure.
+  - KVM planned for a later date.
 
 ### Download AutomatedLab
 
