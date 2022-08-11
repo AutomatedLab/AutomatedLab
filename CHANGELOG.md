@@ -13,6 +13,7 @@
 - Repair-LWHyperVNetworkConfig: WSMAN EnvelopeSize caused issues
 - Get-LWHyperVVM: Issue with too many VMs returned in a cluster
 - Revert to old version of ApplicationInsights which is currently distributed with PowerShell 7
+- Fixed #1365. Only the first IP of a machine is registered using `Add-HostEntry`
 
 ## 5.44.0 (2022-07-22)
 
