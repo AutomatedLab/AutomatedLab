@@ -168,12 +168,13 @@ Task Test -Depends Init {
                 } -ErrorAction SilentlyContinue
 
                 Write-Host -ForegroundColor DarkYellow "Receiving test results"
-                Copy-Item -FromSession $session -Path C:\Integrator.xml -Destination "$ProjectRoot\Integrator*.xml" -ErrorAction SilentlyContinue
+                Copy-Item -FromSession $session -Path C:\TestResult*.xml -Destination $ProjectRoot -ErrorAction SilentlyContinue
                 If ($ENV:APPVEYOR_JOB_ID)
                 {
-                (New-Object 'System.Net.WebClient').UploadFile(
-                        "https://ci.appveyor.com/api/testresults/nunit/$($env:APPVEYOR_JOB_ID)",
-                        "$ProjectRoot\Integrator.xml" )
+                    foreach ($testRes in (Get-ChildItem -Path $ProjectRoot -Filter TestResult*.xml))
+                    {
+                    (New-Object 'System.Net.WebClient').UploadFile("https://ci.appveyor.com/api/testresults/nunit/$($env:APPVEYOR_JOB_ID)", $testRes.FullName )
+                    }
                 }
 
             }
