@@ -12,4 +12,4 @@ Add-LabMachineDefinition -Name CL1 -Memory 1GB -OperatingSystem 'Windows Server 
 
 Install-Lab -NoValidation
 
-Invoke-LabPester -OutputFile "C:\$labname.xml" -LabName $labname -ErrorAction SilentlyContinue
+Invoke-LabPester -OutputFile "C:\TestResult$labname.xml" -LabName $labname -ErrorAction SilentlyContinue
