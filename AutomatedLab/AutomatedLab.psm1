@@ -865,20 +865,30 @@ function Install-Lab
             Write-ScreenInfo -Message 'Creating VMs' -TaskStart
             #add a hosts entry for each lab machine
             $hostFileAddedEntries = 0
-            foreach ($machine in ($Script:data.Machines | Where-Object {[string]::IsNullOrEmpty($_.FriendlyName)}))
+            foreach ($machine in ($Script:data.Machines | Where-Object { [string]::IsNullOrEmpty($_.FriendlyName) }))
             {
-                if ($machine.HostType -ne 'HyperV' -or (Get-LabConfigurationItem -Name SkipHostFileModification)) { continue }
-                $defaultNic = $machine.NetworkAdapters | Where-Object Default
-                $address = if ($defaultNic) {($defaultNic | Select-Object -First 1).Ipv4Address.IpAddress.AddressAsString}
-                if (-not $address)
+                if ($machine.HostType -ne 'HyperV' -or (Get-LabConfigurationItem -Name SkipHostFileModification))
                 {
-                    $address = $machine.NetworkAdapters[0].Ipv4Address.IpAddress.AddressAsString
+                    continue
+                }
+                $defaultNic = $machine.NetworkAdapters | Where-Object Default
+                $addresses = if ($defaultNic)
+                {
+                    ($defaultNic | Select-Object -First 1).Ipv4Address.IpAddress.AddressAsString
+                }
+                if (-not $addresses)
+                {
+                    $addresses = @($machine.NetworkAdapters[0].Ipv4Address.IpAddress.AddressAsString)
                 }
 
-                if (-not $address) { continue }
+                if (-not $addresses)
+                {
+                    continue
+                }
 
-                $hostFileAddedEntries += Add-HostEntry -HostName $machine.Name -IpAddress $address -Section $Script:data.Name
-                $hostFileAddedEntries += Add-HostEntry -HostName $machine.FQDN -IpAddress $address -Section $Script:data.Name
+                #only the first addredd of a machine is added as for local connectivity the other addresses don't make a difference
+                $hostFileAddedEntries += Add-HostEntry -HostName $machine.Name -IpAddress $addresses[0] -Section $Script:data.Name
+                $hostFileAddedEntries += Add-HostEntry -HostName $machine.FQDN -IpAddress $addresses[0] -Section $Script:data.Name
             }
 
             if ($hostFileAddedEntries)
