@@ -2151,6 +2151,8 @@ function Add-LabMachineDefinition
             $machine.LoadBalancerWinRmHttpPort = $script:lab.AzureSettings.LoadBalancerPortCounter
             $script:lab.AzureSettings.LoadBalancerPortCounter++
             $machine.LoadBalancerWinrmHttpsPort = $script:lab.AzureSettings.LoadBalancerPortCounter
+            $script:lab.AzureSettings.LoadBalancerPortCounter++
+            $machine.LoadBalancerSshPort = $script:lab.AzureSettings.LoadBalancerPortCounter
         }
 
         if ($InstallationUserCredential)
