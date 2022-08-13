@@ -182,7 +182,6 @@ function New-LabPSSession
                 $param['KeyFilePath'] = $m.SshPrivateKeyPath
                 $param['Port'] = if ($m.HostType -eq 'Azure') {$m.AzureConnectionInfo.SshPort} else { 22 }
                 $param['UserName'] = $cred.UserName
-                $connectionName = $m.Name
             }
             elseif ($m.OperatingSystemType -eq 'Linux')
             {
@@ -1316,8 +1315,15 @@ function Install-LabSshKnownHost
 
     foreach ($machine in $machines)
     {
-        ssh-keyscan $machine.Name | Add-Content $home/.ssh/known_hosts
-        if ($machine.IpV4Address) {ssh-keyscan $machine.IpV4Address | Add-Content $home/.ssh/known_hosts}
+        if ($lab.DefaultVirtualizationEngine -eq 'Azure')
+        {
+            ssh-keyscan -p $machine.LoadBalancerSshPort $machine.AzureConnectionInfo.DnsName | Add-Content $home/.ssh/known_hosts
+        }
+        else
+        {
+            ssh-keyscan $machine.Name | Add-Content $home/.ssh/known_hosts
+            if ($machine.IpV4Address) {ssh-keyscan $machine.IpV4Address | Add-Content $home/.ssh/known_hosts}
+        }
     }
 }
 #endregion

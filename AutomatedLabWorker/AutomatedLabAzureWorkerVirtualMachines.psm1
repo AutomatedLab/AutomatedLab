@@ -1373,21 +1373,22 @@ function Initialize-LWAzureVM
 
             if (-not (Get-NetFirewallRule -Name "OpenSSH-Server-In-TCP" -ErrorAction SilentlyContinue)) 
             {
-                New-NetFirewallRule -Name 'OpenSSH-Server-In-TCP' -DisplayName 'OpenSSH Server (sshd)' -Enabled True -Direction Inbound -Protocol TCP -Action Allow -LocalPort 22
+                New-NetFirewallRule -Name 'OpenSSH-Server-In-TCP' -DisplayName 'OpenSSH Server (sshd)' -Enabled True -Direction Inbound -Protocol TCP -Action Allow -LocalPort 22 -Profile Any
             }
 
-            New-ItemProperty -Path "HKLM:\SOFTWARE\OpenSSH" -Name DefaultShell -Value "C:\Program Files\powershell\7\pwsh.exe" -PropertyType String -Force    
-            $PublicKey | Set-Content -Path (Join-Path -Path $env:ProgramData -ChildPath 'ssh/administrators_authorized_keys')
-            icacls.exe -% "C:\ProgramData\ssh\administrators_authorized_keys" /inheritance:r /grant "Administrators:F" /grant "SYSTEM:F"
+            New-ItemProperty -Path "HKLM:\SOFTWARE\OpenSSH" -Name DefaultShell -Value "C:\Program Files\powershell\7\pwsh.exe" -PropertyType String -Force
+            $null = New-Item -Force -Path C:\AL\SSH -ItemType Directory
+            $PublicKey | Set-Content -Path (Join-Path -Path C:\AL\SSH -ChildPath 'keys')
+            Start-Process -Wait -FilePath icacls.exe -ArgumentList "$(Join-Path -Path C:\AL\SSH -ChildPath 'keys') /inheritance:r /grant ""Administrators:F"" /grant ""SYSTEM:F"""
             $sshdConfig = @"
 Port 22
-PasswordAuthentication yes
+PasswordAuthentication no
 PubkeyAuthentication yes
 AllowGroups Users Administrators
-AuthorizedKeysFile      .ssh/authorized_keys
+AuthorizedKeysFile c:/al/ssh/keys
 Subsystem powershell c:/progra~1/powershell/7/pwsh.exe -sshs -NoLogo
 "@
-                $sshdConfig | Set-Content -Path (Join-Path -Path $env:ProgramData -ChildPath 'ssh/ssh_config')
+                $sshdConfig | Set-Content -Path (Join-Path -Path $env:ProgramData -ChildPath 'ssh/sshd_config')
                 Restart-Service -Name sshd
         }
 
