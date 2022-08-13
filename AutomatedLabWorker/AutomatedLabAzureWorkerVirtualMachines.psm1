@@ -574,6 +574,9 @@
                 @{
                     id = "[concat(resourceId('Microsoft.Network/loadBalancers', '$($Lab.Name)$($nic.VirtualSwitch.ResourceName)loadbalancer'),'/inboundNatRules/$($machine.ResourceName.ToLower())winrmhttpsin')]"
                 }
+                @{
+                    id = "[concat(resourceId('Microsoft.Network/loadBalancers', '$($Lab.Name)$($nic.VirtualSwitch.ResourceName)loadbalancer'),'/inboundNatRules/$($machine.ResourceName.ToLower())sshin')]"
+                }
             )
              
             $nicTemplate = @{
