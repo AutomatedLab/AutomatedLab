@@ -1544,7 +1544,6 @@ Subsystem powershell c:/progra~1/powershell/7/pwsh.exe -sshs -NoLogo
         if ($m.IsDomainJoined)
         {
             $domain = $lab.Domains | Where-Object Name -eq $m.DomainName
-            $scriptParam.SshUser += "$($domain.Administrator.UserName)@$($m.DomainName)"
         }
 
         if ($DNSServers.Count -eq 0) { $scriptParam.Remove('DnsServers') }

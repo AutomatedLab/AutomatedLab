@@ -181,7 +181,7 @@ function New-LabPSSession
                 $param.Remove('UseSsl')
                 $param['KeyFilePath'] = $m.SshPrivateKeyPath
                 $param['Port'] = if ($m.HostType -eq 'Azure') {$m.AzureConnectionInfo.SshPort} else { 22 }
-                $param['UserName'] = $cred.UserName
+                $param['UserName'] = $cred.UserName.Replace("$($m.Name)\", '')
             }
             elseif ($m.OperatingSystemType -eq 'Linux')
             {
