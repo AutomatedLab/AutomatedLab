@@ -166,11 +166,12 @@ function New-LabPSSession
                 $param.Add('Port', 5985)
             }
 
-            if (((Get-Command New-PSSession).Parameters.Values.Name -notcontains 'HostName') -and $m.OperatingSystemType -eq 'Linux' -and -not [string]::IsNullOrWhiteSpace($m.SshPrivateKeyPath))
+            if (((Get-Command New-PSSession).Parameters.Values.Name -notcontains 'HostName') -and -not [string]::IsNullOrWhiteSpace($m.SshPrivateKeyPath))
             {
                 Write-ScreenInfo -Type Warning -Message "SSH Transport is not available from within Windows PowerShell."
             }
-            if (((Get-Command New-PSSession).Parameters.Values.Name -contains 'HostName') -and $m.OperatingSystemType -eq 'Linux' -and -not [string]::IsNullOrWhiteSpace($m.SshPrivateKeyPath))
+
+            if (($lab.DefaultVirtualizationEngine -eq 'Azure' -or (((Get-Command New-PSSession).Parameters.Values.Name -contains 'HostName') -and $m.OperatingSystemType -eq 'Linux')) -and -not [string]::IsNullOrWhiteSpace($m.SshPrivateKeyPath))
             {
                 $param['HostName'] = $param['ComputerName']
                 $param.Remove('ComputerName')

@@ -14,6 +14,10 @@
 - Get-LWHyperVVM: Issue with too many VMs returned in a cluster
 - Revert to old version of ApplicationInsights which is currently distributed with PowerShell 7
 - Fixed #1365. Only the first IP of a machine is registered using `Add-HostEntry`
+- Fix remoting issues originating from Linux hosts once and for all by using SSH remoting. Cases:
+  - Windows + PS6+ + Azure + Public/Private Key
+  - Windows + PS6+ + Hyper-V + Linux VM + Public/Private Key
+  - Linux + PS6+ + Azure + Public/Private Key
 
 ## 5.44.0 (2022-07-22)
 

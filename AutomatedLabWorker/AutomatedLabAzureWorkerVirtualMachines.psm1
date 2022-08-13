@@ -1263,7 +1263,10 @@ function Initialize-LWAzureVM
             $WinRmMaxConcurrentOperationsPerUser,
 
             [int]
-            $WinRmMaxConnections
+            $WinRmMaxConnections,
+
+            [string]
+            $PublicKey
         )
 
         $defaultSettings = @{
@@ -1333,6 +1336,44 @@ function Initialize-LWAzureVM
         Start-Sleep -Seconds 1
 
         Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope LocalMachine -Force
+
+        $release = Invoke-RestMethod -Uri 'https://api.github.com/repos/powershell/powershell/releases/latest' -UseBasicParsing -ErrorAction SilentlyContinue
+        $uri = ($release.assets | Where-Object name -like '*-win-x64.msi').browser_download_url
+        if (-not $uri)
+        {
+            $uri = 'https://github.com/PowerShell/PowerShell/releases/download/v7.2.5/PowerShell-7.2.5-win-x64.msi'
+        }
+    
+        Invoke-WebRequest -Uri $uri -UseBasicParsing -OutFile C:\PS7.msi -ErrorAction SilentlyContinue    
+        Start-Process -Wait -FilePath msiexec '/package C:\PS7.msi /quiet ADD_EXPLORER_CONTEXT_MENU_OPENPOWERSHELL=0 ENABLE_PSREMOTING=0 REGISTER_MANIFEST=0 USE_MU=0 ENABLE_MU=0' -NoNewWindow -PassThru -ErrorAction SilentlyContinue
+        Remove-Item -Path C:\PS7.msi -ErrorAction SilentlyContinue
+
+        # Configure SSHD for PowerShell Remoting alternative that also works on Linux
+        if (Get-WindowsCapability -Online | Where-Object Name -like 'OpenSSH*')
+        {
+            Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0
+            Start-Service sshd
+            Set-Service -Name sshd -StartupType 'Automatic'
+
+            if (-not (Get-NetFirewallRule -Name "OpenSSH-Server-In-TCP" -ErrorAction SilentlyContinue)) 
+            {
+                New-NetFirewallRule -Name 'OpenSSH-Server-In-TCP' -DisplayName 'OpenSSH Server (sshd)' -Enabled True -Direction Inbound -Protocol TCP -Action Allow -LocalPort 22
+            }
+
+            New-ItemProperty -Path "HKLM:\SOFTWARE\OpenSSH" -Name DefaultShell -Value "C:\Program Files\powershell\7\pwsh.exe" -PropertyType String -Force    
+            $PublicKey | Set-Content -Path (Join-Path -Path $env:ProgramData -ChildPath 'ssh/administrators_authorized_keys')
+            icacls.exe -% "C:\ProgramData\ssh\administrators_authorized_keys" /inheritance:r /grant "Administrators:F" /grant "SYSTEM:F"
+            $sshdConfig = @"
+Port 22
+PasswordAuthentication yes
+PubkeyAuthentication yes
+AllowGroups Users Administrators
+AuthorizedKeysFile      .ssh/authorized_keys
+Subsystem powershell c:/progra~1/powershell/7/pwsh.exe -sshs -NoLogo
+"@
+                $sshdConfig | Set-Content -Path (Join-Path -Path $env:ProgramData -ChildPath 'ssh/ssh_config')
+                Restart-Service -Name sshd
+        }
 
         #Set Power Scheme to High Performance
         powercfg.exe -setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c
@@ -1480,6 +1521,13 @@ function Initialize-LWAzureVM
             WinRmMaxEnvelopeSizeKb              = Get-LabConfigurationItem -Name WinRmMaxEnvelopeSizeKb
             WinRmMaxConcurrentOperationsPerUser = Get-LabConfigurationItem -Name WinRmMaxConcurrentOperationsPerUser
             WinRmMaxConnections                 = Get-LabConfigurationItem -Name WinRmMaxConnections
+            PublicKey                           = $m.SshPublicKey
+        }
+
+        if ($m.IsDomainJoined)
+        {
+            $domain = $lab.Domains | Where-Object Name -eq $m.DomainName
+            $scriptParam.SshUser += "$($domain.Administrator.UserName)@$($m.DomainName)"
         }
 
         if ($DNSServers.Count -eq 0) { $scriptParam.Remove('DnsServers') }
