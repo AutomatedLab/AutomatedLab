@@ -12,6 +12,7 @@ namespace AutomatedLab.Azure
         public int Port { get; set; }
         public int HttpsPort { get; set; }
         public int RdpPort { get; set; }
+        public int SshPort { get; set; }
         public string ResourceGroupName { get; set; }
     }
 }

@@ -39,7 +39,7 @@
     # (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Compute').ResourceTypes | Where-Object ResourceTypeName -eq 'virtualMachines').ApiVersions[1] # 2022-03-01
     
     #region Network Security Group
-    Write-ScreenInfo -Type Verbose -Message 'Adding network security group to template, enabling traffic to ports 3389,5985,5986 for VMs behind load balancer'
+    Write-ScreenInfo -Type Verbose -Message 'Adding network security group to template, enabling traffic to ports 3389,5985,5986,22 for VMs behind load balancer'
     [string[]]$allowedIps = (Get-LabVm).AzureProperties["LoadBalancerAllowedIp"] | Foreach-Object { $_ -split '\s*[,;]\s*' } | Where-Object { -not [string]::IsNullOrWhitespace($_) }
     $nsg = @{
         type       = "Microsoft.Network/networkSecurityGroups"
@@ -65,6 +65,7 @@
                         direction                  = "Inbound"
                         sourcePortRanges           = @()
                         destinationPortRanges      = @(
+                            "22"
                             "3389"
                             "5985"
                             "5986"
@@ -432,7 +433,7 @@
 
         $rules = foreach ($machine in ($Lab.Machines | Where-Object -FilterScript { $_.Network -EQ $network.Name -and -not $_.SkipDeployment }))
         {
-            Write-ScreenInfo -Type Verbose -Message ('Adding inbound NAT rules for {0}: {1}:3389, {2}:5985, {3}:5986' -f $machine, $machine.LoadBalancerRdpPort, $machine.LoadBalancerWinRmHttpPort, $machine.LoadBalancerWinrmHttpsPort)
+            Write-ScreenInfo -Type Verbose -Message ('Adding inbound NAT rules for {0}: {1}:3389, {2}:5985, {3}:5986, {4}:22' -f $machine, $machine.LoadBalancerRdpPort, $machine.LoadBalancerWinRmHttpPort, $machine.LoadBalancerWinrmHttpsPort, $machine.LoadBalancerSshPort)
             @{
                 name       = "$($machine.ResourceName.ToLower())rdpin"
                 properties = @{
@@ -465,6 +466,18 @@
                     }
                     frontendPort            = $machine.LoadBalancerWinrmHttpsPort
                     backendPort             = 5986
+                    enableFloatingIP        = $false
+                    protocol                = "Tcp"
+                }
+            }
+            @{
+                name       = "$($machine.ResourceName.ToLower())sshin"
+                properties = @{
+                    frontendIPConfiguration = @{
+                        id = "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', '$($Lab.Name)$($network.ResourceName)loadbalancer', '$($Lab.Name)$($network.ResourceName)lbfrontendconfig')]"
+                    }
+                    frontendPort            = $machine.LoadBalancerSshPort
+                    backendPort             = 22
                     enableFloatingIP        = $false
                     protocol                = "Tcp"
                 }
@@ -1999,6 +2012,7 @@ function Get-LWAzureVMConnectionInfo
             Port              = $name.LoadBalancerWinrmHttpPort
             HttpsPort         = $name.LoadBalancerWinrmHttpsPort
             RdpPort           = $name.LoadBalancerRdpPort
+            SshPort           = $name.LoadBalancerSshPort
             ResourceGroupName = $azureVM.ResourceGroupName
         }
 
@@ -2010,6 +2024,7 @@ function Get-LWAzureVMConnectionInfo
         Write-PSFMessage "Port              = $($name.LoadBalancerWinrmHttpPort)"
         Write-PSFMessage "HttpsPort         = $($name.LoadBalancerWinrmHttpsPort)"
         Write-PSFMessage "RdpPort           = $($name.LoadBalancerRdpPort)"
+        Write-PSFMessage "SshPort           = $($name.LoadBalancerSshPort)"
         Write-PSFMessage "ResourceGroupName = $($azureVM.ResourceGroupName)"
 
         $result

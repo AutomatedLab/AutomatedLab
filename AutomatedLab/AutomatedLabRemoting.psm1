@@ -171,7 +171,7 @@ function New-LabPSSession
                 Write-ScreenInfo -Type Warning -Message "SSH Transport is not available from within Windows PowerShell."
             }
 
-            if (($lab.DefaultVirtualizationEngine -eq 'Azure' -or (((Get-Command New-PSSession).Parameters.Values.Name -contains 'HostName') -and $m.OperatingSystemType -eq 'Linux')) -and -not [string]::IsNullOrWhiteSpace($m.SshPrivateKeyPath))
+            if (((Get-Command New-PSSession).Parameters.Values.Name -contains 'HostName') -and ($lab.DefaultVirtualizationEngine -eq 'Azure' -or $m.OperatingSystemType -eq 'Linux') -and -not [string]::IsNullOrWhiteSpace($m.SshPrivateKeyPath))
             {
                 $param['HostName'] = $param['ComputerName']
                 $param.Remove('ComputerName')
@@ -180,7 +180,7 @@ function New-LabPSSession
                 $param.Remove('Credential')
                 $param.Remove('UseSsl')
                 $param['KeyFilePath'] = $m.SshPrivateKeyPath
-                $param['Port'] = 22
+                $param['Port'] = if ($m.HostType -eq 'Azure') {$m.AzureConnectionInfo.SshPort} else { 22 }
                 $param['UserName'] = $cred.UserName
                 $connectionName = $m.Name
             }
@@ -189,7 +189,7 @@ function New-LabPSSession
                 Set-Item -Path WSMan:\localhost\Client\Auth\Basic -Value $true -Force
                 $param['SessionOption'] = New-PSSessionOption -SkipCACheck -SkipCNCheck -SkipRevocationCheck
                 $param['UseSSL'] = $true
-                $param['Port'] = if ($m.HostType -eq 'Azure') {$m.AzureConnectionInfo.HttpsPort} else {5986}
+                $param['Port'] = if ($m.HostType -eq 'Azure') {$m.AzureConnectionInfo.HttpsPort} else { 5986 }
                 $param['Authentication'] = 'Basic'
             }
 
@@ -415,10 +415,10 @@ function Remove-LabPSSession
             $param['Port'] = 5985
         }
 
-        if ($m.OperatingSystemType -eq 'Linux')
+        if (((Get-Command New-PSSession).Parameters.Values.Name -contains 'HostName') -and ($lab.DefaultVirtualizationEngine -eq 'Azure' -or $m.OperatingSystemType -eq 'Linux'))
         {
             $param['HostName'] = $param['ComputerName']
-            $param['Port'] = 22
+            $param['Port'] = if ($m.HostType -eq 'Azure') {$m.AzureConnectionInfo.SshPort} else { 22 }
             $param.Remove('ComputerName')
             $param.Remove('PSSessionOption')
             $param.Remove('Authentication')
