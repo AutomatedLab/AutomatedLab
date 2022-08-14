@@ -1313,6 +1313,8 @@ function Install-LabSshKnownHost
         return
     }
 
+    if (-not (Test-Path -Path $home/.ssh/known_hosts)) {$null = New-Item -ItemType File -Path $home/.ssh/known_hosts}
+
     foreach ($machine in $machines)
     {
         if ($lab.DefaultVirtualizationEngine -eq 'Azure')

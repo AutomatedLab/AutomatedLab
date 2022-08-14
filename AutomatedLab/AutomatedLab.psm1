@@ -1332,7 +1332,14 @@ function Install-Lab
         if ($nonDomainControllers) {
             Invoke-LabCommand -ActivityName 'Setting PasswordNeverExpires for local deployment accounts' -ComputerName $nonDomainControllers -ScriptBlock {
                 # Still supporting ANCIENT server 2008 R2 with it's lack of CIM cmdlets :'(
-                Get-WmiObject -Query "Select * from Win32_UserAccount where name = '$userName' and localaccount='true'" | Set-WmiInstance -Arguments @{ PasswordExpires = $false}
+                    if (Get-Command Get-CimInstance -ErrorAction SilentlyContinue)
+                    {
+                        Get-CimInstance -Query "Select * from Win32_UserAccount where name = '$userName' and localaccount='true'" | Set-CimInstance -Property @{ PasswordExpires = $false}
+                    }
+                    else
+                    {
+                        Get-WmiObject -Query "Select * from Win32_UserAccount where name = '$userName' and localaccount='true'" | Set-WmiInstance -Arguments @{ PasswordExpires = $false}
+                    }
             } -Variable (Get-Variable userName) -NoDisplay
         }
 
