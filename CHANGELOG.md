@@ -7,6 +7,7 @@
 - Build process includes integration tests
 - Get-LWHyperVVM: Additional setting to skip checking cluster in Get-LWHyperVVM to improve performance.
   - Mainly useful during deployments, and would not be registered, but rather just set before `Install-Lab`
+- Some auxiliary resource names on Azure have been shortened.
 
 ### Bugs
 
