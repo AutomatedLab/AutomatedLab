@@ -80,7 +80,7 @@ function New-LabPSSession
             {
                 $cred = $Credential
             }
-            elseif ($UseLocalCredential -and ($IsLinux -and $m.IsDomainJoined -and -not $m.HasDomainJoined))
+            elseif ($UseLocalCredential -and (($IsLinux -or -not [string]::IsNullOrWhiteSpace($m.SshPrivateKeyPath)) -and $m.IsDomainJoined -and -not $m.HasDomainJoined))
             {
                 $cred = $m.GetLocalCredential($true)
             }
@@ -88,7 +88,7 @@ function New-LabPSSession
             {
                 $cred = $m.GetLocalCredential()
             }
-            elseif ($IsLinux -and $m.IsDomainJoined -and -not $m.HasDomainJoined)
+            elseif (($IsLinux -or -not [string]::IsNullOrWhiteSpace($m.SshPrivateKeyPath)) -and $m.IsDomainJoined -and -not $m.HasDomainJoined)
             {
                 $cred = $m.GetLocalCredential($true)
             }
@@ -1307,7 +1307,7 @@ function Install-LabSshKnownHost
         return
     }
 
-    $machines = Get-LabVM -All -IncludeLinux | Where-Object -FilterScript { $_.OperatingSystemType -eq 'Linux' -and -not $_.SkipDeployment }
+    $machines = Get-LabVM -All -IncludeLinux | Where-Object -FilterScript { ($_.HostType -eq 'Azure' -or $_.OperatingSystemType -eq 'Linux') -and -not $_.SkipDeployment }
     if (-not $machines)
     {
         return
@@ -1318,6 +1318,7 @@ function Install-LabSshKnownHost
         if ($lab.DefaultVirtualizationEngine -eq 'Azure')
         {
             ssh-keyscan -p $machine.LoadBalancerSshPort $machine.AzureConnectionInfo.DnsName | Add-Content $home/.ssh/known_hosts
+            ssh-keyscan -p $machine.LoadBalancerSshPort $machine.AzureConnectionInfo.VIP | Add-Content $home/.ssh/known_hosts
         }
         else
         {
@@ -1340,7 +1341,7 @@ function UnInstall-LabSshKnownHost
         return
     }
 
-    $machines = Get-LabVM -All -IncludeLinux | Where-Object -FilterScript { $_.OperatingSystemType -eq 'Linux' -and -not $_.SkipDeployment }
+    $machines = Get-LabVM -All -IncludeLinux | Where-Object -FilterScript { ($_.HostType -eq 'Azure' -or $_.OperatingSystemType -eq 'Linux') -and -not $_.SkipDeployment }
     if (-not $machines)
     {
         return
@@ -1349,10 +1350,18 @@ function UnInstall-LabSshKnownHost
     $content = Get-Content -Path $home/.ssh/known_hosts
     foreach ($machine in $machines)
     {
-        $content = $content | Where {$_ -notmatch "$($machine.Name)\s.*"}
-        if ($machine.IpV4Address)
+        if ($lab.DefaultVirtualizationEngine -eq 'Azure')
         {
-            $content = $content | Where {$_ -notmatch "$($machine.Ipv4Address.Replace('.','\.'))\s.*"}
+            $content = $content | Where {$_ -notmatch "$($machine.AzureConnectionInfo.DnsName.Replace('.','\.'))\s.*"}
+            $content = $content | Where {$_ -notmatch "$($machine.AzureConnectionInfo.VIP.Replace('.','\.'))\s.*"}
+        }
+        else
+        {
+            $content = $content | Where {$_ -notmatch "$($machine.Name)\s.*"}
+            if ($machine.IpV4Address)
+            {
+                $content = $content | Where {$_ -notmatch "$($machine.Ipv4Address.Replace('.','\.'))\s.*"}
+            }
         }
     }
     $content | Set-Content -Path $home/.ssh/known_hosts
