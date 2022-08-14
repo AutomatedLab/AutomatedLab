@@ -1317,13 +1317,13 @@ function Install-LabSshKnownHost
     {
         if ($lab.DefaultVirtualizationEngine -eq 'Azure')
         {
-            ssh-keyscan -p $machine.LoadBalancerSshPort $machine.AzureConnectionInfo.DnsName | Add-Content $home/.ssh/known_hosts
-            ssh-keyscan -p $machine.LoadBalancerSshPort $machine.AzureConnectionInfo.VIP | Add-Content $home/.ssh/known_hosts
+            ssh-keyscan -p $machine.LoadBalancerSshPort $machine.AzureConnectionInfo.DnsName 2>$null | Add-Content $home/.ssh/known_hosts
+            ssh-keyscan -p $machine.LoadBalancerSshPort $machine.AzureConnectionInfo.VIP 2>$null | Add-Content $home/.ssh/known_hosts
         }
         else
         {
-            ssh-keyscan $machine.Name | Add-Content $home/.ssh/known_hosts
-            if ($machine.IpV4Address) {ssh-keyscan $machine.IpV4Address | Add-Content $home/.ssh/known_hosts}
+            ssh-keyscan $machine.Name 2>$null | Add-Content $home/.ssh/known_hosts
+            if ($machine.IpV4Address) {ssh-keyscan $machine.IpV4Address 2>$null | Add-Content $home/.ssh/known_hosts}
         }
     }
 }
