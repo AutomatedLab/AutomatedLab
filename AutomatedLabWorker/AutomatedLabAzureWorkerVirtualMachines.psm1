@@ -1353,6 +1353,8 @@ function Initialize-LWAzureVM
 
         Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope LocalMachine -Force
 
+        $dnsServer = Get-DnsClientServerAddress -InterfaceAlias Ethernet -AddressFamily IPv4
+        Set-DnsClientServerAddress -InterfaceAlias Ethernet -ServerAddresses 168.63.129.16
         $release = Invoke-RestMethod -Uri 'https://api.github.com/repos/powershell/powershell/releases/latest' -UseBasicParsing -ErrorAction SilentlyContinue
         $uri = ($release.assets | Where-Object name -like '*-win-x64.msi').browser_download_url
         if (-not $uri)
@@ -1391,6 +1393,8 @@ Subsystem powershell c:/progra~1/powershell/7/pwsh.exe -sshs -NoLogo
                 $sshdConfig | Set-Content -Path (Join-Path -Path $env:ProgramData -ChildPath 'ssh/sshd_config')
                 Restart-Service -Name sshd
         }
+
+        Set-DnsClientServerAddress -InterfaceAlias Ethernet -ServerAddresses $dnsServer.ServerAddresses
 
         #Set Power Scheme to High Performance
         powercfg.exe -setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c
