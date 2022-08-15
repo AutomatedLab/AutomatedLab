@@ -882,7 +882,7 @@ function Remove-LWHypervVM
     Write-PSFMessage "Removing VM files for '$($Name)'"
     Remove-Item -Path $vmPath -Force -Confirm:$false -Recurse
     
-    $vmDescription = Join-Path -Path (Get-Lab).LabPath -ChildPath "$ComputerName.xml"
+    $vmDescription = Join-Path -Path (Get-Lab).LabPath -ChildPath "$Name.xml"
     if (Test-Path $vmDescription) {Remove-Item -Path $vmDescription}
 
     Write-LogFunctionExit
