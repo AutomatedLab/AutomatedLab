@@ -31,9 +31,8 @@ function New-LabVM
         Write-LogFunctionExitWithError -Message $message
         return
     }
-
-    $jobs = @()
-
+    
+    Write-ScreenInfo -Message 'Waiting for all machines to finish installing' -TaskStart
     foreach ($machine in $machines.Where({$_.HostType -ne 'Azure'}))
     {
         $fdvDenyWriteAccess = (Get-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Policies\Microsoft\FVE -Name FDVDenyWriteAccess -ErrorAction SilentlyContinue).FDVDenyWriteAccess
@@ -93,36 +92,15 @@ function New-LabVM
 
     if ($lab.DefaultVirtualizationEngine -eq 'Azure')
     {
-        $jobs += New-LabAzureResourceGroupDeployment -Lab $lab -PassThru
-    }
-
-    #test if the machine creation jobs succeeded
-    Write-ScreenInfo -Message 'Waiting for all machines to finish installing' -TaskStart
-    $jobs | Wait-Job | Out-Null
-
-    $failedJobs = @()
-    $completedJobs = @()
-    foreach ($job in $jobs){
-
-        $result = $job | Receive-Job -Keep -ErrorVariable jobErrors -ErrorAction SilentlyContinue
-
-        if ($job.State -eq 'Failed' -or $jobErrors.Count)
+        $deployment = New-LabAzureResourceGroupDeployment -Lab $lab -PassThru -Wait -ErrorAction SilentlyContinue -ErrorVariable rgDeploymentFail
+        if (-not $deployment)
         {
-            $failedJobs += $job
-        }
-        else
-        {
-            $completedJobs += $job
+            Write-LogFunctionExitWithError -Message "Deployment of resource group '$lab' failed with '$($rgDeploymentFail.Exception.Message)'"
+            return
         }
     }
+
     Write-ScreenInfo -Message 'Done' -TaskEnd
-
-    if ($failedJobs)
-    {
-        $result = $failedJobs | Receive-Job -Keep -ErrorVariable jobErrors -ErrorAction SilentlyContinue
-        $jobErrors | Write-Error
-        throw "Failed to create the Azure machines mentioned in the errors above."
-    }
 
     $azureVms = Get-LabVM -ComputerName $machines | Where-Object { $_.HostType -eq 'Azure' -and -not $_.SkipDeployment }
 

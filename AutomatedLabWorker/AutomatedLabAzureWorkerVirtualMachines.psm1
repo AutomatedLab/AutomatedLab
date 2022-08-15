@@ -765,13 +765,39 @@
     $template | ConvertTo-JsonNewtonsoft | Set-Content -Path $templatePath
 
     Write-ScreenInfo -Message "Deploying new resource group with template $templatePath"
-    $deployment = if ($Wait.IsPresent)
+    # Without wait - unable to catch exception
+    if ($Wait.IsPresent)
     {
-        New-AzResourceGroupDeployment @rgDeplParam
+        $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
+        $count = 1
+        while ($count -le $azureRetryCount -and -not $deployment)
+        {
+            try
+            {
+                $deployment = New-AzResourceGroupDeployment @rgDeplParam -ErrorAction Stop
+            }
+            catch
+            {
+                if ($_.Exception.Message -match 'Code:NoRegisteredProviderFound')
+                {
+                    $count++
+                }
+                else
+                {
+                    Write-Error -Message 'Unrecoverable error during resource group deployment' -Exception $_.Exception
+                    return
+                }
+            }
+        }
+        if ($count -gt $azureRetryCount)
+        {
+            Write-Error -Message 'Unrecoverable error during resource group deployment'
+            return
+        }
     }
     else
     {
-        New-AzResourceGroupDeployment @rgDeplParam -AsJob # Splatting AsJob did not work
+        $deployment = New-AzResourceGroupDeployment @rgDeplParam -AsJob # Splatting AsJob did not work
     }
     
 
