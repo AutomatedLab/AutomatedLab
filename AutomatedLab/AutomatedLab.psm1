@@ -429,7 +429,7 @@ function Import-Lab
 
         if (-not (Test-LabHostRemoting))
         {
-            Enable-LabHostRemoting
+            Enable-LabHostRemoting -Force:$(Get-LabConfigurationItem -Name DoNotPrompt -Default $false)
         }
 
         if (-not ($IsLinux -or $IsMacOs) -and -not (Test-IsAdministrator))
@@ -3797,7 +3797,7 @@ catch
     $timestamps = New-Object $type
 }
 
-if (-not (
+if (-not (Get-PSFConfigValue -FullName AutomatedLab.DoNotPrompt -Fallback $false) -and -not (
         (Test-Path Env:\AUTOMATEDLAB_TELEMETRY_OPTIN) -or `
     (Test-Path -Path "$((Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot))/telemetry.enabled") -or `
     (Test-Path -Path "$((Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot))/telemetry.disabled")) -and `
