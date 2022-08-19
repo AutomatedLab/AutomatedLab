@@ -17,9 +17,11 @@
 - Revert to old version of ApplicationInsights which is currently distributed with PowerShell 7
 - Fixed #1365. Only the first IP of a machine is registered using `Add-HostEntry`
 - Fix remoting issues originating from Linux hosts once and for all by using SSH remoting. Cases:
-  - Windows + PS6+ + Azure + Public/Private Key
-  - Windows + PS6+ + Hyper-V + Linux VM + Public/Private Key
+  - Windows + PS5: No change
+  - Windows + PS6+ + Azure: WSMAN preferred, Public/Private Key possible
+  - Windows + PS6+ + Hyper-V: WSMAN preferred, Public/Private Key possible. Public/Private Key more or less required for Linux workloads
   - Linux + PS6+ + Azure + Public/Private Key
+  - And of course: Mix and match. Some eligible targets using SSH, others WSMAN. 
 
 ## 5.44.0 (2022-07-22)
 

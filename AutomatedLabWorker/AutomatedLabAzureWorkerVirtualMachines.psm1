@@ -1420,6 +1420,7 @@ function Initialize-LWAzureVM
 Port 22
 PasswordAuthentication no
 PubkeyAuthentication yes
+GSSAPIAuthentication yes
 AllowGroups Users Administrators
 AuthorizedKeysFile c:/al/ssh/keys
 Subsystem powershell c:/progra~1/powershell/7/pwsh.exe -sshs -NoLogo
@@ -1591,7 +1592,7 @@ Subsystem powershell c:/progra~1/powershell/7/pwsh.exe -sshs -NoLogo
     Wait-LWLabJob -Job $jobs -ProgressIndicator 5 -Timeout 30 -NoDisplay
     Install-LabSshKnownHost
     Copy-LabFileItem -Path (Get-ChildItem -Path "$((Get-Module -Name AutomatedLab)[0].ModuleBase)\Tools\HyperV\*") -DestinationFolderPath /AL -ComputerName $Machine -UseAzureLabSourcesOnAzureVm $false
-    Copy-LabALCommon -ComputerName $Machine
+    Send-ModuleToPSSession -Module (Get-Module -ListAvailable -Name AutomatedLab.Common | Select-Object -First 1) -Session (New-LabPSSession $Machine) -IncludeDependencies
     Write-ScreenInfo -Message 'Finished' -TaskEnd
 
     Write-ScreenInfo -Message 'Stopping all new machines except domain controllers'

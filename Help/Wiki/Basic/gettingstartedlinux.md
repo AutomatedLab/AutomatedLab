@@ -54,6 +54,30 @@ Show-LabDeploymentSummary
 ```
 ***
 
+> **Warning**
+> AutomatedLab can only work if remoting is configured properly. This seems to be highly difficult on Linux.
+> Should you have issues with remoting, please first of all try to `Install-Module PSWSMAN; Install-WSMAN`
+> If this does not work for you, you can specify public and private key to connect. This will however
+> not work in all scenarios: A double hop is required for many roles like SQL, Azure DevOps or Certificate Authorities.
+
+## Install lab using SSH remoting
+
+To install the same basic lab with SSH remoting, run the following commands in PowerShell, using your own
+private and public keys.
+
+``` powershell
+New-LabDefinition -Name GettingStarted -DefaultVirtualizationEngine Azure
+
+Add-LabMachineDefinition -Name FirstServer -OperatingSystem 'Windows Server 2019 Datacenter' -SshPublicKeyPath $home\.ssh\MyPubKey.pub -SshPrivateKeyPath $home/.ssh/MyPrivKey
+
+Install-Lab
+
+Show-LabDeploymentSummary
+```
+
+All connections will use your key pair instead of a password. That however means that no second hop will be possible. The combination
+of `-k` and `-i` does not work together, as stated here: <https://www.man7.org/linux/man-pages/man1/ssh.1.html#AUTHENTICATION>
+
 ## Next steps
 
 Now that you have deployed your first lab, what comes next? Would you like to connect to the machines and run remote commands without you knowing the password? Then start with [the docs on lab management](./invokelabcommand.md).

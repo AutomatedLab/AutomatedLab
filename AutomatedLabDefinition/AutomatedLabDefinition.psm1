@@ -2027,7 +2027,7 @@ function Add-LabMachineDefinition
             }
         }
 
-        if (((Get-Command New-PSSession).Parameters.Values.Name -notcontains 'HostName') -and $OperatingSystem.OperatingSystemType -eq 'Linux' -and -not [string]::IsNullOrWhiteSpace($SshPublicKeyPath))
+        if (((Get-Command New-PSSession).Parameters.Values.Name -notcontains 'HostName') -and -not [string]::IsNullOrWhiteSpace($SshPublicKeyPath))
         {
             Write-ScreenInfo -Type Warning -Message "SSH Transport is not available from within Windows PowerShell. Please use PowerShell 6+ if you want to use remoting-cmdlets."
         }
@@ -2111,29 +2111,21 @@ function Add-LabMachineDefinition
         $machine.OrganizationalUnit = $OrganizationalUnit
         $script:machines.Add($machine)
 
-        if ($script:lab.DefaultVirtualizationEngine -eq 'HyperV' -and $OperatingSystem.OperatingSystemType -eq 'Windows' -and $SshPublicKeyPath)
-        {
-            Write-ScreenInfo -Message "SSH Keys are ignored on Hyper-V and for Windows targets for the time being. Why not contribute to AutomatedLab and add the configuration of an ssh server?"
-        }
-        elseif (($script:lab.DefaultVirtualizationEngine -eq 'Azure' -or $OperatingSystem.OperatingSystemType -eq 'Linux') -and $SshPublicKeyPath -and -not (Test-Path -Path $SshPublicKeyPath))
+        if ($SshPublicKeyPath -and -not (Test-Path -Path $SshPublicKeyPath))
         {
             throw "$SshPublicKeyPath does not exist. Rethink your decision."
         }
-        elseif (($script:lab.DefaultVirtualizationEngine -eq 'Azure' -or $OperatingSystem.OperatingSystemType -eq 'Linux') -and $SshPublicKeyPath)
+        elseif ($SshPublicKeyPath -and (Test-Path -Path $SshPublicKeyPath))
         {
             $machine.SshPublicKeyPath = $SshPublicKeyPath
             $machine.SshPublicKey = Get-Content -Raw -Path $SshPublicKeyPath
         }
 
-        if ($script:lab.DefaultVirtualizationEngine -eq 'HyperV' -and $OperatingSystem.OperatingSystemType -eq 'Windows' -and $SshPrivateKeyPath)
-        {
-            Write-ScreenInfo -Message "SSH Keys are ignored on Hyper-V and for Windows targets for the time being. Why not contribute to AutomatedLab and add the configuration of an ssh server?"
-        }
-        elseif (($script:lab.DefaultVirtualizationEngine -eq 'Azure' -or $OperatingSystem.OperatingSystemType -eq 'Linux') -and $SshPrivateKeyPath -and -not (Test-Path -Path $SshPrivateKeyPath))
+        if ($SshPrivateKeyPath -and -not (Test-Path -Path $SshPrivateKeyPath))
         {
             throw "$SshPrivateKeyPath does not exist. Rethink your decision."
         }
-        elseif (($script:lab.DefaultVirtualizationEngine -eq 'Azure' -or $OperatingSystem.OperatingSystemType -eq 'Linux') -and $SshPrivateKeyPath)
+        elseif ($SshPrivateKeyPath -and (Test-Path -Path $SshPrivateKeyPath))
         {
             $machine.SshPrivateKeyPath = $SshPrivateKeyPath
         }
@@ -2208,6 +2200,10 @@ function Add-LabMachineDefinition
         if ($DomainName -or ($Roles -and $Roles.Name -match 'DC$'))
         {
             $machine.IsDomainJoined = $true
+            if ($script:Lab.DefaultVirtualizationEngine -eq 'HyperV' -and (-not $Roles -or $Roles -and $Roles.Name -notmatch 'DC$'))
+            {
+                $machine.HasDomainJoined = $true # In order to use the correct credentials upon connecting via SSH. Hyper-V VMs join during first boot
+            }
 
             if ($Roles.Name -eq 'RootDC' -or $Roles.Name -eq 'DC')
             {
