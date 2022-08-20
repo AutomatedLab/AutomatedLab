@@ -7,15 +7,16 @@
 - Build process includes integration tests
 - Get-LWHyperVVM: Additional setting to skip checking cluster in Get-LWHyperVVM to improve performance.
   - Mainly useful during deployments, and would not be registered, but rather just set before `Install-Lab`
-- DoNotPrompt now also enforces Enable-LabHostRemoting
+- DoNotPrompt now also enforces Enable-LabHostRemoting.
 
 ### Bugs
 
-- Repair-LWHyperVNetworkConfig: WSMAN EnvelopeSize caused issues
-- Get-LWHyperVVM: Issue with too many VMs returned in a cluster
-- Revert to old version of ApplicationInsights which is currently distributed with PowerShell 7
-- Fixing cosmetic issue #1363
-- Fixed #1365. Only the first IP of a machine is registered using `Add-HostEntry`
+- Repair-LWHyperVNetworkConfig: WSMAN EnvelopeSize caused issues.
+- Get-LWHyperVVM: Issue with too many VMs returned in a cluster.
+- Revert to old version of ApplicationInsights which is currently distributed with PowerShell 7.
+- Fixing cosmetic issue #1363.
+- Fixed #1365. Only the first IP of a machine is registered using `Add-HostEntry`.
+- Fixed #1371. Assigning PostInstallationActivity resulted into a prompt due to missing arguments.
 
 ## 5.44.0 (2022-07-22)
 

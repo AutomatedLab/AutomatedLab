@@ -551,10 +551,24 @@ function Invoke-LabCommand
     Write-LogFunctionEntry
     $customRoleCount = 0
 
-    if ($PSCmdlet.ParameterSetName -in 'Script', 'ScriptBlock', 'ScriptFileContentDependency', 'ScriptBlockFileContentDependency','ScriptFileNameContentDependency')
+    $parameterSetsWithRetries = 'Script',
+        'ScriptBlock',
+        'ScriptFileContentDependency',
+        'ScriptBlockFileContentDependency',
+        'ScriptFileNameContentDependency',
+        'PostInstallationActivity',
+        'PreInstallationActivity'
+
+    if ($PSCmdlet.ParameterSetName -in $parameterSetsWithRetries)
     {
-        if (-not $Retries) { $Retries = Get-LabConfigurationItem -Name InvokeLabCommandRetries }
-        if (-not $RetryIntervalInSeconds) { $RetryIntervalInSeconds = Get-LabConfigurationItem -Name InvokeLabCommandRetryIntervalInSeconds }
+        if (-not $Retries)
+        {
+            $Retries = Get-LabConfigurationItem -Name InvokeLabCommandRetries
+        }
+        if (-not $RetryIntervalInSeconds)
+        {
+            $RetryIntervalInSeconds = Get-LabConfigurationItem -Name InvokeLabCommandRetryIntervalInSeconds
+        }
     }
 
     if ($AsJob)
@@ -847,7 +861,10 @@ function Invoke-LabCommand
         Write-ScreenInfo -Message 'Activity done' -TaskEnd
     }
 
-    if ($PassThru) { $results }
+    if ($PassThru)
+    {
+        $results
+    }
 
     Write-LogFunctionExit
 }
