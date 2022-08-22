@@ -68,7 +68,7 @@ private and public keys.
 ``` powershell
 New-LabDefinition -Name GettingStarted -DefaultVirtualizationEngine Azure
 
-Add-LabMachineDefinition -Name FirstServer -OperatingSystem 'Windows Server 2019 Datacenter' -SshPublicKeyPath $home\.ssh\MyPubKey.pub -SshPrivateKeyPath $home/.ssh/MyPrivKey
+Add-LabMachineDefinition -Name FirstServer -OperatingSystem 'Windows Server 2019 Datacenter' -SshPublicKeyPath $home/.ssh/MyPubKey.pub -SshPrivateKeyPath $home/.ssh/MyPrivKey
 
 Install-Lab
 
@@ -76,7 +76,7 @@ Show-LabDeploymentSummary
 ```
 
 All connections will use your key pair instead of a password. That however means that no second hop will be possible. The combination
-of `-k` and `-i` does not work together, as stated here: <https://www.man7.org/linux/man-pages/man1/ssh.1.html#AUTHENTICATION>
+of `-K` and `-i` does not work together, as stated here: <https://www.man7.org/linux/man-pages/man1/ssh.1.html#AUTHENTICATION>
 
 ## Next steps
 
