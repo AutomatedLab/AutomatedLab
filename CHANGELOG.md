@@ -21,7 +21,9 @@
   - Windows + PS6+ + Azure: WSMAN preferred, Public/Private Key possible
   - Windows + PS6+ + Hyper-V: WSMAN preferred, Public/Private Key possible. Public/Private Key more or less required for Linux workloads
   - Linux + PS6+ + Azure + Public/Private Key
-  - And of course: Mix and match. Some eligible targets using SSH, others WSMAN. 
+  - And of course: Mix and match. Some eligible targets using SSH, others WSMAN. =======
+- DoNotPrompt now also enforces Enable-LabHostRemoting.
+- Fixed #1371. Assigning PostInstallationActivity resulted into a prompt due to missing arguments.
 
 ## 5.44.0 (2022-07-22)
 

@@ -1467,24 +1467,9 @@ Subsystem powershell c:/progra~1/powershell/7/pwsh.exe -sshs -NoLogo
         } | Export-Clixml -Path C:\AL\LabSourcesStorageAccount.xml
         $script | Out-File C:\AL\AzureLabSources.ps1 -Force
 
-        if (Get-Command Register-ScheduledTask -ErrorAction SilentlyContinue)
-        {
-            $trigger = New-ScheduledTaskTrigger -Once -At '0:00:00'
-            $action = New-ScheduledTaskAction -Execute (Join-Path $PSHome 'powershell.exe') -Argument '-File C:\AL\AzureLabSources.ps1'
-            $principal = New-ScheduledTaskPrincipal -UserId 'NT AUTHORITY\System' -RunLevel Highest
-            $task = New-ScheduledTask -Trigger $trigger -Action $action -Principal $principal
-            $task = $task | Register-ScheduledTask -TaskName ALLabSourcesCmdKey -Force
-            $task | Start-ScheduledTask
-        }
-        else
-        {
-            SCHTASKS /Create /SC ONCE /ST 00:00 /TN ALLabSourcesCmdKey /TR "powershell.exe -File C:\AL\AzureLabSources.ps1" /RU "NT AUTHORITY\SYSTEM"
-        }
-
         #set the time zone
         Set-TimeZone -Name $TimeZoneId
 
-        reg.exe add 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run' /v ALLabSourcesCmdKey /d 'powershell.exe -File C:\AL\AzureLabSources.ps1' /t REG_SZ /f
         reg.exe add 'HKLM\SOFTWARE\Microsoft\ServerManager\oobe' /v DoNotOpenInitialConfigurationTasksAtLogon /d 1 /t REG_DWORD /f
         reg.exe add 'HKLM\SOFTWARE\Microsoft\ServerManager' /v DoNotOpenServerManagerAtLogon /d 1 /t REG_DWORD /f
         reg.exe add 'HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon' /v EnableFirstLogonAnimation /d 0 /t REG_DWORD /f
