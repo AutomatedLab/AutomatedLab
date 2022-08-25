@@ -17,6 +17,7 @@
 - Fixing cosmetic issue #1363.
 - Fixed #1365. Only the first IP of a machine is registered using `Add-HostEntry`.
 - Fixed #1371. Assigning PostInstallationActivity resulted into a prompt due to missing arguments.
+- Add more retry attempts to Get-LWAzureVm to address issues like #1362
 
 ## 5.44.0 (2022-07-22)
 
