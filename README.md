@@ -93,3 +93,4 @@ This solution supports setting up virtual machines with the following products
 - If a lab is no longer required, one command is enough to remove everything to be ready to start from scratch (Remove-Lab)
 
 Test Change 1
+Test Change 2
