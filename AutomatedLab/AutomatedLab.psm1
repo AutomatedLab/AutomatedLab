@@ -1583,8 +1583,11 @@ function Remove-Lab
                 Write-ScreenInfo -Message 'Removing entries in the hosts file'
                 Clear-HostFile -Section $Script:data.Name -ErrorAction SilentlyContinue
 
-                Write-ScreenInfo -Message 'Removing SSH known hosts'
-                UnInstall-LabSshKnownHost
+                if ($labMachines.SshPublicKey)
+                {
+                    Write-ScreenInfo -Message 'Removing SSH known hosts'
+                    UnInstall-LabSshKnownHost
+                }
             }
 
             Write-ScreenInfo -Message 'Removing virtual networks'
