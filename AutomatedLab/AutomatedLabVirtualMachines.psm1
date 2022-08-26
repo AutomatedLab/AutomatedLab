@@ -31,9 +31,8 @@ function New-LabVM
         Write-LogFunctionExitWithError -Message $message
         return
     }
-
-    $jobs = @()
-
+    
+    Write-ScreenInfo -Message 'Waiting for all machines to finish installing' -TaskStart
     foreach ($machine in $machines.Where({$_.HostType -ne 'Azure'}))
     {
         $fdvDenyWriteAccess = (Get-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Policies\Microsoft\FVE -Name FDVDenyWriteAccess -ErrorAction SilentlyContinue).FDVDenyWriteAccess
@@ -93,36 +92,15 @@ function New-LabVM
 
     if ($lab.DefaultVirtualizationEngine -eq 'Azure')
     {
-        $jobs += New-LabAzureResourceGroupDeployment -Lab $lab -PassThru
-    }
-
-    #test if the machine creation jobs succeeded
-    Write-ScreenInfo -Message 'Waiting for all machines to finish installing' -TaskStart
-    $jobs | Wait-Job | Out-Null
-
-    $failedJobs = @()
-    $completedJobs = @()
-    foreach ($job in $jobs){
-
-        $result = $job | Receive-Job -Keep -ErrorVariable jobErrors -ErrorAction SilentlyContinue
-
-        if ($job.State -eq 'Failed' -or $jobErrors.Count)
+        $deployment = New-LabAzureResourceGroupDeployment -Lab $lab -PassThru -Wait -ErrorAction SilentlyContinue -ErrorVariable rgDeploymentFail
+        if (-not $deployment)
         {
-            $failedJobs += $job
-        }
-        else
-        {
-            $completedJobs += $job
+            Write-LogFunctionExitWithError -Message "Deployment of resource group '$lab' failed with '$($rgDeploymentFail.Exception.Message)'"
+            return
         }
     }
+
     Write-ScreenInfo -Message 'Done' -TaskEnd
-
-    if ($failedJobs)
-    {
-        $result = $failedJobs | Receive-Job -Keep -ErrorVariable jobErrors -ErrorAction SilentlyContinue
-        $jobErrors | Write-Error
-        throw "Failed to create the Azure machines mentioned in the errors above."
-    }
 
     $azureVms = Get-LabVM -ComputerName $machines | Where-Object { $_.HostType -eq 'Azure' -and -not $_.SkipDeployment }
 
@@ -821,63 +799,62 @@ function Wait-LabVM
 
             foreach ($machine in $completed)
             {
-                if ((Get-LabVM -ComputerName $machine).HostType -eq 'HyperV')
+                if ((Get-LabVM -ComputerName $machine).HostType -ne 'HyperV') { continue }
+                $machineMetadata = Get-LWHypervVMDescription -ComputerName $(Get-LabVM -ComputerName $machine).ResourceName
+                if ($machineMetadata.InitState -eq [AutomatedLab.LabVMInitState]::Uninitialized)
                 {
-                    $machineMetadata = Get-LWHypervVMDescription -ComputerName $(Get-LabVM -ComputerName $machine).ResourceName
-                    if ($machineMetadata.InitState -eq [AutomatedLab.LabVMInitState]::Uninitialized)
-                    {
-                        $machineMetadata.InitState = [AutomatedLab.LabVMInitState]::ReachedByAutomatedLab
-                        Set-LWHypervVMDescription -Hashtable $machineMetadata -ComputerName $(Get-LabVM -ComputerName $machine).ResourceName
-                        Enable-LabAutoLogon -ComputerName $ComputerName
-                        Copy-LabALCommon -ComputerName $ComputerName
-                    }
+                    $machineMetadata.InitState = [AutomatedLab.LabVMInitState]::ReachedByAutomatedLab
+                    Set-LWHypervVMDescription -Hashtable $machineMetadata -ComputerName $(Get-LabVM -ComputerName $machine).ResourceName
+                    Enable-LabAutoLogon -ComputerName $ComputerName
+                }
 
-                    if ($DoNotUseCredSsp -and ($machineMetadata.InitState -band [AutomatedLab.LabVMInitState]::EnabledCredSsp) -ne [AutomatedLab.LabVMInitState]::EnabledCredSsp)
-                    {
-                        $credSspEnabled = Invoke-LabCommand -ComputerName $machine -ScriptBlock {
+                if ($DoNotUseCredSsp -and ($machineMetadata.InitState -band [AutomatedLab.LabVMInitState]::EnabledCredSsp) -ne [AutomatedLab.LabVMInitState]::EnabledCredSsp)
+                {
+                    $credSspEnabled = Invoke-LabCommand -ComputerName $machine -ScriptBlock {
 
-                            if ($PSVersionTable.PSVersion.Major -eq 2)
-                            {
-                                $d = "{0:HH:mm}" -f (Get-Date).AddMinutes(1)
-                                $jobName = "AL_EnableCredSsp"
-                                $Path = 'PowerShell'
-                                $CommandLine = '-Command Enable-WSManCredSSP -Role Server -Force; Get-WSManCredSSP | Out-File -FilePath C:\EnableCredSsp.txt'
-                                schtasks.exe /Create /SC ONCE /ST $d /TN $jobName /TR "$Path $CommandLine" | Out-Null
-                                schtasks.exe /Run /TN $jobName | Out-Null
-                                Start-Sleep -Seconds 1
-                                while ((schtasks.exe /Query /TN $jobName) -like '*Running*')
-                                {
-                                    Write-Host '.' -NoNewline
-                                    Start-Sleep -Seconds 1
-                                }
-                                Start-Sleep -Seconds 1
-                                schtasks.exe /Delete /TN $jobName /F | Out-Null
-
-                                Start-Sleep -Seconds 5
-
-                                [bool](Get-Content -Path C:\EnableCredSsp.txt | Where-Object { $_ -eq 'This computer is configured to receive credentials from a remote client computer.' })
-                            }
-                            else
-                            {
-                                Enable-WSManCredSSP -Role Server -Force | Out-Null
-                                [bool](Get-WSManCredSSP | Where-Object { $_ -eq 'This computer is configured to receive credentials from a remote client computer.' })
-                            }
-
-
-                        } -PassThru -DoNotUseCredSsp -NoDisplay
-
-                        if ($credSspEnabled)
+                        if ($PSVersionTable.PSVersion.Major -eq 2)
                         {
-                            $machineMetadata.InitState = $machineMetadata.InitState -bor [AutomatedLab.LabVMInitState]::EnabledCredSsp
+                            $d = "{0:HH:mm}" -f (Get-Date).AddMinutes(1)
+                            $jobName = "AL_EnableCredSsp"
+                            $Path = 'PowerShell'
+                            $CommandLine = '-Command Enable-WSManCredSSP -Role Server -Force; Get-WSManCredSSP | Out-File -FilePath C:\EnableCredSsp.txt'
+                            schtasks.exe /Create /SC ONCE /ST $d /TN $jobName /TR "$Path $CommandLine" | Out-Null
+                            schtasks.exe /Run /TN $jobName | Out-Null
+                            Start-Sleep -Seconds 1
+                            while ((schtasks.exe /Query /TN $jobName) -like '*Running*')
+                            {
+                                Write-Host '.' -NoNewline
+                                Start-Sleep -Seconds 1
+                            }
+                            Start-Sleep -Seconds 1
+                            schtasks.exe /Delete /TN $jobName /F | Out-Null
+
+                            Start-Sleep -Seconds 5
+
+                            [bool](Get-Content -Path C:\EnableCredSsp.txt | Where-Object { $_ -eq 'This computer is configured to receive credentials from a remote client computer.' })
                         }
                         else
                         {
-                            Write-ScreenInfo "CredSsp could not be enabled on machine '$machine'" -Type Warning
+                            Enable-WSManCredSSP -Role Server -Force | Out-Null
+                            [bool](Get-WSManCredSSP | Where-Object { $_ -eq 'This computer is configured to receive credentials from a remote client computer.' })
                         }
 
-                        Set-LWHypervVMDescription -Hashtable $machineMetadata -ComputerName $(Get-LabVM -ComputerName $machine).ResourceName
+
+                    } -PassThru -DoNotUseCredSsp -NoDisplay
+
+                    if ($credSspEnabled)
+                    {
+                        $machineMetadata.InitState = $machineMetadata.InitState -bor [AutomatedLab.LabVMInitState]::EnabledCredSsp
                     }
+                    else
+                    {
+                        Write-ScreenInfo "CredSsp could not be enabled on machine '$machine'" -Type Warning
+                    }
+
+                    Set-LWHypervVMDescription -Hashtable $machineMetadata -ComputerName $(Get-LabVM -ComputerName $machine).ResourceName
                 }
+
+                Send-ModuleToPSSession -Module (Get-Module -ListAvailable -Name AutomatedLab.Common | Select-Object -First 1) -Session (New-LabPSSession $machine) -IncludeDependencies
             }
 
             Write-LogFunctionExit
@@ -2136,13 +2113,20 @@ function Test-LabAutoLogon
             $values['DefaultDomainName'] = try { (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -ErrorAction Stop).DefaultDomainName } catch { }
             $values['DefaultUserName'] = try { (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -ErrorAction Stop).DefaultUserName } catch { }
             $values['DefaultPassword'] = try { (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -ErrorAction Stop).DefaultPassword } catch { }
-            $values['LoggedOnUsers'] = (Get-WmiObject -Class Win32_LogonSession -Filter 'LogonType=2').GetRelationships('Win32_LoggedOnUser').Antecedent |
-            ForEach-Object {
-                # For deprecated OS versions...
-                # Output is convoluted vs the CimInstance variant: \\.\root\cimv2:Win32_Account.Domain="contoso",Name="Install"
-                $null = $_ -match 'Domain="(?<Domain>.+)",Name="(?<Name>.+)"'
-                -join ($Matches.Domain, '\', $Matches.Name)
-            } | Select-Object -Unique
+            if (Get-Command Get-CimInstance -ErrorAction SilentlyContinue)
+            {
+                $values['LoggedOnUsers'] = (Get-CimInstance -ClassName win32_logonsession -Filter 'logontype=2' | Get-CimAssociatedInstance -Association Win32_LoggedOnUser).Caption
+            }
+            else
+            {
+                $values['LoggedOnUsers'] = (Get-WmiObject -Class Win32_LogonSession -Filter 'LogonType=2').GetRelationships('Win32_LoggedOnUser').Antecedent |
+                ForEach-Object {
+                    # For deprecated OS versions...
+                    # Output is convoluted vs the CimInstance variant: \\.\root\cimv2:Win32_Account.Domain="contoso",Name="Install"
+                    $null = $_ -match 'Domain="(?<Domain>.+)",Name="(?<Name>.+)"'
+                    -join ($Matches.Domain, '\', $Matches.Name)
+                } | Select-Object -Unique
+            }
 
             $values
         } -PassThru -NoDisplay

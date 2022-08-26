@@ -239,6 +239,7 @@ function New-LWHypervVM
         Add-UnattendedSynchronousCommand "restorecon -R /$($Machine.InstallationUser.UserName)/.ssh/" -Description 'Restore SELinux context'
         Add-UnattendedSynchronousCommand "sed -i 's|[#]*PubkeyAuthentication yes|PubkeyAuthentication yes|g' /etc/ssh/sshd_config" -Description 'PowerShell is so much better.'
         Add-UnattendedSynchronousCommand "sed -i 's|[#]*PasswordAuthentication yes|PasswordAuthentication no|g' /etc/ssh/sshd_config" -Description 'PowerShell is so much better.'
+        Add-UnattendedSynchronousCommand "sed -i 's|[#]*GSSAPIAuthentication yes|GSSAPIAuthentication yes|g' /etc/ssh/sshd_config" -Description 'PowerShell is so much better.'
         Add-UnattendedSynchronousCommand "chmod 700 /home/$($Machine.InstallationUser.UserName)/.ssh && chmod 600 /home/$($Machine.InstallationUser.UserName)/.ssh/authorized_keys" -Description 'SSH'
         Add-UnattendedSynchronousCommand "chmod 700 /root/.ssh && chmod 600 /root/.ssh/authorized_keys" -Description 'SSH'
         Add-UnattendedSynchronousCommand "chown -R $($Machine.InstallationUser.UserName):$($Machine.InstallationUser.UserName) /home/$($Machine.InstallationUser.UserName)/.ssh" -Description 'SSH'
@@ -601,6 +602,53 @@ function New-LWHypervVM
 
         Write-PSFMessage '...done'
 
+        
+
+    if ($Machine.OperatingSystemType -eq 'Windows' -and -not [string]::IsNullOrEmpty($Machine.SshPublicKey))
+    {
+        Add-UnattendedSynchronousCommand -Command 'PowerShell -File "C:\Program Files\OpenSSH-Win64\install-sshd.ps1"' -Description 'Configure SSH'
+        Add-UnattendedSynchronousCommand -Command 'PowerShell -Command "Set-Service -Name sshd -StartupType Automatic"' -Description 'Enable SSH'
+        Add-UnattendedSynchronousCommand -Command 'PowerShell -Command "Restart-Service -Name sshd"' -Description 'Restart SSH'
+
+        Write-PSFMessage 'Copying PowerShell 7 and setting up SSH'
+        $release = try {Invoke-RestMethod -Uri 'https://api.github.com/repos/powershell/powershell/releases/latest' -UseBasicParsing -ErrorAction Stop } catch {}
+        $uri = ($release.assets | Where-Object name -like '*-win-x64.zip').browser_download_url
+        if (-not $uri)
+        {
+            $uri = 'https://github.com/PowerShell/PowerShell/releases/download/v7.2.6/PowerShell-7.2.6-win-x64.zip'
+        }
+        $psArchive = Get-LabInternetFile -Uri $uri -Path "$labSources/SoftwarePackages/PS7.zip"
+
+        
+        $release = try {Invoke-RestMethod -Uri 'https://api.github.com/repos/powershell/win32-openssh/releases/latest' -UseBasicParsing -ErrorAction Stop } catch {}
+        $uri = ($release.assets | Where-Object name -like '*-win64.zip').browser_download_url
+        if (-not $uri)
+        {
+            $uri = 'https://github.com/PowerShell/Win32-OpenSSH/releases/download/v8.9.1.0p1-Beta/OpenSSH-Win64.zip'
+        }
+        $sshArchive = Get-LabInternetFile -Uri $uri -Path "$labSources/SoftwarePackages/ssh.zip"
+
+        $null = New-Item -ItemType Directory -Force -Path (Join-Path -Path $vhdVolume -ChildPath 'Program Files\PowerShell\7')
+        Expand-Archive -Path "$labSources/SoftwarePackages/PS7.zip" -DestinationPath (Join-Path -Path $vhdVolume -ChildPath 'Program Files\PowerShell\7')
+        Expand-Archive -Path "$labSources/SoftwarePackages/ssh.zip" -DestinationPath (Join-Path -Path $vhdVolume -ChildPath 'Program Files')
+
+        $null = New-Item -ItemType File -Path (Join-Path -Path $vhdVolume -ChildPath '\AL\SSH\keys'),(Join-Path -Path $vhdVolume -ChildPath 'ProgramData\ssh\sshd_config') -Force
+        
+        $Machine.SshPublicKey | Add-Content -Path (Join-Path -Path $vhdVolume -ChildPath '\AL\SSH\keys')
+        
+        $sshdConfig = @"
+Port 22
+PasswordAuthentication no
+PubkeyAuthentication yes
+GSSAPIAuthentication yes
+AllowGroups Users Administrators
+AuthorizedKeysFile c:/al/ssh/keys
+Subsystem powershell c:/progra~1/powershell/7/pwsh.exe -sshs -NoLogo
+"@
+            $sshdConfig | Set-Content -Path (Join-Path -Path $vhdVolume -ChildPath 'ProgramData\ssh\sshd_config')
+            Write-PSFMessage 'Done'
+    }
+
         if ($Machine.ToolsPath.Value)
         {
             $toolsDestination = "$vhdVolume\Tools"
@@ -882,7 +930,7 @@ function Remove-LWHypervVM
     Write-PSFMessage "Removing VM files for '$($Name)'"
     Remove-Item -Path $vmPath -Force -Confirm:$false -Recurse
     
-    $vmDescription = Join-Path -Path (Get-Lab).LabPath -ChildPath "$ComputerName.xml"
+    $vmDescription = Join-Path -Path (Get-Lab).LabPath -ChildPath "$Name.xml"
     if (Test-Path $vmDescription) {Remove-Item -Path $vmDescription}
 
     Write-LogFunctionExit

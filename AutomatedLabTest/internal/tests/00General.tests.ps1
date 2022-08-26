@@ -7,7 +7,7 @@
                 }
                 elseif ($Lab.DefaultVirtualizationEngine -eq 'HyperV')
                 {
-                    Get-LWHyperVVm -Name (Get-LabVm).ResourceName
+                    Get-LWHyperVVm -Name (Get-LabVm -IncludeLinux).ResourceName
                 }
 
                 $machines.Count | Should -Be $lab.Machines.Count

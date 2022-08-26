@@ -1296,7 +1296,7 @@ function Install-Lab
         $linuxHosts = (Get-LabVM -IncludeLinux | Where-Object OperatingSystemType -eq 'Linux').Count
         Write-ScreenInfo -Message 'Starting remaining machines' -TaskStart
         $timeoutRemaining = 60
-        if ($linuxHosts)
+        if ($linuxHosts -and -not (Get-LabConfigurationItem -Name DoNotWaitForLinux -Default $false))
         {
             $timeoutRemaining = 15
             Write-ScreenInfo -Type Warning -Message "There are $linuxHosts Linux hosts in the lab.
@@ -1325,14 +1325,22 @@ function Install-Lab
 
         Write-ScreenInfo -Message 'Waiting for machines to start up...' -NoNewLine
 
-        Start-LabVM -All -DelayBetweenComputers $DelayBetweenComputers -ProgressIndicator 30 -TimeoutInMinutes $timeoutRemaining -Wait
+        $toStart = Get-LabVM -IncludeLinux:$(-not (Get-LabConfigurationItem -Name DoNotWaitForLinux -Default $false))
+        Start-LabVM -ComputerName $toStart -DelayBetweenComputers $DelayBetweenComputers -ProgressIndicator 30 -TimeoutInMinutes $timeoutRemaining -Wait
 
         $userName = (Get-Lab).DefaultInstallationCredential.UserName
         $nonDomainControllers = Get-LabVM -Filter { $_.Roles.Name -notcontains 'RootDc' -and $_.Roles.Name -notcontains 'DC' -and $_.Roles.Name -notcontains 'FirstChildDc' -and -not $_.SkipDeployment }
         if ($nonDomainControllers) {
             Invoke-LabCommand -ActivityName 'Setting PasswordNeverExpires for local deployment accounts' -ComputerName $nonDomainControllers -ScriptBlock {
                 # Still supporting ANCIENT server 2008 R2 with it's lack of CIM cmdlets :'(
-                Get-WmiObject -Query "Select * from Win32_UserAccount where name = '$userName' and localaccount='true'" | Set-WmiInstance -Arguments @{ PasswordExpires = $false}
+                    if (Get-Command Get-CimInstance -ErrorAction SilentlyContinue)
+                    {
+                        Get-CimInstance -Query "Select * from Win32_UserAccount where name = '$userName' and localaccount='true'" | Set-CimInstance -Property @{ PasswordExpires = $false}
+                    }
+                    else
+                    {
+                        Get-WmiObject -Query "Select * from Win32_UserAccount where name = '$userName' and localaccount='true'" | Set-WmiInstance -Arguments @{ PasswordExpires = $false}
+                    }
             } -Variable (Get-Variable userName) -NoDisplay
         }
 
@@ -1374,7 +1382,7 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
-    if ($InstallSshKnownHosts -or $performAll)
+    if (($InstallSshKnownHosts -and (Get-LabVm).SshPublicKey) -or $performAll)
     {
         Write-ScreenInfo -Message "Adding lab machines to $home/.ssh/known_hosts" -TaskStart
         
@@ -1574,6 +1582,12 @@ function Remove-Lab
 
                 Write-ScreenInfo -Message 'Removing entries in the hosts file'
                 Clear-HostFile -Section $Script:data.Name -ErrorAction SilentlyContinue
+
+                if ($labMachines.SshPublicKey)
+                {
+                    Write-ScreenInfo -Message 'Removing SSH known hosts'
+                    UnInstall-LabSshKnownHost
+                }
             }
 
             Write-ScreenInfo -Message 'Removing virtual networks'
@@ -2821,15 +2835,6 @@ function Install-LabSoftwarePackage
     Write-PSFMessage -Message "Starting background job for '$($parameters.ActivityName)'"
 
     $parameters.ScriptBlock = {
-        if ($PSEdition -eq 'core')
-        {
-            Add-Type -Path '/ALLibraries/core/AutomatedLab.Common.dll' -ErrorAction SilentlyContinue
-        }
-        elseif ([System.Environment]::OSVersion.Version -ge '6.3')
-        {
-            Add-Type -Path '/ALLibraries/full/AutomatedLab.Common.dll' -ErrorAction SilentlyContinue
-        }
-
         if ($installParams.Path.StartsWith('\\') -and (Test-Path /ALAzure))
         {
             # Often issues with Zone Mapping
@@ -2851,7 +2856,18 @@ function Install-LabSoftwarePackage
             }
             $installParams.Path = $newPath
         }
-        Install-SoftwarePackage @installParams
+
+        if ($PSEdition -eq 'core' -and $installParams.Contains('AsScheduledJob'))
+        {
+            # Core cannot work with PSScheduledJob module
+            $xmlParameters = ([System.Management.Automation.PSSerializer]::Serialize($installParams, 2)) -replace "`r`n"
+            $b64str = [Convert]::ToBase64String(([Text.Encoding]::Unicode.GetBytes("`$installParams = [System.Management.Automation.PSSerializer]::Deserialize('$xmlParameters'); Install-SoftwarePackage @installParams")))
+            powershell.exe -EncodedCommand $b64str
+        }
+        else
+        {
+            Install-SoftwarePackage @installParams
+        }
     }
 
     $parameters.Add('NoDisplay', $True)
@@ -2861,7 +2877,7 @@ function Install-LabSoftwarePackage
         Write-ScreenInfo -Message "Copying files and initiating setup on '$($ComputerName -join ', ')' and waiting for completion" -NoNewLine
     }
 
-    $job = Invoke-LabCommand @parameters -Variable (Get-Variable -Name installParams) -Function (Get-Command -Name Install-SoftwarePackage)
+    $job = Invoke-LabCommand @parameters -Variable (Get-Variable -Name installParams)
 
     if (-not $AsJob)
     {

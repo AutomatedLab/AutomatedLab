@@ -39,12 +39,12 @@
     # (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Compute').ResourceTypes | Where-Object ResourceTypeName -eq 'virtualMachines').ApiVersions[1] # 2022-03-01
     
     #region Network Security Group
-    Write-ScreenInfo -Type Verbose -Message 'Adding network security group to template, enabling traffic to ports 3389,5985,5986 for VMs behind load balancer'
+    Write-ScreenInfo -Type Verbose -Message 'Adding network security group to template, enabling traffic to ports 3389,5985,5986,22 for VMs behind load balancer'
     [string[]]$allowedIps = (Get-LabVm).AzureProperties["LoadBalancerAllowedIp"] | Foreach-Object { $_ -split '\s*[,;]\s*' } | Where-Object { -not [string]::IsNullOrWhitespace($_) }
     $nsg = @{
         type       = "Microsoft.Network/networkSecurityGroups"
         apiVersion = '2022-01-01'
-        name       = "$($Lab.Name)nsg"
+        name       = "nsg"
         location   = "[resourceGroup().location]"
         tags       = @{ 
             AutomatedLab = $Lab.Name
@@ -65,6 +65,7 @@
                         direction                  = "Inbound"
                         sourcePortRanges           = @()
                         destinationPortRanges      = @(
+                            "22"
                             "3389"
                             "5985"
                             "5986"
@@ -158,6 +159,8 @@
         }
     }
 
+    $vnetCount = 0
+    $loadbalancers = @{}
     foreach ($network in $Lab.VirtualNetworks)
     {
         #region VNet
@@ -170,7 +173,7 @@
                 CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
             }
             dependsOn  = @(
-                "[resourceId('Microsoft.Network/networkSecurityGroups', '$($Lab.Name)nsg')]"
+                "[resourceId('Microsoft.Network/networkSecurityGroups', 'nsg')]"
             )
             name       = $network.ResourceName
             location   = "[resourceGroup().location]"
@@ -201,7 +204,7 @@
                 properties = @{
                     addressPrefix        = $network.AddressSpace.ToString()
                     networkSecurityGroup = @{
-                        id = "[resourceId('Microsoft.Network/networkSecurityGroups', '$($Lab.Name)nsg')]"
+                        id = "[resourceId('Microsoft.Network/networkSecurityGroups', 'nsg')]"
                     }
                 }
             }
@@ -215,7 +218,7 @@
                 properties = @{
                     addressPrefix        = $subnet.AddressSpace.ToString()
                     networkSecurityGroup = @{
-                        id = "[resourceId('Microsoft.Network/networkSecurityGroups', '$($Lab.Name)nsg')]"
+                        id = "[resourceId('Microsoft.Network/networkSecurityGroups', 'nsg')]"
                     }
                 }
             }
@@ -255,7 +258,7 @@
                     properties = @{
                         addressPrefix        = $bastionNet.AddressSpace.ToString()
                         networkSecurityGroup = @{
-                            id = "[resourceId('Microsoft.Network/networkSecurityGroups', '$($Lab.Name)nsg')]"
+                            id = "[resourceId('Microsoft.Network/networkSecurityGroups', 'nsg')]"
                         }
                     }
                 }
@@ -271,7 +274,7 @@
                     CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
                 }
                 type       = "Microsoft.Network/publicIPAddresses"
-                name       = "$($Lab.Name)$($network.ResourceName)bastionip"
+                name       = "$($vnetCount)bip"
                 location   = "[resourceGroup().location]"
                 properties = @{
                     publicIPAllocationMethod = "static"
@@ -287,7 +290,7 @@
             $template.resources += @{
                 apiVersion = '2022-01-01'
                 type       = "Microsoft.Network/bastionHosts"
-                name       = "$($Lab.Name)$($network.ResourceName)bastion"
+                name       = "bastion$vnetCount"
                 tags       = @{ 
                     AutomatedLab = $Lab.Name
                     CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
@@ -295,7 +298,7 @@
                 location   = "[resourceGroup().location]"
                 dependsOn  = @(
                     "[resourceId('Microsoft.Network/virtualNetworks', '$($network.ResourceName)')]"
-                    "[resourceId('Microsoft.Network/publicIPAddresses', '$($Lab.Name)$($network.ResourceName)bastionip')]"
+                    "[resourceId('Microsoft.Network/publicIPAddresses', '$($vnetCount)bip')]"
                 )
                 properties = @{
                     ipConfigurations = @(
@@ -306,7 +309,7 @@
                                     id = "[resourceId('Microsoft.Network/virtualNetworks/subnets', '$($network.ResourceName)','AzureBastionSubnet')]"
                                 }
                                 publicIPAddress = @{
-                                    id = "[resourceId('Microsoft.Network/publicIPAddresses', '$($Lab.Name)$($network.ResourceName)bastionip')]"
+                                    id = "[resourceId('Microsoft.Network/publicIPAddresses', '$($vnetCount)bip')]"
                                 }
                             }
                         }
@@ -359,9 +362,10 @@
             tags       = @{ 
                 AutomatedLab = $Lab.Name
                 CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
+                Vnet         = $network.ResourceName
             }
             type       = "Microsoft.Network/publicIPAddresses"
-            name       = "$($Lab.Name)$($network.ResourceName)lbfrontendip"
+            name       = "lbip$vnetCount"
             location   = "[resourceGroup().location]"
             properties = @{
                 publicIPAllocationMethod = "static"
@@ -377,35 +381,40 @@
 
         #region Load balancer
         Write-ScreenInfo -Type Verbose -Message ('Adding load balancer to template')
+        $loadbalancers[$network.ResourceName] = @{
+            Name    = "lb$vnetCount"
+            Backend = "$($vnetCount)lbbc"
+        }
         $loadBalancer = @{
             type       = "Microsoft.Network/loadBalancers"
             tags       = @{ 
                 AutomatedLab = $Lab.Name
                 CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
+                Vnet         = $network.ResourceName
             }
             apiVersion = '2022-01-01'
-            name       = "$($Lab.Name)$($network.ResourceName)loadbalancer"
+            name       = "lb$vnetCount"
             location   = "[resourceGroup().location]"
             sku        = @{
                 name = "Standard"
             }
             dependsOn  = @(
-                "[resourceId('Microsoft.Network/publicIPAddresses', '$($Lab.Name)$($network.ResourceName)lbfrontendip')]"
+                "[resourceId('Microsoft.Network/publicIPAddresses', 'lbip$vnetCount')]"
             )
             properties = @{
                 frontendIPConfigurations = @(
                     @{
-                        name       = "$($Lab.Name)$($network.ResourceName)lbfrontendconfig"
+                        name       = "$($vnetCount)lbfc"
                         properties = @{
                             publicIPAddress = @{
-                                id = "[resourceId('Microsoft.Network/publicIPAddresses', '$($Lab.Name)$($network.ResourceName)lbfrontendip')]"
+                                id = "[resourceId('Microsoft.Network/publicIPAddresses', 'lbip$vnetCount')]"
                             }
                         }
                     }
                 )
                 backendAddressPools      = @(
                     @{
-                        name = "$($Lab.Name)$($network.ResourceName)backendpoolconfig"
+                        name = "$($vnetCount)lbbc"
                     }
                 )
                 outboundRules            = @(
@@ -415,11 +424,11 @@
                             allocatedOutboundPorts   = 0 # In order to use automatic allocation
                             frontendIPConfigurations = @(
                                 @{
-                                    id = "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', '$($Lab.Name)$($network.ResourceName)loadbalancer', '$($Lab.Name)$($network.ResourceName)lbfrontendconfig')]"
+                                    id = "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', 'lb$vnetCount', '$($vnetCount)lbfc')]"
                                 }
                             )
                             backendAddressPool       = @{
-                                id = "[concat(resourceId('Microsoft.Network/loadBalancers', '$($Lab.Name)$($network.ResourceName)loadbalancer'), '/backendAddressPools/$($Lab.Name)$($network.ResourceName)backendpoolconfig')]"
+                                id = "[concat(resourceId('Microsoft.Network/loadBalancers', 'lb$vnetCount'), '/backendAddressPools/$($vnetCount)lbbc')]"
                             }
                             protocol                 = "All"
                             enableTcpReset           = $true
@@ -432,12 +441,12 @@
 
         $rules = foreach ($machine in ($Lab.Machines | Where-Object -FilterScript { $_.Network -EQ $network.Name -and -not $_.SkipDeployment }))
         {
-            Write-ScreenInfo -Type Verbose -Message ('Adding inbound NAT rules for {0}: {1}:3389, {2}:5985, {3}:5986' -f $machine, $machine.LoadBalancerRdpPort, $machine.LoadBalancerWinRmHttpPort, $machine.LoadBalancerWinrmHttpsPort)
+            Write-ScreenInfo -Type Verbose -Message ('Adding inbound NAT rules for {0}: {1}:3389, {2}:5985, {3}:5986, {4}:22' -f $machine, $machine.LoadBalancerRdpPort, $machine.LoadBalancerWinRmHttpPort, $machine.LoadBalancerWinrmHttpsPort, $machine.LoadBalancerSshPort)
             @{
                 name       = "$($machine.ResourceName.ToLower())rdpin"
                 properties = @{
                     frontendIPConfiguration = @{
-                        id = "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', '$($Lab.Name)$($network.ResourceName)loadbalancer', '$($Lab.Name)$($network.ResourceName)lbfrontendconfig')]"
+                        id = "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', 'lb$vnetCount', '$($vnetCount)lbfc')]"
                     }
                     frontendPort            = $machine.LoadBalancerRdpPort
                     backendPort             = 3389
@@ -449,7 +458,7 @@
                 name       = "$($machine.ResourceName.ToLower())winrmin"
                 properties = @{
                     frontendIPConfiguration = @{
-                        id = "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', '$($Lab.Name)$($network.ResourceName)loadbalancer', '$($Lab.Name)$($network.ResourceName)lbfrontendconfig')]"
+                        id = "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', 'lb$vnetCount', '$($vnetCount)lbfc')]"
                     }
                     frontendPort            = $machine.LoadBalancerWinRmHttpPort
                     backendPort             = 5985
@@ -461,10 +470,22 @@
                 name       = "$($machine.ResourceName.ToLower())winrmhttpsin"
                 properties = @{
                     frontendIPConfiguration = @{
-                        id = "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', '$($Lab.Name)$($network.ResourceName)loadbalancer', '$($Lab.Name)$($network.ResourceName)lbfrontendconfig')]"
+                        id = "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', 'lb$vnetCount', '$($vnetCount)lbfc')]"
                     }
                     frontendPort            = $machine.LoadBalancerWinrmHttpsPort
                     backendPort             = 5986
+                    enableFloatingIP        = $false
+                    protocol                = "Tcp"
+                }
+            }
+            @{
+                name       = "$($machine.ResourceName.ToLower())sshin"
+                properties = @{
+                    frontendIPConfiguration = @{
+                        id = "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', 'lb$vnetCount', '$($vnetCount)lbfc')]"
+                    }
+                    frontendPort            = $machine.LoadBalancerSshPort
+                    backendPort             = 22
                     enableFloatingIP        = $false
                     protocol                = "Tcp"
                 }
@@ -495,6 +516,7 @@
             }
         }
         #endregion
+        $vnetCount++
     }
 
     #region Disks
@@ -553,20 +575,23 @@
 
             $machineInboundRules = @(
                 @{
-                    id = "[concat(resourceId('Microsoft.Network/loadBalancers', '$($Lab.Name)$($nic.VirtualSwitch.ResourceName)loadbalancer'),'/inboundNatRules/$($machine.ResourceName.ToLower())rdpin')]"
+                    id = "[concat(resourceId('Microsoft.Network/loadBalancers', '$($loadBalancers[$nic.VirtualSwitch.ResourceName].Name)'),'/inboundNatRules/$($machine.ResourceName.ToLower())rdpin')]"
                 }
                 @{
-                    id = "[concat(resourceId('Microsoft.Network/loadBalancers', '$($Lab.Name)$($nic.VirtualSwitch.ResourceName)loadbalancer'),'/inboundNatRules/$($machine.ResourceName.ToLower())winrmin')]"
+                    id = "[concat(resourceId('Microsoft.Network/loadBalancers', '$($loadBalancers[$nic.VirtualSwitch.ResourceName].Name)'),'/inboundNatRules/$($machine.ResourceName.ToLower())winrmin')]"
                 }
                 @{
-                    id = "[concat(resourceId('Microsoft.Network/loadBalancers', '$($Lab.Name)$($nic.VirtualSwitch.ResourceName)loadbalancer'),'/inboundNatRules/$($machine.ResourceName.ToLower())winrmhttpsin')]"
+                    id = "[concat(resourceId('Microsoft.Network/loadBalancers', '$($loadBalancers[$nic.VirtualSwitch.ResourceName].Name)'),'/inboundNatRules/$($machine.ResourceName.ToLower())winrmhttpsin')]"
+                }
+                @{
+                    id = "[concat(resourceId('Microsoft.Network/loadBalancers', '$($loadBalancers[$nic.VirtualSwitch.ResourceName].Name)'),'/inboundNatRules/$($machine.ResourceName.ToLower())sshin')]"
                 }
             )
              
             $nicTemplate = @{
                 dependsOn  = @(
                     "[resourceId('Microsoft.Network/virtualNetworks', '$($nic.VirtualSwitch.ResourceName)')]"
-                    "[resourceId('Microsoft.Network/loadBalancers', '$($Lab.Name)$($nic.VirtualSwitch.ResourceName)loadbalancer')]"
+                    "[resourceId('Microsoft.Network/loadBalancers', '$($loadBalancers[$nic.VirtualSwitch.ResourceName].Name)')]"
                 )
                 properties = @{
                     enableAcceleratedNetworking = $false
@@ -602,7 +627,7 @@
                 $nicTemplate.properties.ipConfigurations[0].properties.loadBalancerInboundNatRules = $machineInboundRules
                 $nicTemplate.properties.ipConfigurations[0].properties.loadBalancerBackendAddressPools = @(
                     @{
-                        id = "[concat(resourceId('Microsoft.Network/loadBalancers', '$($Lab.Name)$($nic.VirtualSwitch.ResourceName)loadbalancer'), '/backendAddressPools/$($Lab.Name)$($nic.VirtualSwitch.ResourceName)backendpoolconfig')]"
+                        id = "[concat(resourceId('Microsoft.Network/loadBalancers', '$($loadBalancers[$nic.VirtualSwitch.ResourceName].Name)'), '/backendAddressPools/$($loadBalancers[$nic.VirtualSwitch.ResourceName].Backend)')]"
                     }
                 )
             }
@@ -740,13 +765,39 @@
     $template | ConvertTo-JsonNewtonsoft | Set-Content -Path $templatePath
 
     Write-ScreenInfo -Message "Deploying new resource group with template $templatePath"
-    $deployment = if ($Wait.IsPresent)
+    # Without wait - unable to catch exception
+    if ($Wait.IsPresent)
     {
-        New-AzResourceGroupDeployment @rgDeplParam
+        $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
+        $count = 1
+        while ($count -le $azureRetryCount -and -not $deployment)
+        {
+            try
+            {
+                $deployment = New-AzResourceGroupDeployment @rgDeplParam -ErrorAction Stop
+            }
+            catch
+            {
+                if ($_.Exception.Message -match 'Code:NoRegisteredProviderFound')
+                {
+                    $count++
+                }
+                else
+                {
+                    Write-Error -Message 'Unrecoverable error during resource group deployment' -Exception $_.Exception
+                    return
+                }
+            }
+        }
+        if ($count -gt $azureRetryCount)
+        {
+            Write-Error -Message 'Unrecoverable error during resource group deployment'
+            return
+        }
     }
     else
     {
-        New-AzResourceGroupDeployment @rgDeplParam -AsJob # Splatting AsJob did not work
+        $deployment = New-AzResourceGroupDeployment @rgDeplParam -AsJob # Splatting AsJob did not work
     }
     
 
@@ -757,7 +808,6 @@
 
     Write-LogFunctionExit
 }
-
 function Get-LWAzureVmSize
 {
     [Cmdletbinding()]
@@ -1263,7 +1313,10 @@ function Initialize-LWAzureVM
             $WinRmMaxConcurrentOperationsPerUser,
 
             [int]
-            $WinRmMaxConnections
+            $WinRmMaxConnections,
+
+            [string]
+            $PublicKey
         )
 
         $defaultSettings = @{
@@ -1333,6 +1386,50 @@ function Initialize-LWAzureVM
         Start-Sleep -Seconds 1
 
         Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope LocalMachine -Force
+
+        $dnsServer = Get-DnsClientServerAddress -InterfaceAlias Ethernet -AddressFamily IPv4
+        Set-DnsClientServerAddress -InterfaceAlias Ethernet -ServerAddresses 168.63.129.16
+        $release = Invoke-RestMethod -Uri 'https://api.github.com/repos/powershell/powershell/releases/latest' -UseBasicParsing -ErrorAction SilentlyContinue
+        $uri = ($release.assets | Where-Object name -like '*-win-x64.msi').browser_download_url
+        if (-not $uri)
+        {
+            $uri = 'https://github.com/PowerShell/PowerShell/releases/download/v7.2.5/PowerShell-7.2.5-win-x64.msi'
+        }
+    
+        Invoke-WebRequest -Uri $uri -UseBasicParsing -OutFile C:\PS7.msi -ErrorAction SilentlyContinue    
+        Start-Process -Wait -FilePath msiexec '/package C:\PS7.msi /quiet ADD_EXPLORER_CONTEXT_MENU_OPENPOWERSHELL=0 ENABLE_PSREMOTING=0 REGISTER_MANIFEST=0 USE_MU=0 ENABLE_MU=0' -NoNewWindow -PassThru -ErrorAction SilentlyContinue
+        Remove-Item -Path C:\PS7.msi -ErrorAction SilentlyContinue
+
+        # Configure SSHD for PowerShell Remoting alternative that also works on Linux
+        if (Get-WindowsCapability -Online | Where-Object Name -like 'OpenSSH*')
+        {
+            Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0
+            Start-Service sshd
+            Set-Service -Name sshd -StartupType 'Automatic'
+
+            if (-not (Get-NetFirewallRule -Name "OpenSSH-Server-In-TCP" -ErrorAction SilentlyContinue)) 
+            {
+                New-NetFirewallRule -Name 'OpenSSH-Server-In-TCP' -DisplayName 'OpenSSH Server (sshd)' -Enabled True -Direction Inbound -Protocol TCP -Action Allow -LocalPort 22 -Profile Any
+            }
+
+            New-ItemProperty -Path "HKLM:\SOFTWARE\OpenSSH" -Name DefaultShell -Value "C:\Program Files\powershell\7\pwsh.exe" -PropertyType String -Force
+            $null = New-Item -Force -Path C:\AL\SSH -ItemType Directory
+            $PublicKey | Set-Content -Path (Join-Path -Path C:\AL\SSH -ChildPath 'keys')
+            Start-Process -Wait -FilePath icacls.exe -ArgumentList "$(Join-Path -Path C:\AL\SSH -ChildPath 'keys') /inheritance:r /grant ""Administrators:F"" /grant ""SYSTEM:F"""
+            $sshdConfig = @"
+Port 22
+PasswordAuthentication no
+PubkeyAuthentication yes
+GSSAPIAuthentication yes
+AllowGroups Users Administrators
+AuthorizedKeysFile c:/al/ssh/keys
+Subsystem powershell c:/progra~1/powershell/7/pwsh.exe -sshs -NoLogo
+"@
+                $sshdConfig | Set-Content -Path (Join-Path -Path $env:ProgramData -ChildPath 'ssh/sshd_config')
+                Restart-Service -Name sshd
+        }
+
+        Set-DnsClientServerAddress -InterfaceAlias Ethernet -ServerAddresses $dnsServer.ServerAddresses
 
         #Set Power Scheme to High Performance
         powercfg.exe -setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c
@@ -1465,6 +1562,12 @@ function Initialize-LWAzureVM
             WinRmMaxEnvelopeSizeKb              = Get-LabConfigurationItem -Name WinRmMaxEnvelopeSizeKb
             WinRmMaxConcurrentOperationsPerUser = Get-LabConfigurationItem -Name WinRmMaxConcurrentOperationsPerUser
             WinRmMaxConnections                 = Get-LabConfigurationItem -Name WinRmMaxConnections
+            PublicKey                           = $m.SshPublicKey
+        }
+
+        if ($m.IsDomainJoined)
+        {
+            $domain = $lab.Domains | Where-Object Name -eq $m.DomainName
         }
 
         if ($DNSServers.Count -eq 0) { $scriptParam.Remove('DnsServers') }
@@ -1472,8 +1575,9 @@ function Initialize-LWAzureVM
     }
 
     Wait-LWLabJob -Job $jobs -ProgressIndicator 5 -Timeout 30 -NoDisplay
+    Install-LabSshKnownHost
     Copy-LabFileItem -Path (Get-ChildItem -Path "$((Get-Module -Name AutomatedLab)[0].ModuleBase)\Tools\HyperV\*") -DestinationFolderPath /AL -ComputerName $Machine -UseAzureLabSourcesOnAzureVm $false
-    Copy-LabALCommon -ComputerName $Machine
+    Send-ModuleToPSSession -Module (Get-Module -ListAvailable -Name AutomatedLab.Common | Select-Object -First 1) -Session (New-LabPSSession $Machine) -IncludeDependencies
     Write-ScreenInfo -Message 'Finished' -TaskEnd
 
     Write-ScreenInfo -Message 'Stopping all new machines except domain controllers'
@@ -1899,7 +2003,12 @@ function Get-LWAzureVMConnectionInfo
         { continue }
 
         $net = $lab.VirtualNetworks.Where({ $_.Name -eq $name.Network[0] })
-        $ip = Get-AzPublicIpAddress -Name "$($resourceGroupName)$($net.ResourceName)lbfrontendip" -ResourceGroupName $resourceGroupName -ErrorAction SilentlyContinue
+        $ip = Get-AzPublicIpAddress -ResourceGroupName $resourceGroupName -ErrorAction SilentlyContinue | Where-Object {$_.Tag['Vnet'] -eq $net.ResourceName}
+
+        if (-not $ip)
+        {
+            $ip = Get-AzPublicIpAddress -Name "$($resourceGroupName)$($net.ResourceName)lbfrontendip" -ResourceGroupName $resourceGroupName -ErrorAction SilentlyContinue
+        }
 
         $result = [AutomatedLab.Azure.AzureConnectionInfo] @{
             ComputerName      = $name.Name
@@ -1909,6 +2018,7 @@ function Get-LWAzureVMConnectionInfo
             Port              = $name.LoadBalancerWinrmHttpPort
             HttpsPort         = $name.LoadBalancerWinrmHttpsPort
             RdpPort           = $name.LoadBalancerRdpPort
+            SshPort           = $name.LoadBalancerSshPort
             ResourceGroupName = $azureVM.ResourceGroupName
         }
 
@@ -1920,6 +2030,7 @@ function Get-LWAzureVMConnectionInfo
         Write-PSFMessage "Port              = $($name.LoadBalancerWinrmHttpPort)"
         Write-PSFMessage "HttpsPort         = $($name.LoadBalancerWinrmHttpsPort)"
         Write-PSFMessage "RdpPort           = $($name.LoadBalancerRdpPort)"
+        Write-PSFMessage "SshPort           = $($name.LoadBalancerSshPort)"
         Write-PSFMessage "ResourceGroupName = $($azureVM.ResourceGroupName)"
 
         $result

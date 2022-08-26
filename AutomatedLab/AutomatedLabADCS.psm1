@@ -1281,26 +1281,14 @@ function Get-LabCertificate
     Write-LogFunctionEntry
 
     $variables = Get-Variable -Name PSBoundParameters
-    $functions = Get-Command -Name Get-Certificate2, Sync-Parameter
 
     foreach ($computer in $ComputerName)
     {
-        Invoke-LabCommand -ActivityName "Adding 'AutomatedLab.Common.dll'" -ComputerName $ComputerName -ScriptBlock {
-            if ($PSEdition -eq 'core')
-            {
-                Add-Type -Path '/ALLibraries/core/AutomatedLab.Common.dll' -ErrorAction SilentlyContinue
-            }
-            elseif ([System.Environment]::OSVersion.Version -ge '6.3')
-            {
-                Add-Type -Path '/ALLibraries/full/AutomatedLab.Common.dll' -ErrorAction SilentlyContinue
-            }
-        } -NoDisplay
-
         Invoke-LabCommand -ActivityName 'Exporting certificates' -ComputerName $ComputerName -ScriptBlock {
             Sync-Parameter -Command (Get-Command -Name Get-Certificate2)
             Get-Certificate2 @ALBoundParameters
 
-        } -Variable $variables -Function $functions -PassThru -NoDisplay
+        } -Variable $variables -PassThru -NoDisplay
     }
 
     Write-LogFunctionExit
@@ -1347,18 +1335,6 @@ function Add-LabCertificate
     process
     {
         $variables = Get-Variable -Name PSBoundParameters
-        $functions = Get-Command -Name Add-Certificate2, Sync-Parameter
-
-        Invoke-LabCommand -ActivityName "Adding 'AutomatedLab.Common.dll'" -ComputerName $ComputerName -ScriptBlock {
-            if ($PSEdition -eq 'core')
-            {
-                Add-Type -Path '/ALLibraries/core/AutomatedLab.Common.dll' -ErrorAction SilentlyContinue
-            }
-            elseif ([System.Environment]::OSVersion.Version -ge '6.3')
-            {
-                Add-Type -Path '/ALLibraries/full/AutomatedLab.Common.dll' -ErrorAction SilentlyContinue
-            }
-        } -NoDisplay
 
         if ($Path)
         {
@@ -1372,7 +1348,7 @@ function Add-LabCertificate
             Sync-Parameter -Command (Get-Command -Name Add-Certificate2)
             Add-Certificate2 @ALBoundParameters | Out-Null
 
-        } -Variable $variables -Function $functions -PassThru -NoDisplay
+        } -Variable $variables -PassThru -NoDisplay
 
     }
 
@@ -2421,7 +2397,14 @@ function Install-LabCAMachine
             $DatabaseDirectoryDrive = ($param.DatabaseDirectory.split(':')[0]) + ':'
 
             $disk = Invoke-LabCommand -ComputerName $Machine -ScriptBlock {
-                Get-WmiObject -Namespace Root\CIMV2 -Class Win32_LogicalDisk -Filter "DeviceID = ""$DatabaseDirectoryDrive"""
+                if (Get-Command Get-CimInstance -ErrorAction SilentlyContinue)
+                {
+                    Get-CimInstance -Namespace Root\CIMV2 -Class Win32_LogicalDisk -Filter "DeviceID = ""$DatabaseDirectoryDrive"""
+                }
+                else
+                {
+                    Get-WmiObject -Namespace Root\CIMV2 -Class Win32_LogicalDisk -Filter "DeviceID = ""$DatabaseDirectoryDrive"""
+                }
             } -Variable (Get-Variable -Name DatabaseDirectoryDrive) -PassThru
 
             if (-not $disk -or -not $disk.DriveType -eq 3)
@@ -2435,7 +2418,14 @@ function Install-LabCAMachine
         {
             $LogDirectoryDrive = ($param.LogDirectory.split(':')[0]) + ':'
             $disk = Invoke-LabCommand -ComputerName $Machine -ScriptBlock {
-                Get-WmiObject -Namespace Root\CIMV2 -Class Win32_LogicalDisk -Filter "DeviceID = ""$LogDirectoryDrive"""
+                if (Get-Command Get-CimInstance -ErrorAction SilentlyContinue)
+                {
+                    Get-CimInstance -Namespace Root\CIMV2 -Class Win32_LogicalDisk -Filter "DeviceID = ""$LogDirectoryDrive"""
+                }
+                else
+                {
+                    Get-WmiObject -Namespace Root\CIMV2 -Class Win32_LogicalDisk -Filter "DeviceID = ""$LogDirectoryDrive"""
+                }
             } -Variable (Get-Variable -Name LogDirectoryDrive) -PassThru
             if (-not $disk -or -not $disk.DriveType -eq 3)
             {
@@ -3047,7 +3037,16 @@ function Publish-LabCAInstallCertificates
             {
                 Write-Verbose -Message "Install certificate ($((Get-PfxCertificate $certfile.FullName).Subject)) on machine $(hostname)"
                 #If workgroup, publish to local store
-                if ((Get-WmiObject -Namespace root\cimv2 -Class Win32_ComputerSystem).DomainRole -eq 2)
+                $domJoined = if (Get-Command Get-CimInstance -ErrorAction SilentlyContinue)
+                {
+                    (Get-CimInstance -Namespace root\cimv2 -Class Win32_ComputerSystem).DomainRole -eq 2
+                }
+                else
+                {
+                    (Get-WmiObject -Namespace root\cimv2 -Class Win32_ComputerSystem).DomainRole -eq 2
+                }
+
+                if ($domJoined)
                 {
                     Write-Verbose -Message '  Machine is not domain joined. Publishing certificate to local store'
 

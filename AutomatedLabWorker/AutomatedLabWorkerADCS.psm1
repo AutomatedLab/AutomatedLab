@@ -228,7 +228,7 @@ function Install-LWLabCAServers
 
 
         #region - Install CA
-        $hostOSVersion = [system.version](Get-WmiObject -Class Win32_OperatingSystem).Version
+        $hostOSVersion = [Environment]::OSVersion.Version
         if ($hostOSVersion -ge [system.version]'6.2')
         {
             $InstallFeatures = 'Import-Module -Name ServerManager; Add-WindowsFeature -IncludeManagementTools -Name ADCS-Cert-Authority'
@@ -711,7 +711,7 @@ function Install-LWLabCAServers2008
 
 
         #region - Install CA
-        $hostOSVersion = [system.version](Get-WmiObject -Class Win32_OperatingSystem).Version
+        $hostOSVersion = [Environment]::OSVersion.Version
         if ($hostOSVersion -ge [system.version]'6.2')
         {
             $InstallFeatures = 'Import-Module -Name ServerManager; Add-WindowsFeature -IncludeManagementTools -Name ADCS-Cert-Authority'

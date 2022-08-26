@@ -83,6 +83,7 @@ namespace AutomatedLab
         public int LoadBalancerRdpPort { get; set; }
         public int LoadBalancerWinRmHttpPort { get; set; }
         public int LoadBalancerWinrmHttpsPort { get; set; }
+        public int LoadBalancerSshPort { get; set; }
 
         public List<string> LinuxPackageGroup { get; set; }
         public string SshPublicKey { get; set; }
