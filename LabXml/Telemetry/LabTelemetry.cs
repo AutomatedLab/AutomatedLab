@@ -22,15 +22,19 @@ namespace AutomatedLab
 
         private LabTelemetry()
         {
-            TelemetryConfiguration.Active.InstrumentationKey = telemetryKey;
-            TelemetryConfiguration.Active.TelemetryChannel.DeveloperMode = false;
+            var config = TelemetryConfiguration.CreateDefault();
+            config.InstrumentationKey = telemetryKey;
+            config.TelemetryChannel.DeveloperMode = false;
+            config.TelemetryInitializers.Add(new LabTelemetryInitializer());
+
             var diagnosticsTelemetryModule = new DiagnosticsTelemetryModule();
             diagnosticsTelemetryModule.IsHeartbeatEnabled = false;
-            diagnosticsTelemetryModule.Initialize(TelemetryConfiguration.Active);
+            diagnosticsTelemetryModule.Initialize(config);
+            if (null == telemetryClient)
+            {
+                telemetryClient = new TelemetryClient(config);
+            }
 
-            // Add our own initializer to filter out any personal information before sending telemetry data
-            TelemetryConfiguration.Active.TelemetryInitializers.Add(new LabTelemetryInitializer());
-            telemetryClient = new TelemetryClient();
             TelemetryEnabled = GetEnvironmentVariableAsBool(_telemetryOptInVar, false);
 
             // Initialize EventLog
