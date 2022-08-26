@@ -150,24 +150,23 @@ Starting with AutomatedLab version 5, we are collecting telemetry. To see what y
 
 ### Facts and figures
 
-<iframe width="100%" height="600" src="https://msit.powerbi.com/view?r=eyJrIjoiN2Q3ZTU5Y2QtMjUyMi00YmFhLTkxNTMtZDBmYTA3MzcyYWQxIiwidCI6IjcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0NyIsImMiOjV9&pageName=ReportSection67b5abc401bbec55e899" frameborder="0" allowFullScreen="true"></iframe>
+<iframe width="100%" height="600" src="https://app.powerbi.com/view?r=eyJrIjoiMmYyYTdmODUtMDJlZS00M2QwLWE1MDgtMGU5YTkyODVhZmQ2IiwidCI6Ijc5MzlmZDI1LTQ0YjktNGNjMC04YjVkLWRmZGZjYTg2ZTZlYyIsImMiOjl9&pageName=ReportSection67b5abc401bbec55e899" frameborder="0" allowFullScreen="true"></iframe>
 
 ### Country distribution
 
-<iframe width="100%" height="600" src="https://msit.powerbi.com/view?r=eyJrIjoiN2Q3ZTU5Y2QtMjUyMi00YmFhLTkxNTMtZDBmYTA3MzcyYWQxIiwidCI6IjcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0NyIsImMiOjV9&pageName=ReportSectiona46e290f733ccaa8ef5f" frameborder="0" allowFullScreen="true"></iframe>
+<iframe width="100%" height="600" src="https://app.powerbi.com/view?r=eyJrIjoiMmYyYTdmODUtMDJlZS00M2QwLWE1MDgtMGU5YTkyODVhZmQ2IiwidCI6Ijc5MzlmZDI1LTQ0YjktNGNjMC04YjVkLWRmZGZjYTg2ZTZlYyIsImMiOjl9&pageName=ReportSectiona46e290f733ccaa8ef5f" frameborder="0" allowFullScreen="true"></iframe>
 
 ### Role distribution
 
-<iframe width="100%" height="600" src="https://msit.powerbi.com/view?r=eyJrIjoiN2Q3ZTU5Y2QtMjUyMi00YmFhLTkxNTMtZDBmYTA3MzcyYWQxIiwidCI6IjcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0NyIsImMiOjV9&pageName=ReportSectionae759e8d989baffad8d4" frameborder="0" allowFullScreen="true"></iframe>
+<iframe width="100%" height="600" src="https://app.powerbi.com/view?r=eyJrIjoiMmYyYTdmODUtMDJlZS00M2QwLWE1MDgtMGU5YTkyODVhZmQ2IiwidCI6Ijc5MzlmZDI1LTQ0YjktNGNjMC04YjVkLWRmZGZjYTg2ZTZlYyIsImMiOjl9&pageName=ReportSectionae759e8d989baffad8d4" frameborder="0" allowFullScreen="true"></iframe>
 
 ### Version distribution
 
-<iframe width="100%" height="600" src="https://msit.powerbi.com/view?r=eyJrIjoiN2Q3ZTU5Y2QtMjUyMi00YmFhLTkxNTMtZDBmYTA3MzcyYWQxIiwidCI6IjcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0NyIsImMiOjV9&pageName=ReportSection3edbf550bbd6493af421" frameborder="0" allowFullScreen="true"></iframe>
+<iframe width="100%" height="600" src="https://app.powerbi.com/view?r=eyJrIjoiMmYyYTdmODUtMDJlZS00M2QwLWE1MDgtMGU5YTkyODVhZmQ2IiwidCI6Ijc5MzlmZDI1LTQ0YjktNGNjMC04YjVkLWRmZGZjYTg2ZTZlYyIsImMiOjl9&pageName=ReportSection3edbf550bbd6493af421" frameborder="0" allowFullScreen="true"></iframe>
 
 [AutomatedLab]: https://github.com/AutomatedLab/AutomatedLab
 [wiki]: https://github.com/AutomatedLab/AutomatedLab/wiki
-[full report]: https://msit.powerbi.com/view?r=eyJrIjoiN2Q3ZTU5Y2QtMjUyMi00YmFhLTkxNTMtZDBmYTA3MzcyYWQxIiwidCI6IjcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0NyIsImMiOjV9
-
+[full report]: https://app.powerbi.com/view?r=eyJrIjoiMmYyYTdmODUtMDJlZS00M2QwLWE1MDgtMGU5YTkyODVhZmQ2IiwidCI6Ijc5MzlmZDI1LTQ0YjktNGNjMC04YjVkLWRmZGZjYTg2ZTZlYyIsImMiOjl9
 ## Next Steps
 
 - [1. Installation](https://automatedlab.org/en/latest/Wiki/Basic/install/)

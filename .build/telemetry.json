@@ -1,0 +1,219 @@
+﻿{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "sqlAdminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "SQL admin password"
+            }
+        },
+        "runbookUri": {
+            "type": "string",
+            "metadata": {
+                "description": "URI of ImportBlobContent runbook"
+            }
+        }
+    },
+    "functions": [],
+    "variables": {
+        "aaName":"[format('aa{0}', uniqueString(resourceGroup().id))]",
+        "appinsightsname": "[format('ai{0}', uniqueString(resourceGroup().id))]",
+        "laName": "[format('la{0}', uniqueString(resourceGroup().id))]",
+        "sqlName": "[format('sql{0}', uniqueString(resourceGroup().id))]",
+        "dbName": "telly",
+        "saName": "[format('sa{0}', uniqueString(resourceGroup().id))]"
+    },
+    "resources": [
+        {
+            "name": "[variables('aaName')]",
+            "type": "Microsoft.Automation/automationAccounts",
+            "apiVersion": "2019-06-01",
+            "location": "[resourceGroup().location]",
+            "tags": {},
+            "properties": {
+                "sku": {
+                    "name": "Free"
+                }
+            }
+        },
+        {
+            "name": "[concat(variables('aaName'), '/ImportBlobContent')]",
+            "type": "Microsoft.Automation/automationAccounts/runbooks",
+            "apiVersion": "2019-06-01",
+            "location": "[resourceGroup().location]",
+            "tags": {},
+            "dependsOn": [
+                "[resourceId('Microsoft.Automation/automationAccounts', variables('aaName'))]"
+            ],
+            "properties": {
+                "logVerbose": true,
+                "logProgress": true,
+                "runbookType": "PowerShell",
+                "publishContentLink": {
+                    "uri": "[parameters('runbookUri')]",
+                    "version": "1.0.0.0"
+                },
+                "description": "Import blob content"
+            }
+        },
+        {
+            "type": "Microsoft.Insights/components",
+            "apiVersion": "2020-02-02",
+            "name": "[variables('appinsightsname')]",
+            "location": "[resourceGroup().location]",
+            "kind": "other",
+            "properties": {
+                "Application_Type": "other",
+                "Flow_Type": "Bluefield",
+                "Request_Source": "rest",
+                "WorkspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces',variables('laName'))]"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.OperationalInsights/workspaces', variables('laName'))]"
+            ]
+        },
+        {
+            "name": "[variables('laName')]",
+            "type": "Microsoft.OperationalInsights/workspaces",
+            "apiVersion": "2020-10-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "sku": {
+                    "name": "PerGB2018"
+                },
+                "features": {
+                    "searchVersion": 1
+                }
+            }
+        },
+        {
+            "name": "[concat(variables('sqlName'), '/', variables('dbName'))]",
+            "type": "Microsoft.Sql/servers/databases",
+            "apiVersion": "2014-04-01",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', variables('sqlName'))]"
+            ],
+            "properties": {
+                "collation": "SQL_Latin1_General_CP1_CI_AS",
+                "edition": "Basic",
+                "maxSizeBytes": "1073741824",
+                "requestedServiceObjectiveName": "Basic"
+            }
+        },
+        {
+            "name": "[variables('sqlName')]",
+            "type": "Microsoft.Sql/servers",
+            "apiVersion": "2014-04-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "administratorLogin": "saruman",
+                "administratorLoginPassword": "[parameters('sqlAdminPassword')]"
+            },
+            "resources": [
+                {
+                    "type": "firewallRules",
+                    "apiVersion": "2014-04-01",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Sql/servers', variables('sqlName'))]"
+                    ],
+                    "location": "[resourceGroup().location]",
+                    "name": "AllowAllWindowsAzureIps",
+                    "properties": {
+                        "startIpAddress": "0.0.0.0",
+                        "endIpAddress": "0.0.0.0"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "[variables('saName')]",
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2021-04-01",
+            "location": "[resourceGroup().location]",
+            "kind": "Storage",
+            "sku": {
+                "name": "Standard_LRS",
+                "tier": "Standard"
+            }
+        },        
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices",
+            "apiVersion": "2021-09-01",
+            "name": "[concat(variables('saName'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('saName'))]"
+            ],
+            "sku": {
+                "name": "Standard_LRS",
+                "tier": "Standard"
+            },
+            "properties": {
+                "cors": {
+                    "corsRules": []
+                },
+                "deleteRetentionPolicy": {
+                    "allowPermanentDelete": false,
+                    "enabled": false
+                }
+            }
+        },
+        {
+            "name": "[format('{0}/default/insights-logs-appevents',variables('saName'))]",
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "apiVersion": "2021-04-01",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('saName'))]"
+            ],
+            "properties": {
+                "publicAccess": "None"
+            }
+        },
+        {
+            "name": "[format('{0}/default/insights-logs-appsystemevents',variables('saName'))]",
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "apiVersion": "2021-04-01",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('saName'))]"
+            ],
+            "properties": {
+                "publicAccess": "None"
+            }
+        },
+        {
+            "name": "[format('{0}/default/insights-logs-appmetrics',variables('saName'))]",
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "apiVersion": "2021-04-01",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('saName'))]"
+            ],
+            "properties": {
+                "publicAccess": "None"
+            }
+        },
+        {
+            "name": "[format('{0}/default/telemetry',variables('saName'))]",
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "apiVersion": "2021-04-01",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('saName'))]"
+            ],
+            "properties": {
+                "publicAccess": "None"
+            }
+        },
+        {
+            "name": "[format('{0}/default/dbexports',variables('saName'))]",
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "apiVersion": "2021-04-01",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('saName'))]"
+            ],
+            "properties": {
+                "publicAccess": "None"
+            }
+        }
+    ],
+    "outputs": {}
+}

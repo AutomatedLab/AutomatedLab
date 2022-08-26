@@ -15,7 +15,7 @@ namespace AutomatedLab
         private static volatile LabTelemetry instance;
         private static object syncRoot = new Object();
         private TelemetryClient telemetryClient = null;
-        private const string telemetryKey = "03367df3-a45f-4ba8-9163-e73999e2c7b6";
+        private const string telemetryKey = "fbff0c1a-4f7b-4b90-b74d-8370a38fd213";
         private DateTime labStarted;
         private const string _telemetryOptInVar = "AUTOMATEDLAB_TELEMETRY_OPTIN";
         public bool TelemetryEnabled { get; private set; }
