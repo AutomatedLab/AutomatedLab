@@ -1382,7 +1382,7 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
-    if ($InstallSshKnownHosts -or $performAll)
+    if (($InstallSshKnownHosts -and (Get-LabVm).SshPublicKey) -or $performAll)
     {
         Write-ScreenInfo -Message "Adding lab machines to $home/.ssh/known_hosts" -TaskStart
         

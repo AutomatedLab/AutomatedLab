@@ -1330,7 +1330,7 @@ function Install-LabSshKnownHost
         return
     }
 
-    if (-not (Test-Path -Path $home/.ssh/known_hosts)) {$null = New-Item -ItemType File -Path $home/.ssh/known_hosts}
+    if (-not (Test-Path -Path $home/.ssh/known_hosts)) {$null = New-Item -ItemType File -Path $home/.ssh/known_hosts -Force}
     $knownHostContent = Get-LabSshKnownHost
 
     foreach ($machine in $machines)
@@ -1397,17 +1397,13 @@ function UnInstall-LabSshKnownHost
     [CmdletBinding()]
     param ( )
 
+    if (-not (Test-Path -Path $home/.ssh/known_hosts)) { return }
+
     $lab = Get-Lab
-    if (-not $lab)
-    {
-        return
-    }
+    if (-not $lab) { return }
 
     $machines = Get-LabVM -All -IncludeLinux | Where-Object -FilterScript { -not $_.SkipDeployment }
-    if (-not $machines)
-    {
-        return
-    }
+    if (-not $machines) { return }
 
     $content = Get-Content -Path $home/.ssh/known_hosts
     foreach ($machine in $machines)
