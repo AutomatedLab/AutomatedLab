@@ -19,7 +19,7 @@ Enable-LabTelemetry [<CommonParameters>]
 ## DESCRIPTION
 Enable the transmission of telemetry by setting AUTOMATEDLAB_TELEMETRY_OPTOUT to 0
 
-The full report can be accessed at https://msit.powerbi.com/view?r=eyJrIjoiN2Q3ZTU5Y2QtMjUyMi00YmFhLTkxNTMtZDBmYTA3MzcyYWQxIiwidCI6IjcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0NyIsImMiOjV9
+The full report can be accessed at <https://app.powerbi.com/view?r=eyJrIjoiMmYyYTdmODUtMDJlZS00M2QwLWE1MDgtMGU5YTkyODVhZmQ2IiwidCI6Ijc5MzlmZDI1LTQ0YjktNGNjMC04YjVkLWRmZGZjYTg2ZTZlYyIsImMiOjl9>
 
 The following information will be collected - Your country (IP addresses are by default set to 0.0.0.0 by Azure Application Insights after the location is extracted)
 
