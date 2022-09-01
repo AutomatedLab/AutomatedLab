@@ -512,8 +512,16 @@ function Connect-OnPremisesWithAzure
             $MacAddress
         )
 
-        $externalAdapter = Get-WmiObject -Class Win32_NetworkAdapter -Filter ('MACAddress = "{0}"' -f $MacAddress) |
-            Select-Object -ExpandProperty NetConnectionID
+        if (Get-Command Get-CimInstance -ErrorAction SilentlyContinue)
+        {
+            $externalAdapter = Get-CimInstance -Class Win32_NetworkAdapter -Filter ('MACAddress = "{0}"' -f $MacAddress) |
+                Select-Object -ExpandProperty NetConnectionID
+        }
+        else
+        {
+            $externalAdapter = Get-WmiObject -Class Win32_NetworkAdapter -Filter ('MACAddress = "{0}"' -f $MacAddress) |
+                Select-Object -ExpandProperty NetConnectionID
+        }
 
         Set-Service -Name RemoteAccess -StartupType Automatic
         Start-Service -Name RemoteAccess -ErrorAction SilentlyContinue

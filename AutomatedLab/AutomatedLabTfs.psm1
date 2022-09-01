@@ -67,7 +67,14 @@ function Install-LabTeamFoundationEnvironment
             while (-not $dvdDrive -and (($startTime).AddSeconds(120) -gt (Get-Date)))
             {
                 Start-Sleep -Seconds 2
-                $dvdDrive = (Get-WmiObject -Class Win32_CDRomDrive | Where-Object MediaLoaded).Drive
+                if (Get-Command Get-CimInstance -ErrorAction SilentlyContinue)
+                {
+                    $dvdDrive = (Get-CimInstance -Class Win32_CDRomDrive | Where-Object MediaLoaded).Drive
+                }
+                else
+                {
+                    $dvdDrive = (Get-WmiObject -Class Win32_CDRomDrive | Where-Object MediaLoaded).Drive
+                }
             }
 
             if ($dvdDrive)

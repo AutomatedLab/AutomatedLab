@@ -124,38 +124,6 @@ function New-LWAzureNetworkSwitch
     Write-LogFunctionExit
 }
 #endregion New-LWNetworkSwitch
-#region Remove-LWNetworkSwitch
-function Remove-LWAzureNetworkSwitch
-{
-    param (
-        [Parameter(Mandatory)]
-        [AutomatedLab.VirtualNetwork[]]$VirtualNetwork
-    )
-
-    Test-LabHostConnected -Throw -Quiet
-
-    Write-LogFunctionEntry
-
-    $lab = Get-Lab
-    $resourceGroupName = Get-LabAzureDefaultResourceGroup
-
-    Write-ScreenInfo -Message "Removing virtual network(s) '$($VirtualNetwork.ResourceName -join ', ')'" -Type Warning
-
-
-    $jobs = foreach ($network in $VirtualNetwork)
-    {
-        Write-PSFMessage "Start removal of virtual network '$($network.ResourceName)'"
-        Remove-AzVirtualNetwork -Name $network.ResourceName -ResourceGroupName $resourceGroupName -AsJob -Force
-    }
-
-    Write-PSFMessage "Waiting on the removal of $($jobs.Count)"
-    Wait-LWLabJob -Job $jobs
-
-    Write-PSFMessage "Virtual network(s) '$($VirtualNetwork.ResourceName -join ', ')' removed from Azure"
-
-    Write-LogFunctionExit
-}
-#endregion Remove-LWNetworkSwitch
 
 #region Get-LWAzureNetworkSwitch
 function Get-LWAzureNetworkSwitch
@@ -185,88 +153,6 @@ function Get-LWAzureNetworkSwitch
 
         Get-AzVirtualNetwork @azureNetworkParameters
     }
-}
-#endregion
-#endregion Remove-LWNetworkSwitch
-#region New-LWAzureLoadBalancer
-function New-LWAzureLoadBalancer
-{
-    param
-    (
-        [AutomatedLab.Machine[]]$ConnectedMachines,
-        [switch]$PassThru,
-        [switch]$Wait
-    )
-
-    Test-LabHostConnected -Throw -Quiet
-
-    $lab = Get-Lab
-    $resourceGroup = $lab.Name
-    $location = $lab.AzureSettings.DefaultLocation.DisplayName
-
-    $jobs = foreach ($vNet in $lab.VirtualNetworks)
-    {
-        $publicIp = Get-AzPublicIpAddress -Name "$($resourceGroup)$($vNet.ResourceName)lbfrontendip" -ResourceGroupName $resourceGroup -ErrorAction SilentlyContinue
-
-        $dnsLabel = "$((1..10 | ForEach-Object { [char[]](97..122) | Get-Random }) -join '')"
-
-        if ($vNet.AzureDnsLabel)
-        {
-            $dnsLabel = $vNet.AzureDnsLabel
-        }
-
-        if (-not $publicIp)
-        {
-            $publicIp = New-AzPublicIpAddress -Name "$($resourceGroup)$($vNet.ResourceName)lbfrontendip" -ResourceGroupName $resourceGroup `
-                -Location $location -AllocationMethod Static -IpAddressVersion IPv4 `
-                -DomainNameLabel $dnsLabel -ErrorAction SilentlyContinue
-        }
-
-        $frontendConfig = New-AzLoadBalancerFrontendIpConfig -Name "$($resourceGroup)$($vNet.ResourceName)lbfrontendconfig" -PublicIpAddress $publicIp
-        $backendConfig = New-AzLoadBalancerBackendAddressPoolConfig -Name "$($resourceGroup)$($vNet.ResourceName)backendpoolconfig"
-
-        $inboundRules = @()
-        foreach ($machine in ($ConnectedMachines | Where-Object -Property Network -EQ $vNet.ResourceName))
-        {
-            $inboundRules += New-AzLoadBalancerInboundNatRuleConfig -Name "$($machine.Name.ToLower())rdpin" -FrontendIpConfiguration $frontendConfig -Protocol Tcp -FrontendPort $machine.LoadBalancerRdpPort -BackendPort 3389
-            $inboundRules += New-AzLoadBalancerInboundNatRuleConfig -Name "$($machine.Name.ToLower())winrmin" -FrontendIpConfiguration $frontendConfig -Protocol Tcp -FrontendPort $machine.LoadBalancerWinRmHttpPort -BackendPort 5985
-            $inboundRules += New-AzLoadBalancerInboundNatRuleConfig -Name "$($machine.Name.ToLower())winrmhttpsin" -FrontendIpConfiguration $frontendConfig -Protocol Tcp -FrontendPort $machine.LoadBalancerWinrmHttpsPort -BackendPort 5986
-        }
-
-        New-AzLoadBalancer -Name "$($resourceGroup)$($vNet.ResourceName)loadbalancer" -ResourceGroupName $resourceGroup -Location $location -FrontendIpConfiguration $frontendConfig -BackendAddressPool $backendConfig -InboundNatRule $inboundRules -Force -AsJob
-    }
-
-    # If Wait is not used, return either nothing or the jobs
-    if (-not $Wait.IsPresent)
-    {
-        if ($PassThru.IsPresent)
-        {
-            return $jobs
-        }
-
-        return
-    }
-
-    # Wait for jobs
-    Wait-LWLabJob -Job $jobs
-    $failedJobs = $jobs | Where-Object -Property State -eq Failed
-
-    if ($failedJobs)
-    {
-        throw "One or more load balancers could not be created. Lab deployment cannot continue. Check the output of the following cmdlet for details: Get-Job -Id $($failedJobs.Id) | Receive-Job -Keep"
-    }
-
-    if ($PassThru)
-    {
-        $jobs | Receive-Job -Keep
-    }
-}
-#endregion
-
-#region Remove-LWAzureLoadBalancer
-function Remove-LWAzureLoadBalancer
-{
-    throw "Not implemented"
 }
 #endregion
 
@@ -317,6 +203,7 @@ function Set-LWAzureDnsServer
 
     Write-LogFunctionExit
 }
+#endregion
 
 function Add-LWAzureLoadBalancedPort
 {
@@ -346,8 +233,9 @@ function Add-LWAzureLoadBalancedPort
     $lab = Get-Lab
     $resourceGroup = (Get-LabAzureDefaultResourceGroup).ResourceGroupName
     $machine = Get-LabVm -ComputerName $ComputerName
+    $net = $lab.VirtualNetworks.Where({ $_.Name -eq $machine.Network[0] })
 
-    $lb = Get-AzLoadBalancer -ResourceGroupName $resourceGroup
+    $lb = Get-AzLoadBalancer -ResourceGroupName $resourceGroup | Where-Object {$_.Tag['Vnet'] -eq $net.ResourceName}
     if (-not $lb)
     {
         Write-PSFMessage "No load balancer found to add port rules to"
@@ -366,7 +254,7 @@ function Add-LWAzureLoadBalancedPort
     [void] ($nic | Set-AzNetworkInterface)
 
     # Extend NSG
-    $nsg = Get-AzNetworkSecurityGroup -Name "$($lab.Name)nsg" -ResourceGroupName $resourceGroup
+    $nsg = Get-AzNetworkSecurityGroup -Name "nsg" -ResourceGroupName $resourceGroup
 
     $rule = $nsg | Get-AzNetworkSecurityRuleConfig -Name NecessaryPorts
     if (-not $rule.DestinationPortRange.Contains($DestinationPort))
@@ -410,8 +298,9 @@ function Get-LWAzureLoadBalancedPort
     $lab = Get-Lab
     $resourceGroup = $lab.Name
     $machine = Get-LabVm -ComputerName $ComputerName
+    $net = $lab.VirtualNetworks.Where({ $_.Name -eq $machine.Network[0] })
 
-    $lb = Get-AzLoadBalancer -ResourceGroupName $resourceGroup
+    $lb = Get-AzLoadBalancer -ResourceGroupName $resourceGroup | Where-Object {$_.Tag['Vnet'] -eq $net.ResourceName}
     if (-not $lb)
     {
         Write-PSFMessage "No load balancer found to list port rules of"

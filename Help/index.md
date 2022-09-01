@@ -65,11 +65,11 @@ Apart from the module itself, your system needs to meet the following requiremen
 
 ### Linux
 
-- Linux (Azure)
-- WSL & Azure Cloud Shell supported
-- Tested on Fedora and Ubuntu, or any OS capable of running PowerShell
+- Ubuntu, Ubuntu WSL & Azure Cloud Shell supported
+- Tested on Ubuntu. Due to fragmented nature of Linux distributions, we cannot support anything else.
 - PowerShell Core 6+
 - gss-ntlmssp to enable remoting (*mandatory - no remoting, no way for AutomatedLab to do its thing*)
+  - If in doubt, try to `Install-Module PSWSMAN; Install-WSMAN` - no success warranted
 - IP and route commands available
 - **Azure subscription**
   - At the moment, AutomatedLab only works using Azure.
@@ -79,15 +79,17 @@ Apart from the module itself, your system needs to meet the following requiremen
 
 This solution supports setting up virtual machines with the following.
 
-1. Windows 7, 2008 R2, 8 / 8.1 and 2012 / 2012 R2, 10 / 2016, 2019
+1. Windows 7, 2008 R2, 8 / 8.1 and 2012 / 2012 R2, 10 / 2016, 2019, 2022
 1. SQL Server 2008, 2008R2, 2012, 2014, 2016, 2017, 2019 [*more*](https://www.microsoft.com/en-us/sql-server)
 1. Visual Studio 2012, 2013, 2015, 2017 [*more*](https://visualstudio.microsoft.com)
 1. Team Foundation Services 2015+
 1. Azure DevOps [*more*](https://azure.microsoft.com/en-us/services/devops/server/)
-1. Exchange 2013, Exchange 2016
+1. Exchange 2013, 2016, 2019
 1. SharePoint 2013, 2016, 2019
 1. System Center Orchestrator 2012
 1. System Center Configuration Manager 1809 or 1902+
+1. System Center Operations Manager
+1. System Center Virtual Machine Manager
 1. Microsoft Deployment Toolkit (MDT) [*more*](https://www.microsoft.com/en-us/download/details.aspx?id=54259)
 1. ProGet (Private PowerShell Gallery)
 1. Office 2013, 2016
@@ -148,24 +150,23 @@ Starting with AutomatedLab version 5, we are collecting telemetry. To see what y
 
 ### Facts and figures
 
-<iframe width="100%" height="600" src="https://msit.powerbi.com/view?r=eyJrIjoiN2Q3ZTU5Y2QtMjUyMi00YmFhLTkxNTMtZDBmYTA3MzcyYWQxIiwidCI6IjcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0NyIsImMiOjV9&pageName=ReportSection67b5abc401bbec55e899" frameborder="0" allowFullScreen="true"></iframe>
+<iframe width="100%" height="600" src="https://app.powerbi.com/view?r=eyJrIjoiMmYyYTdmODUtMDJlZS00M2QwLWE1MDgtMGU5YTkyODVhZmQ2IiwidCI6Ijc5MzlmZDI1LTQ0YjktNGNjMC04YjVkLWRmZGZjYTg2ZTZlYyIsImMiOjl9&pageName=ReportSection67b5abc401bbec55e899" frameborder="0" allowFullScreen="true"></iframe>
 
 ### Country distribution
 
-<iframe width="100%" height="600" src="https://msit.powerbi.com/view?r=eyJrIjoiN2Q3ZTU5Y2QtMjUyMi00YmFhLTkxNTMtZDBmYTA3MzcyYWQxIiwidCI6IjcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0NyIsImMiOjV9&pageName=ReportSectiona46e290f733ccaa8ef5f" frameborder="0" allowFullScreen="true"></iframe>
+<iframe width="100%" height="600" src="https://app.powerbi.com/view?r=eyJrIjoiMmYyYTdmODUtMDJlZS00M2QwLWE1MDgtMGU5YTkyODVhZmQ2IiwidCI6Ijc5MzlmZDI1LTQ0YjktNGNjMC04YjVkLWRmZGZjYTg2ZTZlYyIsImMiOjl9&pageName=ReportSectiona46e290f733ccaa8ef5f" frameborder="0" allowFullScreen="true"></iframe>
 
 ### Role distribution
 
-<iframe width="100%" height="600" src="https://msit.powerbi.com/view?r=eyJrIjoiN2Q3ZTU5Y2QtMjUyMi00YmFhLTkxNTMtZDBmYTA3MzcyYWQxIiwidCI6IjcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0NyIsImMiOjV9&pageName=ReportSectionae759e8d989baffad8d4" frameborder="0" allowFullScreen="true"></iframe>
+<iframe width="100%" height="600" src="https://app.powerbi.com/view?r=eyJrIjoiMmYyYTdmODUtMDJlZS00M2QwLWE1MDgtMGU5YTkyODVhZmQ2IiwidCI6Ijc5MzlmZDI1LTQ0YjktNGNjMC04YjVkLWRmZGZjYTg2ZTZlYyIsImMiOjl9&pageName=ReportSectionae759e8d989baffad8d4" frameborder="0" allowFullScreen="true"></iframe>
 
 ### Version distribution
 
-<iframe width="100%" height="600" src="https://msit.powerbi.com/view?r=eyJrIjoiN2Q3ZTU5Y2QtMjUyMi00YmFhLTkxNTMtZDBmYTA3MzcyYWQxIiwidCI6IjcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0NyIsImMiOjV9&pageName=ReportSection3edbf550bbd6493af421" frameborder="0" allowFullScreen="true"></iframe>
+<iframe width="100%" height="600" src="https://app.powerbi.com/view?r=eyJrIjoiMmYyYTdmODUtMDJlZS00M2QwLWE1MDgtMGU5YTkyODVhZmQ2IiwidCI6Ijc5MzlmZDI1LTQ0YjktNGNjMC04YjVkLWRmZGZjYTg2ZTZlYyIsImMiOjl9&pageName=ReportSection3edbf550bbd6493af421" frameborder="0" allowFullScreen="true"></iframe>
 
 [AutomatedLab]: https://github.com/AutomatedLab/AutomatedLab
 [wiki]: https://github.com/AutomatedLab/AutomatedLab/wiki
-[full report]: https://msit.powerbi.com/view?r=eyJrIjoiN2Q3ZTU5Y2QtMjUyMi00YmFhLTkxNTMtZDBmYTA3MzcyYWQxIiwidCI6IjcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0NyIsImMiOjV9
-
+[full report]: https://app.powerbi.com/view?r=eyJrIjoiMmYyYTdmODUtMDJlZS00M2QwLWE1MDgtMGU5YTkyODVhZmQ2IiwidCI6Ijc5MzlmZDI1LTQ0YjktNGNjMC04YjVkLWRmZGZjYTg2ZTZlYyIsImMiOjl9
 ## Next Steps
 
 - [1. Installation](https://automatedlab.org/en/latest/Wiki/Basic/install/)

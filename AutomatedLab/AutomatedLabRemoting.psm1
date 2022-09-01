@@ -80,7 +80,7 @@ function New-LabPSSession
             {
                 $cred = $Credential
             }
-            elseif ($UseLocalCredential -and ($IsLinux -and $m.IsDomainJoined -and -not $m.HasDomainJoined))
+            elseif ($UseLocalCredential -and (($IsLinux -or -not [string]::IsNullOrWhiteSpace($m.SshPrivateKeyPath)) -and $m.IsDomainJoined -and -not $m.HasDomainJoined))
             {
                 $cred = $m.GetLocalCredential($true)
             }
@@ -88,7 +88,7 @@ function New-LabPSSession
             {
                 $cred = $m.GetLocalCredential()
             }
-            elseif ($IsLinux -and $m.IsDomainJoined -and -not $m.HasDomainJoined)
+            elseif (($IsLinux -or -not [string]::IsNullOrWhiteSpace($m.SshPrivateKeyPath)) -and $m.IsDomainJoined -and -not $m.HasDomainJoined)
             {
                 $cred = $m.GetLocalCredential($true)
             }
@@ -166,11 +166,12 @@ function New-LabPSSession
                 $param.Add('Port', 5985)
             }
 
-            if (((Get-Command New-PSSession).Parameters.Values.Name -notcontains 'HostName') -and $m.OperatingSystemType -eq 'Linux' -and -not [string]::IsNullOrWhiteSpace($m.SshPrivateKeyPath))
+            if (((Get-Command New-PSSession).Parameters.Values.Name -notcontains 'HostName') -and -not [string]::IsNullOrWhiteSpace($m.SshPrivateKeyPath))
             {
                 Write-ScreenInfo -Type Warning -Message "SSH Transport is not available from within Windows PowerShell."
             }
-            if (((Get-Command New-PSSession).Parameters.Values.Name -contains 'HostName') -and $m.OperatingSystemType -eq 'Linux' -and -not [string]::IsNullOrWhiteSpace($m.SshPrivateKeyPath))
+
+            if (((Get-Command New-PSSession).Parameters.Values.Name -contains 'HostName') -and -not [string]::IsNullOrWhiteSpace($m.SshPrivateKeyPath))
             {
                 $param['HostName'] = $param['ComputerName']
                 $param.Remove('ComputerName')
@@ -179,16 +180,15 @@ function New-LabPSSession
                 $param.Remove('Credential')
                 $param.Remove('UseSsl')
                 $param['KeyFilePath'] = $m.SshPrivateKeyPath
-                $param['Port'] = 22
-                $param['UserName'] = $cred.UserName
-                $connectionName = $m.Name
+                $param['Port'] = if ($m.HostType -eq 'Azure') {$m.AzureConnectionInfo.SshPort} else { 22 }
+                $param['UserName'] = $cred.UserName.Replace("$($m.Name)\", '')
             }
             elseif ($m.OperatingSystemType -eq 'Linux')
             {
                 Set-Item -Path WSMan:\localhost\Client\Auth\Basic -Value $true -Force
                 $param['SessionOption'] = New-PSSessionOption -SkipCACheck -SkipCNCheck -SkipRevocationCheck
                 $param['UseSSL'] = $true
-                $param['Port'] = if ($m.HostType -eq 'Azure') {$m.AzureConnectionInfo.HttpsPort} else {5986}
+                $param['Port'] = if ($m.HostType -eq 'Azure') {$m.AzureConnectionInfo.HttpsPort} else { 5986 }
                 $param['Authentication'] = 'Basic'
             }
 
@@ -202,12 +202,12 @@ function New-LabPSSession
             #session reuse. If there is a session to the machine available, return it, otherwise create a new session
             $internalSession = Get-PSSession | Where-Object {
                 ($_.ComputerName -eq $param.ComputerName -or $_.ComputerName -eq $param.HostName) -and
-                $_.Runspace.ConnectionInfo.Port -eq $param.Port -and
+                ($_.Runspace.ConnectionInfo.Port -eq $param.Port -or $_.Transport -eq 'SSH') -and
                 $_.Availability -eq 'Available' -and
-                $_.Runspace.ConnectionInfo.AuthenticationMechanism -eq $param.Authentication -and
+                ($_.Runspace.ConnectionInfo.AuthenticationMechanism -eq $param.Authentication -or $_.Transport -eq 'SSH') -and
                 $_.State -eq 'Opened' -and
                 $_.Name -like "$($m)_*" -and
-                $_.Runspace.ConnectionInfo.Credential.UserName -eq $param.Credential.UserName
+                ($_.Runspace.ConnectionInfo.Credential.UserName -eq $param.Credential.UserName -or $_.Runspace.ConnectionInfo.UserName -eq $param.Credential.UserName)
             }
 
             if ($internalSession)
@@ -249,7 +249,7 @@ function New-LabPSSession
                 if ($portTest.Open)
                 {
                     Write-PSFMessage 'Port was open, trying to create the session'
-                    if ($IsLinux -and $param.HostName -and -not (Get-Item -ErrorAction SilentlyContinue "$home/.ssh/known_hosts" | Select-String -Pattern $param.HostName.Replace('.','\.')))
+                    if ($param.HostName -and -not (Get-Item -ErrorAction SilentlyContinue "$home/.ssh/known_hosts" | Select-String -Pattern $param.HostName.Replace('.','\.')))
                     {
                         Install-LabSshKnownHost # First connect
                     }
@@ -414,10 +414,10 @@ function Remove-LabPSSession
             $param['Port'] = 5985
         }
 
-        if ($m.OperatingSystemType -eq 'Linux')
+        if (((Get-Command New-PSSession).Parameters.Values.Name -contains 'HostName') )
         {
             $param['HostName'] = $param['ComputerName']
-            $param['Port'] = 22
+            $param['Port'] = if ($m.HostType -eq 'Azure') {$m.AzureConnectionInfo.SshPort} else { 22 }
             $param.Remove('ComputerName')
             $param.Remove('PSSessionOption')
             $param.Remove('Authentication')
@@ -551,10 +551,24 @@ function Invoke-LabCommand
     Write-LogFunctionEntry
     $customRoleCount = 0
 
-    if ($PSCmdlet.ParameterSetName -in 'Script', 'ScriptBlock', 'ScriptFileContentDependency', 'ScriptBlockFileContentDependency','ScriptFileNameContentDependency')
+    $parameterSetsWithRetries = 'Script',
+        'ScriptBlock',
+        'ScriptFileContentDependency',
+        'ScriptBlockFileContentDependency',
+        'ScriptFileNameContentDependency',
+        'PostInstallationActivity',
+        'PreInstallationActivity'
+
+    if ($PSCmdlet.ParameterSetName -in $parameterSetsWithRetries)
     {
-        if (-not $Retries) { $Retries = Get-LabConfigurationItem -Name InvokeLabCommandRetries }
-        if (-not $RetryIntervalInSeconds) { $RetryIntervalInSeconds = Get-LabConfigurationItem -Name InvokeLabCommandRetryIntervalInSeconds }
+        if (-not $Retries)
+        {
+            $Retries = Get-LabConfigurationItem -Name InvokeLabCommandRetries
+        }
+        if (-not $RetryIntervalInSeconds)
+        {
+            $RetryIntervalInSeconds = Get-LabConfigurationItem -Name InvokeLabCommandRetryIntervalInSeconds
+        }
     }
 
     if ($AsJob)
@@ -847,7 +861,10 @@ function Invoke-LabCommand
         Write-ScreenInfo -Message 'Activity done' -TaskEnd
     }
 
-    if ($PassThru) { $results }
+    if ($PassThru)
+    {
+        $results
+    }
 
     Write-LogFunctionExit
 }
@@ -1307,16 +1324,69 @@ function Install-LabSshKnownHost
         return
     }
 
-    $machines = Get-LabVM -All -IncludeLinux | Where-Object -FilterScript { $_.OperatingSystemType -eq 'Linux' -and -not $_.SkipDeployment }
+    $machines = Get-LabVM -All -IncludeLinux | Where-Object -FilterScript { -not $_.SkipDeployment }
     if (-not $machines)
     {
         return
     }
 
+    if (-not (Test-Path -Path $home/.ssh/known_hosts)) {$null = New-Item -ItemType File -Path $home/.ssh/known_hosts -Force}
+    $knownHostContent = Get-LabSshKnownHost
+
     foreach ($machine in $machines)
     {
-        ssh-keyscan $machine.Name | Add-Content $home/.ssh/known_hosts
-        if ($machine.IpV4Address) {ssh-keyscan $machine.IpV4Address | Add-Content $home/.ssh/known_hosts}
+        if ((Get-LabVmStatus -ComputerName $machine) -ne 'Started' ) {continue}
+        if ($lab.DefaultVirtualizationEngine -eq 'Azure')
+        {
+            $keyScanHost = ssh-keyscan -p $machine.LoadBalancerSshPort $machine.AzureConnectionInfo.DnsName 2>$null | ConvertFrom-String -Delimiter ' ' -PropertyNames ComputerName,Cipher,Fingerprint -ErrorAction SilentlyContinue
+            $keyScanIp = ssh-keyscan -p $machine.LoadBalancerSshPort $machine.AzureConnectionInfo.VIP 2>$null | ConvertFrom-String -Delimiter ' ' -PropertyNames ComputerName,Cipher,Fingerprint -ErrorAction SilentlyContinue
+
+            foreach ($keyScanHost in $keyScanHosts)
+            {
+                $sshHostEntry = $knownHostContent | Where-Object {$_.ComputerName -eq "[$($machine.AzureConnectionInfo.DnsName)]:$($machine.LoadBalancerSshPort)" -and $_.Cipher -eq $keyScanHost.Cipher}
+                if (-not $sshHostEntry -or $keyScanHost.Fingerprint -ne $sshHostEntry.Fingerprint)
+                {
+                    Write-ScreenInfo -Type Verbose -Message ("Adding line to $home/.ssh/known_hosts: {0} {1} {2}" -f $keyScanHost.ComputerName,$keyScanHost.Cipher,$keyScanHost.Fingerprint)
+                    '{0} {1} {2}' -f $keyScanHost.ComputerName,$keyScanHost.Cipher,$keyScanHost.Fingerprint | Add-Content $home/.ssh/known_hosts
+                }
+            }
+
+            foreach ($keyScanIp in $keyScanIps)
+            {
+                $sshHostEntryIp = $knownHostContent | Where-Object {$_.ComputerName -eq "[$($machine.AzureConnectionInfo.VIP)]:$($machine.LoadBalancerSshPort)" -and $_.Cipher -eq $keyScanIp.Cipher}
+                if (-not $sshHostEntryIp -or $keyScanIp.Fingerprint -ne $sshHostEntryIp.Fingerprint)
+                {
+                    Write-ScreenInfo -Type Verbose -Message ("Adding line to $home/.ssh/known_hosts: {0} {1} {2}" -f $keyScanIp.ComputerName,$keyScanIp.Cipher,$keyScanIp.Fingerprint)
+                    '{0} {1} {2}' -f $keyScanIp.ComputerName,$keyScanIp.Cipher,$keyScanIp.Fingerprint | Add-Content $home/.ssh/known_hosts
+                }
+            }
+        }
+        else
+        {
+            $keyScanHosts = ssh-keyscan $machine.Name 2>$null | ConvertFrom-String -Delimiter ' ' -PropertyNames ComputerName,Cipher,Fingerprint -ErrorAction SilentlyContinue
+            foreach ($keyScanHost in $keyScanHosts)
+            {
+                $sshHostEntry = $knownHostContent | Where-Object {$_.ComputerName -eq $machine.Name -and $_.Cipher -eq $keyScanHost.Cipher}
+                if (-not $sshHostEntry -or $keyScanHost.Fingerprint -ne $sshHostEntry.Fingerprint)
+                {
+                    Write-ScreenInfo -Type Verbose -Message ("Adding line to $home/.ssh/known_hosts: {0} {1} {2}" -f $keyScanHost.ComputerName,$keyScanHost.Cipher,$keyScanHost.Fingerprint)
+                    '{0} {1} {2}' -f $keyScanHost.ComputerName,$keyScanHost.Cipher,$keyScanHost.Fingerprint | Add-Content $home/.ssh/known_hosts
+                }
+            }
+            if ($machine.IpV4Address)
+            {
+                $keyScanIps = ssh-keyscan $machine.IpV4Address 2>$null | ConvertFrom-String -Delimiter ' ' -PropertyNames ComputerName,Cipher,Fingerprint -ErrorAction SilentlyContinue
+                foreach ($keyScanIp in $keyScanIps)
+                {
+                    $sshHostEntryIp = $knownHostContent | Where-Object {$_.ComputerName -eq $machine.IpV4Address -and $_.Cipher -eq $keyScanIp.Cipher}
+                    if (-not $sshHostEntryIp -or $keyScanIp.Fingerprint -ne $sshHostEntryIp.Fingerprint)
+                    {
+                        Write-ScreenInfo -Type Verbose -Message ("Adding line to $home/.ssh/known_hosts: {0} {1} {2}" -f $keyScanIp.ComputerName,$keyScanIp.Cipher,$keyScanIp.Fingerprint)
+                        '{0} {1} {2}' -f $keyScanIp.ComputerName,$keyScanIp.Cipher,$keyScanIp.Fingerprint | Add-Content $home/.ssh/known_hosts
+                    }
+                }
+            }
+        }
     }
 }
 #endregion
@@ -1327,25 +1397,29 @@ function UnInstall-LabSshKnownHost
     [CmdletBinding()]
     param ( )
 
-    $lab = Get-Lab
-    if (-not $lab)
-    {
-        return
-    }
+    if (-not (Test-Path -Path $home/.ssh/known_hosts)) { return }
 
-    $machines = Get-LabVM -All -IncludeLinux | Where-Object -FilterScript { $_.OperatingSystemType -eq 'Linux' -and -not $_.SkipDeployment }
-    if (-not $machines)
-    {
-        return
-    }
+    $lab = Get-Lab
+    if (-not $lab) { return }
+
+    $machines = Get-LabVM -All -IncludeLinux | Where-Object -FilterScript { -not $_.SkipDeployment }
+    if (-not $machines) { return }
 
     $content = Get-Content -Path $home/.ssh/known_hosts
     foreach ($machine in $machines)
     {
-        $content = $content | Where {$_ -notmatch "$($machine.Name)\s.*"}
-        if ($machine.IpV4Address)
+        if ($lab.DefaultVirtualizationEngine -eq 'Azure')
         {
-            $content = $content | Where {$_ -notmatch "$($machine.Ipv4Address.Replace('.','\.'))\s.*"}
+            $content = $content | Where {$_ -notmatch "$($machine.AzureConnectionInfo.DnsName.Replace('.','\.'))\s.*"}
+            $content = $content | Where {$_ -notmatch "$($machine.AzureConnectionInfo.VIP.Replace('.','\.'))\s.*"}
+        }
+        else
+        {
+            $content = $content | Where {$_ -notmatch "$($machine.Name)\s.*"}
+            if ($machine.IpV4Address)
+            {
+                $content = $content | Where {$_ -notmatch "$($machine.Ipv4Address.Replace('.','\.'))\s.*"}
+            }
         }
     }
     $content | Set-Content -Path $home/.ssh/known_hosts

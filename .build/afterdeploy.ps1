@@ -19,11 +19,11 @@ $sourceLibraryPathCore = Join-Path $env:APPVEYOR_BUILD_FOLDER 'LabXml/bin/Debug/
 
 if (-not (Test-Path $mainModule))
 {
-    robocopy /S /E $sourceLibraryPath (Split-Path $mainModule)
+    $null = robocopy /S /E $sourceLibraryPath (Split-Path $mainModule)
 }
 if (-not (Test-Path $mainModuleCore))
 {
-    robocopy /S /E $sourceLibraryPathCore (Split-Path $mainModuleCore)
+    $null = robocopy /S /E $sourceLibraryPathCore (Split-Path $mainModuleCore)
 }
 
 $env:PSModulePath += ";$env:APPVEYOR_BUILD_FOLDER"
@@ -42,9 +42,5 @@ foreach ($m in (Get-ChildItem -Path $env:APPVEYOR_BUILD_FOLDER -Directory -Exclu
         Confirm     = $false
     }
     Write-Host "Publishing module '$($m.FullName)'"
-
-    Start-Job -Name "Publish $m" -ScriptBlock {
-        $publishParams = $args[0]
-        Publish-Module @publishParams
-    } -ArgumentList $publishParams | Receive-Job -AutoRemoveJob -Wait
+    Publish-Module @publishParams
 }

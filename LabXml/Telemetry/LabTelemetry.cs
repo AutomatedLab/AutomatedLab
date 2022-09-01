@@ -15,26 +15,30 @@ namespace AutomatedLab
         private static volatile LabTelemetry instance;
         private static object syncRoot = new Object();
         private TelemetryClient telemetryClient = null;
-        private const string telemetryKey = "03367df3-a45f-4ba8-9163-e73999e2c7b6";
+        private const string telemetryKey = "fbff0c1a-4f7b-4b90-b74d-8370a38fd213";
         private DateTime labStarted;
         private const string _telemetryOptInVar = "AUTOMATEDLAB_TELEMETRY_OPTIN";
         public bool TelemetryEnabled { get; private set; }
 
         private LabTelemetry()
         {
-            TelemetryConfiguration.Active.InstrumentationKey = telemetryKey;
-            TelemetryConfiguration.Active.TelemetryChannel.DeveloperMode = false;
+            var config = TelemetryConfiguration.CreateDefault();
+            config.InstrumentationKey = telemetryKey;
+            config.TelemetryChannel.DeveloperMode = false;
+            config.TelemetryInitializers.Add(new LabTelemetryInitializer());
+
             var diagnosticsTelemetryModule = new DiagnosticsTelemetryModule();
             diagnosticsTelemetryModule.IsHeartbeatEnabled = false;
-            diagnosticsTelemetryModule.Initialize(TelemetryConfiguration.Active);
+            diagnosticsTelemetryModule.Initialize(config);
+            if (null == telemetryClient)
+            {
+                telemetryClient = new TelemetryClient(config);
+            }
 
-            // Add our own initializer to filter out any personal information before sending telemetry data
-            TelemetryConfiguration.Active.TelemetryInitializers.Add(new LabTelemetryInitializer());
-            telemetryClient = new TelemetryClient();
             TelemetryEnabled = GetEnvironmentVariableAsBool(_telemetryOptInVar, false);
 
             // Initialize EventLog
-            if (Environment.OSVersion.Platform == (PlatformID.Unix | PlatformID.MacOSX)) return;
+            if (Environment.OSVersion.Platform == PlatformID.Unix || Environment.OSVersion.Platform == PlatformID.MacOSX) return;
             if (!EventLog.SourceExists("AutomatedLab")) EventLog.CreateEventSource("AutomatedLab", "Application");
         }
 

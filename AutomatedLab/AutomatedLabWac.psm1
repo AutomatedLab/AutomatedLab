@@ -184,6 +184,8 @@ function Add-LabWacManagedNode
             Get-LabVM | Where-Object -FilterScript { $_.Name -ne $machine.Name -and -not $_.SkipDeployment }
         }
 
+        if ($filteredHosts.Count -eq 0) { return }
+
         $wachostname = if (-not $machine.SkipDeployment -and $lab.DefaultVirtualizationEngine -eq 'Azure') 
         {
             $machine.AzureConnectionInfo.DnsName

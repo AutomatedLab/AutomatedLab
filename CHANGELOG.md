@@ -6,6 +6,32 @@
 
 ### Bugs
 
+## 5.45.0 (2022-09-01)
+
+### Enhancements
+
+- Build process includes integration tests
+- Get-LWHyperVVM: Additional setting to skip checking cluster in Get-LWHyperVVM to improve performance.
+  - Mainly useful during deployments, and would not be registered, but rather just set before `Install-Lab`
+- Some auxiliary resource names on Azure have been shortened.
+- AutomatedLab now attemtps to catch seemingly random, transient errors during resource group deployment
+
+### Bugs
+
+- Repair-LWHyperVNetworkConfig: WSMAN EnvelopeSize caused issues
+- Get-LWHyperVVM: Issue with too many VMs returned in a cluster
+- Revert to old version of ApplicationInsights which is currently distributed with PowerShell 7
+- Fixed #1365. Only the first IP of a machine is registered using `Add-HostEntry`
+- Fix remoting issues originating from Linux hosts once and for all by using SSH remoting. Cases:
+  - Windows + PS5: No change
+  - Windows + PS6+ + Azure: WSMAN preferred, Public/Private Key possible
+  - Windows + PS6+ + Hyper-V: WSMAN preferred, Public/Private Key possible. Public/Private Key more or less required for Linux workloads
+  - Linux + PS6+ + Azure + Public/Private Key
+  - And of course: Mix and match. Some eligible targets using SSH, others WSMAN. =======
+- DoNotPrompt now also enforces Enable-LabHostRemoting.
+- Fixed #1371. Assigning PostInstallationActivity resulted into a prompt due to missing arguments.
+- Add more retry attempts to Get-LWAzureVm to address issues like #1362
+
 ## 5.44.0 (2022-07-22)
 
 ### Enhancements

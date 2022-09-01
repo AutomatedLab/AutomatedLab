@@ -838,6 +838,7 @@ function Get-LabSourcesLocationInternal
 function Update-LabSysinternalsTools
 {
     if ($IsLinux -or $IsMacOs) { return }
+    if (Get-LabConfigurationItem -Name SkipSysInternals) {return}
     #Update SysInternals suite if needed
     $type = Get-Type -GenericType AutomatedLab.DictionaryXmlStore -T String, DateTime
 

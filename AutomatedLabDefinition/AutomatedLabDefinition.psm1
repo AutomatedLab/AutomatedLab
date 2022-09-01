@@ -2027,14 +2027,14 @@ function Add-LabMachineDefinition
             }
         }
 
-        if (((Get-Command New-PSSession).Parameters.Values.Name -notcontains 'HostName') -and $OperatingSystem.OperatingSystemType -eq 'Linux' -and -not [string]::IsNullOrWhiteSpace($SshPublicKeyPath))
+        if (((Get-Command New-PSSession).Parameters.Values.Name -notcontains 'HostName') -and -not [string]::IsNullOrWhiteSpace($SshPublicKeyPath))
         {
             Write-ScreenInfo -Type Warning -Message "SSH Transport is not available from within Windows PowerShell. Please use PowerShell 6+ if you want to use remoting-cmdlets."
         }
 
         if ((-not [string]::IsNullOrWhiteSpace($SshPublicKeyPath) -and [string]::IsNullOrWhiteSpace($SshPrivateKeyPath)) -or ([string]::IsNullOrWhiteSpace($SshPublicKeyPath) -and -not [string]::IsNullOrWhiteSpace($SshPrivateKeyPath)))
         {
-            Write-ScreenInfo -Type Warning -Message "Both SshPublicKeyPath and SshPrivateKeyPath need to be used to successfully remote to Linux VMs"
+            Write-ScreenInfo -Type Warning -Message "Both SshPublicKeyPath and SshPrivateKeyPath need to be used to successfully remote to Linux VMs (Host Windows, Engine Hyper-V) and Windows VMs (Host Linux/WSL, Engine Azure)"
         }
 
         if ($AzureProperties)
@@ -2111,29 +2111,21 @@ function Add-LabMachineDefinition
         $machine.OrganizationalUnit = $OrganizationalUnit
         $script:machines.Add($machine)
 
-        if ($OperatingSystem.OperatingSystemType -eq 'Windows' -and $SshPublicKeyPath)
-        {
-            Write-ScreenInfo -Message "SSH Keys are ignored on Windows for the time being. Why not contribute to AutomatedLab and add the configuration of an ssh server?"
-        }
-        elseif ($OperatingSystem.OperatingSystemType -eq 'Linux' -and $SshPublicKeyPath -and -not (Test-Path -Path $SshPublicKeyPath))
+        if ($SshPublicKeyPath -and -not (Test-Path -Path $SshPublicKeyPath))
         {
             throw "$SshPublicKeyPath does not exist. Rethink your decision."
         }
-        elseif ($OperatingSystem.OperatingSystemType -eq 'Linux' -and $SshPublicKeyPath)
+        elseif ($SshPublicKeyPath -and (Test-Path -Path $SshPublicKeyPath))
         {
             $machine.SshPublicKeyPath = $SshPublicKeyPath
             $machine.SshPublicKey = Get-Content -Raw -Path $SshPublicKeyPath
         }
 
-        if ($OperatingSystem.OperatingSystemType -eq 'Windows' -and $SshPrivateKeyPath)
-        {
-            Write-ScreenInfo -Message "SSH Keys are ignored on Windows for the time being. Why not contribute to AutomatedLab and add the configuration of an ssh server?"
-        }
-        elseif ($OperatingSystem.OperatingSystemType -eq 'Linux' -and $SshPrivateKeyPath -and -not (Test-Path -Path $SshPrivateKeyPath))
+        if ($SshPrivateKeyPath -and -not (Test-Path -Path $SshPrivateKeyPath))
         {
             throw "$SshPrivateKeyPath does not exist. Rethink your decision."
         }
-        elseif ($OperatingSystem.OperatingSystemType -eq 'Linux' -and $SshPrivateKeyPath)
+        elseif ($SshPrivateKeyPath -and (Test-Path -Path $SshPrivateKeyPath))
         {
             $machine.SshPrivateKeyPath = $SshPrivateKeyPath
         }
@@ -2151,6 +2143,8 @@ function Add-LabMachineDefinition
             $machine.LoadBalancerWinRmHttpPort = $script:lab.AzureSettings.LoadBalancerPortCounter
             $script:lab.AzureSettings.LoadBalancerPortCounter++
             $machine.LoadBalancerWinrmHttpsPort = $script:lab.AzureSettings.LoadBalancerPortCounter
+            $script:lab.AzureSettings.LoadBalancerPortCounter++
+            $machine.LoadBalancerSshPort = $script:lab.AzureSettings.LoadBalancerPortCounter
         }
 
         if ($InstallationUserCredential)
@@ -2206,6 +2200,10 @@ function Add-LabMachineDefinition
         if ($DomainName -or ($Roles -and $Roles.Name -match 'DC$'))
         {
             $machine.IsDomainJoined = $true
+            if ($script:Lab.DefaultVirtualizationEngine -eq 'HyperV' -and (-not $Roles -or $Roles -and $Roles.Name -notmatch 'DC$'))
+            {
+                $machine.HasDomainJoined = $true # In order to use the correct credentials upon connecting via SSH. Hyper-V VMs join during first boot
+            }
 
             if ($Roles.Name -eq 'RootDC' -or $Roles.Name -eq 'DC')
             {
