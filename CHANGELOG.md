@@ -4,6 +4,12 @@
 
 ### Enhancements
 
+### Bugs
+
+## 5.45.0 (2022-09-01)
+
+### Enhancements
+
 - Build process includes integration tests
 - Get-LWHyperVVM: Additional setting to skip checking cluster in Get-LWHyperVVM to improve performance.
   - Mainly useful during deployments, and would not be registered, but rather just set before `Install-Lab`
