@@ -205,6 +205,7 @@ Set-PSFConfig -Module 'AutomatedLab' -Name RequiredAzModules -Value @(
         MinimumVersion = '1.2.0'
     }
  ) -Initialize -Description 'Required Az modules'
+Set-PSFConfig -Module 'AutomatedLab' -Name UseLatestAzureProviderApi -Value $true -Description 'Indicates that the latest provider API versions available in the labs region should be used' -Initialize -Validation bool
 
 #Office
 Set-PSFConfig -Module 'AutomatedLab' -Name OfficeDeploymentTool -Value 'https://download.microsoft.com/download/2/7/A/27AF1BE6-DD20-4CB4-B154-EBAB8A7D4A7E/officedeploymenttool_12827-20268.exe' -Initialize -Validation string -Description 'Link to Microsoft Office deployment tool'
