@@ -184,3 +184,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 Author: Jan-Hendrik Peters
 
 ## RELATED LINKS
+https://automatedlab.org/en/latest/AutomatedLab/en-us/Add-LabAzureSubscription

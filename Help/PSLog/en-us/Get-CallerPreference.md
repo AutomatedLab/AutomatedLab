@@ -118,6 +118,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
-
-[about_Preference_Variables]()
-
+https://automatedlab.org/en/latest/PSLog/en-us/Get-CallerPreference

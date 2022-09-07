@@ -228,3 +228,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
+https://automatedlab.org/en/latest/AutomatedLab/en-us/New-LabCATemplate
