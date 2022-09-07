@@ -98,11 +98,6 @@ foreach ($command in $commands) {
 					$parameterHelp.Description.Text | Should -Not -BeNullOrEmpty
 				}
                 
-                $codeMandatory = $parameter.IsMandatory.toString()
-				It "help for $parameterName parameter in $commandName has correct Mandatory value" -TestCases @{ parameterHelp = $parameterHelp; codeMandatory = $codeMandatory } {
-					$parameterHelp.Required | Should -Be $codeMandatory
-				}
-                
                 if ($HelpTestSkipParameterType -and $HelpTestSkipParameterType[$commandName] -contains $parameterName) { continue }
                 
                 $codeType = $parameter.ParameterType.Name
@@ -133,7 +128,7 @@ foreach ($command in $commands) {
             }
             foreach ($helpParm in $HelpParameterNames) {
 				# Shouldn't find extra parameters in help.
-				It "finds help parameter in code: $helpParm" -TestCases @{ helpParm = $helpParm; parameterNames = $parameterNames } {
+				It "finds help parameter in code: $helpParm : in $commandName" -TestCases @{ helpParm = $helpParm; parameterNames = $parameterNames } {
 					$helpParm -in $parameterNames | Should -Be $true
 				}
             }
