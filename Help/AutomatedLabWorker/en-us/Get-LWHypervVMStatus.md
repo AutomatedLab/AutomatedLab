@@ -1,7 +1,7 @@
 ---
 external help file: AutomatedLabWorker-help.xml
 Module Name: AutomatedLabWorker
-online version:
+online version: https://automatedlab.org/en/latest/AutomatedLabWorker/en-us/Get-LWHypervVMStatus
 schema: 2.0.0
 ---
 
@@ -57,4 +57,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
-https://automatedlab.org/en/latest/AutomatedLabWorker/en-us/Get-LWHypervVMStatus
+

@@ -1,7 +1,7 @@
 ---
 external help file: AutomatedLabTest-help.xml
 Module Name: AutomatedLabTest
-online version:
+online version: https://automatedlab.org/en/latest/AutomatedLabTest/en-us/Test-LabDeployment
 schema: 2.0.0
 ---
 
@@ -158,4 +158,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
-https://automatedlab.org/en/latest/AutomatedLabTest/en-us/Test-LabDeployment
+

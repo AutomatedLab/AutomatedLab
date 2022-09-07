@@ -1,7 +1,7 @@
 ---
 external help file: AutomatedLab-help.xml
 Module Name: AutomatedLab
-online version:
+online version: https://automatedlab.org/en/latest/AutomatedLab/en-us/Import-Lab
 schema: 2.0.0
 ---
 
@@ -142,4 +142,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 aa
 
 ## RELATED LINKS
-https://automatedlab.org/en/latest/AutomatedLab/en-us/Import-Lab
+

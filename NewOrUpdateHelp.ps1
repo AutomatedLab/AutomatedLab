@@ -39,10 +39,10 @@ foreach ($md in (Get-ChildItem -Filter *.md -Recurse -Path (Join-Path -Path $loc
     if (-not (Get-Command -ErrorAction SilentlyContinue -Name $md.BaseName)) { continue }
 
     $content = Get-Content -Raw -Path $md.FullName
-    $content = $content.Remove($content.IndexOf('## RELATED LINKS') + 17).Trim()
     $moduleName = $md.Directory.Parent.Name
-    $content = -join @($content, ("`r`nhttps://automatedlab.org/en/latest/{0}/en-us/{1}" -f $moduleName, $md.BaseName))
-    $content | Set-Content -Path $md.FullName
+    $url = [System.Uri]::EscapeUriString(('https://automatedlab.org/en/latest/{0}/en-us/{1}' -f $moduleName, $md.BaseName))
+    $content = $content -replace 'online version:.*', "online version: $url"
+    $content | Set-Content -Path $md.FullName -NoNewline
 }
 
 $mkdocs = Join-Path -Path $location -ChildPath mkdocs.yml -Resolve -ErrorAction Stop
