@@ -14,7 +14,7 @@ Install domain controllers
 
 ```
 Install-LabDcs [[-DcPromotionRestartTimeout] <Int32>] [[-AdwsReadyTimeout] <Int32>] [-CreateCheckPoints]
- [[-ProgressIndicator] <Int32>] [<CommonParameters>]
+ [-ProgressIndicator <Int32>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -87,7 +87,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 2
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

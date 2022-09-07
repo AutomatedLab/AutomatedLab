@@ -25,13 +25,13 @@ $outPath = foreach ($moduleName in $Module)
     Import-Module ./$moduleName -Force
     if ($Create.IsPresent)
     {
-        $null = New-MarkdownHelp -Module $moduleName -WithModulePage -OutputFolder $outputFolder -Force
+        $null = New-MarkdownHelp -Module $moduleName -WithModulePage -OutputFolder $outputFolder -Force -AlphabeticParamsOrder
     }
 }
 
 if (-not $Create.IsPresent)
 {
-    Update-MarkdownHelpModule -Path $outPath -RefreshModulePage
+    Update-MarkdownHelpModule -Path $outPath -RefreshModulePage -AlphabeticParamsOrder
 }
 
 $mkdocs = Join-Path -Path $location -ChildPath mkdocs.yml -Resolve -ErrorAction Stop

@@ -38,6 +38,21 @@ Shutdown all lab VMs but keep Azure resources provisioned, incurring costs.
 
 ## PARAMETERS
 
+### -All
+Indicates that all lab machines should be stopped
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: All
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -ComputerName
 The computer names
 
@@ -53,23 +68,23 @@ Accept pipeline input: True (ByPropertyName, ByValue)
 Accept wildcard characters: False
 ```
 
-### -ShutdownTimeoutInMinutes
-The shutdown timeout in minutes
+### -KeepAzureVmProvisioned
+Indicates that an Azure VM should not be deallocated
 
 ```yaml
-Type: Double
+Type: SwitchParameter
 Parameter Sets: (All)
 Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Wait
-Indicates that we should wait for the machine to stop
+### -NoNewLine
+Indicates that no new lines should be present in the output
 
 ```yaml
 Type: SwitchParameter
@@ -99,38 +114,23 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -NoNewLine
-Indicates that no new lines should be present in the output
+### -ShutdownTimeoutInMinutes
+The shutdown timeout in minutes
 
 ```yaml
-Type: SwitchParameter
+Type: Double
 Parameter Sets: (All)
 Aliases:
 
 Required: False
 Position: Named
-Default value: False
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -All
-Indicates that all lab machines should be stopped
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: All
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -KeepAzureVmProvisioned
-Indicates that an Azure VM should not be deallocated
+### -Wait
+Indicates that we should wait for the machine to stop
 
 ```yaml
 Type: SwitchParameter

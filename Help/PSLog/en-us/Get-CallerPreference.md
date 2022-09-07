@@ -69,24 +69,6 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -SessionState
-The $ExecutionContext.SessionState object from a script module Advanced Function. 
-This is how the
-Get-CallerPreference function sets variables in its callers' scope, even if that caller is in a different
-script module.
-
-```yaml
-Type: SessionState
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -Name
 Optional array of parameter names to retrieve from the caller's scope. 
 Default is to retrieve all
@@ -103,6 +85,24 @@ Required: False
 Position: Named
 Default value: None
 Accept pipeline input: True (ByValue)
+Accept wildcard characters: False
+```
+
+### -SessionState
+The $ExecutionContext.SessionState object from a script module Advanced Function. 
+This is how the
+Get-CallerPreference function sets variables in its callers' scope, even if that caller is in a different
+script module.
+
+```yaml
+Type: SessionState
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
 Accept wildcard characters: False
 ```
 

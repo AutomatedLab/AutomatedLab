@@ -13,7 +13,7 @@ Get the file content of the Azure lab sources file share
 ## SYNTAX
 
 ```
-Get-LabAzureLabSourcesContent [[-RegexFilter] <String>] [[-Path] <String>] [-File] [-Directory]
+Get-LabAzureLabSourcesContent [[-RegexFilter] <String>] [-Path <String>] [-File] [-Directory]
  [<CommonParameters>]
 ```
 
@@ -72,7 +72,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 1
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

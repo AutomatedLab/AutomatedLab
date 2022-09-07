@@ -65,6 +65,9 @@ Get the Azure Virtual Network associated with a lab network
 ### [Get-LWAzureSku](Get-LWAzureSku.md)
 Internal worker to list Azure SKUs
 
+### [Get-LWAzureVm](Get-LWAzureVm.md)
+Get Azure VMs in the lab resource group
+
 ### [Get-LWAzureVMConnectionInfo](Get-LWAzureVMConnectionInfo.md)
 Return the connection details of Azure VMs
 
@@ -79,6 +82,9 @@ Returns the power state of a lab's Azure VMs
 
 ### [Get-LWAzureWindowsFeature](Get-LWAzureWindowsFeature.md)
 List installed Windows features on an Azure VM
+
+### [Get-LWHypervVM](Get-LWHypervVM.md)
+Get all VMs running on a Hyper-V
 
 ### [Get-LWHypervVMDescription](Get-LWHypervVMDescription.md)
 Return the serialized notes field of a Hyper-V VM
@@ -125,9 +131,6 @@ Mounts an ISO image on a Hyper-V VM
 ### [New-LabAzureResourceGroupDeployment](New-LabAzureResourceGroupDeployment.md)
 Deploy the lab definition as an Azure resource group
 
-### [New-LWAzureLoadBalancer](New-LWAzureLoadBalancer.md)
-Creates a new load balancer for the lab environment
-
 ### [New-LWAzureNetworkSwitch](New-LWAzureNetworkSwitch.md)
 Creates a new Azure virtual network
 
@@ -149,11 +152,8 @@ Create a new virtual disk
 ### [New-LWVMWareVM](New-LWVMWareVM.md)
 Create a new VMWare VM
 
-### [Remove-LWAzureLoadBalancer](Remove-LWAzureLoadBalancer.md)
-Remove an Azure load balancer
-
-### [Remove-LWAzureNetworkSwitch](Remove-LWAzureNetworkSwitch.md)
-Remove an Azure network switch
+### [Remove-LWAzureRecoveryServicesVault](Remove-LWAzureRecoveryServicesVault.md)
+Remove recovery services vault in lab resource group
 
 ### [Remove-LWAzureVM](Remove-LWAzureVM.md)
 Remove an Azure VM

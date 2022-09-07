@@ -13,7 +13,7 @@ Enable Azure auto-shutdown for machines
 ## SYNTAX
 
 ```
-Enable-LabMachineAutoShutdown [[-ComputerName] <String[]>] [-Time] <TimeSpan> [[-TimeZone] <String>]
+Enable-LabMachineAutoShutdown [[-ComputerName] <String[]>] [-Time] <TimeSpan> [-TimeZone <String>]
  [<CommonParameters>]
 ```
 
@@ -70,7 +70,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 2
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

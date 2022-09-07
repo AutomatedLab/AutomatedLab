@@ -46,17 +46,17 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -TimeoutInMinutes
-The timeout in minutes how long we should wait
+### -NoNewLine
+Indicates that no new line should be present in the output
 
 ```yaml
-Type: Int32
+Type: SwitchParameter
 Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 1
-Default value: None
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -77,17 +77,17 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -NoNewLine
-Indicates that no new line should be present in the output
+### -TimeoutInMinutes
+The timeout in minutes how long we should wait
 
 ```yaml
-Type: SwitchParameter
+Type: Int32
 Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: Named
-Default value: False
+Position: 1
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

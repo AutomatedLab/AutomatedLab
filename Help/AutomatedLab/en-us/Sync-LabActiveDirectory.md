@@ -24,43 +24,12 @@ Initiates the Active Directory synchronisation in the lab environment by calling
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Sync-LabActiveDirectory -ComputerName (Get-LabVm -Role ADDS)
 ```
 
-{{ Add example description here }}
+Call repadmin on all domain controllers in the lab
 
 ## PARAMETERS
-
-### -ComputerName
-The machines repadmin should be executed on
-
-```yaml
-Type: String[]
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: 0
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ProgressIndicator
-Every n seconds, print a .
-to the console
-
-```yaml
-Type: Int32
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 1
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
 
 ### -AsJob
 Indicates that the cmdlet should run in the background
@@ -77,6 +46,21 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -ComputerName
+The machines repadmin should be executed on
+
+```yaml
+Type: String[]
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 0
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -Passthru
 Indicates that the resulting job objects should be passed back to the caller
 
@@ -88,6 +72,22 @@ Aliases:
 Required: False
 Position: Named
 Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ProgressIndicator
+Every n seconds, print a .
+to the console
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 1
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

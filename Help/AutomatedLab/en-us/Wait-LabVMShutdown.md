@@ -46,21 +46,6 @@ Accept pipeline input: True (ByPropertyName, ByValue)
 Accept wildcard characters: False
 ```
 
-### -TimeoutInMinutes
-The shutdown timeout in minutes
-
-```yaml
-Type: Double
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -NoNewLine
 Do not add a line break to the console output
 
@@ -82,6 +67,21 @@ to the console
 
 ```yaml
 Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -TimeoutInMinutes
+The shutdown timeout in minutes
+
+```yaml
+Type: Double
 Parameter Sets: (All)
 Aliases:
 

@@ -14,7 +14,7 @@ Show available lab OS
 
 ### Local (Default)
 ```
-Get-LabAvailableOperatingSystem [-Path <String[]>] [-UseOnlyCache] [-NoDisplay] [<CommonParameters>]
+Get-LabAvailableOperatingSystem [[-Path] <String[]>] [-UseOnlyCache] [-NoDisplay] [<CommonParameters>]
 ```
 
 ### Azure
@@ -104,7 +104,7 @@ Parameter Sets: Local
 Aliases:
 
 Required: False
-Position: Named
+Position: 0
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

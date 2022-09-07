@@ -14,7 +14,7 @@ Remove a VM
 
 ### ByName (Default)
 ```
-Remove-LabVM [-ComputerName] <String[]> [<CommonParameters>]
+Remove-LabVM -ComputerName <String[]> [<CommonParameters>]
 ```
 
 ### All
@@ -61,7 +61,7 @@ Parameter Sets: ByName
 Aliases: Name
 
 Required: True
-Position: 0
+Position: Named
 Default value: None
 Accept pipeline input: True (ByPropertyName, ByValue)
 Accept wildcard characters: False

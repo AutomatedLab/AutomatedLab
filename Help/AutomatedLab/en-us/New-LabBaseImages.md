@@ -1,49 +1,35 @@
 ---
-external help file: AutomatedLabWorker-help.xml
-Module Name: AutomatedLabWorker
+external help file: AutomatedLab-help.xml
+Module Name: AutomatedLab
 online version:
 schema: 2.0.0
 ---
 
-# Get-LWAzureVm
+# New-LabBaseImages
 
 ## SYNOPSIS
-Get Azure VMs in the lab resource group
+Function to create base images for all OSses used in the current lab
 
 ## SYNTAX
 
 ```
-Get-LWAzureVm [[-ComputerName] <String[]>] [<CommonParameters>]
+New-LabBaseImages [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-Get Azure VMs in the lab resource group
+Function to create base images for all OSses used in the current lab
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> Get-LWAzureVm
+PS C:\> New-LabBaseImages
 ```
 
-Get Azure VMs in the lab resource group
+After creating a new lab definition and adding machine definitions, New-LabBaseImages
+creates all base images used.
 
 ## PARAMETERS
-
-### -ComputerName
-Computers to filter on
-
-```yaml
-Type: String[]
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 0
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
 
 ### CommonParameters
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).

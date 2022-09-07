@@ -13,8 +13,8 @@ Add lab disk definition
 ## SYNTAX
 
 ```
-Add-LabDiskDefinition [-Name] <String> [-DiskSizeInGb] <Int32> [[-Label] <String>] [[-DriveLetter] <Char>]
- [-UseLargeFRS] [[-AllocationUnitSize] <Int64>] [[-PartitionStyle] <Object>] [-SkipInitialize] [-PassThru]
+Add-LabDiskDefinition [-Name] <String> [-DiskSizeInGb] <Int32> [-Label <String>] [-DriveLetter <Char>]
+ [-UseLargeFRS] [-AllocationUnitSize <Int64>] [-PartitionStyle <string>] [-SkipInitialize] [-PassThru]
  [<CommonParameters>]
 ```
 
@@ -44,7 +44,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 4
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -74,7 +74,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 3
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -89,7 +89,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 2
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -114,13 +114,12 @@ Accept wildcard characters: False
 MBR, GPT
 
 ```yaml
-Type: Object
+Type: String
 Parameter Sets: (All)
 Aliases:
-Accepted values: MBR, GPT
 
 Required: False
-Position: 5
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

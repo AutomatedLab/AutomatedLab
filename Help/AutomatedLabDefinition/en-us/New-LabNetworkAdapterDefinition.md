@@ -140,66 +140,6 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -IPv6Address
-The IPv6 address of this adapter
-
-```yaml
-Type: IPNetwork[]
-Parameter Sets: manual
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -IPv6AddressPrefix
-The IPv6 prefix
-
-```yaml
-Type: Int32
-Parameter Sets: manual
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -IPv6DNSServers
-The IPv6 DNS server list
-
-```yaml
-Type: String[]
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -IPv6Gateway
-The IPv6 gateway to configure
-
-```yaml
-Type: String
-Parameter Sets: manual
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -InterfaceName
 The name of the interface on the VM
 
@@ -260,6 +200,66 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -IPv6Address
+The IPv6 address of this adapter
+
+```yaml
+Type: IPNetwork[]
+Parameter Sets: manual
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -IPv6AddressPrefix
+The IPv6 prefix
+
+```yaml
+Type: Int32
+Parameter Sets: manual
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -IPv6DNSServers
+The IPv6 DNS server list
+
+```yaml
+Type: String[]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -IPv6Gateway
+The IPv6 gateway to configure
+
+```yaml
+Type: String
+Parameter Sets: manual
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -MacAddress
 {{ Fill MacAddress Description }}
 
@@ -297,7 +297,6 @@ The NetBIOS options to set (Default, Enabled, Disabled)
 Type: String
 Parameter Sets: (All)
 Aliases:
-Accepted values: Default, Enabled, Disabled
 
 Required: False
 Position: Named

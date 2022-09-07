@@ -24,7 +24,10 @@ Add-LabMachineDefinition -Name <String> [-Memory <Double>] [-MinMemory <Double>]
  [-EnableWindowsFirewall] [-AutoLogonDomainName <String>] [-AutoLogonUserName <String>]
  [-AutoLogonPassword <String>] [-AzureProperties <Hashtable>] [-HypervProperties <Hashtable>]
  [-Notes <Hashtable>] [-PassThru] [-ResourceName <String>] [-SkipDeployment] [-AzureRoleSize <String>]
- [-TimeZone <String>] [-RhelPackage <String[]>] [-SusePackage <String[]>] [<CommonParameters>]
+ [-TimeZone <String>] [-RhelPackage <String[]>] [-SusePackage <String[]>] [-SshPublicKeyPath <String>]
+ [-SshPrivateKeyPath <String>] [-OrganizationalUnit <String>] [-ReferenceDisk <String>]
+ [-KmsServerName <String>] [-KmsPort <UInt16>] [-KmsLookupDomain <String>] [-ActivateWindows]
+ [<CommonParameters>]
 ```
 
 ### NetworkAdapter
@@ -38,7 +41,10 @@ Add-LabMachineDefinition -Name <String> [-Memory <Double>] [-MinMemory <Double>]
  [-EnableWindowsFirewall] [-AutoLogonDomainName <String>] [-AutoLogonUserName <String>]
  [-AutoLogonPassword <String>] [-AzureProperties <Hashtable>] [-HypervProperties <Hashtable>]
  [-Notes <Hashtable>] [-PassThru] [-ResourceName <String>] [-SkipDeployment] [-AzureRoleSize <String>]
- [-TimeZone <String>] [-RhelPackage <String[]>] [-SusePackage <String[]>] [<CommonParameters>]
+ [-TimeZone <String>] [-RhelPackage <String[]>] [-SusePackage <String[]>] [-SshPublicKeyPath <String>]
+ [-SshPrivateKeyPath <String>] [-OrganizationalUnit <String>] [-ReferenceDisk <String>]
+ [-KmsServerName <String>] [-KmsPort <UInt16>] [-KmsLookupDomain <String>] [-ActivateWindows]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -95,18 +101,322 @@ Memory will be set to 2GB (static).
 
 ## PARAMETERS
 
-### -Name
-Name of machine Name must consist of characters a-z, A-Z, '-' or 0-9 and must be 1-15 in length.
+### -ActivateWindows
+Attempt to activate the Windows VM online or using KMS
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -AutoLogonDomainName
+The domain for the auto logon user
 
 ```yaml
 Type: String
 Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: Named
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -AutoLogonPassword
+The password for the auto logon user
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -AutoLogonUserName
+The user name for the auto logon user
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -AzureProperties
+The Azure properties.
+Don't add them unless you know what you are doing.
+Currently valid properties:  'ResourceGroupName', 'UseAllRoleSizes', 'RoleSize', 'LoadBalancerRdpPort', 'LoadBalancerWinRmHttpPort', 'LoadBalancerWinRmHttpsPort', 'SubnetName','UseByolImage'
+
+```yaml
+Type: Hashtable
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -AzureRoleSize
+The role size of the machine on Azure
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DefaultDomain
+The default domain for the machine
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -DiskName
+The disk names created by Add-LabDiskDefinition
+
+```yaml
+Type: String[]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DnsServer1
+The first DNS server for the machine
+
+```yaml
+Type: String
+Parameter Sets: Network
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DnsServer2
+The second DNS server for the machine
+
+```yaml
+Type: String
+Parameter Sets: Network
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DomainName
+The domain name of the machine.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -EnableWindowsFirewall
+Indicates that Windows firewall should be enabled on the machine
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Gateway
+The default gateway for the machine
+
+```yaml
+Type: String
+Parameter Sets: Network
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -HypervProperties
+The HyperV properties.
+Currently valid properties: 'AutomaticStartAction', 'AutomaticStartDelay', 'AutomaticStopAction'
+
+```yaml
+Type: Hashtable
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -InstallationUserCredential
+The credentials of the installation user (i.e.
+the local admin)
+
+```yaml
+Type: PSCredential
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -IpAddress
+The static private IP address of this machine
+
+```yaml
+Type: String
+Parameter Sets: Network
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -IsDomainJoined
+Indicates that the machine should be joined to a lab domain
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -KmsLookupDomain
+If using AD-based KMS, specify the domain to look up the KMS key
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -KmsPort
+If specifying a standalone KMS, specify its port
+
+```yaml
+Type: UInt16
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -KmsServerName
+Name of a standalone KMS Server
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -MaxMemory
+Maximum dynamic memory for machine Specified in bytes and must be within range 128MB-128GB.
+
+```yaml
+Type: Double
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: 0
+Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
@@ -141,41 +451,56 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -MaxMemory
-Maximum dynamic memory for machine Specified in bytes and must be within range 128MB-128GB.
+### -Name
+Name of machine Name must consist of characters a-z, A-Z, '-' or 0-9 and must be 1-15 in length.
 
 ```yaml
-Type: Double
+Type: String
 Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -Network
+The lab network to connect this machine to
+
+```yaml
+Type: String
+Parameter Sets: Network
 Aliases:
 
 Required: False
 Position: Named
-Default value: 0
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Processors
-Virtual processor count for machine
+### -NetworkAdapter
+The lab network adapter to connect this machine to
 
 ```yaml
-Type: Int32
-Parameter Sets: (All)
+Type: NetworkAdapter[]
+Parameter Sets: NetworkAdapter
 Aliases:
 
 Required: False
 Position: Named
-Default value: 0
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -DiskName
-The disk names created by Add-LabDiskDefinition
+### -Notes
+Notes to add to the machine
 
 ```yaml
-Type: String[]
+Type: Hashtable
 Parameter Sets: (All)
 Aliases:
 
@@ -216,12 +541,12 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Network
-The lab network to connect this machine to
+### -OrganizationalUnit
+The organizational unit to join this VM into
 
 ```yaml
 Type: String
-Parameter Sets: Network
+Parameter Sets: (All)
 Aliases:
 
 Required: False
@@ -231,68 +556,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -IpAddress
-The static private IP address of this machine
-
-```yaml
-Type: String
-Parameter Sets: Network
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Gateway
-The default gateway for the machine
-
-```yaml
-Type: String
-Parameter Sets: Network
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -DnsServer1
-The first DNS server for the machine
-
-```yaml
-Type: String
-Parameter Sets: Network
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -DnsServer2
-The second DNS server for the machine
-
-```yaml
-Type: String
-Parameter Sets: Network
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -IsDomainJoined
-Indicates that the machine should be joined to a lab domain
+### -PassThru
+Indicates that the machine definition should be passed back to the caller
 
 ```yaml
 Type: SwitchParameter
@@ -306,27 +571,11 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -DefaultDomain
-The default domain for the machine
+### -PostInstallationActivity
+Post installation activities as defined with Get-LabPostInstallationActivity
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: True (ByPropertyName)
-Accept wildcard characters: False
-```
-
-### -InstallationUserCredential
-The credentials of the installation user (i.e.
-the local admin)
-
-```yaml
-Type: PSCredential
+Type: InstallationActivity[]
 Parameter Sets: (All)
 Aliases:
 
@@ -337,11 +586,71 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -DomainName
-The domain name of the machine.
+### -PreInstallationActivity
+{{ Fill PreInstallationActivity Description }}
+
+```yaml
+Type: InstallationActivity[]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Processors
+Virtual processor count for machine
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: 0
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ReferenceDisk
+{{ Fill ReferenceDisk Description }}
 
 ```yaml
 Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ResourceName
+Name of the resource in the resource group
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -RhelPackage
+The RHEL packages to install
+
+```yaml
+Type: String[]
 Parameter Sets: (All)
 Aliases:
 
@@ -367,11 +676,57 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -UserLocale
-The locale to use
+### -SkipDeployment
+Indicates that this machine is already deployed somewhere and should only be included in the lab.
+When the lab is removed, these machines are not destroyed.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -SshPrivateKeyPath
+The path to your SSH private key used to connect to this VM. Only supported on PowerShell 6 and newer
 
 ```yaml
 Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -SshPublicKeyPath
+The path to your SSH public key used to connect to this VM. Only supported on PowerShell 6 and newer.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -SusePackage
+The list of SUSE packages to install during AutoYast stage
+
+```yaml
+Type: String[]
 Parameter Sets: (All)
 Aliases:
 
@@ -387,21 +742,6 @@ The machine's time zone
 
 ```yaml
 Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -PostInstallationActivity
-Post installation activities as defined with Get-LabPostInstallationActivity
-
-```yaml
-Type: InstallationActivity[]
 Parameter Sets: (All)
 Aliases:
 
@@ -442,241 +782,27 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -UserLocale
+The locale to use
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -VirtualizationHost
 The virtualization host to use.
 It is recommended to define the default virtualization host when creating a new lab
 
 ```yaml
 Type: VirtualizationHost
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -EnableWindowsFirewall
-Indicates that Windows firewall should be enabled on the machine
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -AutoLogonDomainName
-The domain for the auto logon user
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -AutoLogonUserName
-The user name for the auto logon user
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -AutoLogonPassword
-The password for the auto logon user
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -AzureProperties
-The Azure properties.
-Don't add them unless you know what you are doing.
-Currently valid properties:  'ResourceGroupName', 'UseAllRoleSizes', 'RoleSize', 'LoadBalancerRdpPort', 'LoadBalancerWinRmHttpPort', 'LoadBalancerWinRmHttpsPort', 'SubnetName','UseByolImage'
-
-```yaml
-Type: Hashtable
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -HypervProperties
-The HyperV properties.
-Currently valid properties: 'AutomaticStartAction', 'AutomaticStartDelay', 'AutomaticStopAction'
-
-```yaml
-Type: Hashtable
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Notes
-Notes to add to the machine
-
-```yaml
-Type: Hashtable
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -AzureRoleSize
-The role size of the machine on Azure
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -PassThru
-Indicates that the machine definition should be passed back to the caller
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -NetworkAdapter
-The lab network adapter to connect this machine to
-
-```yaml
-Type: NetworkAdapter[]
-Parameter Sets: NetworkAdapter
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -RhelPackage
-The RHEL packages to install
-
-```yaml
-Type: String[]
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -SkipDeployment
-Indicates that this machine is already deployed somewhere and should only be included in the lab.
-When the lab is removed, these machines are not destroyed.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ResourceName
-Name of the resource in the resource group
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -PreInstallationActivity
-{{ Fill PreInstallationActivity Description }}
-
-```yaml
-Type: InstallationActivity[]
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -SusePackage
-{{ Fill SusePackage Description }}
-
-```yaml
-Type: String[]
 Parameter Sets: (All)
 Aliases:
 

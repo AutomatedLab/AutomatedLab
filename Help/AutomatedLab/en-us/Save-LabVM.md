@@ -41,6 +41,21 @@ Save the state of all running VMs
 
 ## PARAMETERS
 
+### -All
+Indicates that all machines should be saved
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: All
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
 ### -Name
 The machine names
 
@@ -67,21 +82,6 @@ Aliases:
 Required: True
 Position: Named
 Default value: None
-Accept pipeline input: True (ByPropertyName)
-Accept wildcard characters: False
-```
-
-### -All
-Indicates that all machines should be saved
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: All
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
 Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
 ```

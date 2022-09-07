@@ -20,6 +20,9 @@ Clear a section in the hosts file
 ### [Get-HostEntry](Get-HostEntry.md)
 Retreive a host entry by host name or IP
 
+### [Get-HostFile](Get-HostFile.md)
+Get host file content
+
 ### [Remove-HostEntry](Remove-HostEntry.md)
 Remove a host entry
 
