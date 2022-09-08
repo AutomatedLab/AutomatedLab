@@ -4,6 +4,8 @@
 
 ### Enhancements
 
+- New configuration item UseLatestAzureProviderApi to use latest available provider instead of hardcoded values
+
 ### Bugs
 
 ## 5.45.0 (2022-09-01)
