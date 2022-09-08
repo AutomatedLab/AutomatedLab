@@ -42,7 +42,7 @@ foreach ($md in (Get-ChildItem -Filter *.md -Recurse -Path (Join-Path -Path $loc
     $moduleName = $md.Directory.Parent.Name
     $url = [System.Uri]::EscapeUriString(('https://automatedlab.org/en/latest/{0}/en-us/{1}' -f $moduleName, $md.BaseName))
     $content = $content -replace 'online version:.*', "online version: $url"
-    $content | Set-Content -Path $md.FullName -NoNewline
+    $content | Set-Content -Path $md.FullName
 }
 
 $mkdocs = Join-Path -Path $location -ChildPath mkdocs.yml -Resolve -ErrorAction Stop

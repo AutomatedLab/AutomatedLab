@@ -22,6 +22,10 @@ BeforeDiscovery {
 
         # This command should probably not be exported
         'Install-LWLabCAServers'
+
+        # These are aliases
+        'Get-LabPostInstallationActivity'
+        'Disable-LabHostRemoting'
     )
 
     if (-not (Get-Module -List AutomatedLab.Common)) { Install-Module -Name AutomatedLab.Common -Force -SkipPublisherCheck -AllowClobber }
@@ -46,11 +50,13 @@ BeforeDiscovery {
         'AutomatedLab'
     )
     
+    $oldPath = $env:PSModulePath
+    $env:PSModulePath = (Resolve-Path -Path "$rootpath\..\..").Path
     $commands = foreach ($mod in $reqdModules)
     {
         Write-Host "Importing $(Resolve-Path -Path "$rootpath\..\..\$mod\$mod.psd1")"
         Import-Module -Name "$rootpath\..\..\$mod\$mod.psd1" -Force -ErrorAction SilentlyContinue
-        Get-Command -Module $mod
+        Get-Command -Module $mod | Where-Object Name -notin $skippedCommands
     }
 }
 
@@ -102,15 +108,7 @@ foreach ($command in $commands) {
                 
                 $codeType = $parameter.ParameterType.Name
                 
-                if ($parameter.ParameterType.IsEnum) {
-                    # Enumerations often have issues with the typename not being reliably available
-                    $names = $parameter.ParameterType::GetNames($parameter.ParameterType)
-						# Parameter type in Help should match code
-					It "help for $commandName has correct parameter type for $parameterName" -TestCases @{ parameterHelp = $parameterHelp; names = $names } {
-						$parameterHelp.parameterValueGroup.parameterValue | Should -be $names
-					}
-                }
-                elseif ($parameter.ParameterType.FullName -in $HelpTestEnumeratedArrays) {
+                if ($parameter.ParameterType.FullName -in $HelpTestEnumeratedArrays) {
                     # Enumerations often have issues with the typename not being reliably available
                     $names = [Enum]::GetNames($parameter.ParameterType.DeclaredMembers[0].ReturnType)
 					It "help for $commandName has correct parameter type for $parameterName" -TestCases @{ parameterHelp = $parameterHelp; names = $names } {
@@ -135,3 +133,5 @@ foreach ($command in $commands) {
         }
     }
 }
+
+$env:PSModulePath = $oldPath
