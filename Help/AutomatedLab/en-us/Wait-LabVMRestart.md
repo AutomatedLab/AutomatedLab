@@ -1,7 +1,7 @@
 ---
 external help file: AutomatedLab-help.xml
 Module Name: AutomatedLab
-online version:
+online version: https://automatedlab.org/en/latest/AutomatedLab/en-us/Wait-LabVMRestart
 schema: 2.0.0
 ---
 
@@ -47,17 +47,62 @@ Accept pipeline input: True (ByPropertyName, ByValue)
 Accept wildcard characters: False
 ```
 
-### -TimeoutInMinutes
-The wait timeout in minutes
+### -DoNotUseCredSsp
+Indicates that CredSSP should not be used
 
 ```yaml
-Type: Double
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -MonitoringStartTime
+The start of the monitoring job
+
+```yaml
+Type: DateTime
 Parameter Sets: (All)
 Aliases:
 
 Required: False
 Position: Named
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -MonitorJob
+not implemented
+
+```yaml
+Type: Object
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -NoNewLine
+Indicates that no new lines should be present in the output
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -93,56 +138,11 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -NoNewLine
-Indicates that no new lines should be present in the output
+### -TimeoutInMinutes
+The wait timeout in minutes
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -MonitorJob
-not implemented
-
-```yaml
-Type: Object
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -DoNotUseCredSsp
-Indicates that CredSSP should not be used
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -MonitoringStartTime
-The start of the monitoring job
-
-```yaml
-Type: DateTime
+Type: Double
 Parameter Sets: (All)
 Aliases:
 
@@ -163,3 +163,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
+

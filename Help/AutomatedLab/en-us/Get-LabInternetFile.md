@@ -1,7 +1,7 @@
 ---
 external help file: AutomatedLab-help.xml
 Module Name: AutomatedLab
-online version:
+online version: https://automatedlab.org/en/latest/AutomatedLab/en-us/Get-LabInternetFile
 schema: 2.0.0
 ---
 
@@ -13,7 +13,7 @@ Download a file
 ## SYNTAX
 
 ```
-Get-LabInternetFile [-Uri] <String> [-Path] <String> [[-FileName] <String>] [-Force] [-NoDisplay] [-PassThru]
+Get-LabInternetFile [-Uri] <String> [-Path] <String> [-FileName <String>] [-Force] [-NoDisplay] [-PassThru]
  [<CommonParameters>]
 ```
 
@@ -40,7 +40,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 2
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -131,3 +131,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
+

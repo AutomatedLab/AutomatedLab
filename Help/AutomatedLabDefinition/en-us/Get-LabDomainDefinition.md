@@ -1,7 +1,7 @@
 ---
 external help file: AutomatedLabDefinition-help.xml
 Module Name: AutomatedLabDefinition
-online version:
+online version: https://automatedlab.org/en/latest/AutomatedLabDefinition/en-us/Get-LabDomainDefinition
 schema: 2.0.0
 ---
 
@@ -40,3 +40,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
+

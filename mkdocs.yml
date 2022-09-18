@@ -444,7 +444,6 @@ nav:
     - Mount-LWAzureIsoImage: AutomatedLabWorker/en-us/Mount-LWAzureIsoImage.md
     - Mount-LWIsoImage: AutomatedLabWorker/en-us/Mount-LWIsoImage.md
     - New-LabAzureResourceGroupDeployment: AutomatedLabWorker/en-us/New-LabAzureResourceGroupDeployment.md
-    - New-LWAzureLoadBalancer: AutomatedLabWorker/en-us/New-LWAzureLoadBalancer.md
     - New-LWAzureNetworkSwitch: AutomatedLabWorker/en-us/New-LWAzureNetworkSwitch.md
     - New-LWAzureVM: AutomatedLabWorker/en-us/New-LWAzureVM.md
     - New-LWHypervNetworkSwitch: AutomatedLabWorker/en-us/New-LWHypervNetworkSwitch.md
@@ -452,8 +451,6 @@ nav:
     - New-LWReferenceVHDX: AutomatedLabWorker/en-us/New-LWReferenceVHDX.md
     - New-LWVHDX: AutomatedLabWorker/en-us/New-LWVHDX.md
     - New-LWVMWareVM: AutomatedLabWorker/en-us/New-LWVMWareVM.md
-    - Remove-LWAzureLoadBalancer: AutomatedLabWorker/en-us/Remove-LWAzureLoadBalancer.md
-    - Remove-LWAzureNetworkSwitch: AutomatedLabWorker/en-us/Remove-LWAzureNetworkSwitch.md
     - Remove-LWAzureRecoveryServicesVault: AutomatedLabWorker/en-us/Remove-LWAzureRecoveryServicesVault.md
     - Remove-LWAzureVM: AutomatedLabWorker/en-us/Remove-LWAzureVM.md
     - Remove-LWAzureVmSnapshot: AutomatedLabWorker/en-us/Remove-LWAzureVmSnapshot.md

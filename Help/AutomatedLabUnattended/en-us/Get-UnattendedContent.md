@@ -1,7 +1,7 @@
 ---
 external help file: AutomatedLabUnattended-help.xml
 Module Name: AutomatedLabUnattended
-online version:
+online version: https://automatedlab.org/en/latest/AutomatedLabUnattended/en-us/Get-UnattendedContent
 schema: 2.0.0
 ---
 
@@ -42,3 +42,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
+

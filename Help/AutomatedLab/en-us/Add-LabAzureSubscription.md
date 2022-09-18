@@ -1,7 +1,7 @@
 ---
 external help file: AutomatedLab-help.xml
 Module Name: AutomatedLab
-online version:
+online version: https://automatedlab.org/en/latest/AutomatedLab/en-us/Add-LabAzureSubscription
 schema: 2.0.0
 ---
 
@@ -13,8 +13,10 @@ Adds Azure subscription data to lab
 ## SYNTAX
 
 ```
-Add-LabAzureSubscription [-SubscriptionName <String>] [-SubscriptionId <Guid>] [-DefaultLocationName <String>] [-DefaultResourceGroupName <String>] [-AutoShutdownTime <TimeSpan>]
- [-AutoShutdownTimeZone <String>] [-PassThru] [-AllowBastionHost] [<CommonParameters>]
+Add-LabAzureSubscription [[-SubscriptionName] <String>] [-SubscriptionId <Guid>]
+ [[-DefaultLocationName] <String>] [[-DefaultStorageAccountName] <String>]
+ [[-DefaultResourceGroupName] <String>] [-AutoShutdownTime <TimeSpan>] [-AutoShutdownTimeZone <String>]
+ [-PassThru] [-AllowBastionHost] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -90,7 +92,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: Named
+Position: 2
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -105,7 +107,22 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: Named
+Position: 4
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DefaultStorageAccountName
+OBSOLETE PARAMETER WHICH WILL BE IGNORED The default storage account to choose
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 3
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -150,7 +167,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: Named
+Position: 1
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -167,3 +184,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 Author: Jan-Hendrik Peters
 
 ## RELATED LINKS
+

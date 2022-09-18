@@ -1,7 +1,7 @@
 ---
 external help file: AutomatedLab-help.xml
 Module Name: AutomatedLab
-online version:
+online version: https://automatedlab.org/en/latest/AutomatedLab/en-us/Add-LabVMWareSettings
 schema: 2.0.0
 ---
 
@@ -31,6 +31,21 @@ PS C:\> {{ Add example code here }}
 
 ## PARAMETERS
 
+### -Credential
+Credentials to connect to VMWare
+
+```yaml
+Type: PSCredential
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 4
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -DataCenterName
 The VMWare data center name
 
@@ -57,6 +72,21 @@ Aliases:
 Required: True
 Position: 1
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -PassThru
+Switch parameter to return VMWare settings object
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -91,36 +121,6 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Credential
-Credentials to connect to VMWare
-
-```yaml
-Type: PSCredential
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: 4
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -PassThru
-Switch parameter to return VMWare settings object
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### CommonParameters
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
@@ -131,3 +131,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
+

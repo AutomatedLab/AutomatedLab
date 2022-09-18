@@ -1,7 +1,7 @@
 ---
 external help file: AutomatedLabWorker-help.xml
 Module Name: AutomatedLabWorker
-online version:
+online version: https://automatedlab.org/en/latest/AutomatedLabWorker/en-us/Get-LWAzureVm
 schema: 2.0.0
 ---
 
@@ -23,7 +23,7 @@ Get Azure VMs in the lab resource group
 
 ### Example 1
 ```powershell
-PS C:\> Get-LWAzureVm 
+PS C:\> Get-LWAzureVm
 ```
 
 Get Azure VMs in the lab resource group
@@ -58,3 +58,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
+

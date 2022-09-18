@@ -1,7 +1,7 @@
 ---
 external help file: AutomatedLab-help.xml
 Module Name: AutomatedLab
-online version:
+online version: https://automatedlab.org/en/latest/AutomatedLab/en-us/Sync-LabActiveDirectory
 schema: 2.0.0
 ---
 
@@ -24,12 +24,27 @@ Initiates the Active Directory synchronisation in the lab environment by calling
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Sync-LabActiveDirectory -ComputerName (Get-LabVm -Role ADDS)
 ```
 
-{{ Add example description here }}
+Call repadmin on all domain controllers in the lab
 
 ## PARAMETERS
+
+### -AsJob
+Indicates that the cmdlet should run in the background
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
 
 ### -ComputerName
 The machines repadmin should be executed on
@@ -42,6 +57,21 @@ Aliases:
 Required: True
 Position: 0
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Passthru
+Indicates that the resulting job objects should be passed back to the caller
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -62,36 +92,6 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -AsJob
-Indicates that the cmdlet should run in the background
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Passthru
-Indicates that the resulting job objects should be passed back to the caller
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### CommonParameters
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
@@ -102,3 +102,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
+

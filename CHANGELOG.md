@@ -5,6 +5,7 @@
 ### Enhancements
 
 - New configuration item UseLatestAzureProviderApi to use latest available provider instead of hardcoded values
+- Including tests for existing help content to ensure quality of help content
 
 ### Bugs
 

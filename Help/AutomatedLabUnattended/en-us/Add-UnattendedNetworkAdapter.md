@@ -1,7 +1,7 @@
 ---
 external help file: AutomatedLabUnattended-help.xml
 Module Name: AutomatedLabUnattended
-online version:
+online version: https://automatedlab.org/en/latest/AutomatedLabUnattended/en-us/Add-UnattendedNetworkAdapter
 schema: 2.0.0
 ---
 
@@ -52,22 +52,6 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -DNSSuffixSearchOrder
-The DNS suffix search order.
-Not used on Linux.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 7
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -DisableDynamicUpdate
 Disable the dynamic update of this adapter.
 Not used on Linux.
@@ -109,6 +93,22 @@ Aliases:
 
 Required: False
 Position: 3
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DNSSuffixSearchOrder
+The DNS suffix search order.
+Not used on Linux.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 7
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -249,3 +249,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
+

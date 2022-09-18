@@ -25,13 +25,24 @@ $outPath = foreach ($moduleName in $Module)
     Import-Module ./$moduleName -Force
     if ($Create.IsPresent)
     {
-        $null = New-MarkdownHelp -Module $moduleName -WithModulePage -OutputFolder $outputFolder -Force
+        $null = New-MarkdownHelp -Module $moduleName -WithModulePage -OutputFolder $outputFolder -Force -AlphabeticParamsOrder
     }
 }
 
 if (-not $Create.IsPresent)
 {
-    Update-MarkdownHelpModule -Path $outPath -RefreshModulePage
+    Update-MarkdownHelpModule -Path $outPath -RefreshModulePage -AlphabeticParamsOrder
+}
+
+foreach ($md in (Get-ChildItem -Filter *.md -Recurse -Path (Join-Path -Path $location -ChildPath Help)))
+{
+    if (-not (Get-Command -ErrorAction SilentlyContinue -Name $md.BaseName)) { continue }
+
+    $content = Get-Content -Raw -Path $md.FullName
+    $moduleName = $md.Directory.Parent.Name
+    $url = [System.Uri]::EscapeUriString(('https://automatedlab.org/en/latest/{0}/en-us/{1}' -f $moduleName, $md.BaseName))
+    $content = $content -replace 'online version:.*', "online version: $url"
+    $content | Set-Content -Path $md.FullName
 }
 
 $mkdocs = Join-Path -Path $location -ChildPath mkdocs.yml -Resolve -ErrorAction Stop

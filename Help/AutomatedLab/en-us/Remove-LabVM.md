@@ -1,7 +1,7 @@
 ---
 external help file: AutomatedLab-help.xml
 Module Name: AutomatedLab
-online version:
+online version: https://automatedlab.org/en/latest/AutomatedLab/en-us/Remove-LabVM
 schema: 2.0.0
 ---
 
@@ -14,7 +14,7 @@ Remove a VM
 
 ### ByName (Default)
 ```
-Remove-LabVM [-ComputerName] <String[]> [<CommonParameters>]
+Remove-LabVM -ComputerName <String[]> [<CommonParameters>]
 ```
 
 ### All
@@ -61,7 +61,7 @@ Parameter Sets: ByName
 Aliases: Name
 
 Required: True
-Position: 0
+Position: Named
 Default value: None
 Accept pipeline input: True (ByPropertyName, ByValue)
 Accept wildcard characters: False
@@ -77,3 +77,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
+

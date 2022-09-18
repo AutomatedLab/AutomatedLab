@@ -1,7 +1,7 @@
 ---
 external help file: AutomatedLab-help.xml
 Module Name: AutomatedLab
-online version:
+online version: https://automatedlab.org/en/latest/AutomatedLab/en-us/Start-LabVM
 schema: 2.0.0
 ---
 
@@ -50,6 +50,21 @@ Start all VMs in a lab and wait for them to respond to WSMAN requests
 
 ## PARAMETERS
 
+### -All
+Start all machines
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: All
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -ComputerName
 The machines to start
 
@@ -65,83 +80,8 @@ Accept pipeline input: True (ByPropertyName, ByValue)
 Accept wildcard characters: False
 ```
 
-### -Wait
-Indicates that we should wait for the startup procedure to finish
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -NoNewline
-Indicates that no new lines should be present in the output
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -DelayBetweenComputers
 The delay in minutes between the computer startups
-
-```yaml
-Type: Int32
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -TimeoutInMinutes
-The startup timeout in minutes
-
-```yaml
-Type: Int32
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -StartNextMachines
-Start the next n machines
-
-```yaml
-Type: Int32
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -StartNextDomainControllers
-Start the next n domain controllers
 
 ```yaml
 Type: Int32
@@ -170,8 +110,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -RootDomainMachines
-Start all machines of the root domain
+### -DoNotUseCredSsp
+Indicates that CredSSP should not be used
 
 ```yaml
 Type: SwitchParameter
@@ -185,9 +125,23 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -ProgressIndicator
-Every n seconds, print a .
-to the console
+### -NoNewline
+Indicates that no new lines should be present in the output
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -PostDelaySeconds
+The post-start delay
 
 ```yaml
 Type: Int32
@@ -216,8 +170,9 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -PostDelaySeconds
-The post-start delay
+### -ProgressIndicator
+Every n seconds, print a .
+to the console
 
 ```yaml
 Type: Int32
@@ -246,12 +201,12 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -All
-Start all machines
+### -RootDomainMachines
+Start all machines of the root domain
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: All
+Parameter Sets: (All)
 Aliases:
 
 Required: False
@@ -261,8 +216,53 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -DoNotUseCredSsp
-Indicates that CredSSP should not be used
+### -StartNextDomainControllers
+Start the next n domain controllers
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -StartNextMachines
+Start the next n machines
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -TimeoutInMinutes
+The startup timeout in minutes
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Wait
+Indicates that we should wait for the startup procedure to finish
 
 ```yaml
 Type: SwitchParameter
@@ -286,3 +286,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
+

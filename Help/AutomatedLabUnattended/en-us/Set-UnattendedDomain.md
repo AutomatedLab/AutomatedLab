@@ -1,7 +1,7 @@
 ---
 external help file: AutomatedLabUnattended-help.xml
 Module Name: AutomatedLabUnattended
-online version:
+online version: https://automatedlab.org/en/latest/AutomatedLabUnattended/en-us/Set-UnattendedDomain
 schema: 2.0.0
 ---
 
@@ -14,7 +14,7 @@ Set the domain membership
 
 ```
 Set-UnattendedDomain [-DomainName] <String> [-Username] <String> [-Password] <String>
- [[-OrganizationalUnit] <String>] [-IsKickstart] [-IsAutoYast] [<CommonParameters>]
+ [-OrganizationalUnit <String>] [-IsKickstart] [-IsAutoYast] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -87,7 +87,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 3
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -135,3 +135,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
+

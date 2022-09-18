@@ -1,7 +1,7 @@
 ---
 external help file: PSLog-help.xml
 Module Name: PSLog
-online version:
+online version: https://automatedlab.org/en/latest/PSLog/en-us/Get-CallerPreference
 schema: 2.0.0
 ---
 
@@ -69,24 +69,6 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -SessionState
-The $ExecutionContext.SessionState object from a script module Advanced Function. 
-This is how the
-Get-CallerPreference function sets variables in its callers' scope, even if that caller is in a different
-script module.
-
-```yaml
-Type: SessionState
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -Name
 Optional array of parameter names to retrieve from the caller's scope. 
 Default is to retrieve all
@@ -106,6 +88,24 @@ Accept pipeline input: True (ByValue)
 Accept wildcard characters: False
 ```
 
+### -SessionState
+The $ExecutionContext.SessionState object from a script module Advanced Function. 
+This is how the
+Get-CallerPreference function sets variables in its callers' scope, even if that caller is in a different
+script module.
+
+```yaml
+Type: SessionState
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### CommonParameters
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
@@ -118,6 +118,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
-
-[about_Preference_Variables]()
 

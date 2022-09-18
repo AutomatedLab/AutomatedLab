@@ -1,33 +1,33 @@
 ---
 external help file: AutomatedLab-help.xml
 Module Name: AutomatedLab
-online version: https://automatedlab.org/en/latest/AutomatedLab/en-us/Install-LabRemoteDesktopServices
+online version: https://automatedlab.org/en/latest/AutomatedLab/en-us/New-LabBaseImages
 schema: 2.0.0
 ---
 
-# Install-LabRemoteDesktopServices
+# New-LabBaseImages
 
 ## SYNOPSIS
-Install RDS environment
+Function to create base images for all OSses used in the current lab
 
 ## SYNTAX
 
 ```
-Install-LabRemoteDesktopServices [<CommonParameters>]
+New-LabBaseImages [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-Install RDS environment, consisting of Gateway, Connection Broker,
-Session Hosts, Licensing and Web Frontends.
+Function to create base images for all OSses used in the current lab
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> Install-LabRemoteDesktopServices
+PS C:\> New-LabBaseImages
 ```
 
-Install RDS environment
+After creating a new lab definition and adding machine definitions, New-LabBaseImages
+creates all base images used.
 
 ## PARAMETERS
 

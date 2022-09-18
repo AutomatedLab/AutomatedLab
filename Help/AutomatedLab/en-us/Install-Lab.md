@@ -1,7 +1,7 @@
 ---
 external help file: AutomatedLab-help.xml
 Module Name: AutomatedLab
-online version:
+online version: https://automatedlab.org/en/latest/AutomatedLab/en-us/Install-Lab
 schema: 2.0.0
 ---
 
@@ -224,36 +224,6 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -DHCP
-Start installation of DHCP servers
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -DSCPullServer
-Install all DSC Pull Servers
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -DelayBetweenComputers
 Seconds to wait between starting each lab machine
 
@@ -269,9 +239,39 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -DHCP
+Start installation of DHCP servers
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -Domains
 Start installation of Root DCs, First Child DCs and additional DCs.
 Note that lab machines with Routing role (if any), will be installed between Root DCs and First Child DCs.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DSCPullServer
+Install all DSC Pull Servers
 
 ```yaml
 Type: SwitchParameter
@@ -525,22 +525,6 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -SQLServers
-Start installation of all SQL servers.
-SQL servers will be installed in batches of 4.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -Scom
 Deploy SCOM
 
@@ -586,6 +570,22 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -SQLServers
+Start installation of all SQL servers.
+SQL servers will be installed in batches of 4.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -StartRemainingMachines
 Start all remaining machines which are not already started
 
@@ -616,8 +616,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -VMs
-Create lab machines
+### -VisualStudio
+Start installation of Visual Studio on all lab machines with this defined
 
 ```yaml
 Type: SwitchParameter
@@ -631,8 +631,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -VisualStudio
-Start installation of Visual Studio on all lab machines with this defined
+### -VMs
+Create lab machines
 
 ```yaml
 Type: SwitchParameter
@@ -686,3 +686,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
+

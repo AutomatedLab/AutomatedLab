@@ -1,7 +1,7 @@
 ---
 external help file: AutomatedLab-help.xml
 Module Name: AutomatedLab
-online version:
+online version: https://automatedlab.org/en/latest/AutomatedLab/en-us/Remove-Lab
 schema: 2.0.0
 ---
 
@@ -14,7 +14,7 @@ Remove the lab
 
 ### ByName (Default)
 ```
-Remove-Lab [-Name <String>] [-RemoveExternalSwitches] [-WhatIf] [-Confirm] [<CommonParameters>]
+Remove-Lab [[-Name] <String>] [-RemoveExternalSwitches] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ### ByPath
@@ -37,21 +37,6 @@ Removes the lab with the name MyOldLab
 
 ## PARAMETERS
 
-### -Confirm
-Indicates that all actions need confirmation
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases: cf
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -Name
 The name of the lab
 
@@ -61,7 +46,7 @@ Parameter Sets: ByName
 Aliases:
 
 Required: False
-Position: Named
+Position: 1
 Default value: None
 Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
@@ -97,6 +82,21 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -Confirm
+Indicates that all actions need confirmation
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases: cf
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -WhatIf
 Indicates if a trial run should be executed
 
@@ -122,3 +122,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
+

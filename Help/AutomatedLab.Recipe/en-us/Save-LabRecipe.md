@@ -1,7 +1,7 @@
 ---
 external help file: AutomatedLab.Recipe-help.xml
 Module Name: AutomatedLab.Recipe
-online version:
+online version: https://automatedlab.org/en/latest/AutomatedLab.Recipe/en-us/Save-LabRecipe
 schema: 2.0.0
 ---
 
@@ -32,21 +32,6 @@ Saves the recipe SuperEasy
 
 ## PARAMETERS
 
-### -Confirm
-Prompts you for confirmation before running the cmdlet.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases: cf
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -Recipe
 The recipe to store
 
@@ -59,6 +44,21 @@ Required: True
 Position: 0
 Default value: None
 Accept pipeline input: True (ByValue)
+Accept wildcard characters: False
+```
+
+### -Confirm
+Prompts you for confirmation before running the cmdlet.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases: cf
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
@@ -90,3 +90,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
+

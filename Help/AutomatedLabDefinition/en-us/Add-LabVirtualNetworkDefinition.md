@@ -1,7 +1,7 @@
 ---
 external help file: AutomatedLabDefinition-help.xml
 Module Name: AutomatedLabDefinition
-online version:
+online version: https://automatedlab.org/en/latest/AutomatedLabDefinition/en-us/Add-LabVirtualNetworkDefinition
 schema: 2.0.0
 ---
 
@@ -15,8 +15,8 @@ Adds a definition of a virtual network
 ```
 Add-LabVirtualNetworkDefinition [[-Name] <String>] [[-AddressSpace] <IPNetwork>]
  [[-VirtualizationEngine] <VirtualizationHost>] [[-HyperVProperties] <Hashtable[]>]
- [[-AzureProperties] <Hashtable[]>] [[-ManagementAdapter] <NetworkAdapter>] [[-ResourceName] <String>]
- [-PassThru] [<CommonParameters>]
+ [[-AzureProperties] <Hashtable[]>] [-ManagementAdapter <NetworkAdapter>] [-ResourceName <String>] [-PassThru]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -134,7 +134,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 5
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -179,7 +179,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 6
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -213,3 +213,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
+

@@ -1,7 +1,7 @@
 ---
 external help file: PSFileTransfer-help.xml
 Module Name: PSFileTransfer
-online version:
+online version: https://automatedlab.org/en/latest/PSFileTransfer/en-us/Send-File
 schema: 2.0.0
 ---
 
@@ -32,21 +32,6 @@ Sends the file test.exe to a remote session
 
 ## PARAMETERS
 
-### -SourceFilePath
-The local source path
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: 1
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -DestinationFolderPath
 The remote destination path
 
@@ -57,21 +42,6 @@ Aliases:
 
 Required: True
 Position: 2
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Session
-The session to send to 
-
-```yaml
-Type: PSSession[]
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: 3
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -92,6 +62,36 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -Session
+The session to send to 
+
+```yaml
+Type: PSSession[]
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 3
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -SourceFilePath
+The local source path
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### CommonParameters
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
@@ -102,3 +102,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
+

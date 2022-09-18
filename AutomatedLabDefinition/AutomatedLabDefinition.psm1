@@ -1774,6 +1774,7 @@ function Add-LabDiskDefinition
         [long]$AllocationUnitSize = 4KB,
 
         [ValidateSet('MBR','GPT')]
+        [string]
         $PartitionStyle = 'GPT',
 
         [switch]$SkipInitialize,

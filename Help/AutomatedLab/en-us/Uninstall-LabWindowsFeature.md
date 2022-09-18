@@ -1,7 +1,7 @@
 ---
 external help file: AutomatedLab-help.xml
 Module Name: AutomatedLab
-online version:
+online version: https://automatedlab.org/en/latest/AutomatedLab/en-us/Uninstall-LabWindowsFeature
 schema: 2.0.0
 ---
 
@@ -30,6 +30,21 @@ PS C:\> Uninstall-LabWindowsFeature -ComputerName FS1,FS2 -FeatureName FS-DFS-Re
 Removes DFSR from FS1 and FS2
 
 ## PARAMETERS
+
+### -AsJob
+Indicates that the cmdlet should run in the background
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
 
 ### -ComputerName
 The computer names
@@ -61,8 +76,38 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -UseLocalCredential
-Indicates whether local credentials should be used
+### -IncludeManagementTools
+Indicates if Management Tools should also be uninstalled.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -NoDisplay
+Indicates if output should be suppressed
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -PassThru
+Indicates if the result should be returned to the user.
 
 ```yaml
 Type: SwitchParameter
@@ -92,53 +137,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -NoDisplay
-Indicates if output should be suppressed
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -IncludeManagementTools
-Indicates if Management Tools should also be uninstalled.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -PassThru
-Indicates if the result should be returned to the user.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -AsJob
-Indicates that the cmdlet should run in the background
+### -UseLocalCredential
+Indicates whether local credentials should be used
 
 ```yaml
 Type: SwitchParameter
@@ -162,3 +162,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
+
