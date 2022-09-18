@@ -1564,6 +1564,8 @@ function Add-LabIsoImageDefinition
                 $isoRoot = $isoRoot.Substring(1)
             }
 
+            $isoRoot = $isoRoot.Replace('\','/')
+
             $isoFiles = Get-LabAzureLabSourcesContent -Path $isoRoot -RegexFilter '\.iso' -File -ErrorAction SilentlyContinue
 
             if ( -not $IsLinux -and [System.IO.Path]::HasExtension($Path) -or $IsLinux -and $Path -match '\.iso$')
