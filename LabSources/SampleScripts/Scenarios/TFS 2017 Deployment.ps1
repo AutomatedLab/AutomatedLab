@@ -21,7 +21,7 @@ Add-LabMachineDefinition -Name tfs2SQL1 -ROles SQLServer2016
 # Collection AutomatedLab
 $role = Get-LabMachineRoleDefinition -Role Tfs2017 -Properties @{
     Port = '8081'
-    DbServer = "tfs1SQL1"
+    DbServer = "tfs2SQL1"
     InitialCollection = 'CustomCollection'
 }
 Add-LabMachineDefinition -Name tfs2Srv1 -Roles $role -Memory 4GB
