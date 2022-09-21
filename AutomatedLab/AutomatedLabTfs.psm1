@@ -271,7 +271,7 @@ function Install-LabTeamFoundationServer
             {
                 throw ('Something went wrong while applying the unattended configuration {0}. Try {1} {2} manually. Read the log at {3}.' -f $config, $tfsConfigPath, $command, $log.FullName )
             }
-        } -Variable (Get-Variable sqlServer, machineName, InitialCollection, tfsPort, databaseLabel, cert -ErrorAction SilentlyContinue) -AsJob -ActivityName "Setting up TFS server $machine" -PassThru -NoDisplay
+        } -Variable (Get-Variable sqlServer, machineName, InitialCollection, tfsPort, databaseLabel, cert -ErrorAction SilentlyContinue) -AsJob -ActivityName "TFS_Setup_$machine" -PassThru -NoDisplay
     }
 
     Write-ScreenInfo -Type Verbose -Message "Waiting for the installation of TFS on $tfsMachines to finish."
@@ -280,8 +280,10 @@ function Install-LabTeamFoundationServer
 
     foreach ($job in $installationJobs)
     {
-        $resultVariable = New-Variable -Name ("AL_TFSServer_$([guid]::NewGuid().Guid)") -Scope Global -PassThru
-        Write-ScreenInfo -Type Verbose -Message "The job output of $job can be retrieved with `${$($resultVariable.Name)}"
+        $name = $job.Name.Replace('TFS_Setup_','')
+        $type = if ($job.State -eq 'Completed') { 'Verbose' } else { 'Error' }
+        $resultVariable = New-Variable -Name ("AL_TFSServer_$($name)_$([guid]::NewGuid().Guid)") -Scope Global -PassThru
+        Write-ScreenInfo -Type $type -Message "TFS Deployment $($job.State.ToLower()) on '$($name)'. The job output of $job can be retrieved with `${$($resultVariable.Name)}"
         $resultVariable.Value = $job | Receive-Job -AutoRemoveJob -Wait
     }
 }
@@ -464,15 +466,17 @@ function Install-LabBuildWorker
                     Write-Warning -Message "Build worker $numberOfBuildWorker on '$env:COMPUTERNAME' failed to install. Exit code was $($LASTEXITCODE). Log is $($Log.FullName)"
                 }
             }
-        } -AsJob -Variable (Get-Variable machineName, tfsPort, useSsl, pat, isOnDomainController, cred, numberOfBuildWorkers, agentPool) -ActivityName "Setting up build agent $machine" -PassThru -NoDisplay
+        } -AsJob -Variable (Get-Variable machineName, tfsPort, useSsl, pat, isOnDomainController, cred, numberOfBuildWorkers, agentPool) -ActivityName "TFS_Agent_$machine" -PassThru -NoDisplay
     }
 
     Wait-LWLabJob -Job $installationJobs
 
     foreach ($job in $installationJobs)
     {
-        $resultVariable = New-Variable -Name ("AL_TFSBuildWorker_$([guid]::NewGuid().Guid)") -Scope Global -PassThru
-        Write-ScreenInfo -Type Verbose -Message "The job output of $job can be retrieved with `${$($resultVariable.Name)}"
+        $name = $job.Name.Replace('TFS_Agent_','')
+        $type = if ($job.State -eq 'Completed') { 'Verbose' } else { 'Error' }
+        $resultVariable = New-Variable -Name ("AL_TFSAgent_$($name)_$([guid]::NewGuid().Guid)") -Scope Global -PassThru
+        Write-ScreenInfo -Type $type -Message "TFS Agent deployment $($job.State.ToLower()) on '$($name)'. The job output of $job can be retrieved with `${$($resultVariable.Name)}"
         $resultVariable.Value = $job | Receive-Job -AutoRemoveJob -Wait
     }
 }

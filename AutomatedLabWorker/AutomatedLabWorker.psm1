@@ -74,9 +74,14 @@ function Invoke-LWCommand
 
     if ($DependencyFolderPath)
     {
-        $result = ?? { (Get-Lab).DefaultVirtualizationEngine -eq 'Azure' -and (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $DependencyFolderPath) } `
-        { Test-LabPathIsOnLabAzureLabSourcesStorage -Path $DependencyFolderPath } `
-        { Test-Path -Path $DependencyFolderPath }
+        $result = if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure' -and (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $DependencyFolderPath) )
+        { 
+            Test-LabPathIsOnLabAzureLabSourcesStorage -Path $DependencyFolderPath
+        }
+        else
+        {
+            Test-Path -Path $DependencyFolderPath
+        }
         
         if (-not $result)
         {
@@ -87,9 +92,14 @@ function Invoke-LWCommand
 
     if ($ScriptFilePath)
     {
-        $result = ?? { (Get-Lab).DefaultVirtualizationEngine -eq 'Azure' -and (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $ScriptFilePath)} `
-        { Test-LabPathIsOnLabAzureLabSourcesStorage -Path $ScriptFilePath } `
-        { Test-Path -Path $ScriptFilePath }
+        $result = if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure' -and (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $ScriptFilePath))
+        {
+            Test-LabPathIsOnLabAzureLabSourcesStorage -Path $ScriptFilePath
+        }
+        else
+        {
+            Test-Path -Path $ScriptFilePath
+        }
         
         if (-not $result)
         {
@@ -123,7 +133,7 @@ function Invoke-LWCommand
     {
         Write-PSFMessage -Message "Copying files from '$DependencyFolderPath' to $ComputerName..."
 
-        if (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $DependencyFolderPath)
+        if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure' -and (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $DependencyFolderPath))
         {
             Invoke-Command -Session $Session -ScriptBlock { Copy-Item -Path $args[0] -Destination / -Recurse -Force } -ArgumentList $DependencyFolderPath
         }

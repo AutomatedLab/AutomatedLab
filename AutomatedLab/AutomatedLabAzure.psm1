@@ -1405,7 +1405,7 @@ function Get-LabAzureAvailableRoleSize
     }
 
     $availableRoleSizes = Get-AzComputeResourceSku -Location $azLocation.Location | Where-Object {
-        $_.ResourceType -eq 'virtualMachines' -and $_.Restrictions.ReasonCode -notcontains 'NotAvailableForSubscription'
+        $_.ResourceType -eq 'virtualMachines' -and $_.Restrictions.ReasonCode -notcontains 'NotAvailableForSubscription' -and $_.Capabilities.Where({$_.Name -eq 'CpuArchitectureType'}).Value -eq 'x64'
     }
 
     foreach ($vms in (Get-AzVMSize -Location $azLocation.Location | Where-Object -Property Name -in $availableRoleSizes.Name))
