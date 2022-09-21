@@ -11,6 +11,7 @@
 
 - Fix issue with Azure file sync when single files are checked
   - relative path ISOs was returned with file name, which prompted AL to always upload and fail
+- Fix issue when multiple Azure networks are deployed
 - Incompatible Azure role sizes could be selected. Filtering down to x64 to prevent that.
 
 ## 5.45.0 (2022-09-01)

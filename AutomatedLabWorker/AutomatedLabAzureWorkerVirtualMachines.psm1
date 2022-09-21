@@ -367,7 +367,7 @@
         #endregion
 
         #region Public Ip
-        $dnsLabel = "[concat('al-', uniqueString(resourceGroup().id))]"
+        $dnsLabel = "[concat('al$vnetCount-', uniqueString(resourceGroup().id))]"
 
         if ($network.AzureDnsLabel)
         {
