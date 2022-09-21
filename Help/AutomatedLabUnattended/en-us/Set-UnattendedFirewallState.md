@@ -12,8 +12,24 @@ Enable or disable the OS firewall
 
 ## SYNTAX
 
+### Windows (Default)
 ```
-Set-UnattendedFirewallState [-State] <Boolean> [-IsKickstart] [-IsAutoYast] [<CommonParameters>]
+Set-UnattendedFirewallState [-State] <Boolean> [<CommonParameters>]
+```
+
+### CloudInit
+```
+Set-UnattendedFirewallState [-State] <Boolean> [-IsCloudInit] [<CommonParameters>]
+```
+
+### Yast
+```
+Set-UnattendedFirewallState [-State] <Boolean> [-IsAutoYast] [<CommonParameters>]
+```
+
+### Kickstart
+```
+Set-UnattendedFirewallState [-State] <Boolean> [-IsKickstart] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -35,7 +51,7 @@ Indicates that this setting is placed in an AutoYAST file
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: (All)
+Parameter Sets: Yast
 Aliases:
 
 Required: False
@@ -45,12 +61,27 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -IsCloudInit
+Indicates that this setting is placed in a cloudinit file
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: CloudInit
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -IsKickstart
 Indicates that this setting is placed in a Kickstart file
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: (All)
+Parameter Sets: Kickstart
 Aliases:
 
 Required: False

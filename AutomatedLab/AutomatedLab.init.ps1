@@ -903,6 +903,13 @@ Register-PSFTeppScriptblock -Name AutomatedLab-SusePackage -ScriptBlock {
 
 }
 
+Register-PSFTeppScriptblock -Name AutomatedLab-UbuntuPackage -ScriptBlock {
+    (Get-LabAvailableOperatingSystem -UseOnlyCache -ErrorAction SilentlyContinue |
+        Where-Object { $_.OperatingSystemType -eq 'Linux' -and $_.LinuxType -eq 'Ubuntu' } |
+    Sort-Object Version | Select-Object -Last 1).LinuxPackageGroup
+
+}
+
 Register-PSFTeppArgumentCompleter -Command Add-LabMachineDefinition -Parameter OperatingSystem -Name 'AutomatedLab-OperatingSystem'
 Register-PSFTeppArgumentCompleter -Command Add-LabMachineDefinition -Parameter Roles -Name AutomatedLab-Roles
 Register-PSFTeppArgumentCompleter -Command Get-Lab, Remove-Lab, Import-Lab, Import-LabDefinition -Parameter Name -Name AutomatedLab-Labs
@@ -915,5 +922,6 @@ Register-PSFTeppArgumentCompleter -Command Add-LabMachineDefinition, Enable-LabM
 Register-PSFTeppArgumentCompleter -Command Add-LabAzureSubscription -Parameter AutoShutdownTimeZone -Name AutomatedLab-TimeZone
 Register-PSFTeppArgumentCompleter -Command Add-LabMachineDefinition -Parameter RhelPackage -Name AutomatedLab-RhelPackage
 Register-PSFTeppArgumentCompleter -Command Add-LabMachineDefinition -Parameter SusePackage -Name AutomatedLab-SusePackage
+Register-PSFTeppArgumentCompleter -Command Add-LabMachineDefinition -Parameter SusePackage -Name AutomatedLab-UbuntuPackage
 Register-PSFTeppArgumentCompleter -Command Get-LabVMSnapshot, Checkpoint-LabVM, Restore-LabVMSnapshot -Parameter SnapshotName -Name AutomatedLab-VMSnapshot
 #endregion

@@ -13,8 +13,24 @@ Windows only.
 
 ## SYNTAX
 
+### Windows (Default)
 ```
-Add-UnattendedRenameNetworkAdapters [-IsKickstart] [-IsAutoYast] [<CommonParameters>]
+Add-UnattendedRenameNetworkAdapters [<CommonParameters>]
+```
+
+### Kickstart
+```
+Add-UnattendedRenameNetworkAdapters [-IsKickstart] [<CommonParameters>]
+```
+
+### Yast
+```
+Add-UnattendedRenameNetworkAdapters [-IsAutoYast] [<CommonParameters>]
+```
+
+### CloudInit
+```
+Add-UnattendedRenameNetworkAdapters [-IsCloudInit] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -37,7 +53,7 @@ Indicates that this setting is placed in an AutoYAST file
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: (All)
+Parameter Sets: Yast
 Aliases:
 
 Required: False
@@ -47,12 +63,27 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -IsCloudInit
+Indicates that this setting is placed in a cloudinit file
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: CloudInit
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -IsKickstart
 Indicates that this setting is placed in a Kickstart file
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: (All)
+Parameter Sets: Kickstart
 Aliases:
 
 Required: False

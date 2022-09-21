@@ -12,8 +12,24 @@ Set the host name
 
 ## SYNTAX
 
+### Windows (Default)
 ```
-Set-UnattendedComputerName [-ComputerName] <String> [-IsKickstart] [-IsAutoYast] [<CommonParameters>]
+Set-UnattendedComputerName [-ComputerName] <String> [<CommonParameters>]
+```
+
+### CloudInit
+```
+Set-UnattendedComputerName [-ComputerName] <String> [-IsCloudInit] [<CommonParameters>]
+```
+
+### Yast
+```
+Set-UnattendedComputerName [-ComputerName] <String> [-IsAutoYast] [<CommonParameters>]
+```
+
+### Kickstart
+```
+Set-UnattendedComputerName [-ComputerName] <String> [-IsKickstart] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -50,7 +66,7 @@ Indicates that this setting is placed in an AutoYAST file
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: (All)
+Parameter Sets: Yast
 Aliases:
 
 Required: False
@@ -60,12 +76,27 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -IsCloudInit
+Indicates that this setting is placed in a cloudinit file
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: CloudInit
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -IsKickstart
 Indicates that this setting is placed in a Kickstart file
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: (All)
+Parameter Sets: Kickstart
 Aliases:
 
 Required: False

@@ -24,7 +24,7 @@ Add-LabMachineDefinition -Name <String> [-Memory <Double>] [-MinMemory <Double>]
  [-EnableWindowsFirewall] [-AutoLogonDomainName <String>] [-AutoLogonUserName <String>]
  [-AutoLogonPassword <String>] [-AzureProperties <Hashtable>] [-HypervProperties <Hashtable>]
  [-Notes <Hashtable>] [-PassThru] [-ResourceName <String>] [-SkipDeployment] [-AzureRoleSize <String>]
- [-TimeZone <String>] [-RhelPackage <String[]>] [-SusePackage <String[]>] [-SshPublicKeyPath <String>]
+ [-TimeZone <String>] [-RhelPackage <String[]>] [-SusePackage <String[]>] [-UbuntuPackage <String[]>] [-SshPublicKeyPath <String>]
  [-SshPrivateKeyPath <String>] [-OrganizationalUnit <String>] [-ReferenceDisk <String>]
  [-KmsServerName <String>] [-KmsPort <UInt16>] [-KmsLookupDomain <String>] [-ActivateWindows]
  [<CommonParameters>]
@@ -41,7 +41,7 @@ Add-LabMachineDefinition -Name <String> [-Memory <Double>] [-MinMemory <Double>]
  [-EnableWindowsFirewall] [-AutoLogonDomainName <String>] [-AutoLogonUserName <String>]
  [-AutoLogonPassword <String>] [-AzureProperties <Hashtable>] [-HypervProperties <Hashtable>]
  [-Notes <Hashtable>] [-PassThru] [-ResourceName <String>] [-SkipDeployment] [-AzureRoleSize <String>]
- [-TimeZone <String>] [-RhelPackage <String[]>] [-SusePackage <String[]>] [-SshPublicKeyPath <String>]
+ [-TimeZone <String>] [-RhelPackage <String[]>] [-SusePackage <String[]>] [-UbuntuPackage <String[]>] [-SshPublicKeyPath <String>]
  [-SshPrivateKeyPath <String>] [-OrganizationalUnit <String>] [-ReferenceDisk <String>]
  [-KmsServerName <String>] [-KmsPort <UInt16>] [-KmsLookupDomain <String>] [-ActivateWindows]
  [<CommonParameters>]
@@ -772,6 +772,21 @@ The tools path on the destination machine
 
 ```yaml
 Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -UbuntuPackage
+The list of Ubuntu packages to install during cloudinit stage
+
+```yaml
+Type: String[]
 Parameter Sets: (All)
 Aliases:
 

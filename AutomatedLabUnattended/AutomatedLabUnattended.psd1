@@ -23,6 +23,8 @@
 
     FileList               = @('AutomatedLabUnattended.psm1')
 
+    RequiredModules        = @('powershell-yaml')
+
     PrivateData            = @{
 
         PSData = @{

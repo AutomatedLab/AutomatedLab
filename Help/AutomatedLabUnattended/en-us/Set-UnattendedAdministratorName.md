@@ -12,8 +12,24 @@ Set the admin name
 
 ## SYNTAX
 
+### Windows (Default)
 ```
-Set-UnattendedAdministratorName [-Name] <String> [-IsKickstart] [-IsAutoYast] [<CommonParameters>]
+Set-UnattendedAdministratorName [-Name] <String> [<CommonParameters>]
+```
+
+### CloudInit
+```
+Set-UnattendedAdministratorName [-Name] <String> [-IsCloudInit] [<CommonParameters>]
+```
+
+### Yast
+```
+Set-UnattendedAdministratorName [-Name] <String> [-IsAutoYast] [<CommonParameters>]
+```
+
+### Kickstart
+```
+Set-UnattendedAdministratorName [-Name] <String> [-IsKickstart] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -36,7 +52,7 @@ Indicates that this setting is placed in an AutoYAST file
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: (All)
+Parameter Sets: Yast
 Aliases:
 
 Required: False
@@ -46,12 +62,27 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -IsCloudInit
+Indicates that this setting is placed in a cloudinit file
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: CloudInit
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -IsKickstart
 Indicates that this setting is placed in a Kickstart file
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: (All)
+Parameter Sets: Kickstart
 Aliases:
 
 Required: False

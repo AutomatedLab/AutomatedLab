@@ -45,6 +45,7 @@ nav:
 - Sample scripts:
   - Azure:
     - MultiForestLab 2012R2.ps1: Wiki/SampleScripts/Azure/en-us/MultiForestLab 2012R2.md
+    - MultiNetMultiForest.ps1: Wiki/SampleScripts/Azure/en-us/MultiNetMultiForest.md
     - VpnConnectedLab.ps1: Wiki/SampleScripts/Azure/en-us/VpnConnectedLab.md
   - HyperV:
     - AL Loves Linux.ps1: Wiki/SampleScripts/HyperV/en-us/AL Loves Linux.md
@@ -87,6 +88,7 @@ nav:
     - 12.2 Azure SQL Server and client, domain joined.ps1: Wiki/SampleScripts/Introduction/en-us/12.2 Azure SQL Server and client, domain joined.md
   - Scenarios:
     - AGPM Lab 1.ps1: Wiki/SampleScripts/Scenarios/en-us/AGPM Lab 1.md
+    - AzureArcConnectedHyperV.ps1: Wiki/SampleScripts/Scenarios/en-us/AzureArcConnectedHyperV.md
     - AzureDevOpsBuildAgent.ps1: Wiki/SampleScripts/Scenarios/en-us/AzureDevOpsBuildAgent.md
     - AzureDevOpsCloudConnection.ps1: Wiki/SampleScripts/Scenarios/en-us/AzureDevOpsCloudConnection.md
     - CM-1902.ps1: Wiki/SampleScripts/Scenarios/en-us/CM-1902.md
@@ -389,6 +391,7 @@ nav:
     - Export-UnattendedFile: AutomatedLabUnattended/en-us/Export-UnattendedFile.md
     - Get-UnattendedContent: AutomatedLabUnattended/en-us/Get-UnattendedContent.md
     - Import-UnattendedContent: AutomatedLabUnattended/en-us/Import-UnattendedContent.md
+    - Import-UnattendedFile: AutomatedLabUnattended/en-us/Import-UnattendedFile.md
     - Set-UnattendedAdministratorName: AutomatedLabUnattended/en-us/Set-UnattendedAdministratorName.md
     - Set-UnattendedAdministratorPassword: AutomatedLabUnattended/en-us/Set-UnattendedAdministratorPassword.md
     - Set-UnattendedAntiMalware: AutomatedLabUnattended/en-us/Set-UnattendedAntiMalware.md

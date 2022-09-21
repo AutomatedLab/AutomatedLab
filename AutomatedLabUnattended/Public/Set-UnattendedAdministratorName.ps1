@@ -1,24 +1,33 @@
 ﻿function Set-UnattendedAdministratorName
 {
-	[CmdletBinding()]
-	param (
-		[Parameter(Mandatory = $true)]
-		[string]$Name,
+    [CmdletBinding(DefaultParameterSetName = 'Windows')]
+    param (
+        [Parameter(ParameterSetName = 'Windows', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Kickstart', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Yast', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'CloudInit', Mandatory = $true)]
+        [string]$Name,
 
+        [Parameter(ParameterSetName = 'Kickstart')]
         [switch]
         $IsKickstart,
 
+        [Parameter(ParameterSetName = 'Yast')]
         [switch]
-        $IsAutoYast
+        $IsAutoYast,
+
+        [Parameter(ParameterSetName = 'CloudInit')]
+        [switch]
+        $IsCloudInit
     )
 
     if (-not $script:un)
-	{
-		Write-Error 'No unattended file imported. Please use Import-UnattendedFile first'
-		return
+    {
+        Write-Error 'No unattended file imported. Please use Import-UnattendedFile first'
+        return
     }
 
-    if ($IsKickstart) { Set-UnattendedKickstartAdministratorName -Name $Name ; return}
-    if ($IsAutoYast) { Set-UnattendedYastAdministratorName -Name $Name ; return}
-    Set-UnattendedWindowsAdministratorName -Name $Name
+    $command = Get-Command -Name $PSCmdlet.MyInvocation.MyCommand.Name.Replace('Unattended', "Unattended$($PSCmdlet.ParameterSetName)")
+    $parameters = Sync-Parameter $command -Parameters $PSBoundParameters
+    & $command @parameters
 }

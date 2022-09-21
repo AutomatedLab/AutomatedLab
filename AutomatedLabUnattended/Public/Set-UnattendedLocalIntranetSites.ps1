@@ -1,15 +1,24 @@
 ﻿function Set-UnattendedLocalIntranetSites
 {
-	[CmdletBinding()]
+	[CmdletBinding(DefaultParameterSetName = 'Windows')]
 	param (
-		[Parameter(Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Windows', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Kickstart', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Yast', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'CloudInit', Mandatory = $true)]
 		[string[]]$Values,
 
+        [Parameter(ParameterSetName='Kickstart')]
         [switch]
         $IsKickstart,
 
+        [Parameter(ParameterSetName='Yast')]
         [switch]
-        $IsAutoYast
+        $IsAutoYast,
+
+        [Parameter(ParameterSetName='CloudInit')]
+        [switch]
+        $IsCloudInit
 	)
 
 	if (-not $script:un)
@@ -18,9 +27,7 @@
 		return
 	}
 
-    if ($IsKickstart) { Set-UnattendedKickstartLocalIntranetSites -Values $Values; return }
-
-    if ($IsAutoYast) { Set-UnattendedYastLocalIntranetSites -Values $Values; return }
-
-    Set-UnattendedWindowsLocalIntranetSites -Values $Values
+    $command = Get-Command -Name $PSCmdlet.MyInvocation.MyCommand.Name.Replace('Unattended', "Unattended$($PSCmdlet.ParameterSetName)")
+    $parameters = Sync-Parameter $command -Parameters $PSBoundParameters
+    & $command @parameters
 }

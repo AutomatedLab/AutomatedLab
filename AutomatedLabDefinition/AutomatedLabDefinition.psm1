@@ -603,6 +603,50 @@ $autoyastContent = @"
 </profile>
 "@
 
+$cloudInitContent = @'
+version: v1
+network:
+  network:
+    version: 2
+storage:
+  layout:
+    name: lvm
+apt:
+  primary:
+    - arches: [amd64]
+      uri: http://us.archive.ubuntu.com/ubuntu
+  security:
+    - arches: [amd64]
+      uri: http://us.archive.ubuntu.com/ubuntu
+  sources_list: |
+    deb [arch=amd64] $PRIMARY $RELEASE main universe restricted multiverse
+    deb [arch=amd64] $PRIMARY $RELEASE-updates main universe restricted multiverse
+    deb [arch=amd64] $SECURITY $RELEASE-security main universe restricted multiverse
+    deb [arch=amd64] $PRIMARY $RELEASE-backports main universe restricted multiverse
+  sources:
+    microsoft-powershell.list:
+      source: 'deb [arch=amd64,armhf,arm64 signed-by=BC528686B50D79E339D3721CEB3E94ADBE1229CF] https://packages.microsoft.com/ubuntu/REPLACERELEASE/prod $RELEASE main'
+      keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF # https://packages.microsoft.com/keys/microsoft.asc
+packages:
+  - oddjob
+  - oddjob-mkhomedir
+  - sssd
+  - adcli
+  - krb5-workstation
+  - realmd
+  - samba-common
+  - samba-common-tools
+  - authselect-compat
+  - sshd
+  - powershell
+identity:
+  username: {}
+  hostname: {}
+  password: {}
+late-commands:
+  - 'echo "Subsystem powershell /usr/bin/pwsh -sshs -NoLogo" >> /etc/ssh/sshd_config'
+'@
+
 #region Get-LabVolumesOnPhysicalDisks
 
 function Get-LabVolumesOnPhysicalDisks
@@ -1255,6 +1299,10 @@ function Export-LabDefinition
             if ($Script:machines | Where-Object LinuxType -eq 'Suse')
             {
                 $autoyastContent | Out-File -FilePath (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath autoinst_default.xml) -Encoding unicode
+            }
+            if ($Script:machines | Where-Object LinuxType -eq 'Ubuntu')
+            {
+                $cloudInitContent | Out-File -FilePath (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath cloudinit_default.yml) -Encoding unicode
             }
         }
     }
@@ -1941,6 +1989,8 @@ function Add-LabMachineDefinition
         [string[]]$RhelPackage,
 
         [string[]]$SusePackage,
+
+        [string[]]$UbuntuPackage,
 
         [string]$SshPublicKeyPath,
 
@@ -2827,6 +2877,10 @@ function Add-LabMachineDefinition
             if ($SusePackage)
             {
                 $machine.LinuxPackageGroup = $SusePackage
+            }
+            if ($UbuntuPackage)
+            {
+                $machine.LinuxPackageGroup = $UbuntuPackage
             }
 
             if ($OperatingSystemVersion)
@@ -3733,6 +3787,10 @@ function Import-LabDefinition
                     if ($this.OperatingSystemType -eq 'Linux' -and $this.LinuxType -eq 'Suse')
                     {
                         $Path = Join-Path -Path (Get-Lab).Sources.UnattendedXml.Value -ChildPath autoinst_default.xml
+                    }
+                    if ($this.OperatingSystemType -eq 'Linux' -and $this.LinuxType -eq 'Suse')
+                    {
+                        $Path = Join-Path -Path (Get-Lab).Sources.UnattendedXml.Value -ChildPath cloudinit_default.yml
                     }
                     return (Get-Content -Path $Path)
                 }

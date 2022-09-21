@@ -1,16 +1,25 @@
 ﻿function Set-UnattendedTimeZone
 {
-	[CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName = 'Windows')]
     param
     (
-        [Parameter(Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Windows', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Kickstart', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Yast', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'CloudInit', Mandatory = $true)]
         [string]$TimeZone,
 
+        [Parameter(ParameterSetName = 'Kickstart')]
         [switch]
         $IsKickstart,
 
+        [Parameter(ParameterSetName = 'Yast')]
         [switch]
-        $IsAutoYast
+        $IsAutoYast,
+
+        [Parameter(ParameterSetName = 'CloudInit')]
+        [switch]
+        $IsCloudInit
     )
 
     if (-not $script:un)
@@ -19,9 +28,7 @@
         return
     }
 
-    if ($IsKickstart) { Set-UnattendedKickstartTimeZone -TimeZone $TimeZone; return }
-
-    if ($IsAutoYast) { Set-UnattendedYastTimeZone -TimeZone $TimeZone; return }
-
-    Set-UnattendedWindowsTimeZone -TimeZone $TimeZone
+    $command = Get-Command -Name $PSCmdlet.MyInvocation.MyCommand.Name.Replace('Unattended', "Unattended$($PSCmdlet.ParameterSetName)")
+    $parameters = Sync-Parameter $command -Parameters $PSBoundParameters
+    & $command @parameters
 }
