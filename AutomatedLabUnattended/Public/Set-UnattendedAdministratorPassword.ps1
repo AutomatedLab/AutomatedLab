@@ -1,15 +1,24 @@
 ﻿function Set-UnattendedAdministratorPassword
 {
-	[CmdletBinding()]
+	[CmdletBinding(DefaultParameterSetName = 'Windows')]
 	param (
-		[Parameter(Mandatory = $true)]
+		[Parameter(ParameterSetName = 'Windows', Mandatory = $true)]
+		[Parameter(ParameterSetName = 'Kickstart', Mandatory = $true)]
+		[Parameter(ParameterSetName = 'Yast', Mandatory = $true)]
+		[Parameter(ParameterSetName = 'CloudInit', Mandatory = $true)]
 		[string]$Password,
 
-        [switch]
-        $IsKickstart,
+		[Parameter(ParameterSetName = 'Kickstart')]
+		[switch]
+		$IsKickstart,
 
-        [switch]
-        $IsAutoYast
+		[Parameter(ParameterSetName = 'Yast')]
+		[switch]
+		$IsAutoYast,
+
+		[Parameter(ParameterSetName = 'CloudInit')]
+		[switch]
+		$IsCloudInit
 	)
 
 	if (-not $script:un)
@@ -18,7 +27,7 @@
 		return
 	}
 
-    if ($IsKickstart) {Set-UnattendedKickstartAdministratorPassword -Password $Password; return }
-    if ($IsAutoYast) { Set-UnattendedYastAdministratorPassword -Password $Password; return }
-	Set-UnattendedWindowsAdministratorPassword -Password $Password
+	$command = Get-Command -Name $PSCmdlet.MyInvocation.MyCommand.Name.Replace('Unattended', "Unattended$($PSCmdlet.ParameterSetName)")
+	$parameters = Sync-Parameter $command -Parameters $PSBoundParameters
+	& $command @parameters
 }

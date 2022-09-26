@@ -1,17 +1,33 @@
 ﻿function Export-UnattendedFile
 {
-	[CmdletBinding()]
+	[CmdletBinding(DefaultParameterSetName = 'Windows')]
     param (
-        [Parameter(Mandatory = $true)]
+        [Parameter(ParameterSetName='Windows', Mandatory = $true)]
+        [Parameter(ParameterSetName='Kickstart', Mandatory = $true)]
+        [Parameter(ParameterSetName='Yast', Mandatory = $true)]
+        [Parameter(ParameterSetName='CloudInit', Mandatory = $true)]
         [string]$Path,
 
-        [switch]$IsKickstart,
+        [Parameter(ParameterSetName='Kickstart')]
+        [switch]
+        $IsKickstart,
 
-        [switch]$IsAutoYast
+        [Parameter(ParameterSetName='Yast')]
+        [switch]
+        $IsAutoYast,
+
+        [Parameter(ParameterSetName='CloudInit')]
+        [switch]
+        $IsCloudInit
     )
 
-    if ( $IsKickstart) { Export-UnattendedKickstartFile -Path $Path; return }
-    if ( $IsAutoYast) { Export-UnattendedYastFile -Path $Path; return }
+	if (-not $script:un)
+	{
+		Write-Error 'No unattended file imported. Please use Import-UnattendedFile first'
+		return
+	}
 
-    Export-UnattendedWindowsFile -Path $Path
+    $command = Get-Command -Name $PSCmdlet.MyInvocation.MyCommand.Name.Replace('Unattended', "Unattended$($PSCmdlet.ParameterSetName)")
+    $parameters = Sync-Parameter $command -Parameters $PSBoundParameters
+    & $command @parameters
 }

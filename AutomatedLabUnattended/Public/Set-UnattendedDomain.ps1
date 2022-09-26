@@ -1,24 +1,39 @@
 ﻿function Set-UnattendedDomain
 {
-	[CmdletBinding()]
+	[CmdletBinding(DefaultParameterSetName = 'Windows')]
 	param (
-		[Parameter(Mandatory = $true)]
+		[Parameter(ParameterSetName = 'Windows', Mandatory = $true)]
+		[Parameter(ParameterSetName = 'Kickstart', Mandatory = $true)]
+		[Parameter(ParameterSetName = 'Yast', Mandatory = $true)]
+		[Parameter(ParameterSetName = 'CloudInit', Mandatory = $true)]
 		[string]$DomainName,
 
-		[Parameter(Mandatory = $true)]
+		[Parameter(ParameterSetName = 'Windows', Mandatory = $true)]
+		[Parameter(ParameterSetName = 'Kickstart', Mandatory = $true)]
+		[Parameter(ParameterSetName = 'Yast', Mandatory = $true)]
+		[Parameter(ParameterSetName = 'CloudInit', Mandatory = $true)]
 		[string]$Username,
 
-		[Parameter(Mandatory = $true)]
+		[Parameter(ParameterSetName = 'Windows', Mandatory = $true)]
+		[Parameter(ParameterSetName = 'Kickstart', Mandatory = $true)]
+		[Parameter(ParameterSetName = 'Yast', Mandatory = $true)]
+		[Parameter(ParameterSetName = 'CloudInit', Mandatory = $true)]
 		[string]$Password,
 
 		[Parameter()]
 		[string]$OrganizationalUnit,
 
-        [switch]
-        $IsKickstart,
+		[Parameter(ParameterSetName = 'Kickstart')]
+		[switch]
+		$IsKickstart,
 
-        [switch]
-        $IsAutoYast
+		[Parameter(ParameterSetName = 'Yast')]
+		[switch]
+		$IsAutoYast,
+
+		[Parameter(ParameterSetName = 'CloudInit')]
+		[switch]
+		$IsCloudInit
 	)
 
 	if (-not $script:un)
@@ -27,7 +42,7 @@
 		return
 	}
 
-    if ($IsKickstart) { Set-UnattendedKickstartDomain -DomainName $DomainName -Username $Username -Password $Password -OrganizationalUnit $OrganizationalUnit; return }
-    if ($IsAutoYast) { Set-UnattendedYastDomain -DomainName $DomainName -Username $Username -Password $Password -OrganizationalUnit $OrganizationalUnit; return }
-    Set-UnattendedWindowsDomain -DomainName $DomainName -Username $Username -Password $Password -OrganizationalUnit $OrganizationalUnit
+	$command = Get-Command -Name $PSCmdlet.MyInvocation.MyCommand.Name.Replace('Unattended', "Unattended$($PSCmdlet.ParameterSetName)")
+	$parameters = Sync-Parameter $command -Parameters $PSBoundParameters
+	& $command @parameters
 }

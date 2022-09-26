@@ -12,8 +12,24 @@ Configure the time zone
 
 ## SYNTAX
 
+### Windows (Default)
 ```
-Set-UnattendedTimeZone [-TimeZone] <String> [-IsKickstart] [-IsAutoYast] [<CommonParameters>]
+Set-UnattendedTimeZone [-TimeZone] <String> [<CommonParameters>]
+```
+
+### CloudInit
+```
+Set-UnattendedTimeZone [-TimeZone] <String> [-IsCloudInit] [<CommonParameters>]
+```
+
+### Yast
+```
+Set-UnattendedTimeZone [-TimeZone] <String> [-IsAutoYast] [<CommonParameters>]
+```
+
+### Kickstart
+```
+Set-UnattendedTimeZone [-TimeZone] <String> [-IsKickstart] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -35,7 +51,7 @@ Indicates that this setting is placed in an AutoYAST file
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: (All)
+Parameter Sets: Yast
 Aliases:
 
 Required: False
@@ -45,12 +61,27 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -IsCloudInit
+Indicates that this setting is placed in a cloudinit file
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: CloudInit
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -IsKickstart
 Indicates that this setting is placed in a Kickstart file
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: (All)
+Parameter Sets: Kickstart
 Aliases:
 
 Required: False

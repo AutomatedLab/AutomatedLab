@@ -1,30 +1,45 @@
 ﻿function Set-UnattendedAutoLogon
 {
-	[CmdletBinding()]
-	param (
-		[Parameter(Mandatory = $true)]
-		[string]$DomainName,
+    [CmdletBinding(DefaultParameterSetName = 'Windows')]
+    param (
+        [Parameter(ParameterSetName = 'Windows', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Kickstart', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Yast', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'CloudInit', Mandatory = $true)]
+        [string]$DomainName,
 
-		[Parameter(Mandatory = $true)]
-		[string]$Username,
+        [Parameter(ParameterSetName = 'Windows', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Kickstart', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Yast', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'CloudInit', Mandatory = $true)]
+        [string]$Username,
 
-		[Parameter(Mandatory = $true)]
-		[string]$Password,
+        [Parameter(ParameterSetName = 'Windows', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Kickstart', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Yast', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'CloudInit', Mandatory = $true)]
+        [string]$Password,
 
+        [Parameter(ParameterSetName = 'Kickstart')]
         [switch]
         $IsKickstart,
 
+        [Parameter(ParameterSetName = 'Yast')]
         [switch]
-        $IsAutoYast
+        $IsAutoYast,
+
+        [Parameter(ParameterSetName = 'CloudInit')]
+        [switch]
+        $IsCloudInit
     )
 
-	if (-not $script:un)
-	{
-		Write-Error 'No unattended file imported. Please use Import-UnattendedFile first'
-		return
+    if (-not $script:un)
+    {
+        Write-Error 'No unattended file imported. Please use Import-UnattendedFile first'
+        return
     }
 
-    if( $IsKickstart) { Set-UnattendedKickstartAutoLogon -DomainName $DomainName -UserName $UserName -Password $Password; return}
-    if( $IsAutoYast) { Set-UnattendedYastAutoLogon -DomainName $DomainName -UserName $UserName -Password $Password; return}
-    Set-UnattendedWindowsAutoLogon -DomainName $DomainName -UserName $UserName -Password $Password
+    $command = Get-Command -Name $PSCmdlet.MyInvocation.MyCommand.Name.Replace('Unattended', "Unattended$($PSCmdlet.ParameterSetName)")
+    $parameters = Sync-Parameter $command -Parameters $PSBoundParameters
+    & $command @parameters
 }

@@ -1,26 +1,33 @@
 ﻿function Set-UnattendedUserLocale
 {
-	[CmdletBinding()]
-	param (
-		[Parameter(Mandatory = $true)]
-		[string]$UserLocale,
+    [CmdletBinding(DefaultParameterSetName = 'Windows')]
+    param (
+        [Parameter(ParameterSetName = 'Windows', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Kickstart', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Yast', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'CloudInit', Mandatory = $true)]
+        [string]$UserLocale,
 
+        [Parameter(ParameterSetName = 'Kickstart')]
         [switch]
         $IsKickstart,
 
+        [Parameter(ParameterSetName = 'Yast')]
         [switch]
-        $IsAutoYast
+        $IsAutoYast,
+
+        [Parameter(ParameterSetName = 'CloudInit')]
+        [switch]
+        $IsCloudInit
     )
 
-	if (-not $script:un)
-	{
-		Write-Error 'No unattended file imported. Please use Import-UnattendedFile first'
-		return
+    if (-not $script:un)
+    {
+        Write-Error 'No unattended file imported. Please use Import-UnattendedFile first'
+        return
     }
 
-    if ($IsKickstart) { Set-UnattendedKickstartUserLocale -UserLocale $UserLocale; return }
-
-    if ($IsAutoYast) { Set-UnattendedYastUserLocale -UserLocale $UserLocale; return }
-
-    Set-UnattendedWindowsUserLocale -UserLocale $UserLocale
+    $command = Get-Command -Name $PSCmdlet.MyInvocation.MyCommand.Name.Replace('Unattended', "Unattended$($PSCmdlet.ParameterSetName)")
+    $parameters = Sync-Parameter $command -Parameters $PSBoundParameters
+    & $command @parameters
 }

@@ -6,6 +6,7 @@
 
 - New configuration item UseLatestAzureProviderApi to use latest available provider instead of hardcoded values
 - Including tests for existing help content to ensure quality of help content
+- Including basic Ubuntu support: VMs can be added but are not installed due to cloud-init not working.
 
 ### Bugs
 

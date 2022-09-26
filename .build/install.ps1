@@ -28,7 +28,8 @@ else
   #sudo apt upgrade -y
   sudo apt install alien -y
 }
-Install-Module PSFramework -Repo PSGallery -Force
+Install-Module PSFramework, powershell-yaml -Repo PSGallery -Force
+Import-Module powershell-yaml
 
 if ($env:APPVEYOR_REPO_BRANCH -eq "master" -and [string]::IsNullOrWhiteSpace($env:APPVEYOR_PULL_REQUEST_TITLE) -and $currVersion -gt $compareVersion)
 {

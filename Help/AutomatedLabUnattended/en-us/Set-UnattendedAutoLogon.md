@@ -12,9 +12,27 @@ Set the auto logon account in the unattend file
 
 ## SYNTAX
 
+### Windows (Default)
+```
+Set-UnattendedAutoLogon [-DomainName] <String> [-Username] <String> [-Password] <String> [<CommonParameters>]
+```
+
+### CloudInit
+```
+Set-UnattendedAutoLogon [-DomainName] <String> [-Username] <String> [-Password] <String> [-IsCloudInit]
+ [<CommonParameters>]
+```
+
+### Yast
+```
+Set-UnattendedAutoLogon [-DomainName] <String> [-Username] <String> [-Password] <String> [-IsAutoYast]
+ [<CommonParameters>]
+```
+
+### Kickstart
 ```
 Set-UnattendedAutoLogon [-DomainName] <String> [-Username] <String> [-Password] <String> [-IsKickstart]
- [-IsAutoYast] [<CommonParameters>]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -51,7 +69,7 @@ Indicates that this setting is placed in an AutoYAST file
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: (All)
+Parameter Sets: Yast
 Aliases:
 
 Required: False
@@ -61,12 +79,27 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -IsCloudInit
+Indicates that this setting is placed in a cloudinit file
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: CloudInit
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -IsKickstart
 Indicates that this setting is placed in a Kickstart file
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: (All)
+Parameter Sets: Kickstart
 Aliases:
 
 Required: False

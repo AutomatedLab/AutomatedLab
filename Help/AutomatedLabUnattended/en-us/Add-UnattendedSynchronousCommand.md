@@ -12,8 +12,25 @@ Add commands to the post deployment.
 
 ## SYNTAX
 
+### Windows (Default)
 ```
-Add-UnattendedSynchronousCommand [-Command] <String> [-Description] <String> [-IsKickstart] [-IsAutoYast]
+Add-UnattendedSynchronousCommand [-Command] <String> [-Description] <String> [<CommonParameters>]
+```
+
+### CloudInit
+```
+Add-UnattendedSynchronousCommand [-Command] <String> [-Description] <String> [-IsCloudInit]
+ [<CommonParameters>]
+```
+
+### Yast
+```
+Add-UnattendedSynchronousCommand [-Command] <String> [-Description] <String> [-IsAutoYast] [<CommonParameters>]
+```
+
+### Kickstart
+```
+Add-UnattendedSynchronousCommand [-Command] <String> [-Description] <String> [-IsKickstart]
  [<CommonParameters>]
 ```
 
@@ -67,7 +84,7 @@ Indicates that this setting is placed in an AutoYAST file
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: (All)
+Parameter Sets: Yast
 Aliases:
 
 Required: False
@@ -77,12 +94,27 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -IsCloudInit
+Indicates that this setting is placed in a cloudinit file
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: CloudInit
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -IsKickstart
 Indicates that this setting is placed in a Kickstart file
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: (All)
+Parameter Sets: Kickstart
 Aliases:
 
 Required: False

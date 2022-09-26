@@ -27,19 +27,19 @@
                     Write-Verbose -Message "$($moduleName) Installed Version [$($version.ToString())] is outdated. Installing Gallery Version [$($galleryVersion.ToString())]"
 
                     Install-Module -Name $moduleName -Force -SkipPublisherCheck -AllowClobber
-                    Import-Module -Name $moduleName -Force -RequiredVersion $galleryVersion
+                    Import-Module -Name $moduleName -Force -RequiredVersion $galleryVersion -ErrorAction SilentlyContinue
                 }
                 else
                 {
                     Write-Verbose -Message "Module Installed, Importing $($moduleName)"
-                    Import-Module -ModuleInfo $module -Force
+                    Import-Module -ModuleInfo $module -Force -ErrorAction SilentlyContinue
                 }
             }
             else
             {
                 Write-Verbose -Message "$($moduleName) Missing, installing Module"
                 Install-Module -Name $moduleName -Force -AllowClobber
-                Import-Module -Name $moduleName -Force
+                Import-Module -Name $moduleName -Force -ErrorAction SilentlyContinue
             }
         }
     }

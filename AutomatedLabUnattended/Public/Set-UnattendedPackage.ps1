@@ -1,26 +1,33 @@
 ﻿function Set-UnattendedPackage
 {
-	[CmdletBinding()]
-	param (
-		[Parameter(Mandatory = $true)]
-		[string[]]$Package,
+    [CmdletBinding(DefaultParameterSetName = 'Windows')]
+    param (
+        [Parameter(ParameterSetName = 'Windows', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Kickstart', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Yast', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'CloudInit', Mandatory = $true)]
+        [string[]]$Package,
 
+        [Parameter(ParameterSetName = 'Kickstart')]
         [switch]
         $IsKickstart,
 
+        [Parameter(ParameterSetName = 'Yast')]
         [switch]
-        $IsAutoYast
-	)
+        $IsAutoYast,
 
-	if (-not $script:un)
-	{
-		Write-Error 'No unattended file imported. Please use Import-UnattendedFile first'
-		return
-	}
+        [Parameter(ParameterSetName = 'CloudInit')]
+        [switch]
+        $IsCloudInit
+    )
 
-    if ($IsKickstart) { Set-UnattendedKickstartPackage -Package $Package; return }
+    if (-not $script:un)
+    {
+        Write-Error 'No unattended file imported. Please use Import-UnattendedFile first'
+        return
+    }
 
-    if ($IsAutoYast) { Set-UnattendedYastPackage -Package $Package; return }
-
-    Set-UnattendedWindowsPackage -Package $Package
+    $command = Get-Command -Name $PSCmdlet.MyInvocation.MyCommand.Name.Replace('Unattended', "Unattended$($PSCmdlet.ParameterSetName)")
+    $parameters = Sync-Parameter $command -Parameters $PSBoundParameters
+    & $command @parameters
 }

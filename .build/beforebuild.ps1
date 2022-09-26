@@ -24,3 +24,14 @@ foreach ($item in Get-ChildItem -Filter *.psd1 -Recurse)
         $content | Set-Content -Path $item.FullName
     }
 }
+
+# Call all child build scripts
+Write-Host "Building child modules"
+$sep = if ($IsLinux) { ':' } else { ';' }
+$env:PSModulePath = "$env:APPVEYOR_BUILD_FOLDER$sep$env:PSModulePath"
+$modulesToBuild = 'AutomatedLab.Recipe', 'AutomatedLabNotifications', 'AutomatedLabUnattended'
+foreach ($child in (Get-ChildItem -Directory -Path $env:APPVEYOR_BUILD_FOLDER | Where-Object Name -in $modulesToBuild))
+{
+    Write-Host -ForegroundColor DarkMagenta "Building $($child.Name)"
+    & (Join-Path -Path $child.FullName -ChildPath '.build/build.ps1')
+}
