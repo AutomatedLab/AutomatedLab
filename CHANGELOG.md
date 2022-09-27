@@ -14,6 +14,8 @@
   - relative path ISOs was returned with file name, which prompted AL to always upload and fail
 - Fix issue when multiple Azure networks are deployed
 - Incompatible Azure role sizes could be selected. Filtering down to x64 to prevent that.
+- SkipDeployment was not fully utilized
+  - Cmdlets modifying machine status now skip SkipDeployment VMs, as cmdlet usage often does not make sense anyways
 
 ## 5.45.0 (2022-09-01)
 
