@@ -10,6 +10,7 @@ nav:
   - Creating a new lab: Wiki/Basic/createnewlab.md
   - Networks and IP Addresses: Wiki/Basic/networksandaddresses.md
   - Adding machines: Wiki/Basic/addmachines.md
+  - Modifying labs: Wiki/Basic/modifylab.md
   - Preparing a fully offline environment: Wiki/Basic/fullyoffline.md
   - Joining lab VMs to existing domain: Wiki/Basic/joindomain.md
   - Parallel deployments: Wiki/Advanced/resourcenaming.md
