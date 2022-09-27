@@ -275,6 +275,8 @@ function Start-LabVM
             $vms = $availableVMs | Where-Object { -not $_.SkipDeployment }
         }
 
+        $vms = $vms | Where-Object SkipDeployment -eq $false
+
         #if there are no VMs to start, just write a warning
         if (-not $vms)
         {
@@ -797,14 +799,14 @@ function Wait-LabVM
         {
             Write-PSFMessage "The following machines are ready: $($completed -join ', ')"
 
-            foreach ($machine in $completed)
+            foreach ($machine in (Get-LabVM -ComputerName $completed))
             {
-                if ($machine.SkipDeployment -or (Get-LabVM -ComputerName $machine).HostType -ne 'HyperV') { continue }
-                $machineMetadata = Get-LWHypervVMDescription -ComputerName $(Get-LabVM -ComputerName $machine).ResourceName
+                if ($machine.SkipDeployment -or $machine.HostType -ne 'HyperV') { continue }
+                $machineMetadata = Get-LWHypervVMDescription -ComputerName $machine.ResourceName
                 if ($machineMetadata.InitState -eq [AutomatedLab.LabVMInitState]::Uninitialized)
                 {
                     $machineMetadata.InitState = [AutomatedLab.LabVMInitState]::ReachedByAutomatedLab
-                    Set-LWHypervVMDescription -Hashtable $machineMetadata -ComputerName $(Get-LabVM -ComputerName $machine).ResourceName
+                    Set-LWHypervVMDescription -Hashtable $machineMetadata -ComputerName $machine.ResourceName
                     Enable-LabAutoLogon -ComputerName $ComputerName
                 }
 
