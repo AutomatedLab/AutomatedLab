@@ -767,7 +767,7 @@ function New-LabDefinition
 
     if ($DefaultVirtualizationEngine -eq 'Azure')
     {
-        $null = Test-LabAzureModuleAvailability -ErrorAction Stop
+        $null = Test-LabAzureModuleAvailability -ErrorAction SilentlyContinue
     }
 
     #settings for a new log
@@ -847,7 +847,7 @@ function New-LabDefinition
     $script:existingHyperVVirtualSwitches = $null
 
     #cleanup $PSDefaultParameterValues for entries for AL functions
-    $automatedLabPSDefaultParameterValues = $global:PSDefaultParameterValues.GetEnumerator() | Where-Object { (Get-Command ($_.Name).Split(':')[0]).Module -like 'Automated*' }
+    $automatedLabPSDefaultParameterValues = $global:PSDefaultParameterValues.GetEnumerator() | Where-Object { (Get-Command ($_.Name).Split(':')[0] -ErrorAction SilentlyContinue).Module -like 'Automated*' }
     if ($automatedLabPSDefaultParameterValues)
     {
         foreach ($entry in $automatedLabPSDefaultParameterValues)
@@ -1629,6 +1629,11 @@ function Add-LabIsoImageDefinition
                     $isoFiles = Get-LabAzureLabSourcesContent -Path $isoRoot -RegexFilter '\.iso' -File -ErrorAction SilentlyContinue | Where-Object {$_.Name -eq (Split-Path -Path $Path -Leaf)}
                 }
             }
+        }
+        else
+        {
+            Write-ScreenInfo -Type Warning -Message "$Path is not on Azure LabSources $()! If you intend to use`r`nMount-LabIsoImage it will result in the ISO getting copied to the remote machine!"
+            $isoFiles = Get-ChildItem -Path $Path -Filter *.iso -Recurse -ErrorAction SilentlyContinue
         }
     }
     else

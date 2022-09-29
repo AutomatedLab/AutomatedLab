@@ -164,7 +164,7 @@ function Add-LabAzureSubscription
         throw 'No lab defined. Please call New-LabDefinition first before calling Set-LabDefaultOperatingSystem.'
     }
 
-    $null = Test-LabAzureModuleAvailability -ErrorAction Stop
+    $null = Test-LabAzureModuleAvailability -AzureStack:$($AzureStack.IsPresent) -ErrorAction Stop
 
     Write-ScreenInfo -Message 'Adding Azure subscription data' -Type Info -TaskStart
 
@@ -1098,7 +1098,7 @@ function Test-LabAzureLabSourcesStorage
 
     Test-LabHostConnected -Throw -Quiet
 
-    if ((Get-Lab).AzureSettings.IsAzureStack) { return $false }
+    if ((Get-LabDefinition -ErrorAction SilentlyContinue).AzureSettings.IsAzureStack -or (Get-Lab -ErrorAction SilentlyContinue).AzureSettings.IsAzureStack) { return $false }
 
     $azureLabSources = Get-LabAzureLabSourcesStorage -ErrorAction SilentlyContinue
 

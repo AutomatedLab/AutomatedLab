@@ -214,7 +214,8 @@ function New-LabPSSession
             {
                 if ($internalSession.Runspace.ConnectionInfo.AuthenticationMechanism -eq 'CredSsp' -and
                     -not $IgnoreAzureLabSources.IsPresent -and -not $internalSession.ALLabSourcesMapped -and
-                    (Get-LabVM -ComputerName $internalSession.LabMachineName).HostType -eq 'Azure'
+                    (Get-LabVM -ComputerName $internalSession.LabMachineName).HostType -eq 'Azure' -and
+                    -not $lab.AzureSettings.IsAzureStack
                 )
                 {
                     #remove the existing session if connecting to Azure LabSource did not work in case the session connects to an Azure VM.
@@ -1049,7 +1050,7 @@ function New-LabCimSession
 
             if ($internalSession)
             {
-                if ($internalSession.Runspace.ConnectionInfo.AuthenticationMechanism -eq 'CredSsp' -and (Get-LabVM -ComputerName $internalSession.LabMachineName).HostType -eq 'Azure')
+                if ($internalSession.Runspace.ConnectionInfo.AuthenticationMechanism -eq 'CredSsp' -and (Get-LabVM -ComputerName $internalSession.LabMachineName).HostType -eq 'Azure' -and -not $lab.AzureSettings.IsAzureStack)
                 {
                     #remove the existing session if connecting to Azure LabSource did not work in case the session connects to an Azure VM.
                     Write-ScreenInfo "Removing session to '$($internalSession.LabMachineName)' as ALLabSourcesMapped was false" -Type Warning

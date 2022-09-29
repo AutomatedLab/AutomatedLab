@@ -1,3 +1,21 @@
+# Azure Stack Hub as the target Azure environment
+
+This sample shows you how to use Azure Stack Hub as a target environment for Azure. This process
+was tested using the Azure Stack SDK, and should be applicable to other environments
+such as Azure China or Azure US Government. This, however, could not be tested by the AutomatedLab
+team.
+
+To successfully use Azure Stack Hub, there are a few prerequisites:
+- An Azure Stack Hub to connect to
+- Connectivity to the Hub that is being used, for example via VPN
+- A subscription!
+  - Make sure all relevant resource providers are registered in your subscription - this does *not* happen automatically.
+- Verify (or ask your AzS Operator) that the marketplace is populated with Operating System images
+- Internet connectivity of your host system in order to download the required modules
+  - Validate versions yourself: `Test-LabAzureModuleAvailability -Verbose -AzureStack`
+  - Required versions: `Get-LabConfigurationItem -Name RequiredAzStackModules`
+
+```powershell
 <#
 .SYNOPSIS
     Use Azure Stack Hub as a target for AutomatedLab
@@ -97,3 +115,4 @@ Add-LabMachineDefinition -Name ALWBOnAzS -Memory 4GB -DomainName contoso.com -Op
 Install-Lab
 
 Show-LabDeploymentSummary -Detailed
+```

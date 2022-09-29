@@ -14,9 +14,9 @@ Adds Azure subscription data to lab
 
 ```
 Add-LabAzureSubscription [[-SubscriptionName] <String>] [-SubscriptionId <Guid>]
- [[-DefaultLocationName] <String>] [[-DefaultStorageAccountName] <String>]
+ [[-DefaultLocationName] <String>] [[-DefaultStorageAccountName] <String>] [[-Environment] <String>]
  [[-DefaultResourceGroupName] <String>] [-AutoShutdownTime <TimeSpan>] [-AutoShutdownTimeZone <String>]
- [-PassThru] [-AllowBastionHost] [<CommonParameters>]
+ [-PassThru] [-AllowBastionHost] [-AzureStack] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -83,6 +83,21 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -AzureStack
+Indicates that the endpoint is running Azure Stack Hub with its considerably older API versions.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -DefaultLocationName
 The default location to choose
 
@@ -123,6 +138,22 @@ Aliases:
 
 Required: False
 Position: 3
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Environment
+Azure environment to use. Defaults to AzureGlobal. Intended use: Adding a connected Azure Stack environment.
+Theoretically possible but untested: Other environments like AzureChina.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

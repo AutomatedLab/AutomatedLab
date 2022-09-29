@@ -30,23 +30,32 @@
     $apiVersions = if (Get-LabConfigurationItem -Name UseLatestAzureProviderApi)
     {
         $providers = Get-AzResourceProvider -Location $lab.AzureSettings.DefaultLocation.Location -ErrorAction SilentlyContinue | Where-Object RegistrationState -eq 'Registered'
-        @{
-            NicApi             = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'networkInterfaces').ApiVersions | Select-Object -First 1 # 2022-01-01
-            DiskApi            = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Compute').ResourceTypes | Where-Object ResourceTypeName -eq 'disks').ApiVersions | Select-Object -First 1 # 2022-01-01
-            AvailabilitySetApi = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Compute').ResourceTypes | Where-Object ResourceTypeName -eq 'availabilitySets').ApiVersions | Select-Object -First 1 -Skip 1 # 2022-03-01
-            LoadBalancerApi    = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'loadBalancers').ApiVersions | Select-Object -First 1 # 2022-01-01
-            PublicIpApi        = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'publicIpAddresses').ApiVersions | Select-Object -First 1 # 2022-01-01
-            VirtualNetworkApi  = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'virtualNetworks').ApiVersions | Select-Object -First 1 # 2022-01-01
-            BastionHostApi     = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'bastionHosts').ApiVersions | Select-Object -First 1 # 2022-01-01
-            NsgApi             = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'networkSecurityGroups').ApiVersions | Select-Object -First 1 # 2022-01-01
-            VmApi              = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Compute').ResourceTypes | Where-Object ResourceTypeName -eq 'virtualMachines').ApiVersions | Select-Object -First 1 -Skip 1 # 2022-03-01
+        $provHash = @{
+            NicApi             = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'networkInterfaces').ApiVersions[0] # 2022-01-01
+            DiskApi            = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Compute').ResourceTypes | Where-Object ResourceTypeName -eq 'disks').ApiVersions[0] # 2022-01-01
+            LoadBalancerApi    = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'loadBalancers').ApiVersions[0] # 2022-01-01
+            PublicIpApi        = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'publicIpAddresses').ApiVersions[0] # 2022-01-01
+            VirtualNetworkApi  = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'virtualNetworks').ApiVersions[0] # 2022-01-01
+            NsgApi             = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'networkSecurityGroups').ApiVersions[0] # 2022-01-01
+            AvailabilitySetApi = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Compute').ResourceTypes | Where-Object ResourceTypeName -eq 'availabilitySets').ApiVersions[1] # 2022-03-01
+            VmApi              = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Compute').ResourceTypes | Where-Object ResourceTypeName -eq 'virtualMachines').ApiVersions[1] # 2022-03-01
         }
+        if (-not $lab.AzureSettings.IsAzureStack)
+        {
+            $provHash.BastionHostApi = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'bastionHosts').ApiVersions[0] # 2022-01-01
+        }
+        if ($lab.AzureSettings.IsAzureStack)
+        {
+            $provHash.AvailabilitySetApi = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Compute').ResourceTypes | Where-Object ResourceTypeName -eq 'availabilitySets').ApiVersions[0]
+            $provHash.VmApi = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Compute').ResourceTypes | Where-Object ResourceTypeName -eq 'virtualMachines').ApiVersions[0]
+        }
+        $provHash
     }
     elseif ($Lab.AzureSettings.IsAzureStack)
     {
         @{
             NicApi             = '2018-11-01'
-            DiskApi            = '2022-01-01'
+            DiskApi            = '2018-11-01'
             AvailabilitySetApi = '2020-06-01'
             LoadBalancerApi    = '2018-11-01'
             PublicIpApi        = '2018-11-01'
@@ -125,41 +134,44 @@
                         destinationAddressPrefixes = @()
                     }
                 }
-                @{
-                    name       = "BastionMgmtOut"
-                    properties = @{
-                        protocol                   = "TCP"
-                        sourcePortRange            = "*"
-                        sourceAddressPrefix        = "*"
-                        destinationAddressPrefix   = "AzureCloud"
-                        access                     = "Allow"
-                        priority                   = 100
-                        direction                  = "Outbound"
-                        sourcePortRanges           = @()
-                        destinationPortRanges      = @(
-                            "443"
-                        )
-                        sourceAddressPrefixes      = @()
-                        destinationAddressPrefixes = @()
+                if (-not $Lab.AzureSettings.IsAzureStack)
+                {
+                    @{
+                        name       = "BastionMgmtOut"
+                        properties = @{
+                            protocol                   = "TCP"
+                            sourcePortRange            = "*"
+                            sourceAddressPrefix        = "*"
+                            destinationAddressPrefix   = "AzureCloud"
+                            access                     = "Allow"
+                            priority                   = 100
+                            direction                  = "Outbound"
+                            sourcePortRanges           = @()
+                            destinationPortRanges      = @(
+                                "443"
+                            )
+                            sourceAddressPrefixes      = @()
+                            destinationAddressPrefixes = @()
+                        }
                     }
-                }
-                @{
-                    name       = "BastionRdsOut"
-                    properties = @{
-                        protocol                   = "TCP"
-                        sourcePortRange            = "*"
-                        sourceAddressPrefix        = "*"
-                        destinationAddressPrefix   = "VirtualNetwork"
-                        access                     = "Allow"
-                        priority                   = 101
-                        direction                  = "Outbound"
-                        sourcePortRanges           = @()
-                        destinationPortRanges      = @(
-                            "3389"
-                            "22"
-                        )
-                        sourceAddressPrefixes      = @()
-                        destinationAddressPrefixes = @()
+                    @{
+                        name       = "BastionRdsOut"
+                        properties = @{
+                            protocol                   = "TCP"
+                            sourcePortRange            = "*"
+                            sourceAddressPrefix        = "*"
+                            destinationAddressPrefix   = "VirtualNetwork"
+                            access                     = "Allow"
+                            priority                   = 101
+                            direction                  = "Outbound"
+                            sourcePortRanges           = @()
+                            destinationPortRanges      = @(
+                                "3389"
+                                "22"
+                            )
+                            sourceAddressPrefixes      = @()
+                            destinationAddressPrefixes = @()
+                        }
                     }
                 }
             )
@@ -222,7 +234,7 @@
             }
         }
 
-        if ($network.DnsServers)
+        if ($network.DnsServers -and -not $lab.AzureSettings.IsAzureStack)
         {
             Write-ScreenInfo -Type Verbose -Message ('Adding DNS Servers to VNet template: {0}' -f $network.DnsServers)
             $vNet.properties.dhcpOptions.dnsServers = [string[]]($network.DnsServers.AddressAsString)
@@ -315,7 +327,7 @@
                     }
                 }
                 sku        = @{
-                    name = 'Standard'
+                    name = if ($Lab.AzureSettings.IsAzureStack) { 'Basic' } else { 'Standard' }
                 }
             }
 
@@ -406,7 +418,7 @@
                 }
             }
             sku        = @{
-                name = 'Standard'
+                name = if ($Lab.AzureSettings.IsAzureStack) { 'Basic' } else { 'Standard' }
             }
         }
         #endregion
@@ -428,7 +440,7 @@
             name       = "lb$vnetCount"
             location   = "[resourceGroup().location]"
             sku        = @{
-                name = "Standard"
+                name = if ($Lab.AzureSettings.IsAzureStack) { 'Basic' } else { 'Standard' }
             }
             dependsOn  = @(
                 "[resourceId('Microsoft.Network/publicIPAddresses', 'lbip$vnetCount')]"
@@ -449,26 +461,30 @@
                         name = "$($vnetCount)lbbc"
                     }
                 )
-                outboundRules            = @(
-                    @{
-                        name       = "InternetAccess"
-                        properties = @{
-                            allocatedOutboundPorts   = 0 # In order to use automatic allocation
-                            frontendIPConfigurations = @(
-                                @{
-                                    id = "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', 'lb$vnetCount', '$($vnetCount)lbfc')]"
-                                }
-                            )
-                            backendAddressPool       = @{
-                                id = "[concat(resourceId('Microsoft.Network/loadBalancers', 'lb$vnetCount'), '/backendAddressPools/$($vnetCount)lbbc')]"
-                            }
-                            protocol                 = "All"
-                            enableTcpReset           = $true
-                            idleTimeoutInMinutes     = 4
-                        }
-                    }
-                )
             }
+        }
+
+        if (-not $Lab.AzureSettings.IsAzureStack)
+        {
+            $loadbalancer.outboundRules = @(
+                @{
+                    name       = "InternetAccess"
+                    properties = @{
+                        allocatedOutboundPorts   = 0 # In order to use automatic allocation
+                        frontendIPConfigurations = @(
+                            @{
+                                id = "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', 'lb$vnetCount', '$($vnetCount)lbfc')]"
+                            }
+                        )
+                        backendAddressPool       = @{
+                            id = "[concat(resourceId('Microsoft.Network/loadBalancers', 'lb$vnetCount'), '/backendAddressPools/$($vnetCount)lbbc')]"
+                        }
+                        protocol                 = "All"
+                        enableTcpReset           = $true
+                        idleTimeoutInMinutes     = 4
+                    }
+                }
+            )
         }
 
         $rules = foreach ($machine in ($Lab.Machines | Where-Object -FilterScript { $_.Network -EQ $network.Name -and -not $_.SkipDeployment }))
@@ -1369,6 +1385,9 @@ function Initialize-LWAzureVM
             }
         }
 
+        Enable-PSRemoting -Force -SkipNetworkProfileCheck
+        Enable-WSManCredSSP -Role Server -Force
+
         #region Region Settings Xml
         $regionSettings = @'
 <gs:GlobalizationServices xmlns:gs="urn:longhornGlobalizationUnattend">
@@ -1419,8 +1438,9 @@ function Initialize-LWAzureVM
 
         Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope LocalMachine -Force
 
-        $dnsServer = Get-DnsClientServerAddress -InterfaceAlias Ethernet -AddressFamily IPv4
-        Set-DnsClientServerAddress -InterfaceAlias Ethernet -ServerAddresses 168.63.129.16
+        $idx = (Get-NetIPInterface | Where-object { $_.AddressFamily -eq "IPv4" -and $_.InterfaceAlias -like "*Ethernet*" }).ifIndex
+        $dnsServer = Get-DnsClientServerAddress -InterfaceIndex $idx -AddressFamily IPv4
+        Set-DnsClientServerAddress -InterfaceIndex $idx -ServerAddresses 168.63.129.16
         $release = Invoke-RestMethod -Uri 'https://api.github.com/repos/powershell/powershell/releases/latest' -UseBasicParsing -ErrorAction SilentlyContinue
         $uri = ($release.assets | Where-Object name -like '*-win-x64.msi').browser_download_url
         if (-not $uri)
@@ -1446,7 +1466,7 @@ function Initialize-LWAzureVM
 
             New-ItemProperty -Path "HKLM:\SOFTWARE\OpenSSH" -Name DefaultShell -Value "C:\Program Files\powershell\7\pwsh.exe" -PropertyType String -Force
             $null = New-Item -Force -Path C:\AL\SSH -ItemType Directory
-            $PublicKey | Set-Content -Path (Join-Path -Path C:\AL\SSH -ChildPath 'keys')
+            if ($PublicKey) { $PublicKey | Set-Content -Path (Join-Path -Path C:\AL\SSH -ChildPath 'keys') }
             Start-Process -Wait -FilePath icacls.exe -ArgumentList "$(Join-Path -Path C:\AL\SSH -ChildPath 'keys') /inheritance:r /grant ""Administrators:F"" /grant ""SYSTEM:F"""
             $sshdConfig = @"
 Port 22
@@ -1467,7 +1487,9 @@ Subsystem powershell c:/progra~1/powershell/7/pwsh.exe -sshs -NoLogo
         powercfg.exe -setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c
 
         #Create a scheduled tasks that maps the Azure lab sources drive during each logon
-        $script = @'
+        if (-not [string]::IsNullOrWhiteSpace($LabSourcesPath))
+        {
+            $script = @'
     $labSourcesPath = '{0}'
 
     $pattern = '^(OK|Unavailable) +(?<DriveLetter>\w): +\\\\automatedlab'
@@ -1489,15 +1511,16 @@ Subsystem powershell c:/progra~1/powershell/7/pwsh.exe -sshs -NoLogo
     net.exe use * {0} /u:{2} {3}
 '@
 
-        $cmdkeyTarget = ($LabSourcesPath -split '\\')[2]
-        $script = $script -f $LabSourcesPath, $cmdkeyTarget, $StorageAccountName, $StorageAccountKey
+            $cmdkeyTarget = ($LabSourcesPath -split '\\')[2]
+            $script = $script -f $LabSourcesPath, $cmdkeyTarget, $StorageAccountName, $StorageAccountKey
 
-        [pscustomobject]@{
-            Path               = $LabSourcesPath
-            StorageAccountName = $StorageAccountName
-            StorageAccountKey  = $StorageAccountKey
-        } | Export-Clixml -Path C:\AL\LabSourcesStorageAccount.xml
-        $script | Out-File C:\AL\AzureLabSources.ps1 -Force
+            [pscustomobject]@{
+                Path               = $LabSourcesPath
+                StorageAccountName = $StorageAccountName
+                StorageAccountKey  = $StorageAccountKey
+            } | Export-Clixml -Path C:\AL\LabSourcesStorageAccount.xml
+            $script | Out-File C:\AL\AzureLabSources.ps1 -Force
+        }
 
         #set the time zone
         Set-TimeZone -Name $TimeZoneId
@@ -1546,7 +1569,7 @@ Subsystem powershell c:/progra~1/powershell/7/pwsh.exe -sshs -NoLogo
         }
     }
 
-    $initScriptFile = New-TemporaryFile
+    $initScriptFile = New-Item -ItemType File -Path (Join-Path -Path ([IO.Path]::GetTempPath()) -ChildPath "$($Lab.Name)vminit.ps1") -Force
     $initScript.ToString() | Set-Content -Path $initScriptFile -Force
 
     # Configure AutoShutdown
@@ -1571,7 +1594,7 @@ Subsystem powershell c:/progra~1/powershell/7/pwsh.exe -sshs -NoLogo
     }
 
     Write-ScreenInfo -Message 'Configuring localization and additional disks' -TaskStart -NoNewLine
-    $labsourcesStorage = Get-LabAzureLabSourcesStorage
+    if (-not $lab.AzureSettings.IsAzureStack) { $labsourcesStorage = Get-LabAzureLabSourcesStorage }
     $jobs = foreach ($m in $Machine)
     {
         [string[]]$DnsServers = ($m.NetworkAdapters | Where-Object { $_.VirtualSwitch.Name -eq $Lab.Name }).Ipv4DnsServers.AddressAsString
@@ -1586,15 +1609,36 @@ Subsystem powershell c:/progra~1/powershell/7/pwsh.exe -sshs -NoLogo
         $scriptParam = @{
             UserLocale                          = $m.UserLocale
             TimeZoneId                          = $m.TimeZone
-            Disks                               = $diskJson
-            LabSourcesPath                      = $labsourcesStorage.Path
-            StorageAccountName                  = $labsourcesStorage.StorageAccountName
-            StorageAccountKey                   = $labsourcesStorage.StorageAccountKey
-            DnsServers                          = $DnsServers
             WinRmMaxEnvelopeSizeKb              = Get-LabConfigurationItem -Name WinRmMaxEnvelopeSizeKb
             WinRmMaxConcurrentOperationsPerUser = Get-LabConfigurationItem -Name WinRmMaxConcurrentOperationsPerUser
             WinRmMaxConnections                 = Get-LabConfigurationItem -Name WinRmMaxConnections
-            PublicKey                           = $m.SshPublicKey
+        }
+        $azsArgumentLine = '-UserLocale "{0}" -TimeZoneId "{1}" -WinRmMaxEnvelopeSizeKb {2} -WinRmMaxConcurrentOperationsPerUser {3} -WinRmMaxConnections {4}' -f $m.UserLocale, $m.TimeZone, (Get-LabConfigurationItem -Name WinRmMaxEnvelopeSizeKb), (Get-LabConfigurationItem -Name WinRmMaxConcurrentOperationsPerUser), (Get-LabConfigurationItem -Name WinRmMaxConnections)
+
+        if ($DnsServers.Count -gt 0)
+        {
+            $scriptParam.DnsServers = $DnsServers
+            $azsArgumentLine += ' -DnsServers "{0}"' -f ($DnsServers -join '","')
+        }
+
+        if ($m.SshPublicKey)
+        {
+            $scriptParam.PublicKey = $m.SshPublicKey
+            $azsArgumentLine += ' -PublicKey "{0}"' -f $m.SshPublicKey
+        }
+
+        if ($diskJson)
+        {
+            $scriptParam.Disks = $diskJson
+            $azsArgumentLine += " -Disks '{0}'" -f $diskJson
+        }
+
+        if ($labsourcesStorage)
+        {            
+            $scriptParam.LabSourcesPath = $labsourcesStorage.Path
+            $scriptParam.StorageAccountName = $labsourcesStorage.StorageAccountName
+            $scriptParam.StorageAccountKey = $labsourcesStorage.StorageAccountKey
+            $azsArgumentLine += '-LabSourcesPath {0} -StorageAccountName {1} -StorageAccountKey {2}' -f $labsourcesStorage.Path, $labsourcesStorage.StorageAccountName, $labsourcesStorage.StorageAccountKey
         }
 
         if ($m.IsDomainJoined)
@@ -1602,11 +1646,72 @@ Subsystem powershell c:/progra~1/powershell/7/pwsh.exe -sshs -NoLogo
             $domain = $lab.Domains | Where-Object Name -eq $m.DomainName
         }
 
-        if ($DNSServers.Count -eq 0) { $scriptParam.Remove('DnsServers') }
-        Invoke-AzVMRunCommand -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName -VMName $m.ResourceName -ScriptPath $initScriptFile -Parameter $scriptParam -CommandId 'RunPowerShellScript' -ErrorAction Stop -AsJob
+        # Azure Stack - Create temporary storage account to upload script and use extension - sad, but true.
+        if ($Lab.AzureSettings.IsAzureStack)
+        {
+            $sa = Get-AzStorageAccount -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName -ErrorAction SilentlyContinue
+            if (-not $sa)
+            {
+                $sa = New-AzStorageAccount -Name "cse$(-join (1..10 | % {[char](Get-Random -Min 97 -Max 122)}))" -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName -SkuName Standard_LRS -Kind Storage -Location (Get-LabAzureDefaultLocation).Location
+            }
+
+            $co = $sa | Get-AzStorageContainer -Name customscriptextension -ErrorAction SilentlyContinue
+            if (-not $co)
+            {
+                $co = $sa | New-AzStorageContainer -Name customscriptextension
+            }
+
+            $content = Set-AzStorageBlobContent -File $initScriptFile -CloudBlobContainer $co.CloudBlobContainer -Blob $(Split-Path -Path $initScriptFile -Leaf) -Context $sa.Context -Force -ErrorAction Stop
+            $token = New-AzStorageBlobSASToken -CloudBlob $content.ICloudBlob -StartTime (Get-Date) -ExpiryTime $(Get-Date).AddHours(1) -Protocol HttpsOnly -Context $sa.Context -Permission r -ErrorAction Stop
+            $uri = '{0}{1}/{2}{3}' -f $co.Context.BlobEndpoint,'customscriptextension', $(Split-Path -Path $initScriptFile -Leaf), $token
+            [version] $typehandler = (Get-AzVMExtensionImage -PublisherName Microsoft.Compute -Type CustomScriptExtension -Location (Get-LabAzureDefaultLocation).Location | Sort-Object { [version]$_.Version } | Select-Object -Last 1).Version
+            
+            $extArg = @{
+                ResourceGroupName  = $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName
+                VMName             = $m.ResourceName
+                FileUri            = $uri
+                TypeHandlerVersion = '{0}.{1}' -f $typehandler.Major, $typehandler.Minor
+                Name               = 'initcustomizations'
+                Location           = (Get-LabAzureDefaultLocation).Location
+                Run                = Split-Path -Path $initScriptFile -Leaf
+                Argument           = $azsArgumentLine
+                NoWait             = $true
+            }
+            $Null = Set-AzVMCustomScriptExtension @extArg
+        }
+        else
+        {
+            Invoke-AzVMRunCommand -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName -VMName $m.ResourceName -ScriptPath $initScriptFile -Parameter $scriptParam -CommandId 'RunPowerShellScript' -ErrorAction Stop -AsJob
+        }
     }
 
-    Wait-LWLabJob -Job $jobs -ProgressIndicator 5 -Timeout 30 -NoDisplay
+    $initScriptFile | Remove-Item -ErrorAction SilentlyContinue
+
+    if ($jobs)
+    {
+        Wait-LWLabJob -Job $jobs -ProgressIndicator 5 -Timeout 30 -NoDisplay
+    }
+
+    # Wait for VM extensions to be "done"
+    if ($lab.AzureSettings.IsAzureStack)
+    {
+        $extensionStatuus = Get-LabVm | Foreach-Object { Get-AzVMCustomScriptExtension -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName -VMName $_.ResourceName -Name initcustomizations -ErrorAction SilentlyContinue }
+        $start = Get-Date
+        $timeout = New-TimeSpan -Minutes 5
+        while (($extensionStatuus.ProvisioningState -contains 'Updating' -or $extensionStatuus.ProvisioningState -contains 'Creating') -and ((Get-Date) - $start) -lt $timeout)
+        {
+            Start-Sleep -Seconds 5
+            $extensionStatuus = Get-LabVm | Foreach-Object { Get-AzVMCustomScriptExtension -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName -VMName $_.ResourceName -Name initcustomizations -ErrorAction SilentlyContinue }
+        }
+
+        foreach ($network in $Lab.VirtualNetworks)
+        {
+            if ($network.DnsServers.Count -eq 0) { continue }
+            $vnet = Get-AzVirtualNetwork -Name $network.ResourceName -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName
+            $vnet.dhcpOptions.dnsServers = [string[]]($network.DnsServers.AddressAsString)
+            $null = $vnet | Set-AzVirtualNetwork
+        }
+    }
     Install-LabSshKnownHost
     Copy-LabFileItem -Path (Get-ChildItem -Path "$((Get-Module -Name AutomatedLab)[0].ModuleBase)\Tools\HyperV\*") -DestinationFolderPath /AL -ComputerName $Machine -UseAzureLabSourcesOnAzureVm $false
     Send-ModuleToPSSession -Module (Get-Module -ListAvailable -Name AutomatedLab.Common | Select-Object -First 1) -Session (New-LabPSSession $Machine) -IncludeDependencies
@@ -2035,7 +2140,7 @@ function Get-LWAzureVMConnectionInfo
         { continue }
 
         $net = $lab.VirtualNetworks.Where({ $_.Name -eq $name.Network[0] })
-        $ip = Get-AzPublicIpAddress -ResourceGroupName $resourceGroupName -ErrorAction SilentlyContinue | Where-Object { $_.Tag['Vnet'] -eq $net.ResourceName }
+        $ip = Get-AzPublicIpAddress -ResourceGroupName $resourceGroupName -ErrorAction SilentlyContinue | Where-Object { $_.Tag['vnet'] -eq $net.ResourceName }
 
         if (-not $ip)
         {
@@ -2327,9 +2432,9 @@ function Mount-LWAzureIsoImage
     # Path is local (usually Azure Stack which has not storage file shares)
     if (-not (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $IsoPath))
     {
-        Write-ScreenInfo -type Info -Message "Copying $IsoPath to $($ComputerName.Name -join ',')"
+        Write-ScreenInfo -type Info -Message "Copying $IsoPath to $($ComputerName -join ',')"
         Copy-LabFileItem -Path $IsoPath -ComputerName $ComputerName -DestinationFolderPath C:\ALMounts
-        $result = Invoke-LabCommand -ActivityName "Mounting $(Split-Path $IsoPath -Leaf) on $($ComputerName.Name -join ',')" -ScriptBlock {
+        $result = Invoke-LabCommand -ActivityName "Mounting $(Split-Path $IsoPath -Leaf) on $($ComputerName -join ',')" -ComputerName $ComputerName -ScriptBlock {
             $drive = Mount-DiskImage -ImagePath C:\ALMounts\$(Split-Path -Leaf -Path $IsoPath) -StorageType ISO -PassThru | Get-Volume
             $drive | Add-Member -MemberType NoteProperty -Name DriveLetter -Value ($drive.CimInstanceProperties.Item('DriveLetter').Value + ":") -Force
             $drive | Add-Member -MemberType NoteProperty -Name InternalComputerName -Value $env:COMPUTERNAME -Force
@@ -2341,7 +2446,7 @@ function Mount-LWAzureIsoImage
 
     $azureIsoPath = $IsoPath -replace '/', '\' -replace 'https:'
 
-    Invoke-LabCommand -ActivityName "Mounting $(Split-Path $azureIsoPath -Leaf) on $($ComputerName.Name -join ',')" -ComputerName $ComputerName -ScriptBlock {
+    Invoke-LabCommand -ActivityName "Mounting $(Split-Path $azureIsoPath -Leaf) on $($ComputerName -join ',')" -ComputerName $ComputerName -ScriptBlock {
 
         if (-not (Test-Path -Path $azureIsoPath))
         {
