@@ -8,6 +8,8 @@
 - Including tests for existing help content to ensure quality of help content
 - Including basic Ubuntu support: VMs can be added but are not installed due to cloud-init not working.
 - Added key for Windows 11 Enterprise Evaluation version 10.0.22621.525
+- Adding official Azure Stack Hub support
+  - Inofficially supports other Azure Environments now as well - in theory. This is hard to test without access.
 
 ### Bugs
 

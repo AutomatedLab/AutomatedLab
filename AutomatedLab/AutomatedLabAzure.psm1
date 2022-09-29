@@ -2,24 +2,37 @@ function Test-LabAzureModuleAvailability
 {
     [OutputType([System.Boolean])]
     [CmdletBinding()]
-    param ()
+    param 
+    (
+        [switch]
+        $AzureStack
+    )
 
-    [hashtable[]] $modules = Get-LabConfigurationItem -Name RequiredAzModules
+    [hashtable[]] $modules = if ($AzureStack.IsPresent) { Get-LabConfigurationItem -Name RequiredAzStackModules } else { Get-LabConfigurationItem -Name RequiredAzModules }
     [hashtable[]] $modulesMissing = @()
+
     foreach ($module in $modules)
     {
+        $param = @{
+            Name  = $module.Name
+            Force = $true
+        }
+
         $isPresent = if ($module.MinimumVersion)
         {
             Get-Module -ListAvailable -Name $module.Name | Where-Object Version -ge $module.MinimumVersion
+            $param.MinimumVersion = $module.MinimumVersion
         }
         elseif ($module.RequiredVersion)
         {
             Get-Module -ListAvailable -Name $module.Name | Where-Object Version -eq $module.RequiredVersion
+            $param.RequiredVersion = $module.RequiredVersion
         }
         
         if ($isPresent)
         {
             Write-PSFMessage -Message "$($module.Name) found"
+            Import-Module @param
             continue
         }
 
@@ -46,10 +59,13 @@ function Install-LabAzureRequiredModule
 
         [ValidateSet('CurrentUser', 'AllUsers')]
         [string]
-        $Scope = 'CurrentUser'
+        $Scope = 'CurrentUser',
+
+        [switch]
+        $AzureStack
     )
 
-    [hashtable[]] $modules = Get-LabConfigurationItem -Name RequiredAzModules
+    [hashtable[]] $modules = if ($AzureStack.IsPresent) { Get-LabConfigurationItem -Name RequiredAzStackModules } else { Get-LabConfigurationItem -Name RequiredAzModules }
     foreach ($module in $modules)
     {
         $isPresent = if ($module.MinimumVersion)
@@ -110,8 +126,11 @@ function Add-LabAzureSubscription
         [Parameter(ParameterSetName = 'ByName')]
         [string]$SubscriptionName,
 
-        [Parameter(ParameterSetName = 'ByName')]
+        [Parameter(ParameterSetName = 'ById')]
         [guid]$SubscriptionId,
+
+        [string]
+        $Environment,
 
         [string]$DefaultLocationName,
 
@@ -129,7 +148,10 @@ function Add-LabAzureSubscription
         [switch]$PassThru,
 
         [switch]
-        $AllowBastionHost
+        $AllowBastionHost,
+
+        [switch]
+        $AzureStack
     )
 
     Test-LabHostConnected -Throw -Quiet
@@ -146,11 +168,27 @@ function Add-LabAzureSubscription
 
     Write-ScreenInfo -Message 'Adding Azure subscription data' -Type Info -TaskStart
 
-    # Try to access Azure RM cmdlets. If credentials are expired, an exception will be raised
-    if (-not (Get-AzContext))
+    if ($Environment -and -not (Get-AzEnvironment -Name $Environment -ErrorAction SilentlyContinue))
     {
-        Write-ScreenInfo -Message "No Azure context available. Please login to your Azure account in the next step."
-        $null = Connect-AzAccount -UseDeviceAuthentication -ErrorAction SilentlyContinue -WarningAction Continue
+        throw "Azure environment $Environment cannot be found. Cannot continue. Please use Add-AzEnvironment before trying that again."
+    }
+
+    # Try to access Azure RM cmdlets. If credentials are expired, an exception will be raised
+    if (-not (Get-AzContext) -or ($Environment -and (Get-AzContext).Environment.Name -ne $Environment))
+    {
+        Write-ScreenInfo -Message "No Azure context available or environment mismatch. Please login to your Azure account in the next step."
+        $param = @{
+            UseDeviceAuthentication = $true
+            ErrorAction = 'SilentlyContinue' 
+            WarningAction = 'Continue'
+        }
+
+        if ($Environment)
+        {
+            $param.Environment = $Environment
+        }
+
+        $null = Connect-AzAccount @param
     }
 
     # Select the proper subscription before saving the profile
@@ -175,10 +213,16 @@ function Add-LabAzureSubscription
         $script:lab.AzureSettings = New-Object AutomatedLab.AzureSettings
     }
 
+    if ($Environment)
+    {
+        $script:lab.AzureSettings.Environment = $Environment
+    }
+
     $script:lab.AzureSettings.DefaultRoleSize = Get-LabConfigurationItem -Name DefaultAzureRoleSize
     $script:lab.AzureSettings.AllowBastionHost = $AllowBastionHost.IsPresent
+    $script:lab.AzureSettings.IsAzureStack = $AzureStack.IsPresent
 
-    if ($AutoShutdownTime)
+    if ($AutoShutdownTime -and -not $AzureStack.IsPresent)
     {
         if (-not $AutoShutdownTimeZone)
         {
@@ -236,7 +280,7 @@ function Add-LabAzureSubscription
     $script:lab.AzureSettings.DefaultSubscription = [AutomatedLab.Azure.AzureSubscription]::Create($selectedSubscription)
     Write-PSFMessage "Azure subscription '$SubscriptionName' selected as default"
 
-    if ($AllowBastionHost.IsPresent -and (Get-AzProviderFeature -FeatureName AllowBastionHost -ProviderNamespace Microsoft.Network).RegistrationState -eq 'NotRegistered')
+    if ($AllowBastionHost.IsPresent -and -not $AzureStack.IsPresent -and (Get-AzProviderFeature -FeatureName AllowBastionHost -ProviderNamespace Microsoft.Network).RegistrationState -eq 'NotRegistered')
     {
         # Check if resource provider allows BastionHost deployment
         $null = Register-AzProviderFeature -FeatureName AllowBastionHost -ProviderNamespace Microsoft.Network
@@ -327,7 +371,10 @@ function Add-LabAzureSubscription
     $script:lab.AzureSettings.RoleSizes = $rolesizes
 
     # Add LabSources storage
-    New-LabAzureLabSourcesStorage
+    if ( -not $AzureStack.IsPresent)
+    {
+        New-LabAzureLabSourcesStorage
+    }
 
     # Add ISOs
     $type = Get-Type -GenericType AutomatedLab.DictionaryXmlStore -T String, DateTime
@@ -353,7 +400,7 @@ function Add-LabAzureSubscription
         $timestamps = New-Object $type
     }
 
-    if ($lastChecked -lt [datetime]::Now.AddDays(-7))
+    if ($lastChecked -lt [datetime]::Now.AddDays(-7) -and -not $AzureStack.IsPresent)
     {
         Write-PSFMessage -Message 'ISO cache outdated. Updating ISO files.'
         try
@@ -395,7 +442,7 @@ function Add-LabAzureSubscription
     $syncMaxSize = Get-LabConfigurationItem -Name LabSourcesMaxFileSizeMb
     $syncIntervalDays = Get-LabConfigurationItem -Name LabSourcesSyncIntervalDays
 
-    if (-not (Get-LabConfigurationItem -Name DoNotPrompt -Default $false) -and -not $lastchecked)
+    if (-not (Get-LabConfigurationItem -Name DoNotPrompt -Default $false) -and -not $lastchecked -and -not $AzureStack.IsPresent)
     {
         $lastchecked = [datetime]0
         $syncText = @"
@@ -442,7 +489,7 @@ Get/Set/Register/Unregister-PSFConfig -Module AutomatedLab -Name AutoSyncLabSour
         }
     }
 
-    if ((Get-LabConfigurationItem -Name AutoSyncLabSources) -and $lastchecked -lt [datetime]::Now.AddDays(-$syncIntervalDays) )
+    if ((Get-LabConfigurationItem -Name AutoSyncLabSources) -and $lastchecked -lt [datetime]::Now.AddDays(-$syncIntervalDays) -and -not $AzureStack.IsPresent)
     {
         Sync-LabAzureLabSources -MaxFileSizeInMb $syncMaxSize
         $timestamps.LabSourcesSynced = Get-Date
@@ -1051,6 +1098,8 @@ function Test-LabAzureLabSourcesStorage
 
     Test-LabHostConnected -Throw -Quiet
 
+    if ((Get-Lab).AzureSettings.IsAzureStack) { return $false }
+
     $azureLabSources = Get-LabAzureLabSourcesStorage -ErrorAction SilentlyContinue
 
     if (-not $azureLabSources)
@@ -1081,6 +1130,10 @@ function Test-LabPathIsOnLabAzureLabSourcesStorage
             $azureLabSources = Get-LabAzureLabSourcesStorage
 
             return $Path -like "$($azureLabSources.Path)*"
+        }
+        else
+        {
+            return $false
         }
     }
     catch
@@ -1395,7 +1448,18 @@ function Get-LabAzureAvailableRoleSize
 
     if (-not (Get-AzContext -ErrorAction SilentlyContinue))
     {
-        [void] (Connect-AzAccount -UseDeviceAuthentication -WarningAction SilentlyContinue)
+        $param = @{
+            UseDeviceAuthentication = $true
+            ErrorAction             = 'SilentlyContinue' 
+            WarningAction           = 'Continue'            
+        }
+
+        if ($script:lab.AzureSettings.Environment)
+        {
+            $param.Environment = $script:Lab.AzureSettings.Environment
+        }
+
+        $null = Connect-AzAccount @param
     }
 
     $azLocation = Get-AzLocation | Where-Object { $_.DisplayName -eq $DisplayName -or $_.Location -eq $LocationName }
@@ -1404,9 +1468,19 @@ function Get-LabAzureAvailableRoleSize
         Write-ScreenInfo -Type Error -Message "No location found matching DisplayName '$DisplayName' or Name '$LocationName'"
     }
 
-    $availableRoleSizes = Get-AzComputeResourceSku -Location $azLocation.Location | Where-Object {
-        $_.ResourceType -eq 'virtualMachines' -and $_.Restrictions.ReasonCode -notcontains 'NotAvailableForSubscription' -and $_.Capabilities.Where({$_.Name -eq 'CpuArchitectureType'}).Value -eq 'x64'
+    $availableRoleSizes = if ((Get-Command Get-AzComputeResourceSku).Parameters.ContainsKey('Location'))
+    {
+        Get-AzComputeResourceSku -Location $azLocation.Location | Where-Object {
+        $_.ResourceType -eq 'virtualMachines' -and $_.Restrictions.ReasonCode -notcontains 'NotAvailableForSubscription'
     }
+    }
+    else
+    {
+        Get-AzComputeResourceSku | Where-Object {
+        $_.Locations -contains $azLocation.Location -and $_.ResourceType -eq 'virtualMachines' -and $_.Restrictions.ReasonCode -notcontains 'NotAvailableForSubscription'
+    }
+    }
+    
 
     foreach ($vms in (Get-AzVMSize -Location $azLocation.Location | Where-Object -Property Name -in $availableRoleSizes.Name))
     {
@@ -1473,7 +1547,7 @@ function Get-LabAzureAvailableSku
     Get-AzVMImageOffer |
     Get-AzVMImageSku |
     Get-AzVMImage |
-    Where-Object Skus -eq 'Enterprise' |
+    Where-Object Skus -in 'Standard','Enterprise' |
     Group-Object -Property Skus, Offer |
     ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
 
@@ -1522,6 +1596,12 @@ function Enable-LabAzureJitAccess
 
     $vms = Get-LWAzureVm
     $lab = Get-Lab
+
+    if ($lab.AzureSettings.IsAzureStack)
+    {
+        Write-Error -Message "$($lab.Name) is running on Azure Stack and thus does not support JIT access."
+        return
+    }
     
     $parameters = @{
         Location          = $lab.AzureSettings.DefaultLocation.Location
@@ -1585,6 +1665,12 @@ function Request-LabAzureJitAccess
     )
 
     $lab = Get-Lab
+
+    if ($lab.AzureSettings.IsAzureStack)
+    {
+        Write-Error -Message "$($lab.Name) is running on Azure Stack and thus does not support JIT access."
+        return
+    }
 
     $parameters = @{
         Location          = $lab.AzureSettings.DefaultLocation.Location

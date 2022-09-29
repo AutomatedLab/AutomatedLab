@@ -31,15 +31,28 @@
     {
         $providers = Get-AzResourceProvider -Location $lab.AzureSettings.DefaultLocation.Location -ErrorAction SilentlyContinue | Where-Object RegistrationState -eq 'Registered'
         @{
-            NicApi             = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'networkInterfaces').ApiVersions[0] # 2022-01-01
-            DiskApi            = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Compute').ResourceTypes | Where-Object ResourceTypeName -eq 'disks').ApiVersions[0] # 2022-01-01
-            AvailabilitySetApi = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Compute').ResourceTypes | Where-Object ResourceTypeName -eq 'availabilitySets').ApiVersions[1] # 2022-03-01
-            LoadBalancerApi    = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'loadBalancers').ApiVersions[0] # 2022-01-01
-            PublicIpApi        = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'publicIpAddresses').ApiVersions[0] # 2022-01-01
-            VirtualNetworkApi  = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'virtualNetworks').ApiVersions[0] # 2022-01-01
-            BastionHostApi     = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'bastionHosts').ApiVersions[0] # 2022-01-01
-            NsgApi             = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'networkSecurityGroups').ApiVersions[0] # 2022-01-01
-            VmApi              = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Compute').ResourceTypes | Where-Object ResourceTypeName -eq 'virtualMachines').ApiVersions[1] # 2022-03-01
+            NicApi             = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'networkInterfaces').ApiVersions | Select-Object -First 1 # 2022-01-01
+            DiskApi            = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Compute').ResourceTypes | Where-Object ResourceTypeName -eq 'disks').ApiVersions | Select-Object -First 1 # 2022-01-01
+            AvailabilitySetApi = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Compute').ResourceTypes | Where-Object ResourceTypeName -eq 'availabilitySets').ApiVersions | Select-Object -First 1 -Skip 1 # 2022-03-01
+            LoadBalancerApi    = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'loadBalancers').ApiVersions | Select-Object -First 1 # 2022-01-01
+            PublicIpApi        = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'publicIpAddresses').ApiVersions | Select-Object -First 1 # 2022-01-01
+            VirtualNetworkApi  = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'virtualNetworks').ApiVersions | Select-Object -First 1 # 2022-01-01
+            BastionHostApi     = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'bastionHosts').ApiVersions | Select-Object -First 1 # 2022-01-01
+            NsgApi             = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'networkSecurityGroups').ApiVersions | Select-Object -First 1 # 2022-01-01
+            VmApi              = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Compute').ResourceTypes | Where-Object ResourceTypeName -eq 'virtualMachines').ApiVersions | Select-Object -First 1 -Skip 1 # 2022-03-01
+        }
+    }
+    elseif ($Lab.AzureSettings.IsAzureStack)
+    {
+        @{
+            NicApi             = '2018-11-01'
+            DiskApi            = '2022-01-01'
+            AvailabilitySetApi = '2020-06-01'
+            LoadBalancerApi    = '2018-11-01'
+            PublicIpApi        = '2018-11-01'
+            VirtualNetworkApi  = '2018-11-01'
+            NsgApi             = '2018-11-01'
+            VmApi              = '2020-06-01'
         }
     }
     else
@@ -161,7 +174,7 @@
     #endregion
 
     #region Wait for availability of Bastion
-    if ($Lab.AzureSettings.AllowBastionHost)
+    if ($Lab.AzureSettings.AllowBastionHost -and -not $lab.AzureSettings.IsAzureStack)
     {
         $bastionFeature = Get-AzProviderFeature -FeatureName AllowBastionHost -ProviderNamespace Microsoft.Network
         while (($bastionFeature).RegistrationState -ne 'Registered')
@@ -243,7 +256,7 @@
             }
         }
 
-        if ($Lab.AzureSettings.AllowBastionHost)
+        if ($Lab.AzureSettings.AllowBastionHost -and -not $lab.AzureSettings.IsAzureStack)
         {
             if ($network.Subnets.Name -notcontains 'AzureBastionSubnet')
             {
@@ -2310,6 +2323,22 @@ function Mount-LWAzureIsoImage
 
     $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
     # ISO file should already exist on Azure storage share, as it was initially retrieved from there as well.
+
+    # Path is local (usually Azure Stack which has not storage file shares)
+    if (-not (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $IsoPath))
+    {
+        Write-ScreenInfo -type Info -Message "Copying $IsoPath to $($ComputerName.Name -join ',')"
+        Copy-LabFileItem -Path $IsoPath -ComputerName $ComputerName -DestinationFolderPath C:\ALMounts
+        $result = Invoke-LabCommand -ActivityName "Mounting $(Split-Path $IsoPath -Leaf) on $($ComputerName.Name -join ',')" -ScriptBlock {
+            $drive = Mount-DiskImage -ImagePath C:\ALMounts\$(Split-Path -Leaf -Path $IsoPath) -StorageType ISO -PassThru | Get-Volume
+            $drive | Add-Member -MemberType NoteProperty -Name DriveLetter -Value ($drive.CimInstanceProperties.Item('DriveLetter').Value + ":") -Force
+            $drive | Add-Member -MemberType NoteProperty -Name InternalComputerName -Value $env:COMPUTERNAME -Force
+            $drive | Select-Object -Property *
+        } -Variable (Get-Variable IsoPath) -PassThru:$PassThru.IsPresent
+
+        if ($PassThru.IsPresent) { return $result } else { return }
+    }
+
     $azureIsoPath = $IsoPath -replace '/', '\' -replace 'https:'
 
     Invoke-LabCommand -ActivityName "Mounting $(Split-Path $azureIsoPath -Leaf) on $($ComputerName.Name -join ',')" -ComputerName $ComputerName -ScriptBlock {
@@ -2355,6 +2384,7 @@ function Dismount-LWAzureIsoImage
             $_ | Dismount-DiskImage
         }
 
+        Get-ChildItem -Path C:\ALMounts\*.iso -ErrorAction SilentlyContinue | Remove-Item
     } -NoDisplay
 }
 #endregion

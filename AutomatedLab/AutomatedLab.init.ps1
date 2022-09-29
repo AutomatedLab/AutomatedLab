@@ -152,7 +152,7 @@ Set-PSFConfig -Module 'AutomatedLab' -Name DisableClusterCheck -Value $false -In
 Set-PSFConfig -Module 'AutomatedLab' -Name DoNotAddVmsToCluster -Value $false -Initialize -Validation bool -Description 'Set to true to skip adding VMs to a cluster if AutomatedLab is being run on a cluster node'
 
 #Hyper-V Network settings
-Set-PSFConfig -Module 'AutomatedLab' -Name MacAddressPrefix -Value '0017FB' -Initialize -Validation string -Description 'The MAC address prefix for Hyper-V labs' -Handler { if ($args[0].Length -eq 0 -or $args[0].Length -gt 11){Write-PSFMessage -Level Error -Message "Invalid prefix length for MacAddressPrefix! $($args[0]) needs to be at least one character and at most 11 characters"; throw "Invalid prefix length for MacAddressPrefix! $($args[0]) needs to be at least one character and at most 11 characters"} }
+Set-PSFConfig -Module 'AutomatedLab' -Name MacAddressPrefix -Value '0017FB' -Initialize -Validation string -Description 'The MAC address prefix for Hyper-V labs' -Handler { if ($args[0].Length -eq 0 -or $args[0].Length -gt 11) { Write-PSFMessage -Level Error -Message "Invalid prefix length for MacAddressPrefix! $($args[0]) needs to be at least one character and at most 11 characters"; throw "Invalid prefix length for MacAddressPrefix! $($args[0]) needs to be at least one character and at most 11 characters" } }
 Set-PSFConfig -Module 'AutomatedLab' -Name DisableDeviceNaming -Value $false -Validation bool -Initialize -Description 'Disables Device Naming for VM NICs. Enabled by default for Hosts > 2016 and Gen 2 Guests > 2016'
 
 #Hyper-V Disk Settings
@@ -177,34 +177,61 @@ Set-PSFConfig -Module 'AutomatedLab' -Name AzureEnableJit -Value $false -Initial
 Set-PSFConfig -Module 'AutomatedLab' -Name RequiredAzModules -Value @(
     # Syntax: Name, MinimumVersion, RequiredVersion
     @{
-        Name = 'Az.Accounts'
+        Name           = 'Az.Accounts'
         MinimumVersion = '2.7.6'
     }
     @{
-        Name = 'Az.Storage'
+        Name           = 'Az.Storage'
         MinimumVersion = '4.5.0'
     }
     @{
-        Name = 'Az.Compute'
+        Name           = 'Az.Compute'
         MinimumVersion = '4.26.0'
     }
     @{
-        Name = 'Az.Network'
+        Name           = 'Az.Network'
         MinimumVersion = '4.16.1'
     }
     @{
-        Name = 'Az.Resources'
+        Name           = 'Az.Resources'
         MinimumVersion = '5.6.0'
     }
     @{
-        Name = 'Az.Websites'
+        Name           = 'Az.Websites'
         MinimumVersion = '2.11.1'
     }
     @{
-        Name = 'Az.Security'
+        Name           = 'Az.Security'
         MinimumVersion = '1.2.0'
     }
- ) -Initialize -Description 'Required Az modules'
+) -Initialize -Description 'Required Az modules'
+
+Set-PSFConfig -Module 'AutomatedLab' -Name RequiredAzStackModules -Value @(
+    @{
+        Name           = 'Az.Accounts'
+        MinimumVersion = '2.2.8'
+    }
+    @{
+        Name           = 'Az.Storage'
+        MinimumVersion = '2.6.2'
+    }
+    @{
+        Name           = 'Az.Compute'
+        MinimumVersion = '3.3.0'
+    }
+    @{
+        Name           = 'Az.Network'
+        MinimumVersion = '1.2.0'
+    }
+    @{
+        Name           = 'Az.Resources'
+        MinimumVersion = '0.12.0'
+    }
+    @{
+        Name           = 'Az.Websites'
+        MinimumVersion = '0.11.0'
+    }
+) -Initialize -Description 'Required Az Stack Hub modules'
 Set-PSFConfig -Module 'AutomatedLab' -Name UseLatestAzureProviderApi -Value $true -Description 'Indicates that the latest provider API versions available in the labs region should be used' -Initialize -Validation bool
 
 #Office
@@ -789,7 +816,7 @@ $fPath = Join-Path -Path (Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRo
 $fcPath = Join-Path -Path (Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot) -ChildPath 'Assets/ProductKeysCustom.xml'
 if (-not (Test-Path -Path $fPath -ErrorAction SilentlyContinue))
 {
-    $null = if (-not (Test-Path -Path (Split-Path $fPath -Parent))) {New-Item -Path (Split-Path $fPath -Parent) -ItemType Directory} 
+    $null = if (-not (Test-Path -Path (Split-Path $fPath -Parent))) { New-Item -Path (Split-Path $fPath -Parent) -ItemType Directory } 
     Copy-Item -Path "$PSScriptRoot/ProductKeys.xml" -Destination $fPath -Force -ErrorAction SilentlyContinue
 }
 Set-PSFConfig -Module AutomatedLab -Name ProductKeyFilePath -Value $fPath -Initialize -Validation string -Description 'Destination of the ProductKeys file for Windows products'
@@ -892,20 +919,20 @@ Register-PSFTeppScriptblock -Name AutomatedLab-TimeZone -ScriptBlock {
 
 Register-PSFTeppScriptblock -Name AutomatedLab-RhelPackage -ScriptBlock {
     (Get-LabAvailableOperatingSystem -UseOnlyCache -ErrorAction SilentlyContinue |
-        Where-Object { $_.OperatingSystemType -eq 'Linux' -and $_.LinuxType -eq 'RedHat' } |
+    Where-Object { $_.OperatingSystemType -eq 'Linux' -and $_.LinuxType -eq 'RedHat' } |
     Sort-Object Version | Select-Object -Last 1).LinuxPackageGroup
 }
 
 Register-PSFTeppScriptblock -Name AutomatedLab-SusePackage -ScriptBlock {
     (Get-LabAvailableOperatingSystem -UseOnlyCache -ErrorAction SilentlyContinue |
-        Where-Object { $_.OperatingSystemType -eq 'Linux' -and $_.LinuxType -eq 'SuSE' } |
+    Where-Object { $_.OperatingSystemType -eq 'Linux' -and $_.LinuxType -eq 'SuSE' } |
     Sort-Object Version | Select-Object -Last 1).LinuxPackageGroup
 
 }
 
 Register-PSFTeppScriptblock -Name AutomatedLab-UbuntuPackage -ScriptBlock {
     (Get-LabAvailableOperatingSystem -UseOnlyCache -ErrorAction SilentlyContinue |
-        Where-Object { $_.OperatingSystemType -eq 'Linux' -and $_.LinuxType -eq 'Ubuntu' } |
+    Where-Object { $_.OperatingSystemType -eq 'Linux' -and $_.LinuxType -eq 'Ubuntu' } |
     Sort-Object Version | Select-Object -Last 1).LinuxPackageGroup
 
 }
