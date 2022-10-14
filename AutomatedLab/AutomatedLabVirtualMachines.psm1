@@ -185,7 +185,7 @@ function Start-LabVM
         }
 
         $vms = [System.Collections.Generic.List[AutomatedLab.Machine]]::new()
-        $availableVMs = $lab.Machines
+        $availableVMs = $lab.Machines | Where-Object SkipDeployment -eq $false
     }
 
     process
@@ -275,6 +275,8 @@ function Start-LabVM
             $vms = $availableVMs | Where-Object { -not $_.SkipDeployment }
         }
 
+        $vms = $vms | Where-Object SkipDeployment -eq $false
+
         #if there are no VMs to start, just write a warning
         if (-not $vms)
         {
@@ -359,7 +361,7 @@ function Save-LabVM
         $lab = Get-Lab
 
         $vms = @()
-        $availableVMs = $lab.Machines.Name
+        $availableVMs = ($lab.Machines  | Where-Object SkipDeployment -eq $false).Name
     }
 
     process
@@ -454,7 +456,7 @@ function Restart-LabVM
 
     process
     {
-        $machines = Get-LabVM -ComputerName $ComputerName
+        $machines = Get-LabVM -ComputerName $ComputerName | Where-Object SkipDeployment -eq $false
 
         if (-not $machines)
         {
@@ -521,7 +523,7 @@ function Stop-LabVM
     {
         if ($ComputerName)
         {
-            $null = Get-LabVM -ComputerName $ComputerName -IncludeLinux | Foreach-Object {$machines.Add($_)}
+            $null = Get-LabVM -ComputerName $ComputerName -IncludeLinux | Where-Object SkipDeployment -eq $false | Foreach-Object {$machines.Add($_)}
         }
     }
 
@@ -719,7 +721,7 @@ function Wait-LabVM
             if (-not ($IsLinux -or $IsMacOs)) { netsh.exe interface ip delete arpcache | Out-Null }
 
             #if called without using DoNotUseCredSsp and the machine is not yet configured for CredSsp, call Wait-LabVM again but with DoNotUseCredSsp. Wait-LabVM enables CredSsp if called with DoNotUseCredSsp switch.
-            if ($lab.DefaultVirtualizationEngine -eq 'HyperV')
+            if (-not $vm.SkipDeployment -and $lab.DefaultVirtualizationEngine -eq 'HyperV')
             {
                 $machineMetadata = Get-LWHypervVMDescription -ComputerName $vm.ResourceName
                 if (($machineMetadata.InitState -band [AutomatedLab.LabVMInitState]::EnabledCredSsp) -ne [AutomatedLab.LabVMInitState]::EnabledCredSsp -and -not $DoNotUseCredSsp)
@@ -797,14 +799,14 @@ function Wait-LabVM
         {
             Write-PSFMessage "The following machines are ready: $($completed -join ', ')"
 
-            foreach ($machine in $completed)
+            foreach ($machine in (Get-LabVM -ComputerName $completed))
             {
-                if ((Get-LabVM -ComputerName $machine).HostType -ne 'HyperV') { continue }
-                $machineMetadata = Get-LWHypervVMDescription -ComputerName $(Get-LabVM -ComputerName $machine).ResourceName
+                if ($machine.SkipDeployment -or $machine.HostType -ne 'HyperV') { continue }
+                $machineMetadata = Get-LWHypervVMDescription -ComputerName $machine.ResourceName
                 if ($machineMetadata.InitState -eq [AutomatedLab.LabVMInitState]::Uninitialized)
                 {
                     $machineMetadata.InitState = [AutomatedLab.LabVMInitState]::ReachedByAutomatedLab
-                    Set-LWHypervVMDescription -Hashtable $machineMetadata -ComputerName $(Get-LabVM -ComputerName $machine).ResourceName
+                    Set-LWHypervVMDescription -Hashtable $machineMetadata -ComputerName $machine.ResourceName
                     Enable-LabAutoLogon -ComputerName $ComputerName
                 }
 
@@ -909,7 +911,7 @@ function Wait-LabVMRestart
 
     process
     {
-        $null = Get-LabVM -ComputerName $ComputerName | Foreach-Object {$vms.Add($_)}
+        $null = Get-LabVM -ComputerName $ComputerName | Where-Object SkipDeployment -eq $false | Foreach-Object {$vms.Add($_)}
     }
 
     end
@@ -1147,6 +1149,8 @@ function Get-LabVMStatus
         $vms = Get-LabVM -IncludeLinux
     }
 
+    $vms = $vms | Where-Object SkipDeployment -eq $false
+
     $hypervVMs = $vms | Where-Object HostType -eq 'HyperV'
     if ($hypervVMs) { $hypervStatus = Get-LWHypervVMStatus -ComputerName $hypervVMs.ResourceName }
 
@@ -1186,8 +1190,15 @@ function Get-LabVMUptime
     Write-LogFunctionEntry
 
     $cmdGetUptime = {
-        $lastboottime = (Get-WmiObject -Class Win32_OperatingSystem).LastBootUpTime
-        (Get-Date) - [System.Management.ManagementDateTimeconverter]::ToDateTime($lastboottime)
+        if ($IsLinux -or $IsMacOs)
+        {
+            (Get-Date) - [datetime](uptime -s)
+        }
+        else
+        {
+            $lastboottime = (Get-WmiObject -Class Win32_OperatingSystem).LastBootUpTime
+            (Get-Date) - [System.Management.ManagementDateTimeconverter]::ToDateTime($lastboottime)
+        }
     }
 
     $uptime = Invoke-LabCommand -ComputerName $ComputerName -ActivityName GetUptime -ScriptBlock $cmdGetUptime -UseLocalCredential -PassThru
@@ -1479,8 +1490,9 @@ function Join-LabVMDomain
     $jobs = @()
     $startTime = Get-Date
 
-    Write-PSFMessage "Starting joining $($Machine.Count) machines to domains"
-    foreach ($m in $Machine)
+    $machinesToJoin = $Machine | Where-OBject SkipDeployment -eq $false
+    Write-PSFMessage "Starting joining $($machinesToJoin.Count) machines to domains"
+    foreach ($m in $machinesToJoin)
     {
         $domain = $lab.Domains | Where-Object Name -eq $m.DomainName
         $cred = $domain.GetCredential()
@@ -1511,10 +1523,10 @@ function Join-LabVMDomain
 
         Write-ProgressIndicatorEnd
         Write-ScreenInfo -Message 'Waiting for machines to restart' -NoNewLine
-        Wait-LabVMRestart -ComputerName $Machine -ProgressIndicator 30 -NoNewLine -MonitoringStartTime $startTime
+        Wait-LabVMRestart -ComputerName $machinesToJoin -ProgressIndicator 30 -NoNewLine -MonitoringStartTime $startTime
     }
 
-    foreach ($m in $Machine)
+    foreach ($m in $machinesToJoin)
     {
         $machineJob = $jobs | Where-Object -Property Name -EQ DomainJoin_$m
         $machineResult = $machineJob | Receive-Job -Keep -ErrorAction SilentlyContinue
@@ -1556,7 +1568,7 @@ function Mount-LabIsoImage
 
     Write-LogFunctionEntry
 
-    $machines = Get-LabVM -ComputerName $ComputerName
+    $machines = Get-LabVM -ComputerName $ComputerName | Where-Object SkipDeployment -eq $false
     if (-not $machines)
     {
         Write-LogFunctionExitWithError -Message 'The specified machines could not be found'
@@ -1606,7 +1618,7 @@ function Dismount-LabIsoImage
 
     Write-LogFunctionEntry
 
-    $machines = Get-LabVM -ComputerName $ComputerName
+    $machines = Get-LabVM -ComputerName $ComputerName | Where-Object SkipDeployment -eq $false
     if (-not $machines)
     {
         Write-LogFunctionExitWithError -Message 'The specified machines could not be found'
@@ -2225,6 +2237,8 @@ function Checkpoint-LabVM
         $machines = Get-LabVm -IncludeLinux
     }
 
+    $machines = $machines | Where-Object SkipDeployment -eq $false
+
     if (-not $machines)
     {
         $message = 'No machine found to checkpoint. Either the given name is wrong or there is no machine defined yet'
@@ -2279,6 +2293,8 @@ function Restore-LabVMSnapshot
     {
         $machines = Get-LabVM -IncludeLinux
     }
+
+    $machines = $machines | Where-Object SkipDeployment -eq $false
 
     if (-not $machines)
     {
@@ -2340,6 +2356,8 @@ function Remove-LabVMSnapshot
     {
         $machines = Get-LabVm -IncludeLinux
     }
+
+    $machines = $machines | Where-Object SkipDeployment -eq $false
 
     if (-not $machines)
     {
@@ -2405,6 +2423,8 @@ function Get-LabVMSnapshot
     {
         $machines = Get-LabVm -IncludeLinux
     }
+
+    $machines = $machines | Where-Object SkipDeployment -eq $false
 
     if (-not $machines)
     {
