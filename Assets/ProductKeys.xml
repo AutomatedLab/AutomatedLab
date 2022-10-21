@@ -128,4 +128,5 @@
   <ProductKey OperatingSystemName="Windows 11 Education N" Key="6TP4R-GNPTD-KYYHQ-7B7DP-J447Y" Version="10.0.17134.1" />
   <ProductKey OperatingSystemName="Windows 11 Enterprise" Key="NPPR9-FWDCX-D2C8J-H872K-2YT43" Version="10.0.17134.1" />
   <ProductKey OperatingSystemName="Windows 11 Enterprise N" Key="NPPR9-FWDCX-D2C8J-H872K-2YT43" Version="10.0.17134.1" />
+  <ProductKey OperatingSystemName="Windows 11 Enterprise Evaluation" Key="NPPR9-FWDCX-D2C8J-H872K-2YT43" Version="10.0.22621.525" />
 </ListXmlStoreOfProductKey>
