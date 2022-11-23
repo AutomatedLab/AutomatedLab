@@ -2318,8 +2318,41 @@ catch
     $rgName = Get-LabAzureDefaultResourceGroup
 
     $jobs = foreach ($m in $Machine)
-    {
-        Invoke-AzVMRunCommand -ResourceGroupName $rgName -VMName $m.ResourceName -ScriptPath $tempFileName -CommandId 'RunPowerShellScript' -ErrorAction Stop -AsJob
+    {if ($Lab.AzureSettings.IsAzureStack)
+        {
+            $sa = Get-AzStorageAccount -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName -ErrorAction SilentlyContinue
+            if (-not $sa)
+            {
+                $sa = New-AzStorageAccount -Name "cse$(-join (1..10 | % {[char](Get-Random -Min 97 -Max 122)}))" -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName -SkuName Standard_LRS -Kind Storage -Location (Get-LabAzureDefaultLocation).Location
+            }
+
+            $co = $sa | Get-AzStorageContainer -Name customscriptextension -ErrorAction SilentlyContinue
+            if (-not $co)
+            {
+                $co = $sa | New-AzStorageContainer -Name customscriptextension
+            }
+
+            $content = Set-AzStorageBlobContent -File $tempFileName -CloudBlobContainer $co.CloudBlobContainer -Blob $(Split-Path -Path $tempFileName -Leaf) -Context $sa.Context -Force -ErrorAction Stop
+            $token = New-AzStorageBlobSASToken -CloudBlob $content.ICloudBlob -StartTime (Get-Date) -ExpiryTime $(Get-Date).AddHours(1) -Protocol HttpsOnly -Context $sa.Context -Permission r -ErrorAction Stop
+            $uri = '{0}{1}/{2}{3}' -f $co.Context.BlobEndpoint,'customscriptextension', $(Split-Path -Path $tempFileName -Leaf), $token
+            [version] $typehandler = (Get-AzVMExtensionImage -PublisherName Microsoft.Compute -Type CustomScriptExtension -Location (Get-LabAzureDefaultLocation).Location | Sort-Object { [version]$_.Version } | Select-Object -Last 1).Version
+            
+            $extArg = @{
+                ResourceGroupName  = $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName
+                VMName             = $m.ResourceName
+                FileUri            = $uri
+                TypeHandlerVersion = '{0}.{1}' -f $typehandler.Major, $typehandler.Minor
+                Name               = 'initcustomizations'
+                Location           = (Get-LabAzureDefaultLocation).Location
+                Run                = Split-Path -Path $tempFileName -Leaf
+                NoWait             = $true
+            }
+            $Null = Set-AzVMCustomScriptExtension @extArg
+        }
+        else
+        {
+            Invoke-AzVMRunCommand -ResourceGroupName $rgName -VMName $m.ResourceName -ScriptPath $tempFileName -CommandId 'RunPowerShellScript' -ErrorAction Stop -AsJob
+        }
     }
 
     if ($Wait)
