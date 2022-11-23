@@ -784,6 +784,11 @@ function Get-LabSourcesLocationInternal
         $lab.DefaultVirtualizationEngine
     }
 
+    if ($lab.AzureSettings -and $lab.AzureSettings.IsAzureStack)
+    {
+        $Local = $true
+    }
+
     if ($defaultEngine -eq 'kvm' -or ($IsLinux -and $Local.IsPresent))
     {
         if (-not (Get-PSFConfigValue -FullName AutomatedLab.LabSourcesLocation))

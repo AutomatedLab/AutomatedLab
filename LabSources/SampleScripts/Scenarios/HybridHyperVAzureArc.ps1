@@ -108,7 +108,7 @@ $labs = @(
     }
 )
 
-foreach ($lab in $labs.GetEnumerator())
+foreach ($lab in $labs)
 {
     $engine, $prefix = if ($lab.OnAzure) { "Azure", 'az' } else { "HyperV", 'hv' }
     New-LabDefinition -Name $lab.LabName -DefaultVirtualizationEngine $engine
@@ -168,6 +168,8 @@ foreach ($lab in $labs.GetEnumerator())
 
     Install-Lab
 
+    if ($lab.OnAzure) { continue }
+
     if (-not (Get-Module -ListAvailable -Name Az.ConnectedMachine))
     {
         Install-Module -Name Az.ConnectedMachine -Repository PSGallery -Force
@@ -183,9 +185,9 @@ foreach ($lab in $labs.GetEnumerator())
     }
 }
 
-Connect-Lab -SourceLab $labs.Get(0).LabName -DestinationLab $labs.Get(1).LabName
+Connect-Lab -SourceLab $labs[0].LabName -DestinationLab $labs[1].LabName
 
-Import-Lab $labs.Get(0).LabName -NoValidation
+Import-Lab $labs[0].LabName -NoValidation
 
 Invoke-LabCommand hvPOSHDC1 -ScriptBlock {
     param
@@ -201,4 +203,4 @@ Invoke-LabCommand hvPOSHDC1 -ScriptBlock {
     {
         Write-ScreenInfo "Could not connect to $connectedLabMachine" -Type Warning
     }
-} -ArgumentList "POSHDC1.$($labs.Get(1).Domain)" -PassThru
+} -ArgumentList "hvPOSHDC1.$($labs[1].Domain)" -PassThru

@@ -1374,6 +1374,7 @@ function Initialize-LWAzureVM
         }
 
         $null = mkdir C:\DeployDebug -ErrorAction SilentlyContinue
+        $null = Start-Transcript -OutputDirectory C:\DeployDebug
     
         Start-Service WinRm
         foreach ($setting in $defaultSettings.GetEnumerator())
@@ -1545,7 +1546,7 @@ Subsystem powershell c:/progra~1/powershell/7/pwsh.exe -sshs -NoLogo
             Set-DnsClientServerAddress -InterfaceIndex $idx -ServerAddresses $DnsServers
         }
 
-        if (-not $Disks) { return }
+        if (-not $Disks) {$null = try{ Stop-Transcript -ErrorAction Stop } catch { }; return }
         
         # Azure InvokeRunAsCommand is not very clever, so we sent the stuff as JSON
         $Disks | Set-Content -Path C:\AL\disks.json
@@ -1567,6 +1568,8 @@ Subsystem powershell c:/progra~1/powershell/7/pwsh.exe -sshs -NoLogo
             }
             $party | Format-Volume -Force -UseLargeFRS:$diskObject.UseLargeFRS -AllocationUnitSize $diskObject.AllocationUnitSize -NewFileSystemLabel $diskObject.Label
         }
+
+        $null = try{ Stop-Transcript -ErrorAction Stop } catch { }
     }
 
     $initScriptFile = New-Item -ItemType File -Path (Join-Path -Path ([IO.Path]::GetTempPath()) -ChildPath "$($Lab.Name)vminit.ps1") -Force
