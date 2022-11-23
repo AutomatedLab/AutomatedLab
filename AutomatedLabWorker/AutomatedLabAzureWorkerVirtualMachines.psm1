@@ -1481,7 +1481,7 @@ Subsystem powershell c:/progra~1/powershell/7/pwsh.exe -sshs -NoLogo
             Restart-Service -Name sshd
         }
 
-        Set-DnsClientServerAddress -InterfaceAlias Ethernet -ServerAddresses $dnsServer.ServerAddresses
+        Set-DnsClientServerAddress -InterfaceIndex $idx -ServerAddresses $dnsServer.ServerAddresses
 
         #Set Power Scheme to High Performance
         powercfg.exe -setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c
