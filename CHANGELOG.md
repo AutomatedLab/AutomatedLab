@@ -2,6 +2,8 @@
 
 ## Unreleased (yyyy-MM-dd)
 
+## 5.46.0 (2022-11-24)
+
 ### Enhancements
 
 - New configuration item UseLatestAzureProviderApi to use latest available provider instead of hardcoded values
