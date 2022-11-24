@@ -33,7 +33,8 @@ namespace AutomatedLab
     {
         Unknown,
         RedHat,
-        SuSE
+        SuSE,
+        Ubuntu
     }
 
     [Flags]

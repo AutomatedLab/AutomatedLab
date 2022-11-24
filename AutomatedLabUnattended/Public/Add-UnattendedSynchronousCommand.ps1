@@ -1,27 +1,39 @@
 ﻿function Add-UnattendedSynchronousCommand
 {
-	[CmdletBinding()]
+	[CmdletBinding(DefaultParameterSetName = 'Windows')]
     param (
-        [Parameter(Mandatory)]
+        [Parameter(ParameterSetName='Windows', Mandatory = $true)]
+        [Parameter(ParameterSetName='Kickstart', Mandatory = $true)]
+        [Parameter(ParameterSetName='Yast', Mandatory = $true)]
+        [Parameter(ParameterSetName='CloudInit', Mandatory = $true)]
         [string]$Command,
 
-        [Parameter(Mandatory)]
+        [Parameter(ParameterSetName='Windows', Mandatory = $true)]
+        [Parameter(ParameterSetName='Kickstart', Mandatory = $true)]
+        [Parameter(ParameterSetName='Yast', Mandatory = $true)]
+        [Parameter(ParameterSetName='CloudInit', Mandatory = $true)]
         [string]$Description,
 
-        [switch]$IsKickstart,
+        [Parameter(ParameterSetName='Kickstart')]
+        [switch]
+        $IsKickstart,
 
-        [switch]$IsAutoYast
+        [Parameter(ParameterSetName='Yast')]
+        [switch]
+        $IsAutoYast,
+
+        [Parameter(ParameterSetName='CloudInit')]
+        [switch]
+        $IsCloudInit
     )
 
-    if (-not $script:un)
-    {
-        Write-Error 'No unattended file imported. Please use Import-UnattendedFile first'
-        return
-    }
+	if (-not $script:un)
+	{
+		Write-Error 'No unattended file imported. Please use Import-UnattendedFile first'
+		return
+	}
 
-    if ($IsKickstart) { Add-UnattendedKickstartSynchronousCommand -Command $Command -Description $Description; return }
-
-    if ($IsAutoYast) { Add-UnattendedYastSynchronousCommand -Command $Command -Description $Description; return }
-
-    Add-UnattendedWindowsSynchronousCommand -Command $Command -Description $Description
+    $commandObject = Get-Command -Name $PSCmdlet.MyInvocation.MyCommand.Name.Replace('Unattended', "Unattended$($PSCmdlet.ParameterSetName)")
+    $parameters = Sync-Parameter $commandObject -Parameters $PSBoundParameters
+    & $commandObject @parameters
 }

@@ -1,7 +1,7 @@
 ---
 external help file: AutomatedLab-help.xml
 Module Name: AutomatedLab
-online version:
+online version: https://automatedlab.org/en/latest/AutomatedLab/en-us/Import-Lab
 schema: 2.0.0
 ---
 
@@ -19,7 +19,7 @@ Import-Lab [-Name] <String> [-PassThru] [-NoValidation] [-NoDisplay] [<CommonPar
 
 ### ByPath
 ```
-Import-Lab [-Path] <String> [-PassThru] [-NoValidation] [-NoDisplay] [<CommonParameters>]
+Import-Lab -Path <String> [-PassThru] [-NoValidation] [-NoDisplay] [<CommonParameters>]
 ```
 
 ### ByValue
@@ -125,7 +125,7 @@ Parameter Sets: ByPath
 Aliases:
 
 Required: True
-Position: 1
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -142,3 +142,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 aa
 
 ## RELATED LINKS
+

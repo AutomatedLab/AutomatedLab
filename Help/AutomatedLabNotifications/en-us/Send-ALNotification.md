@@ -1,7 +1,7 @@
 ---
 external help file: AutomatedLabNotifications-help.xml
 Module Name: AutomatedLabNotifications
-online version:
+online version: https://automatedlab.org/en/latest/AutomatedLabNotifications/en-us/Send-ALNotification
 schema: 2.0.0
 ---
 
@@ -92,3 +92,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
+

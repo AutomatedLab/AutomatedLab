@@ -3,6 +3,7 @@
 
     if (-not (Get-Module -List AutomatedLab.Common)) { Install-Module -Name AutomatedLab.Common -Force -SkipPublisherCheck -AllowClobber }
     if (-not (Get-Module -List PSFramework)) { Install-Module -Name PSFramework -Force -SkipPublisherCheck -AllowClobber }
+    if (-not (Get-Module -List powershell-yaml)) { Install-Module -Name powershell-yaml -Force -SkipPublisherCheck -AllowClobber }
     
     Import-Module -Name PSFramework, AutomatedLab.Common
     Import-Module -Name Pester

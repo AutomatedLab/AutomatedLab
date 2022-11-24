@@ -1,7 +1,7 @@
 ---
 external help file: AutomatedLab-help.xml
 Module Name: AutomatedLab
-online version:
+online version: https://automatedlab.org/en/latest/AutomatedLab/en-us/Wait-LabVM
 schema: 2.0.0
 ---
 
@@ -46,17 +46,32 @@ Accept pipeline input: True (ByPropertyName, ByValue)
 Accept wildcard characters: False
 ```
 
-### -TimeoutInMinutes
-The timeout to wait for in minutes
+### -DoNotUseCredSsp
+Indicates that CredSSP should not be used
 
 ```yaml
-Type: Double
+Type: SwitchParameter
 Parameter Sets: (All)
 Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -NoNewLine
+Indicates that no line break should be printed to the console
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -92,32 +107,17 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -NoNewLine
-Indicates that no line break should be printed to the console
+### -TimeoutInMinutes
+The timeout to wait for in minutes
 
 ```yaml
-Type: SwitchParameter
+Type: Double
 Parameter Sets: (All)
 Aliases:
 
 Required: False
 Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -DoNotUseCredSsp
-Indicates that CredSSP should not be used
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -132,3 +132,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
+

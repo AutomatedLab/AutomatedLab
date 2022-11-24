@@ -45,17 +45,6 @@ Set-Alias -Name ?? -Value Invoke-Ternary -Option AllScope -Description "Ternary 
 #region Send-File
 function Send-File
 {
-    <#
-            .SYNOPSIS
-
-            Sends a file to a remote session.
-
-            .EXAMPLE
-
-            PS >$session = New-PsSession leeholmes1c23
-            PS >Send-File c:\temp\test.exe c:\temp\test.exe $session
-    #>
-
     param (
         [Parameter(Mandatory = $true)]
         [string]$SourceFilePath,
@@ -122,17 +111,6 @@ function Send-File
 #region Receive-File
 function Receive-File
 {
-    <#
-            .SYNOPSIS
-
-            Receives a file from a remote session.
-
-            .EXAMPLE
-
-            PS >$session = New-PsSession leeholmes1c23
-            PS >Receive-File c:\temp\test.exe c:\temp\test.exe $session
-    #>
-
     param (
         [Parameter(Mandatory = $true)]
         [string]$SourceFilePath,

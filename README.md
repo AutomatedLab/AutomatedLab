@@ -51,11 +51,11 @@ Apart from the module itself your system needs to meet the following requirement
 There are two options installing AutomatedLab:
 
 - You can use the [MSI installer](https://github.com/AutomatedLab/AutomatedLab/releases) published on GitHub.
-- Or you install from the [PowerShell Gallery](https://www.powershellgallery.com/packages/AutomatedLab/) using the cmdlet Install-Module. Please refer to the wiki for some details.
+- Or you install from the [PowerShell Gallery](https://www.powershellgallery.com/packages/AutomatedLab/) using the cmdlet Install-Module. Please refer to the [wiki](https://automatedlab.org/en/latest) for some details.
 
-### [1. Installation](https://github.com/AutomatedLab/AutomatedLab/wiki/1.-Installation)
+### [1. Installation](https://automatedlab.org/en/latest/Wiki/Basic/install/)
 
-### [2. Getting started](https://github.com/AutomatedLab/AutomatedLab/wiki/2.-Getting-Started)
+### [2. Getting started](https://automatedlab.org/en/latest/Wiki/Basic/gettingstarted/)
 
 ### [3. Contributing](/CONTRIBUTING.md)
 
@@ -65,7 +65,7 @@ There are two options installing AutomatedLab:
 
 This solution supports setting up virtual machines with the following products
 
-- Windows 7, 2008 R2, 8 / 8.1 and 2012 / 2012 R2, 10 / 2016, 2019
+- Windows 7, 2008 R2, 8 / 8.1 and 2012 / 2012 R2, 10 / 2016, 2019, 2022
 - SQL Server 2008, 2008R2, 2012, 2014, 2016, 2017, 2019
 - Visual Studio 2012, 2013, 2015
 - Team Foundation Services 2018, Azure DevOps Server

@@ -1,7 +1,7 @@
 ---
 external help file: AutomatedLab.Recipe-help.xml
 Module Name: AutomatedLab.Recipe
-online version:
+online version: https://automatedlab.org/en/latest/AutomatedLab.Recipe/en-us/New-LabRecipe
 schema: 2.0.0
 ---
 
@@ -31,21 +31,6 @@ PS C:\> New-LabRecipe -Name Build -Description 'Build environment for tests' -De
 This recipe deploys a minuscule environment for automated tests
 
 ## PARAMETERS
-
-### -Confirm
-Prompts you for confirmation before running the cmdlet.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases: cf
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
 
 ### -DefaultAddressSpace
 Default address space for a new lab
@@ -199,6 +184,21 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -Confirm
+Prompts you for confirmation before running the cmdlet.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases: cf
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -WhatIf
 Shows what would happen if the cmdlet runs.
 The cmdlet is not run.
@@ -227,3 +227,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
+

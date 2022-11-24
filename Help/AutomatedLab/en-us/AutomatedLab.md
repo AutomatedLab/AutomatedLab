@@ -81,6 +81,9 @@ Dismounts an ISO
 ### [Enable-LabAutoLogon](Enable-LabAutoLogon.md)
 Enable the automatic logon of a Windows account
 
+### [Enable-LabAzureJitAccess](Enable-LabAzureJitAccess.md)
+Enable Azure Just In Time access to lab VMs
+
 ### [Enable-LabCertificateAutoenrollment](Enable-LabCertificateAutoenrollment.md)
 Enable certificate auto-enrollment
 
@@ -195,6 +198,9 @@ Get lab source location
 ### [Get-LabSourcesLocationInternal](Get-LabSourcesLocationInternal.md)
 Internal cmdlet to retrieve lab sources location
 
+### [Get-LabSshKnownHost](Get-LabSshKnownHost.md)
+Get content of SSH known host file
+
 ### [Get-LabTfsFeed](Get-LabTfsFeed.md)
 List or locate Artifact feed details of an Azure DevOps/TFS instance
 
@@ -240,6 +246,9 @@ Import a lab
 ### [Import-LabAzureCertificate](Import-LabAzureCertificate.md)
 Not implemented
 
+### [Initialize-LabWindowsActivation](Initialize-LabWindowsActivation.md)
+Attempt to activate lab machines either through Microsoft or using KMS
+
 ### [Install-Lab](Install-Lab.md)
 Starts the process of lab deployment
 
@@ -251,6 +260,9 @@ Enable ADFS
 
 ### [Install-LabAdfsProxy](Install-LabAdfsProxy.md)
 Create ADFS proxy
+
+### [Install-LabAzureRequiredModule](Install-LabAzureRequiredModule.md)
+Install required Azure modules for AutomatedLab
 
 ### [Install-LabAzureServices](Install-LabAzureServices.md)
 
@@ -321,6 +333,9 @@ Install sample databases for the selected SQL version
 ### [Install-LabSqlServers](Install-LabSqlServers.md)
 Install SQL servers
 
+### [Install-LabSshKnownHost](Install-LabSshKnownHost.md)
+Add all lab VMs to the SSH known hosts file
+
 ### [Install-LabTeamFoundationEnvironment](Install-LabTeamFoundationEnvironment.md)
 Install all CI/CD servers in the lab
 
@@ -356,6 +371,9 @@ Wrapper to create a new resource group and include it in the lab metadata
 
 ### [New-LabAzureWebApp](New-LabAzureWebApp.md)
 
+
+### [New-LabBaseImages](New-LabBaseImages.md)
+{{ Fill in the Synopsis }}
 
 ### [New-LabCATemplate](New-LabCATemplate.md)
 Create CA template
@@ -402,6 +420,9 @@ Remove a resource group
 ### [Remove-LabCimSession](Remove-LabCimSession.md)
 Remove open CIM sessions to lab VMs
 
+### [Remove-LabDeploymentFiles](Remove-LabDeploymentFiles.md)
+Remove deployment data
+
 ### [Remove-LabDscLocalConfigurationManagerConfiguration](Remove-LabDscLocalConfigurationManagerConfiguration.md)
 Reset the LCM configuration of a lab VM
 
@@ -416,6 +437,9 @@ Remove a VM
 
 ### [Remove-LabVMSnapshot](Remove-LabVMSnapshot.md)
 Remove a snapshot
+
+### [Request-LabAzureJitAccess](Request-LabAzureJitAccess.md)
+Request JIT access for a given time span
 
 ### [Request-LabCertificate](Request-LabCertificate.md)
 Request a certificate
@@ -533,6 +557,9 @@ Reset the local policy values to their defaults
 
 ### [Uninstall-LabRdsCertificate](Uninstall-LabRdsCertificate.md)
 Remove RDS certificates of all lab VMs from cert store
+
+### [UnInstall-LabSshKnownHost](UnInstall-LabSshKnownHost.md)
+Remove lab VMs from SSH known hosts file
 
 ### [Uninstall-LabWindowsFeature](Uninstall-LabWindowsFeature.md)
 Uninstalls a Windowsfeature of one or more Lab Machines

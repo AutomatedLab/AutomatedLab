@@ -1,26 +1,33 @@
 ﻿function Set-UnattendedWorkgroup
 {
-	[CmdletBinding()]
-	param (
-		[Parameter(Mandatory = $true)]
-		[string]$WorkgroupName,
+    [CmdletBinding(DefaultParameterSetName = 'Windows')]
+    param (
+        [Parameter(ParameterSetName = 'Windows', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Kickstart', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Yast', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'CloudInit', Mandatory = $true)]
+        [string]$WorkgroupName,
 
+        [Parameter(ParameterSetName = 'Kickstart')]
         [switch]
         $IsKickstart,
 
+        [Parameter(ParameterSetName = 'Yast')]
         [switch]
-        $IsAutoYast
-	)
+        $IsAutoYast,
 
-	if (-not $script:un)
-	{
-		Write-Error 'No unattended file imported. Please use Import-UnattendedFile first'
-		return
-	}
+        [Parameter(ParameterSetName = 'CloudInit')]
+        [switch]
+        $IsCloudInit
+    )
 
-    if ($IsKickstart) { Set-UnattendedKickstartWorkgroup -WorkgroupName $WorkgroupName; return }
+    if (-not $script:un)
+    {
+        Write-Error 'No unattended file imported. Please use Import-UnattendedFile first'
+        return
+    }
 
-    if ($IsAutoYast) { Set-UnattendedYastWorkgroup -WorkgroupName $WorkgroupName; return }
-
-    Set-UnattendedWindowsWorkgroup -WorkgroupName $WorkgroupName
+    $command = Get-Command -Name $PSCmdlet.MyInvocation.MyCommand.Name.Replace('Unattended', "Unattended$($PSCmdlet.ParameterSetName)")
+    $parameters = Sync-Parameter $command -Parameters $PSBoundParameters
+    & $command @parameters
 }

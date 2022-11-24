@@ -1,7 +1,7 @@
 ---
 external help file: HostsFile-help.xml
 Module Name: HostsFile
-online version:
+online version: https://automatedlab.org/en/latest/HostsFile/en-us/Add-HostEntry
 schema: 2.0.0
 ---
 
@@ -109,3 +109,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
+

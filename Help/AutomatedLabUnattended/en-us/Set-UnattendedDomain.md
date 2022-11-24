@@ -1,7 +1,7 @@
 ---
 external help file: AutomatedLabUnattended-help.xml
 Module Name: AutomatedLabUnattended
-online version:
+online version: https://automatedlab.org/en/latest/AutomatedLabUnattended/en-us/Set-UnattendedDomain
 schema: 2.0.0
 ---
 
@@ -12,9 +12,28 @@ Set the domain membership
 
 ## SYNTAX
 
+### Windows (Default)
 ```
 Set-UnattendedDomain [-DomainName] <String> [-Username] <String> [-Password] <String>
- [[-OrganizationalUnit] <String>] [-IsKickstart] [-IsAutoYast] [<CommonParameters>]
+ [-OrganizationalUnit <String>] [<CommonParameters>]
+```
+
+### CloudInit
+```
+Set-UnattendedDomain [-DomainName] <String> [-Username] <String> [-Password] <String>
+ [-OrganizationalUnit <String>] [-IsCloudInit] [<CommonParameters>]
+```
+
+### Yast
+```
+Set-UnattendedDomain [-DomainName] <String> [-Username] <String> [-Password] <String>
+ [-OrganizationalUnit <String>] [-IsAutoYast] [<CommonParameters>]
+```
+
+### Kickstart
+```
+Set-UnattendedDomain [-DomainName] <String> [-Username] <String> [-Password] <String>
+ [-OrganizationalUnit <String>] [-IsKickstart] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -53,7 +72,7 @@ Indicates that this setting is placed in an AutoYAST file
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: (All)
+Parameter Sets: Yast
 Aliases:
 
 Required: False
@@ -63,12 +82,27 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -IsCloudInit
+Indicates that this setting is placed in a cloudinit file
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: CloudInit
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -IsKickstart
 Indicates that this setting is placed in a Kickstart file
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: (All)
+Parameter Sets: Kickstart
 Aliases:
 
 Required: False
@@ -87,7 +121,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 3
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -135,3 +169,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
+

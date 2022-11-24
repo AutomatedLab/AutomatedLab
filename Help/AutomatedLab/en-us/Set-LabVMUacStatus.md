@@ -1,7 +1,7 @@
 ---
 external help file: AutomatedLab-help.xml
 Module Name: AutomatedLab
-online version:
+online version: https://automatedlab.org/en/latest/AutomatedLab/en-us/Set-LabVMUacStatus
 schema: 2.0.0
 ---
 
@@ -46,21 +46,6 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -EnableLUA
-Indicates whether LUA should be enabled or not
-
-```yaml
-Type: Boolean
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 1
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -ConsentPromptBehaviorAdmin
 Sets the consent prompt behavior for administrative users
 
@@ -91,6 +76,21 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -EnableLUA
+Indicates whether LUA should be enabled or not
+
+```yaml
+Type: Boolean
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -PassThru
 Indicates that the results should be passed back to the caller
 
@@ -116,3 +116,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
+

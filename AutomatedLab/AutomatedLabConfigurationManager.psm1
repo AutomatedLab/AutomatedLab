@@ -317,6 +317,10 @@ function Install-LabConfigurationManager
             $siteParameter.SqlServerName = $sql
         }
 
+        Invoke-LabCommand -ComputerName $sql.Split('.')[0] -ActivityName 'Add computer account as local admin (why...)' -ScriptBlock {
+            Add-LocalGroupMember -Group Administrators -Member "$($vm.Name)\$($vm.DomainName)`$"
+        } -Variable (Get-Variable vm)
+
         if ($role.Properties.ContainsKey('DatabaseName'))
         {
             $siteParameter.DatabaseName = $role.Properties.DatabaseName

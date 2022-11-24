@@ -1,7 +1,7 @@
 ---
 external help file: AutomatedLabWorker-help.xml
 Module Name: AutomatedLabWorker
-online version:
+online version: https://automatedlab.org/en/latest/AutomatedLabWorker/en-us/Add-LWVMVHDX
 schema: 2.0.0
 ---
 
@@ -30,21 +30,6 @@ Attaches SomeFile.vhdx to Client01
 
 ## PARAMETERS
 
-### -VMName
-The virtual machine
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: 0
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -VhdxPath
 The VHDX path
 
@@ -55,6 +40,21 @@ Aliases:
 
 Required: True
 Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -VMName
+The virtual machine
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 0
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -72,3 +72,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
+

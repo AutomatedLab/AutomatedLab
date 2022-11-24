@@ -1,7 +1,7 @@
 ---
 external help file: AutomatedLabUnattended-help.xml
 Module Name: AutomatedLabUnattended
-online version:
+online version: https://automatedlab.org/en/latest/AutomatedLabUnattended/en-us/Import-UnattendedContent
 schema: 2.0.0
 ---
 
@@ -12,8 +12,24 @@ Import the XML or config content of the various unattend files
 
 ## SYNTAX
 
+### Windows (Default)
 ```
-Import-UnattendedContent [-Content] <String[]> [-IsKickstart] [-IsAutoYast] [<CommonParameters>]
+Import-UnattendedContent [-Content] <String[]> [<CommonParameters>]
+```
+
+### CloudInit
+```
+Import-UnattendedContent [-Content] <String[]> [-IsCloudInit] [<CommonParameters>]
+```
+
+### Yast
+```
+Import-UnattendedContent [-Content] <String[]> [-IsAutoYast] [<CommonParameters>]
+```
+
+### Kickstart
+```
+Import-UnattendedContent [-Content] <String[]> [-IsKickstart] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -51,7 +67,7 @@ Indicates that this setting is placed in an AutoYAST file
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: (All)
+Parameter Sets: Yast
 Aliases:
 
 Required: False
@@ -61,12 +77,27 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -IsCloudInit
+Indicates that this setting is placed in a cloudinit file
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: CloudInit
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -IsKickstart
 Indicates that this setting is placed in a Kickstart file
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: (All)
+Parameter Sets: Kickstart
 Aliases:
 
 Required: False
@@ -88,3 +119,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
+

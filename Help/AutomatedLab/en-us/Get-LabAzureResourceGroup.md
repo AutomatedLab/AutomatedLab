@@ -1,7 +1,7 @@
 ---
 external help file: AutomatedLab-help.xml
 Module Name: AutomatedLab
-online version:
+online version: https://automatedlab.org/en/latest/AutomatedLab/en-us/Get-LabAzureResourceGroup
 schema: 2.0.0
 ---
 
@@ -45,7 +45,7 @@ Parameter Sets: ByLab
 Aliases:
 
 Required: False
-Position: 0
+Position: Named
 Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -76,3 +76,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
+

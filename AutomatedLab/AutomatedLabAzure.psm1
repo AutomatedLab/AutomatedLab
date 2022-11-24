@@ -997,7 +997,7 @@ function New-LabAzureLabSourcesStorage
         Write-ScreenInfo "No storage account for AutomatedLabSources could not be found, creating it"
         $storageAccountName = "automatedlabsources$((1..5 | ForEach-Object { [char[]](97..122) | Get-Random }) -join '')"
         New-AzStorageAccount -ResourceGroupName $azureLabSourcesResourceGroupName -Name $storageAccountName -Location $LocationName -Kind Storage -SkuName Standard_LRS | Out-Null
-        $storageAccount = Get-AzStorageAccount -ResourceGroupName automatedlabsources | Where-Object StorageAccountName -like automatedlabsources?????
+        $storageAccount = Get-AzStorageAccount -ResourceGroupName $azureLabSourcesResourceGroupName | Where-Object StorageAccountName -like automatedlabsources?????
     }
 
     $share = Get-AzStorageShare -Context $StorageAccount.Context -Name labsources -ErrorAction SilentlyContinue
@@ -1405,7 +1405,7 @@ function Get-LabAzureAvailableRoleSize
     }
 
     $availableRoleSizes = Get-AzComputeResourceSku -Location $azLocation.Location | Where-Object {
-        $_.ResourceType -eq 'virtualMachines' -and $_.Restrictions.ReasonCode -notcontains 'NotAvailableForSubscription'
+        $_.ResourceType -eq 'virtualMachines' -and $_.Restrictions.ReasonCode -notcontains 'NotAvailableForSubscription' -and $_.Capabilities.Where({$_.Name -eq 'CpuArchitectureType'}).Value -eq 'x64'
     }
 
     foreach ($vms in (Get-AzVMSize -Location $azLocation.Location | Where-Object -Property Name -in $availableRoleSizes.Name))

@@ -1,7 +1,7 @@
 ---
 external help file: AutomatedLab-help.xml
 Module Name: AutomatedLab
-online version:
+online version: https://automatedlab.org/en/latest/AutomatedLab/en-us/Test-LabMachineInternetConnectivity
 schema: 2.0.0
 ---
 
@@ -23,27 +23,13 @@ Tests if the specified lab machine has a working internet connection
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Test-LabMachineInternetConnectivity -ComputerName ROUTER
 ```
 
-{{ Add example description here }}
+Test if the lab VM called Router can connect to the internet
+by means of sending ICMP packages.
 
 ## PARAMETERS
-
-### -ComputerName
-The machine name
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: 0
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
 
 ### -AsJob
 Indicates that the cmdlet should run in the background
@@ -56,6 +42,21 @@ Aliases:
 Required: False
 Position: Named
 Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ComputerName
+The machine name
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 0
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -86,3 +87,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
+

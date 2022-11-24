@@ -1,7 +1,7 @@
 ---
 external help file: AutomatedLabDefinition-help.xml
 Module Name: AutomatedLabDefinition
-online version:
+online version: https://automatedlab.org/en/latest/AutomatedLabDefinition/en-us/New-LabDefinition
 schema: 2.0.0
 ---
 
@@ -94,7 +94,7 @@ Aliases:
 Accepted values: Azure, HyperV, VMWare
 
 Required: False
-Position: 5
+Position: 6
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -109,7 +109,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 3
+Position: 4
 Default value: 0
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -140,7 +140,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 4
+Position: 5
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -170,7 +170,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 2
+Position: 3
 Default value: 50
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -216,7 +216,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 1
+Position: 2
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -234,3 +234,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
+

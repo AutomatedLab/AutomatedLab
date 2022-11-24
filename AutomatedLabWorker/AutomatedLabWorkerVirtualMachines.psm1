@@ -39,6 +39,7 @@ function New-LWHypervVM
 
     if ($PSDefaultParameterValues.ContainsKey('*:IsKickstart')) { $PSDefaultParameterValues.Remove('*:IsKickstart') }
     if ($PSDefaultParameterValues.ContainsKey('*:IsAutoYast')) { $PSDefaultParameterValues.Remove('*:IsAutoYast') }
+    if ($PSDefaultParameterValues.ContainsKey('*:IsCloudInit')) { $PSDefaultParameterValues.Remove('*:IsCloudInit') }
 
     if ($Machine.OperatingSystemType -eq 'Linux' -and $Machine.LinuxType -eq 'RedHat')
     {
@@ -47,6 +48,10 @@ function New-LWHypervVM
     if($Machine.OperatingSystemType -eq 'Linux' -and $Machine.LinuxType -eq 'Suse')
     {
         $PSDefaultParameterValues['*:IsAutoYast'] = $true
+    }
+    if($Machine.OperatingSystemType -eq 'Linux' -and $Machine.LinuxType -eq 'Ubuntu')
+    {
+        $PSDefaultParameterValues['*:IsCloudInit'] = $true
     }
 
     Write-PSFMessage "Creating machine with the name '$($Machine.ResourceName)' in the path '$VmPath'"
@@ -148,6 +153,10 @@ function New-LWHypervVM
         if ($machine.OperatingSystemType -eq 'Linux' -and $machine.LinuxType -eq 'Suse')
         {
             $ipSettings.Add('IsAutoYast', $true)
+        }
+        if ($machine.OperatingSystemType -eq 'Linux' -and $machine.LinuxType -eq 'Ubuntu')
+        {
+            $ipSettings.Add('IsCloudInit', $true)
         }
 
         switch ($Adapter.NetbiosOptions)
@@ -273,11 +282,6 @@ function New-LWHypervVM
                 Password = $domain.Administrator.Password
             }
             if ($Machine.OrganizationalUnit) {$parameters['OrganizationalUnit'] = $machine.OrganizationalUnit}
-            if ($Machine.OperatingSystemType -eq 'Linux')
-            {
-                $parameters['IsKickstart'] = $Machine.LinuxType -eq 'RedHat'
-                $parameters['IsAutoYast'] = $Machine.LinuxType -eq 'Suse'
-            }
 
             Set-UnattendedDomain @parameters
 
@@ -343,17 +347,18 @@ function New-LWHypervVM
         $mountedOsDisk = $systemDisk | Mount-VHD -Passthru
         $mountedOsDisk | Initialize-Disk -PartitionStyle GPT
         $size = 6GB
-        if ($Machine.LinuxType -eq 'RedHat')
+        if ($Machine.LinuxType -in 'RedHat', 'Ubuntu')
         {
             $size = 100MB
         }
+        $label = if ($Machine.LinuxType -eq 'RedHat') { 'OEMDRV' } else { 'CIDATA' }
         $unattendPartition = $mountedOsDisk | New-Partition -Size $size
 
         # Use a small FAT32 partition to hold AutoYAST and Kickstart configuration
         $diskpartCmd = "@
             select disk $($mountedOsDisk.DiskNumber)
             select partition $($unattendPartition.PartitionNumber)
-            format quick fs=fat32 label=OEMDRV
+            format quick fs=fat32 label=$label
             exit
         @"
         $diskpartCmd | diskpart.exe | Out-Null
@@ -377,7 +382,7 @@ function New-LWHypervVM
             Export-UnattendedFile -Path (Join-Path -Path $drive.RootDirectory -ChildPath ks.cfg)
             Copy-Item -Path (Join-Path -Path $drive.RootDirectory -ChildPath ks.cfg) -Destination (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath "ks_$($Machine.Name).cfg")
         }
-        else
+        elseif ($Machine.LinuxType -eq 'Suse')
         {
             Export-UnattendedFile -Path (Join-Path -Path $drive.RootDirectory -ChildPath autoinst.xml)
             Export-UnattendedFile -Path (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath "autoinst_$($Machine.Name).xml")
@@ -391,31 +396,6 @@ function New-LWHypervVM
             # Unmount ISO
             [void] (Dismount-DiskImage -ImagePath $Machine.OperatingSystem.IsoPath)
 
-            # Copy additional packages
-            $additionalPackagePath = (Join-Path -Path $global:Labsources -ChildPath "$($machine.OperatingSystem.OperatingSystemName)\$($machine.OperatingSystem.Version.ToString(2))\*.*")
-            if (Test-Path -Path $additionalPackagePath)
-            {
-                switch -Regex ($Machine.OperatingSystem.OperatingSystemName)
-                {
-                    'Suse'
-                    {
-                        Copy-Item -Path $additionalPackagePath -Destination "$letter`:\suse\x86_64" -Force
-                    }
-                    'Red Hat|Centos'
-                    {
-                        Copy-Item -Path $additionalPackagePath -Destination "$letter`:\Packages" -Force
-                    }
-                    'Fedora'
-                    {
-                        # Why...
-                        Get-ChildItem $additionalPackagePath -File | ForEach-Object {
-                            $targetPath = Join-Path -Path "$letter`:\Packages" -ChildPath $_.Name.Substring(0, 1)
-                            $_ | Copy-Item -Destination $targetPath -Force
-                        }
-                    }
-                }
-            }
-
             # AutoYast XML file is not picked up properly without modifying bootloader config
             # Change grub and isolinux configuration
             $grubFile = Get-ChildItem -Recurse -Path $drive.RootDirectory.FullName -Filter 'grub.cfg'
@@ -424,11 +404,20 @@ function New-LWHypervVM
             ($grubFile | Get-Content -Raw) -replace "splash=silent", "splash=silent textmode=1 autoyast=device:///autoinst.xml" | Set-Content -Path $grubFile.FullName
             ($isolinuxFile | Get-Content -Raw) -replace "splash=silent", "splash=silent textmode=1 autoyast=device:///autoinst.xml" | Set-Content -Path $isolinuxFile.FullName
         }
+        elseif ($machine.LinuxType -eq 'Ubuntu')
+        {
+            $null = New-Item -Path $drive.RootDirectory -Name meta-data -Force -Value "instance-id: iid-local01`nlocal-hostname: $($Machine.Name)"
+            Export-UnattendedFile -Path (Join-Path -Path $drive.RootDirectory -ChildPath user-data)
+            $ubuLease = '{0:d2}.{1:d2}' -f $machine.OperatingSystem.Version.Major,$machine.OperatingSystem.Version.Minor # Microsoft Repo does not use $RELEASE but version number instead.
+            (Get-Content -Path (Join-Path -Path $drive.RootDirectory -ChildPath user-data)) -replace 'REPLACERELEASE', $ubuLease | Set-Content (Join-Path -Path $drive.RootDirectory -ChildPath user-data)
+            Copy-Item -Path (Join-Path -Path $drive.RootDirectory -ChildPath user-data) -Destination (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath "cloudinit_$($Machine.Name).yml")
+        }
 
         $mountedOsDisk | Dismount-VHD
 
         if ($PSDefaultParameterValues.ContainsKey('*:IsKickstart')) { $PSDefaultParameterValues.Remove('*:IsKickstart') }
         if ($PSDefaultParameterValues.ContainsKey('*:IsAutoYast')) { $PSDefaultParameterValues.Remove('*:IsAutoYast') }
+        if ($PSDefaultParameterValues.ContainsKey('*:CloudInit')) { $PSDefaultParameterValues.Remove('*:CloudInit') }
     }
     else
     {
@@ -537,7 +526,7 @@ function New-LWHypervVM
 
     Write-ProgressIndicator
 
-    if ( $Machine.OperatingSystemType -eq 'Linux' -and $Machine.LinuxType -eq 'RedHat')
+    if ( $Machine.OperatingSystemType -eq 'Linux' -and $Machine.LinuxType -in 'RedHat','Ubuntu')
     {
         $dvd = $vm | Add-VMDvdDrive -Path $Machine.OperatingSystem.IsoPath -Passthru
         $vm | Set-VMFirmware -FirstBootDevice $dvd

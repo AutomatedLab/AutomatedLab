@@ -1,7 +1,7 @@
 ---
 external help file: AutomatedLabUnattended-help.xml
 Module Name: AutomatedLabUnattended
-online version:
+online version: https://automatedlab.org/en/latest/AutomatedLabUnattended/en-us/Export-UnattendedFile
 schema: 2.0.0
 ---
 
@@ -12,8 +12,24 @@ Save the unattend file
 
 ## SYNTAX
 
+### Windows (Default)
 ```
-Export-UnattendedFile [-Path] <String> [-IsKickstart] [-IsAutoYast] [<CommonParameters>]
+Export-UnattendedFile [-Path] <String> [<CommonParameters>]
+```
+
+### CloudInit
+```
+Export-UnattendedFile [-Path] <String> [-IsCloudInit] [<CommonParameters>]
+```
+
+### Yast
+```
+Export-UnattendedFile [-Path] <String> [-IsAutoYast] [<CommonParameters>]
+```
+
+### Kickstart
+```
+Export-UnattendedFile [-Path] <String> [-IsKickstart] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -36,7 +52,7 @@ Indicates that this setting is placed in an AutoYAST file
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: (All)
+Parameter Sets: Yast
 Aliases:
 
 Required: False
@@ -46,12 +62,27 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -IsCloudInit
+Indicates that this setting is placed in a cloudinit file
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: CloudInit
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -IsKickstart
 Indicates that this setting is placed in a Kickstart file
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: (All)
+Parameter Sets: Kickstart
 Aliases:
 
 Required: False
@@ -88,3 +119,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
+

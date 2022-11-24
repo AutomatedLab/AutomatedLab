@@ -1,20 +1,42 @@
 ﻿function Set-UnattendedIpSettings
 {
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName = 'Windows')]
     param (
+        [Parameter(ParameterSetName = 'Windows')]
+        [Parameter(ParameterSetName = 'Kickstart')]
+        [Parameter(ParameterSetName = 'Yast')]
+        [Parameter(ParameterSetName = 'CloudInit')]
         [string]$IpAddress,
 
+        [Parameter(ParameterSetName = 'Windows')]
+        [Parameter(ParameterSetName = 'Kickstart')]
+        [Parameter(ParameterSetName = 'Yast')]
+        [Parameter(ParameterSetName = 'CloudInit')]
         [string]$Gateway,
 
+        [Parameter(ParameterSetName = 'Windows')]
+        [Parameter(ParameterSetName = 'Kickstart')]
+        [Parameter(ParameterSetName = 'Yast')]
+        [Parameter(ParameterSetName = 'CloudInit')]
         [String[]]$DnsServers,
 
+        [Parameter(ParameterSetName = 'Windows')]
+        [Parameter(ParameterSetName = 'Kickstart')]
+        [Parameter(ParameterSetName = 'Yast')]
+        [Parameter(ParameterSetName = 'CloudInit')]
         [string]$DnsDomain,
 
+        [Parameter(ParameterSetName = 'Kickstart')]
         [switch]
         $IsKickstart,
 
+        [Parameter(ParameterSetName = 'Yast')]
         [switch]
-        $IsAutoYast
+        $IsAutoYast,
+
+        [Parameter(ParameterSetName = 'CloudInit')]
+        [switch]
+        $IsCloudInit
     )
 
     if (-not $script:un)
@@ -23,21 +45,7 @@
         return
     }
 
-
-
-    if ($IsKickstart)
-    {
-        $parameters = Sync-Parameter (Get-Command Set-UnattendedKickstartIpSettings) -Parameters $PSBoundParameters
-        Set-UnattendedKickstartIpSettings @parameters
-        return
-    }
-    if ($IsAutoYast)
-    {
-        $parameters = Sync-Parameter (Get-Command Set-UnattendedYastIpSettings) -Parameters $PSBoundParameters
-        Set-UnattendedYastIpSettings @parameters
-        return
-    }
-
-    $parameters = Sync-Parameter (Get-Command Set-UnattendedWindowsIpSettings) -Parameters $PSBoundParameters
-    Set-UnattendedWindowsIpSettings @parameters
+    $command = Get-Command -Name $PSCmdlet.MyInvocation.MyCommand.Name.Replace('Unattended', "Unattended$($PSCmdlet.ParameterSetName)")
+    $parameters = Sync-Parameter $command -Parameters $PSBoundParameters
+    & $command @parameters
 }

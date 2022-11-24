@@ -1,7 +1,7 @@
 ---
 external help file: AutomatedLabUnattended-help.xml
 Module Name: AutomatedLabUnattended
-online version:
+online version: https://automatedlab.org/en/latest/AutomatedLabUnattended/en-us/Add-UnattendedNetworkAdapter
 schema: 2.0.0
 ---
 
@@ -12,12 +12,40 @@ Add a network adapter to the unattend file
 
 ## SYNTAX
 
+### Windows (Default)
 ```
 Add-UnattendedNetworkAdapter [[-Interfacename] <String>] [[-IpAddresses] <IPNetwork[]>]
  [[-Gateways] <IPAddress[]>] [[-DnsServers] <IPAddress[]>] [[-ConnectionSpecificDNSSuffix] <String>]
  [[-DnsDomain] <String>] [[-UseDomainNameDevolution] <String>] [[-DNSSuffixSearchOrder] <String>]
  [[-EnableAdapterDomainNameRegistration] <String>] [[-DisableDynamicUpdate] <String>]
- [[-NetbiosOptions] <String>] [-IsKickstart] [-IsAutoYast] [<CommonParameters>]
+ [[-NetbiosOptions] <String>] [<CommonParameters>]
+```
+
+### CloudInit
+```
+Add-UnattendedNetworkAdapter [[-Interfacename] <String>] [[-IpAddresses] <IPNetwork[]>]
+ [[-Gateways] <IPAddress[]>] [[-DnsServers] <IPAddress[]>] [[-ConnectionSpecificDNSSuffix] <String>]
+ [[-DnsDomain] <String>] [[-UseDomainNameDevolution] <String>] [[-DNSSuffixSearchOrder] <String>]
+ [[-EnableAdapterDomainNameRegistration] <String>] [[-DisableDynamicUpdate] <String>]
+ [[-NetbiosOptions] <String>] [-IsCloudInit] [<CommonParameters>]
+```
+
+### Yast
+```
+Add-UnattendedNetworkAdapter [[-Interfacename] <String>] [[-IpAddresses] <IPNetwork[]>]
+ [[-Gateways] <IPAddress[]>] [[-DnsServers] <IPAddress[]>] [[-ConnectionSpecificDNSSuffix] <String>]
+ [[-DnsDomain] <String>] [[-UseDomainNameDevolution] <String>] [[-DNSSuffixSearchOrder] <String>]
+ [[-EnableAdapterDomainNameRegistration] <String>] [[-DisableDynamicUpdate] <String>]
+ [[-NetbiosOptions] <String>] [-IsAutoYast] [<CommonParameters>]
+```
+
+### Kickstart
+```
+Add-UnattendedNetworkAdapter [[-Interfacename] <String>] [[-IpAddresses] <IPNetwork[]>]
+ [[-Gateways] <IPAddress[]>] [[-DnsServers] <IPAddress[]>] [[-ConnectionSpecificDNSSuffix] <String>]
+ [[-DnsDomain] <String>] [[-UseDomainNameDevolution] <String>] [[-DNSSuffixSearchOrder] <String>]
+ [[-EnableAdapterDomainNameRegistration] <String>] [[-DisableDynamicUpdate] <String>]
+ [[-NetbiosOptions] <String>] [-IsKickstart] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -47,22 +75,6 @@ Aliases:
 
 Required: False
 Position: 4
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -DNSSuffixSearchOrder
-The DNS suffix search order.
-Not used on Linux.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 7
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -109,6 +121,22 @@ Aliases:
 
 Required: False
 Position: 3
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DNSSuffixSearchOrder
+The DNS suffix search order.
+Not used on Linux.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 7
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -180,7 +208,7 @@ Indicates that this setting is placed in an AutoYAST file
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: (All)
+Parameter Sets: Yast
 Aliases:
 
 Required: False
@@ -190,12 +218,27 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -IsCloudInit
+Indicates that this setting is placed in a cloudinit file
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: CloudInit
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -IsKickstart
 Indicates that this setting is placed in a Kickstart file
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: (All)
+Parameter Sets: Kickstart
 Aliases:
 
 Required: False
@@ -249,3 +292,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
+

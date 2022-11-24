@@ -1,7 +1,7 @@
 ---
 external help file: AutomatedLab-help.xml
 Module Name: AutomatedLab
-online version:
+online version: https://automatedlab.org/en/latest/AutomatedLab/en-us/Sync-LabAzureLabSources
 schema: 2.0.0
 ---
 
@@ -33,36 +33,6 @@ Upload all executables smaller than 500MB to Azure
 
 ## PARAMETERS
 
-### -SkipIsos
-Indicates that ISOs should not be uploaded
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -MaxFileSizeInMb
-The maximum file size to upload
-
-```yaml
-Type: Int32
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 0
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -DoNotSkipOsIsos
 Indicates that OS ISOs should indeed be uploaded to Azure
 
@@ -93,8 +63,38 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -MaxFileSizeInMb
+The maximum file size to upload
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 0
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -NoDisplay
 Indicates that the cmdlet should not display messages on the console host
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -SkipIsos
+Indicates that ISOs should not be uploaded
 
 ```yaml
 Type: SwitchParameter
@@ -118,3 +118,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
+

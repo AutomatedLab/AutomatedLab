@@ -1,7 +1,7 @@
 ---
 external help file: AutomatedLab.Recipe-help.xml
 Module Name: AutomatedLab.Recipe
-online version:
+online version: https://automatedlab.org/en/latest/AutomatedLab.Recipe/en-us/Get-LabRecipe
 schema: 2.0.0
 ---
 
@@ -84,3 +84,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
+

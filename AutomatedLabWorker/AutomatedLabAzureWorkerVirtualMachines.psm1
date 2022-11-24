@@ -27,23 +27,42 @@
 
     # The handy providers() function was deprecated and the latest provider APIs started getting error-prone and unpredictable
     # The following list was generated on Jul 12 2022
-    # $providers = Get-AzResourceProvider -Location $lab.AzureSettings.DefaultLocation.Location -ErrorAction SilentlyContinue | Where-Object RegistrationState -eq 'Registered'
-    # (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'networkInterfaces').ApiVersions[0] # 2022-01-01
-    # (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Compute').ResourceTypes | Where-Object ResourceTypeName -eq 'disks').ApiVersions[0] # 2022-01-01
-    # (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Compute').ResourceTypes | Where-Object ResourceTypeName -eq 'availabilitySets').ApiVersions[1] # 2022-03-01
-    # (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'loadBalancers').ApiVersions[0] # 2022-01-01
-    # (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'publicIpAddresses').ApiVersions[0] # 2022-01-01
-    # (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'virtualNetworks').ApiVersions[0] # 2022-01-01
-    # (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'bastionHosts').ApiVersions[0] # 2022-01-01
-    # (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'networkSecurityGroups').ApiVersions[0] # 2022-01-01
-    # (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Compute').ResourceTypes | Where-Object ResourceTypeName -eq 'virtualMachines').ApiVersions[1] # 2022-03-01
+    $apiVersions = if (Get-LabConfigurationItem -Name UseLatestAzureProviderApi)
+    {
+        $providers = Get-AzResourceProvider -Location $lab.AzureSettings.DefaultLocation.Location -ErrorAction SilentlyContinue | Where-Object RegistrationState -eq 'Registered'
+        @{
+            NicApi             = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'networkInterfaces').ApiVersions[0] # 2022-01-01
+            DiskApi            = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Compute').ResourceTypes | Where-Object ResourceTypeName -eq 'disks').ApiVersions[0] # 2022-01-01
+            AvailabilitySetApi = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Compute').ResourceTypes | Where-Object ResourceTypeName -eq 'availabilitySets').ApiVersions[1] # 2022-03-01
+            LoadBalancerApi    = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'loadBalancers').ApiVersions[0] # 2022-01-01
+            PublicIpApi        = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'publicIpAddresses').ApiVersions[0] # 2022-01-01
+            VirtualNetworkApi  = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'virtualNetworks').ApiVersions[0] # 2022-01-01
+            BastionHostApi     = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'bastionHosts').ApiVersions[0] # 2022-01-01
+            NsgApi             = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'networkSecurityGroups').ApiVersions[0] # 2022-01-01
+            VmApi              = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Compute').ResourceTypes | Where-Object ResourceTypeName -eq 'virtualMachines').ApiVersions[1] # 2022-03-01
+        }
+    }
+    else
+    {
+        @{
+            NicApi             = '2022-01-01'
+            DiskApi            = '2022-01-01'
+            AvailabilitySetApi = '2022-03-01'
+            LoadBalancerApi    = '2022-01-01'
+            PublicIpApi        = '2022-01-01'
+            VirtualNetworkApi  = '2022-01-01'
+            BastionHostApi     = '2022-01-01'
+            NsgApi             = '2022-01-01'
+            VmApi              = '2022-03-01'
+        }
+    }
     
     #region Network Security Group
     Write-ScreenInfo -Type Verbose -Message 'Adding network security group to template, enabling traffic to ports 3389,5985,5986,22 for VMs behind load balancer'
     [string[]]$allowedIps = (Get-LabVm).AzureProperties["LoadBalancerAllowedIp"] | Foreach-Object { $_ -split '\s*[,;]\s*' } | Where-Object { -not [string]::IsNullOrWhitespace($_) }
     $nsg = @{
         type       = "Microsoft.Network/networkSecurityGroups"
-        apiVersion = '2022-01-01'
+        apiVersion = $apiVersions['NsgApi']
         name       = "nsg"
         location   = "[resourceGroup().location]"
         tags       = @{ 
@@ -167,7 +186,7 @@
         Write-ScreenInfo -Type Verbose -Message ('Adding vnet {0} ({1}) to template' -f $network.ResourceName, $network.AddressSpace)
         $vNet = @{
             type       = "Microsoft.Network/virtualNetworks"
-            apiVersion = '2022-01-01'
+            apiVersion = $apiVersions['VirtualNetworkApi']
             tags       = @{ 
                 AutomatedLab = $Lab.Name
                 CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
@@ -268,7 +287,7 @@
             Write-ScreenInfo -Type Verbose -Message ('Adding Azure bastion public static IP with DNS label {0} to template' -f $dnsLabel)
             $template.resources +=
             @{
-                apiVersion = '2022-01-01'
+                apiVersion = $apiVersions['PublicIpApi']
                 tags       = @{ 
                     AutomatedLab = $Lab.Name
                     CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
@@ -288,7 +307,7 @@
             }
 
             $template.resources += @{
-                apiVersion = '2022-01-01'
+                apiVersion = $apiVersions['BastionHostApi']
                 type       = "Microsoft.Network/bastionHosts"
                 name       = "bastion$vnetCount"
                 tags       = @{ 
@@ -326,7 +345,7 @@
         {
             Write-ScreenInfo -Type Verbose -Message ('Adding peering from {0} to {1} to VNet template' -f $network.ResourceName, $peer)
             $template.Resources += @{
-                apiVersion = '2022-01-01'
+                apiVersion = $apiVersions['VirtualNetworkApi']
                 dependsOn  = @(
                     "[resourceId('Microsoft.Network/virtualNetworks', '$($network.ResourceName)')]"
                     "[resourceId('Microsoft.Network/virtualNetworks', '$($peer)')]"
@@ -348,7 +367,7 @@
         #endregion
 
         #region Public Ip
-        $dnsLabel = "[concat('al-', uniqueString(resourceGroup().id))]"
+        $dnsLabel = "[concat('al$vnetCount-', uniqueString(resourceGroup().id))]"
 
         if ($network.AzureDnsLabel)
         {
@@ -358,7 +377,7 @@
         Write-ScreenInfo -Type Verbose -Message ('Adding public static IP with DNS label {0} to template' -f $dnsLabel)
         $template.resources +=
         @{
-            apiVersion = '2022-01-01'
+            apiVersion = $apiVersions['PublicIpApi']
             tags       = @{ 
                 AutomatedLab = $Lab.Name
                 CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
@@ -392,7 +411,7 @@
                 CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
                 Vnet         = $network.ResourceName
             }
-            apiVersion = '2022-01-01'
+            apiVersion = $apiVersions['LoadBalancerApi']
             name       = "lb$vnetCount"
             location   = "[resourceGroup().location]"
             sku        = @{
@@ -504,7 +523,7 @@
                 AutomatedLab = $Lab.Name
                 CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
             }
-            apiVersion = '2022-03-01'
+            apiVersion = $apiVersions['AvailabilitySetApi']
             name       = "$($network.ResourceName)"
             location   = "[resourceGroup().location]"
             sku        = @{
@@ -531,7 +550,7 @@
                 AutomatedLab = $Lab.Name
                 CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
             }
-            apiVersion = '2022-01-01'
+            apiVersion = $apiVersions['DiskApi']
             name       = $disk.Name
             location   = "[resourceGroup().location]"
             sku        = @{
@@ -612,7 +631,7 @@
                     enableIPForwarding          = $false
                 }
                 name       = "$($machine.ResourceName)nic$($niccount)"
-                apiVersion = '2022-01-01'
+                apiVersion = $apiVersions['NicApi']
                 type       = "Microsoft.Network/networkInterfaces"
                 location   = "[resourceGroup().location]"
                 tags       = @{ 
@@ -718,7 +737,7 @@
                 }
             }
             type       = "Microsoft.Compute/virtualMachines"
-            apiVersion = '2022-03-01'
+            apiVersion = $apiVersions['VmApi']
             location   = "[resourceGroup().location]"
         }
 
@@ -1425,8 +1444,8 @@ AllowGroups Users Administrators
 AuthorizedKeysFile c:/al/ssh/keys
 Subsystem powershell c:/progra~1/powershell/7/pwsh.exe -sshs -NoLogo
 "@
-                $sshdConfig | Set-Content -Path (Join-Path -Path $env:ProgramData -ChildPath 'ssh/sshd_config')
-                Restart-Service -Name sshd
+            $sshdConfig | Set-Content -Path (Join-Path -Path $env:ProgramData -ChildPath 'ssh/sshd_config')
+            Restart-Service -Name sshd
         }
 
         Set-DnsClientServerAddress -InterfaceAlias Ethernet -ServerAddresses $dnsServer.ServerAddresses
@@ -2003,7 +2022,7 @@ function Get-LWAzureVMConnectionInfo
         { continue }
 
         $net = $lab.VirtualNetworks.Where({ $_.Name -eq $name.Network[0] })
-        $ip = Get-AzPublicIpAddress -ResourceGroupName $resourceGroupName -ErrorAction SilentlyContinue | Where-Object {$_.Tag['Vnet'] -eq $net.ResourceName}
+        $ip = Get-AzPublicIpAddress -ResourceGroupName $resourceGroupName -ErrorAction SilentlyContinue | Where-Object { $_.Tag['Vnet'] -eq $net.ResourceName }
 
         if (-not $ip)
         {

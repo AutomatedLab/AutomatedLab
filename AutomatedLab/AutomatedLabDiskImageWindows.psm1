@@ -100,15 +100,16 @@
     if (Test-Path -Path $rhelPath -PathType Leaf)
     {
         $contentMatch = (Get-Content -Path $rhelPath -Raw) -match '(?s)(?<=\[general\]).*?(?=\[)'
-        if (-not $contentMatch) {
+        if (-not $contentMatch)
+        {
             throw "Unknown structure of $rhelPath. Cannot add ISO"
         }
 
-        $generalInfo = $Matches.0 -replace ';.*' -split "`n" | ConvertFrom-String -Delimiter '=' -PropertyNames Name,Value
-        $version = ([string]$generalInfo.Where({$_.Name.Trim() -eq 'version'}).Value).Trim()
-        $name = ([string]$generalInfo.Where({$_.Name.Trim() -eq 'name'}).Value).Trim()
-        $variant = ([string]$generalInfo.Where({$_.Name.Trim() -eq 'variant'}).Value).Trim()
-        $versionInfo = if (-not $version) { [Version]::new(1,0,0,0) } elseif ($version.Contains('.')) { $version -as [Version] } else {[Version]::new($Version, 0)}
+        $generalInfo = $Matches.0 -replace ';.*' -split "`n" | ConvertFrom-String -Delimiter '=' -PropertyNames Name, Value
+        $version = ([string]$generalInfo.Where({ $_.Name.Trim() -eq 'version' }).Value).Trim()
+        $name = ([string]$generalInfo.Where({ $_.Name.Trim() -eq 'name' }).Value).Trim()
+        $variant = ([string]$generalInfo.Where({ $_.Name.Trim() -eq 'variant' }).Value).Trim()
+        $versionInfo = if (-not $version) { [Version]::new(1, 0, 0, 0) } elseif ($version.Contains('.')) { $version -as [Version] } else { [Version]::new($Version, 0) }
 
         if ($variant -and $versionInfo -ge '8.0')
         {
@@ -137,8 +138,8 @@
         if ($packageXml)
         {
             [xml]$packageInfo = Get-Content -Path $packageXml -Raw
-            $os.LinuxPackageGroup.AddRange([string[]]((Select-Xml -XPath "/comps/group/id" -Xml $packageInfo).Node.InnerText | ForEach-Object {"@$_"}) )
-            $os.LinuxPackageGroup.AddRange([string[]]((Select-Xml -XPath "/comps/environment/id" -Xml $packageInfo).Node.InnerText | ForEach-Object {"@^$_"}) )
+            $os.LinuxPackageGroup.AddRange([string[]]((Select-Xml -XPath "/comps/group/id" -Xml $packageInfo).Node.InnerText | ForEach-Object { "@$_" }) )
+            $os.LinuxPackageGroup.AddRange([string[]]((Select-Xml -XPath "/comps/environment/id" -Xml $packageInfo).Node.InnerText | ForEach-Object { "@^$_" }) )
         }
 
         $os.Version = $versionInfo
@@ -153,6 +154,38 @@
         else
         {
             'Server'
+        }
+
+        $os
+    }
+
+    # Ubuntu 2004+
+    $ubuntuPath = "$DriveLetter`:\.disk\info"
+    $ubuntuPackageInfo = "$DriveLetter`:\pool\main"
+    if (Test-Path -Path $ubuntuPath -PathType Leaf)
+    {
+        $infoContent = Get-Content -Path $ubuntuPath -TotalCount 1
+        $null = $infoContent -match '(?:Ubuntu)(?:-Server)?\s+(?<Version>\d\d\.\d\d).*\((?<ReleaseDate>\d{8})'
+        $osversion = $Matches.Version
+        if (([version]$osversion) -lt '20.4')
+        {
+            Write-ScreenInfo -Type Error -Message "Skipping $IsoFile, AutomatedLab was only tested with 20.04 and newer."
+        }
+        $osDate = $Matches.ReleaseDate
+        $name = ($infoContent -split '\s-\s')[0]
+
+        $os = New-Object -TypeName AutomatedLab.OperatingSystem($name, $IsoFile.FullName)
+        $os.OperatingSystemImageName = $name
+        $os.Size = $IsoFile.Length
+        $os.Version = $osversion
+        $os.PublishedDate = [datetime]::ParseExact($osDate, 'yyyyMMdd', [cultureinfo]::CurrentCulture)
+        $os.Edition = if ($infoContent -match '-Server') { 'Server' } else { 'Desktop' }
+
+        foreach ($package in (Get-ChildItem -Directory -Recurse -Path $ubuntuPackageInfo))
+        {
+            if ($package.Parent.Name -eq 'main') { continue }
+
+            $null = $os.LinuxPackageGroup.Add($package.Name)
         }
 
         $os

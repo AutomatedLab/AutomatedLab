@@ -1,7 +1,7 @@
 ---
 external help file: AutomatedLab-help.xml
 Module Name: AutomatedLab
-online version:
+online version: https://automatedlab.org/en/latest/AutomatedLab/en-us/Get-LabAzureLabSourcesContent
 schema: 2.0.0
 ---
 
@@ -13,7 +13,7 @@ Get the file content of the Azure lab sources file share
 ## SYNTAX
 
 ```
-Get-LabAzureLabSourcesContent [[-RegexFilter] <String>] [[-Path] <String>] [-File] [-Directory]
+Get-LabAzureLabSourcesContent [[-RegexFilter] <String>] [-Path <String>] [-File] [-Directory]
  [<CommonParameters>]
 ```
 
@@ -72,7 +72,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 1
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -105,3 +105,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
+

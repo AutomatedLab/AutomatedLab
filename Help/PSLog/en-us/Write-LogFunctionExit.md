@@ -1,7 +1,7 @@
 ---
 external help file: PSLog-help.xml
 Module Name: PSLog
-online version:
+online version: https://automatedlab.org/en/latest/PSLog/en-us/Write-LogFunctionExit
 schema: 2.0.0
 ---
 
@@ -67,3 +67,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
+

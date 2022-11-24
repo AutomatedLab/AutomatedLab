@@ -1,7 +1,7 @@
 ---
 external help file: AutomatedLab-help.xml
 Module Name: AutomatedLab
-online version:
+online version: https://automatedlab.org/en/latest/AutomatedLab/en-us/Invoke-LabCommand
 schema: 2.0.0
 ---
 
@@ -75,10 +75,34 @@ $ALocallyDefinedVariable = "This is a"
 $AndAnother = "Test"
 function Get-SomeThingOnMyLocalMachine
 {
+    param(
+        [Parameter()]
+        [string]
+        $ALocallyDefinedVariable,
+
+        [Parameter()]
+        [string]
+        $AndAnother
+    )
+
     Write-Host "$ALocallyDefinedVariable $AndAnother"
 }
 
-Invoke-LabCommand -ActivityName GetStuff -ComputerName DC1 -ScriptBlock {Get-SomeThingOnMyLocalMachine} -Variable ALocallyDefinedVariable,AndAnother -Function (Get-Command Get-SomeThingOnMyLocalMachine) -UseLocalCredential -Retries 3 -RetryIntervalInSeconds 20
+$param = @{
+    ActivityName           = 'GetStuff'
+    Variable               = (Get-Variable ALocallyDefinedVariable),(Get-Variable AndAnother)
+    Function               = (Get-Command Get-SomeThingOnMyLocalMachine)
+    ComputerName           = 'DC1'
+    ScriptBlock            = {
+        Get-SomeThingOnMyLocalMachine -ALocallyDefinedVariable $ALocallyDefinedVariable -AndAnother $AndAnother
+    }
+    UseLocalCredential     = $true
+    Retries                = 3
+    RetryIntervalInSeconds = 20
+}
+
+
+Invoke-LabCommand @param
 ```
 
 Invokes a script block calling a locally-defined function on the machine DC1.
@@ -439,3 +463,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
+

@@ -10,15 +10,17 @@ When you are using the automatic machine definitions, the memory requirements wi
 
 ## Deploying a lab with Linux VMs
 With AutomatedLab Linux VMs can be deployed just as easily as Windows VMs. The current implementation should take care of the following distributions:
-- RHEL 7 (*)
-- CentOS 7
-- Fedora 27
-- SLES 12.3 (*)
+- RHEL 7+ (*)
+- CentOS 7+
+- Fedora 27+
+- SLES 12.3+ (*)
 - OpenSuSE
 
-At the moment the machines do not support any of AutomatedLab's roles since our roles are Windows-based. However, your VMs should come up domain-joined and capable of receiving WinRM requests. AutomatedLab uses kickstart (RHEL-based) or AutoYAST (SLES-based) to configure everything that would be configured in the unattend file of a Windows machine.
+At the moment the machines do not support any of AutomatedLab's roles since our roles are Windows-based. However, your VMs should come up domain-joined and capable of receiving WinRM or SSH requests. AutomatedLab uses kickstart (RHEL-based) or AutoYAST (SLES-based) to configure everything that would be configured in the unattend file of a Windows machine.
 
 WinRM support is spotty with distributions like OpenSuSE and Fedora. Fedora being too cutting-edge does not allow PowerShell and omi-psrp-server to be installed, while OpenSuSE currently has the wrong package dependencies and fails installing PowerShell as well.
+
+To address this issue, please use the parameters `SshPublicKeyPath` and `SshPrivateKeyPath` when deploying Linux hosts.
 
 ## Simple Linux lab
 You can find the Linux lab here: [AL Loves Linux](https://github.com/AutomatedLab/AutomatedLab/blob/develop/LabSources/SampleScripts/HyperV/AL%20Loves%20Linux.ps1)

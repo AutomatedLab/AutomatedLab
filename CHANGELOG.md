@@ -2,9 +2,23 @@
 
 ## Unreleased (yyyy-MM-dd)
 
+## 5.46.0 (2022-11-24)
+
 ### Enhancements
 
+- New configuration item UseLatestAzureProviderApi to use latest available provider instead of hardcoded values
+- Including tests for existing help content to ensure quality of help content
+- Including basic Ubuntu support: VMs can be added but are not installed due to cloud-init not working.
+- Added key for Windows 11 Enterprise Evaluation version 10.0.22621.525
+
 ### Bugs
+
+- Fix issue with Azure file sync when single files are checked
+  - relative path ISOs was returned with file name, which prompted AL to always upload and fail
+- Fix issue when multiple Azure networks are deployed
+- Incompatible Azure role sizes could be selected. Filtering down to x64 to prevent that.
+- SkipDeployment was not fully utilized
+  - Cmdlets modifying machine status now skip SkipDeployment VMs, as cmdlet usage often does not make sense anyways
 
 ## 5.45.0 (2022-09-01)
 

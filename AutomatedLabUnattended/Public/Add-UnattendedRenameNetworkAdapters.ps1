@@ -1,27 +1,27 @@
 ﻿function Add-UnattendedRenameNetworkAdapters
 {
-	[CmdletBinding()]
+	[CmdletBinding(DefaultParameterSetName = 'Windows')]
     param
     (
-        [switch]$IsKickstart,
-        [switch]$IsAutoYast
+        [Parameter(ParameterSetName='Kickstart')]
+        [switch]
+        $IsKickstart,
+
+        [Parameter(ParameterSetName='Yast')]
+        [switch]
+        $IsAutoYast,
+
+        [Parameter(ParameterSetName='CloudInit')]
+        [switch]
+        $IsCloudInit
     )
+
 	if (-not $script:un)
 	{
 		Write-Error 'No unattended file imported. Please use Import-UnattendedFile first'
 		return
 	}
 
-    if ($IsKickstart)
-    {
-        Add-UnattendedKickstartRenameNetworkAdapters
-    }
-    elseif ($IsAutoYast)
-    {
-        Add-UnattendedYastRenameNetworkAdapters
-    }
-    else
-    {
-        Add-UnattendedWindowsRenameNetworkAdapters
-    }
+    $command = Get-Command -Name $PSCmdlet.MyInvocation.MyCommand.Name.Replace('Unattended', "Unattended$($PSCmdlet.ParameterSetName)")
+    & $command
 }

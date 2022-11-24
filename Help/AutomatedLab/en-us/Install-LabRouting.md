@@ -1,7 +1,7 @@
 ---
 external help file: AutomatedLab-help.xml
 Module Name: AutomatedLab
-online version:
+online version: https://automatedlab.org/en/latest/AutomatedLab/en-us/Install-LabRouting
 schema: 2.0.0
 ---
 
@@ -13,7 +13,7 @@ Configure RRAS
 ## SYNTAX
 
 ```
-Install-LabRouting [[-InstallationTimeout] <Int32>] [[-ProgressIndicator] <Int32>] [<CommonParameters>]
+Install-LabRouting [[-InstallationTimeout] <Int32>] [-ProgressIndicator <Int32>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -56,7 +56,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 1
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -72,3 +72,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
+
