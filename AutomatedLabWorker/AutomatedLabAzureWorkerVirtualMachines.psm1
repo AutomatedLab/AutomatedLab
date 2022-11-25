@@ -1456,19 +1456,19 @@ function Initialize-LWAzureVM
         # Configure SSHD for PowerShell Remoting alternative that also works on Linux
         if (Get-WindowsCapability -Online | Where-Object Name -like 'OpenSSH*')
         {
-            Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0
-            Start-Service sshd
-            Set-Service -Name sshd -StartupType 'Automatic'
+            Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0 -ErrorAction SilentlyContinue
+            Start-Service sshd -ErrorAction SilentlyContinue
+            Set-Service -Name sshd -StartupType 'Automatic' -ErrorAction SilentlyContinue
 
             if (-not (Get-NetFirewallRule -Name "OpenSSH-Server-In-TCP" -ErrorAction SilentlyContinue)) 
             {
                 New-NetFirewallRule -Name 'OpenSSH-Server-In-TCP' -DisplayName 'OpenSSH Server (sshd)' -Enabled True -Direction Inbound -Protocol TCP -Action Allow -LocalPort 22 -Profile Any
             }
 
-            New-ItemProperty -Path "HKLM:\SOFTWARE\OpenSSH" -Name DefaultShell -Value "C:\Program Files\powershell\7\pwsh.exe" -PropertyType String -Force
+            New-ItemProperty -Path "HKLM:\SOFTWARE\OpenSSH" -Name DefaultShell -Value "C:\Program Files\powershell\7\pwsh.exe" -PropertyType String -Force -ErrorAction SilentlyContinue
             $null = New-Item -Force -Path C:\AL\SSH -ItemType Directory
             if ($PublicKey) { $PublicKey | Set-Content -Path (Join-Path -Path C:\AL\SSH -ChildPath 'keys') }
-            Start-Process -Wait -FilePath icacls.exe -ArgumentList "$(Join-Path -Path C:\AL\SSH -ChildPath 'keys') /inheritance:r /grant ""Administrators:F"" /grant ""SYSTEM:F"""
+            Start-Process -Wait -FilePath icacls.exe -ArgumentList "$(Join-Path -Path C:\AL\SSH -ChildPath 'keys') /inheritance:r /grant ""Administrators:F"" /grant ""SYSTEM:F""" -ErrorAction SilentlyContinue
             $sshdConfig = @"
 Port 22
 PasswordAuthentication no
@@ -1478,8 +1478,8 @@ AllowGroups Users Administrators
 AuthorizedKeysFile c:/al/ssh/keys
 Subsystem powershell c:/progra~1/powershell/7/pwsh.exe -sshs -NoLogo
 "@
-            $sshdConfig | Set-Content -Path (Join-Path -Path $env:ProgramData -ChildPath 'ssh/sshd_config')
-            Restart-Service -Name sshd
+            $sshdConfig | Set-Content -Path (Join-Path -Path $env:ProgramData -ChildPath 'ssh/sshd_config') -ErrorAction SilentlyContinue    
+            Restart-Service -Name sshd -ErrorAction SilentlyContinue    
         }
 
         Set-DnsClientServerAddress -InterfaceIndex $idx -ServerAddresses $dnsServer.ServerAddresses
