@@ -539,7 +539,7 @@ function Import-Lab
         }
 
         $minimumAzureModuleVersion = Get-LabConfigurationItem -Name MinimumAzureModuleVersion
-        if (($Script:data.Machines | Where-Object HostType -eq Azure) -and -not (Test-LabAzureModuleAvailability))
+        if (($Script:data.Machines | Where-Object HostType -eq Azure) -and -not (Test-LabAzureModuleAvailability -AzureStack:$($script:data.AzureSettings.IsAzureStack)))
         {
             throw "The Azure PowerShell modules required to run AutomatedLab are not available. Please install them using the command 'Install-LabAzureRequiredModule'"
         }
@@ -1482,7 +1482,14 @@ function Remove-Lab
             if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure' -and -not (Get-AzContext))
             {
                 Write-ScreenInfo -Type Info -Message "Your Azure session is expired. Please log in to remove your resource group"
-                Connect-AzAccount -UseDeviceAuthentication -WarningAction Continue
+                $param = @{
+                    UseDeviceAuthentication = $true
+                    ErrorAction             = 'SilentlyContinue' 
+                    WarningAction           = 'Continue'
+                    Environment             = $(Get-Lab).AzureSettings.Environment
+                }
+
+                $null = Connect-AzAccount @param
             }
 
             try
@@ -1682,7 +1689,8 @@ function Get-LabAvailableOperatingSystem
         $cachedOsList = New-Object $type
         foreach ($os in $cachedSkus)
         {
-            $cachedOs = [AutomatedLab.OperatingSystem]::new($os.Skus, $true)
+            # Converting ToLower() as Azure Stack Hub images seem to mix case
+            $cachedOs = [AutomatedLab.OperatingSystem]::new($os.Skus.ToLower(), $true)
             if ($cachedOs.OperatingSystemName) {$cachedOsList.Add($cachedOs)}
         }
 
@@ -1697,11 +1705,24 @@ function Get-LabAvailableOperatingSystem
 
         foreach ($sku in $skus)
         {
-            $azureOs = ([AutomatedLab.OperatingSystem]::new($sku.Skus, $true))
+            # Converting ToLower() as Azure Stack Hub images seem to mix case
+            $azureOs = ([AutomatedLab.OperatingSystem]::new($sku.Skus.ToLower(), $true))
             if (-not $azureOs.OperatingSystemName) { continue }
 
             $osList.Add($azureOs )
         }
+
+        $osList.Timestamp = Get-Date
+    
+        if ($IsLinux -or $IsMacOS)
+        {
+            $osList.Export((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath "Stores/$($storeLocationName)OperatingSystems.xml"))
+        }
+        else
+        {
+            $osList.ExportToRegistry('Cache', "$($storeLocationName)OperatingSystems")
+        }
+
         return $osList.ToArray()
     }
 

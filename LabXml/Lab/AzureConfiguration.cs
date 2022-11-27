@@ -37,6 +37,8 @@ namespace AutomatedLab
         public string AutoShutdownTime {get; set;}
         public string AutoShutdownTimeZone { get; set; }
         public bool AllowBastionHost {get; set; }
+        public string Environment { get; set; }
+        public bool IsAzureStack { get; set; }
 
         public string LabSourcesResourceGroupName
         {
@@ -162,6 +164,7 @@ namespace AutomatedLab
             resourceGroups = new List<AzureRmResourceGroup>();
             subscriptions = new List<AzureSubscription>();
             vmDisks = new List<string>();
+            Environment = "AzureCloud"; // Default environment for public cloud
 
             // Start port counter above well-known ports
             LoadBalancerPortCounter = 5000;

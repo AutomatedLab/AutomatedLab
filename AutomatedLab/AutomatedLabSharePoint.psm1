@@ -212,20 +212,20 @@ function Install-LabSharePoint
 
     $instResult = Invoke-LabCommand -PassThru -ComputerName $machines -ActivityName "Install SharePoint (all) Prerequisites" -ScriptBlock { & C:\DeployDebug\SPPrereq.ps1 -Mode '/unattended' }
     $failed = $instResult | Where-Object { $_.ExitCode -notin 0, 3010 }
-    if ($null -ne $failed)
+    if ($failed)
     {
         Write-ScreenInfo -Type Error -Message "The following SharePoint servers failed installing prerequisites $($failed.PSComputerName)"
         return
     }
 
     $rebootRequired = $instResult | Where-Object { $_.ExitCode -eq 3010 }
-    while ($null -ne $rebootRequired)
+    while ($rebootRequired)
     {
         Write-ScreenInfo -Type Verbose -Message "Some machines require a second pass at installing prerequisites: $($rebootRequired.HostName -join ',')"
         Restart-LabVM -ComputerName $rebootRequired.HostName -Wait
         $instResult = Invoke-LabCommand -PassThru -ComputerName $rebootRequired.HostName -ActivityName "Install $($group.Name) Prerequisites" -ScriptBlock { & C:\DeployDebug\SPPrereq.ps1 -Mode '/unattended /continue' } | Where-Object { $_ -eq 3010 }
         $failed = $instResult | Where-Object { $_.ExitCode -notin 0, 3010 }
-        if ($null -ne $failed)
+        if ($failed)
         {
             Write-ScreenInfo -Type Error -Message "The following SharePoint servers failed installing prerequisites $($failed.HostName)"
         }
@@ -243,7 +243,7 @@ function Install-LabSharePoint
         $configFile = $setupConfigFileContent -f $productKey
         Invoke-LabCommand -ComputerName $group.Group -ActivityName "Install SharePoint $($group.Name)" -ScriptBlock {
             Set-Content -Force -Path C:\SPInstall\files\al-config.xml -Value $configFile
-            $null = Start-Process -Wait "C:\SPInstall\setup.exe" –ArgumentList "/config C:\SPInstall\files\al-config.xml"
+            $null = Start-Process -Wait "C:\SPInstall\setup.exe" -ArgumentList "/config C:\SPInstall\files\al-config.xml"
             Set-Content C:\DeployDebug\SPInst.cmd -Value 'C:\SPInstall\setup.exe /config C:\SPInstall\files\al-config.xml'
             Get-ChildItem -Path (Join-Path ([IO.Path]::GetTempPath()) 'SharePoint Server Setup*') | Get-Content
         } -Variable (Get-Variable -Name configFile) -AsJob -PassThru

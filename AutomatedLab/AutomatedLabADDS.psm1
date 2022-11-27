@@ -1039,7 +1039,7 @@ function Install-LabRootDcs
     -not $_.HasDomainJoined -and $_.DomainName -in $domains -and $_.HostType -eq 'Azure' }
     $retries = 3
 
-    while ((Get-LabVM | Where-Object -FilterScript $filterScript) -or $retries -le 0 )
+    while ((Get-LabVM | Where-Object -FilterScript $filterScript) -and $retries -ge 0 )
     {
         $machinesToJoin = Get-LabVM | Where-Object -FilterScript $filterScript
 

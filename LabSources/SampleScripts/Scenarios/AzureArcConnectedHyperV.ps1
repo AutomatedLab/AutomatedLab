@@ -11,6 +11,7 @@
 .EXAMPLE
     ./AzureArcConnectedHyperV.ps1 -SubscriptionName arcsub
 #>
+[CmdletBinding(DefaultParameterSetName='SubName')]
 param
 (
     # Name of the lab

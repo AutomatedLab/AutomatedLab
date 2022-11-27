@@ -4,7 +4,7 @@
 
     [Parameter()]
     [string[]]
-    $ExternalDependency = @('Pester', 'PSFramework', 'newtonsoft.json', 'SHiPS', 'AutomatedLab.Common', 'xPSDesiredStateConfiguration', 'xDscDiagnostics', 'xWebAdministration'),
+    $ExternalDependency = @('Pester', 'PSFramework', 'newtonsoft.json', 'SHiPS', 'AutomatedLab.Common', 'xPSDesiredStateConfiguration', 'xDscDiagnostics', 'xWebAdministration', 'powershell-yaml'),
 
     [Parameter()]
     [string[]]
@@ -198,12 +198,12 @@ foreach ($depp in ($ExternalDependency + $internalModules))
 
     $rootNode = $xmlContent.CreateNode([System.Xml.XmlNodeType]::Element, 'Directory', 'http://schemas.microsoft.com/wix/2006/wi')
     $idAttrib = $xmlContent.CreateAttribute('Id')
-    $idAttrib.Value = "$($depp -replace '\.|\\')Root"
+    $idAttrib.Value = "$($depp -replace '\W')Root"
     $nameAttrib = $xmlContent.CreateAttribute('Name')
     $nameAttrib.Value = $depp
     $null = $rootNode.Attributes.Append($idAttrib)
     $null = $rootNode.Attributes.Append($nameAttrib)
-    $nodeHash.Add("$($depp -replace '\.|\\')Root", @{Node = $rootNode; Component = $false })
+    $nodeHash.Add("$($depp -replace '\W')Root", @{Node = $rootNode; Component = $false })
 
     foreach ($folder in $folders)
     {
@@ -237,7 +237,7 @@ foreach ($depp in ($ExternalDependency + $internalModules))
         $parentNode = $nodeHash[$parentNodeName].Node
         if ($null -eq $parentNode)
         {
-            $parentNodeName = "$($depp -replace '\.|\\')Root"
+            $parentNodeName = "$($depp -replace '\W')Root"
             $parentNode = $rootNode
         }
 
