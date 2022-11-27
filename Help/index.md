@@ -141,7 +141,7 @@ Manage one, some, or all virtual lab machines
 
 - Single command offline patching
 - All lab machines use one disk per OS
-- Update-LabIsoImage Efficiently patch  OS ISO files [*more*](https://github.com/AutomatedLab/AutomatedLab/blob/mastr/LabSources/SampleScripts/Introduction/11%20ISO%20Offline%20Patching.ps1)
+- Update-LabIsoImage Efficiently patch  OS ISO files [*more*](https://github.com/AutomatedLab/AutomatedLab/blob/master/LabSources/SampleScripts/Introduction/11%20ISO%20Offline%20Patching.ps1)
 - Remove-Lab obliterate lab with one command
 
 ## Telemetry
