@@ -2,6 +2,10 @@
 
 ## Unreleased (yyyy-MM-dd)
 
+### Bugs
+
+- Fixed using wrong variable in `Wait-LWLabJob` (#1425).
+
 ## 5.46.0 (2022-11-24)
 
 ### Enhancements
