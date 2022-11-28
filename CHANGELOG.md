@@ -5,6 +5,7 @@
 ### Bugs
 
 - Fixed using wrong variable in `Wait-LWLabJob` (#1425).
+- Fixed output of `Add-LabDomainDefinition` (#1428)
 
 ## 5.46.0 (2022-11-24)
 

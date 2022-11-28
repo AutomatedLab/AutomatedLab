@@ -1501,7 +1501,7 @@ function Add-LabDomainDefinition
 
     if ($PassThru)
     {
-        $network
+        $domain
     }
 
     Write-LogFunctionExit
