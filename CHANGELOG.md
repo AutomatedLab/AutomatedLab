@@ -6,6 +6,8 @@
 
 - Fixed using wrong variable in `Wait-LWLabJob` (#1425).
 - Fixed output of `Add-LabDomainDefinition` (#1428)
+- Fixed OS disk ignoring Storage SKU (#1434)
+- Fixed outbound NAT rules attached to wrong resource
 
 ## 5.46.0 (2022-11-24)
 

@@ -466,7 +466,7 @@
 
         if (-not $Lab.AzureSettings.IsAzureStack)
         {
-            $loadbalancer.outboundRules = @(
+            $loadbalancer.properties.outboundRules = @(
                 @{
                     name       = "InternetAccess"
                     properties = @{
@@ -737,7 +737,22 @@
                         createOption = "FromImage"
                         osType       = "Windows"
                         caching      = "ReadWrite"
-                    }
+                        managedDisk = @{
+                            storageAccountType = if ($Machine.AzureProperties.ContainsKey('StorageSku') -and $Machine.AzureProperties['StorageSku'] -notmatch 'ultra')
+                            {
+                                $Machine.AzureProperties['StorageSku']
+                            }
+                            elseif ($Machine.AzureProperties.ContainsKey('StorageSku') -and $Machine.AzureProperties['StorageSku'] -match 'ultra')
+                            {
+                                Write-ScreenInfo -Type Warning -Message "Ultra_SSD SKU selected, defaulting to Premium_LRS for OS disk."
+                                'Premium_LRS'
+                            }
+                            else
+                            {
+                                'Standard_LRS'
+                            }
+                        }
+                    }                    
                     imageReference = $imageRef
                     dataDisks      = @()
                 }
@@ -867,7 +882,13 @@ function Get-LWAzureVmSize
 
     $lab = Get-Lab
 
-    if ($machine.AzureProperties.RoleSize)
+    if ($machine.AzureRoleSize)
+    {
+        $roleSize = $lab.AzureSettings.RoleSizes |
+        Where-Object { $_.Name -eq $machine.AzureRoleSize }
+        Write-PSFMessage -Message "Using specified role size of '$($roleSize.Name)'"
+    }
+    elseif ($machine.AzureProperties.RoleSize)
     {
         $roleSize = $lab.AzureSettings.RoleSizes |
         Where-Object { $_.Name -eq $machine.AzureProperties.RoleSize }
