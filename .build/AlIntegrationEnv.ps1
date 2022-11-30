@@ -4,7 +4,7 @@ $ProgressPreference = 'SilentlyContinue'
 
 foreach ($hypervisor in 'HyperV','Az')
 {
-    $labname = "IntegratorHyperV$($PSVersionTable.PSVersion.Major)$($PSVersionTable.PSVersion.Minor)"
+    $labname = "Integrator$($hypervisor)$($PSVersionTable.PSVersion.Major)$($PSVersionTable.PSVersion.Minor)"
     New-LabDefinition -Name $labname -DefaultVirtualizationEngine $hypervisor -VmPath D:\AL
     if ($hypervisor -eq 'Az')
     {

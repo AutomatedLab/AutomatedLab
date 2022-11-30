@@ -171,6 +171,7 @@ Task Test -Depends Init {
                     Enable-LabHostRemoting -Force
                     Set-PSFConfig -FullName AutomatedLab.LabSourcesLocation -Value Z: -PassThru | Register-PSFConfig
                     Set-PSFConfig -FullName AutomatedLab.DoNotPrompt -Value $true -PassThru | Register-PSFConfig
+                    Set-PSFConfig -FullName AutomatedLab.AutoSyncLabSources -Value $false -PassThru | Register-PSFConfig
 
                     $null = Get-PackageProvider -name Nuget -ForceBootstrap
                     Install-LabAzureRequiredModule -Repository PSGallery -Scope AllUsers
