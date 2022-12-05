@@ -1561,7 +1561,7 @@ function Remove-Lab
                         Write-PSFMessage 'Removing disks...'
                         foreach ($disk in $disks)
                         {
-                            Write-PSFMessage "Removing disk '($disk.Name)'"
+                            Write-PSFMessage "Removing disk '$($disk.Name)'"
 
                             if (Test-Path -Path $disk.Path)
                             {
