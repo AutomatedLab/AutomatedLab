@@ -2,6 +2,10 @@
 
 ## Unreleased (yyyy-MM-dd)
 
+### Enhancements
+
+- Add validator to check if machine name and admin user name are the same
+
 ### Bugs
 
 - Fixed using wrong variable in `Wait-LWLabJob` (#1425).
