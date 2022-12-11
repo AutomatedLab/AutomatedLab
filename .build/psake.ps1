@@ -114,6 +114,7 @@ Task Test -Depends Init {
                 Enable-LabHostRemoting -Force
                 Restart-AzVM -ResourceGroupName automatedlabintegration -Name inttestvm -Confirm:$false
                 $retryCount = 0
+                $so = New-PSSessionOption -IdleTimeout (New-TimeSpan -Hours 8).TotalMilliseconds
                 while (-not $session -and $retryCount -lt 10)
                 {
                     try
@@ -121,7 +122,7 @@ Task Test -Depends Init {
                         Write-Host -ForegroundColor DarkYellow "Attempting to connect to $($depp.Outputs.hostname.Value)"
                         Test-WSMan -ComputerName $depp.Outputs.hostname.Value
                         Test-NetConnection -ComputerName $depp.Outputs.hostname.Value -CommonTCPPort WINRM
-                        $session = New-PSSession -ComputerName $depp.Outputs.hostname.Value -Credential $vmCredential -ErrorAction Stop
+                        $session = New-PSSession -ComputerName $depp.Outputs.hostname.Value -Credential $vmCredential -ErrorAction Stop -SessionOption $so
                     }
                     catch
                     {
@@ -156,7 +157,12 @@ Task Test -Depends Init {
                 Copy-Item -ToSession $session -Path "$ProjectRoot\.build\AlIntegrationEnv.ps1" -Destination C:\AlIntegrationEnv.ps1
 
                 Write-Host -ForegroundColor DarkYellow "Running tests"
+                $start = Get-Date
                 Invoke-Command -Session $session -ScriptBlock {
+                    param
+                    (
+                        $Principal
+                    )
                     [Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTIN', '1', 'Machine')
                     Set-ExecutionPolicy Bypass -Scope LocalMachine -Force
                     $env:AUTOMATEDLAB_TELEMETRY_OPTIN = 1
@@ -164,11 +170,21 @@ Task Test -Depends Init {
                     New-PSDrive -Name Z -PSProvider FileSystem -Root "\\$($principal.StorageAccountName).file.core.windows.net\labsources" -Credential $credential
                     Enable-LabHostRemoting -Force
                     Set-PSFConfig -FullName AutomatedLab.LabSourcesLocation -Value Z: -PassThru | Register-PSFConfig
-                    & C:\AlIntegrationEnv.ps1
-                } -ErrorAction SilentlyContinue
+                    Set-PSFConfig -FullName AutomatedLab.DoNotPrompt -Value $true -PassThru | Register-PSFConfig
+                    Set-PSFConfig -FullName AutomatedLab.AutoSyncLabSources -Value $false -PassThru | Register-PSFConfig
 
-                Write-Host -ForegroundColor DarkYellow "Receiving test results"
+                    $null = Get-PackageProvider -name Nuget -ForceBootstrap
+                    Install-LabAzureRequiredModule -Repository PSGallery -Scope AllUsers
+                    $securePassword = $principal.Password | ConvertTo-SecureString -AsPlainText -Force
+                    $credential = [PSCredential]::new($principal.ApplicationId, $securePassword)
+                    $null = Connect-AzAccount -ServicePrincipal -TenantId $principal.TenantId -Credential $credential -Subscription $principal.SubscriptionId -ErrorAction Stop
+                    & C:\AlIntegrationEnv.ps1
+                } -ErrorAction SilentlyContinue -ArgumentList $principal
+
+                $end = Get-Date
+                Write-Host -ForegroundColor DarkYellow "Receiving test results, runtime $($end - $start)"
                 Copy-Item -FromSession $session -Path C:\TestResult*.xml -Destination $ProjectRoot -ErrorAction SilentlyContinue
+                Write-Host -ForegroundColor DarkYellow "Received $((Get-ChildItem -Path $ProjectRoot -Filter TestResult*.xml).Count) test results"
                 If ($ENV:APPVEYOR_JOB_ID)
                 {
                     foreach ($testRes in (Get-ChildItem -Path $ProjectRoot -Filter TestResult*.xml))
