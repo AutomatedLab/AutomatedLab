@@ -25,6 +25,7 @@ function New-LWHypervVM
     )
 
     $PSBoundParameters.Add('ProgressIndicator', 1) #enables progress indicator
+    if ($Machine.SkipDeployment) { return }
 
     Write-LogFunctionEntry
 
@@ -1115,7 +1116,7 @@ function Start-LWHypervVM
         Wait-LWLabJob -Job $job -NoNewLine -ProgressIndicator $ProgressIndicator -Timeout 15 -NoDisplay
     }
 
-    foreach ($Name in $(Get-LabVM -ComputerName $ComputerName -IncludeLinux))
+    foreach ($Name in $(Get-LabVM -ComputerName $ComputerName -IncludeLinux | Where-Object SkipDeployment -eq $false))
     {
         $machine = Get-LabVM -ComputerName $Name -IncludeLinux
 
@@ -1220,7 +1221,7 @@ function Stop-LWHypervVM
     else
     {
         $jobs = @()
-        foreach ($name in (Get-LabVm -ComputerName $ComputerName -IncludeLinux).ResourceName)
+        foreach ($name in (Get-LabVm -ComputerName $ComputerName -IncludeLinux | Where-Object SkipDeployment -eq $false).ResourceName)
         {
             $job = Get-LWHypervVm -Name $name -ErrorAction SilentlyContinue | Stop-VM -AsJob -Force -ErrorAction Stop
             $job | Add-Member -Name ComputerName -MemberType NoteProperty -Value $name

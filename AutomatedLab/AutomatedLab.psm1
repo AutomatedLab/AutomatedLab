@@ -1329,7 +1329,7 @@ function Install-Lab
 
         Write-ScreenInfo -Message 'Waiting for machines to start up...' -NoNewLine
 
-        $toStart = Get-LabVM -IncludeLinux:$(-not (Get-LabConfigurationItem -Name DoNotWaitForLinux -Default $false))
+        $toStart = Get-LabVM -IncludeLinux:$(-not (Get-LabConfigurationItem -Name DoNotWaitForLinux -Default $false)) | Where-Object SkipDeployment -eq $false
         Start-LabVM -ComputerName $toStart -DelayBetweenComputers $DelayBetweenComputers -ProgressIndicator 30 -TimeoutInMinutes $timeoutRemaining -Wait
 
         $userName = (Get-Lab).DefaultInstallationCredential.UserName
@@ -1355,7 +1355,7 @@ function Install-Lab
     # until a restart was done
     if ($lab.DefaultVirtualizationEngine -eq 'Azure')
     {
-        $vms = Get-LabVm
+        $vms = Get-LabVm | Where-Object SkipDeployment -eq $false
         $disconnectedVms = Invoke-LabCommand -PassThru -NoDisplay -ComputerName $vms -ScriptBlock { $null -eq (Get-NetConnectionProfile -IPv4Connectivity Internet -ErrorAction SilentlyContinue) } | Where-Object { $_}
         if ($disconnectedVms) { Restart-LabVm $disconnectedVms.PSComputerName -Wait -NoDisplay -NoNewLine }
     }
@@ -3033,7 +3033,7 @@ function Update-LabMemorySettings
 
     Write-LogFunctionEntry
 
-    $machines = Get-LabVM -All -IncludeLinux
+    $machines = Get-LabVM -All -IncludeLinux | Where-Object SkipDeployment -eq $false
     $lab = Get-LabDefinition
 
     if ($machines | Where-Object Memory -lt 32)

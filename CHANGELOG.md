@@ -13,6 +13,7 @@
 - Fixed OS disk ignoring Storage SKU (#1434)
 - Fixed outbound NAT rules attached to wrong resource
 - Fixed issue with disks being stored in wrong folder if resourcename was used
+- Fixed issue with SkipDeployment parameter being ignored, failing read operations (#1443)
 
 ## 5.46.0 (2022-11-24)
 

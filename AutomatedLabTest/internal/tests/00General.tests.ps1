@@ -3,14 +3,14 @@
             It "[<LabName>] Should return the correct amount of machines" -TestCases @(@{Lab = $Lab; LabName = $Lab.Name}) {
                 $machines = if ($Lab.DefaultVirtualizationEngine -eq 'Azure')
                 {
-                    Get-LWAzureVm -ComputerName (Get-LabVm).ResourceName
+                    Get-LWAzureVm -ComputerName (Get-LabVm | Where-Object SkipDeployment -eq $false).ResourceName
                 }
                 elseif ($Lab.DefaultVirtualizationEngine -eq 'HyperV')
                 {
-                    Get-LWHyperVVm -Name (Get-LabVm -IncludeLinux).ResourceName
+                    Get-LWHyperVVm -Name (Get-LabVm -IncludeLinux | Where-Object SkipDeployment -eq $false).ResourceName
                 }
 
-                $machines.Count | Should -Be $lab.Machines.Count
+                $machines.Count | Should -Be $($lab.Machines | Where-Object SkipDeployment -eq $false).Count
             }
         }
     }

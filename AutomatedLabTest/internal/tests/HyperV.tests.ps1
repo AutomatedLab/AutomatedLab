@@ -4,13 +4,13 @@ Describe "[$($Lab.Name)] HyperV" -Tag HyperV {
             (Get-LabVM -Role HyperV).Count | Should -Be $(Get-Lab).Machines.Where( { $_.Roles.Name -contains 'HyperV' }).Count
         }
         
-        foreach ($vm in (Get-LabVM -Role HyperV))
+        foreach ($vm in (Get-LabVM -Role HyperV | Where-Object SkipDeployment -eq $false))
         {
             if ($Lab.DefaultVirtualizationEngine -eq 'HyperV' -and (Test-IsAdministrator))
             {
                 It "[$vm] should have exposed virtualization extension" -TestCases @{vm = $vm } {
             
-                    (Get-LWHypervVM -Name $vm.ResourceName| Get-VMProcessor).ExposeVirtualizationExtensions | Should -Be $true
+                    (Get-LWHypervVM -Name $vm.ResourceName | Get-VMProcessor).ExposeVirtualizationExtensions | Should -Be $true
                 }
             }
 
