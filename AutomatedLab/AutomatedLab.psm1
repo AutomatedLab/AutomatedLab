@@ -900,9 +900,9 @@ function Install-Lab
                 Write-ScreenInfo -Message "The hosts file has been added $hostFileAddedEntries records. Clean them up using 'Remove-Lab' or manually if needed" -Type Warning
             }
 
-            if ($script:data.Machines)
+            if ($script:data.Machines | Where-Object SkipDeployment -eq $false)
             {
-                New-LabVM -Name $script:data.Machines -CreateCheckPoints:$CreateCheckPoints
+                New-LabVM -Name ($script:data.Machines | Where-Object SkipDeployment -eq $false) -CreateCheckPoints:$CreateCheckPoints
             }
 
             #VMs created, export lab definition again to update MAC addresses
