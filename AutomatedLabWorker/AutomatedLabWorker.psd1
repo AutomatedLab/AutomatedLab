@@ -99,7 +99,9 @@
         'Wait-LWAzureRestartVM',
         'Wait-LWHypervVMRestart',
         'Wait-LWLabJob',
-        'Wait-LWVMWareRestartVM'
+        'Wait-LWVMWareRestartVM',
+        'Get-RequiredModulesFromMOF',
+        'Get-ModuleDependency'
     )
 
     RequiredModules        = @(

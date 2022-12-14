@@ -425,6 +425,55 @@ function New-LWHypervVM
         $referenceDiskPath = if ($Machine.ReferenceDiskPath) { $Machine.ReferenceDiskPath } else { $Machine.OperatingSystem.BaseDiskPath }
         $systemDisk = New-VHD -Path $path -Differencing -ParentPath $referenceDiskPath -ErrorAction Stop
         Write-PSFMessage "`tcreated differencing disk '$($systemDisk.Path)' pointing to '$ReferenceVhdxPath'"
+
+        if ($Machine.InitialDscLcmConfigurationMofPath -or $Machine.InitialDscConfigurationMofPath)
+        {
+            $mountedOsDisk = Mount-VHD -Path $path -Passthru
+            try
+            {
+                $drive = $mountedosdisk | get-disk | Get-Partition | Get-Volume  | Where {$_.DriveLetter -and $_.FileSystemLabel -eq 'System'}
+
+                if ($Machine.InitialDscConfigurationMofPath)
+                {
+                    $exportedModules = Get-RequiredModulesFromMOF -Path $Machine.InitialDscConfigurationMofPath
+                    foreach ($exportedModule in $exportedModules.GetEnumerator())
+                    {
+                        $moduleInfo = Get-Module -ListAvailable -Name $exportedModule.Key | Where-Object Version -eq $exportedModule.Value | Select-Object -First 1
+                        if (-not $moduleInfo)
+                        {
+                            Write-ScreenInfo -Type Warning -Message "Unable to find $($exportedModule.Key). Attempting to download from PSGallery"
+                            Save-Module -Path "$($drive.DriveLetter):\Program Files\WindowsPowerShell\Modules" -Name $exportedModule.Key -RequiredVersion $exportedModule.Value -Repository PSGallery -Force -AllowPrerelease
+                        }
+                        else
+                        {
+                            $source = Get-ModuleDependency -Module $moduleInfo | Sort-Object -Unique | ForEach-Object { 
+                                if ((Get-Item $_).BaseName -match '\d{1,4}\.\d{1,4}\.\d{1,4}' -and $Machine.OperatingSystem.Version -ge 10.0)
+                                {
+                                    #parent folder contains a specific version. In order to copy the module right, the parent of this parent is required
+                                    Split-Path -Path $_ -Parent
+                                }
+                                else
+                                {
+                                    $_
+                                }    
+                            }
+
+                            Copy-Item -Recurse -Path $source -Destination "$($drive.DriveLetter):\Program Files\WindowsPowerShell\Modules"
+                        }
+                    }
+                    Copy-Item -Path $Machine.InitialDscConfigurationMofPath -Destination "$($drive.DriveLetter):\Windows\System32\configuration\pending.mof"
+                }
+
+                if ($Machine.InitialDscLcmConfigurationMofPath)
+                {
+                    Copy-Item -Path $Machine.InitialDscLcmConfigurationMofPath -Destination "$($drive.DriveLetter):\Windows\System32\configuration\MetaConfig.mof"
+                }
+            }
+            finally
+            {
+                $mountedOsDisk | Dismount-VHD
+            }            
+        }
     }
 
     Write-ProgressIndicator
