@@ -18,8 +18,8 @@ namespace AutomatedLab
 
         public override IEnumerable<ValidationMessage> Validate()
         {
-            var rootDcs = machines.Where(machine => machine.Roles.Select(role => role.Name).Contains(Roles.RootDC));
-            var firstChildDcs = machines.Where(machine => machine.Roles.Select(role => role.Name).Contains(Roles.FirstChildDC));
+            var rootDcs = machines.Where(machine => machine.Roles.Select(role => role.Name).Contains(Roles.RootDC) && ! machine.SkipDeployment);
+            var firstChildDcs = machines.Where(machine => machine.Roles.Select(role => role.Name).Contains(Roles.FirstChildDC) && ! machine.SkipDeployment);
 
             foreach (var dc in rootDcs)
             {

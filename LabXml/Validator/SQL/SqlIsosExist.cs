@@ -23,7 +23,7 @@ namespace AutomatedLab
 
             foreach (var role in sqlRoles)
             {
-                var machines = lab.Machines.Where(m => m.Roles.Where(r => r.Name == role).Count() > 0 & m.HostType == VirtualizationHost.HyperV);
+                var machines = lab.Machines.Where(m => m.Roles.Where(r => r.Name == role).Count() > 0 & m.HostType == VirtualizationHost.HyperV && ! m.SkipDeployment);
 
                 if (machines.Count() > 0 & lab.Sources.ISOs.Where(iso => iso.Name == role.ToString()).Count() == 0)
                 {
