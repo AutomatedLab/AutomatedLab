@@ -320,8 +320,8 @@ Set-PSFConfig -Module AutomatedLab -Name Dynamics365Uri -Value 'https://download
 
 # Exchange Server
 Set-PSFConfig -Module AutomatedLab -Name Exchange2013DownloadUrl -Value 'https://download.microsoft.com/download/7/F/D/7FDCC96C-26C0-4D49-B5DB-5A8B36935903/Exchange2013-x64-cu23.exe'
-Set-PSFConfig -Module AutomatedLab -Name Exchange2016DownloadUrl -Value 'https://download.microsoft.com/download/f/0/e/f0e65686-3761-4c9d-b8b2-9fb71a207b8d/ExchangeServer2016-x64-CU22.ISO'
-Set-PSFConfig -Module AutomatedLab -Name Exchange2019DownloadUrl -Value 'https://download.microsoft.com/download/5/3/e/53e75dbd-ca33-496a-bd23-1d861feaa02a/ExchangeServer2019-x64-CU11.ISO'
+Set-PSFConfig -Module AutomatedLab -Name Exchange2016DownloadUrl -Value 'https://download.microsoft.com/download/8/d/2/8d2d01b4-5bbb-4726-87da-0e331bc2b76f/ExchangeServer2016-x64-CU23.ISO'
+Set-PSFConfig -Module AutomatedLab -Name Exchange2019DownloadUrl -Value 'https://download.microsoft.com/download/b/c/7/bc766694-8398-4258-8e1e-ce4ddb9b3f7d/ExchangeServer2019-x64-CU12.ISO'
 
 # ConfigMgr
 Set-PSFConfig -Module AutomatedLab -Name ConfigurationManagerWmiExplorer -Value 'https://github.com/vinaypamnani/wmie2/releases/download/v2.0.0.2/WmiExplorer_2.0.0.2.zip'
