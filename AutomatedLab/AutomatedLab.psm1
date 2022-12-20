@@ -2861,6 +2861,7 @@ function Install-LabSoftwarePackage
     Write-PSFMessage -Message "Starting background job for '$($parameters.ActivityName)'"
 
     $parameters.ScriptBlock = {
+        Import-Module -Name AutomatedLab.Common -ErrorAction SilentlyContinue
         if ($installParams.Path.StartsWith('\\') -and (Test-Path /ALAzure))
         {
             # Often issues with Zone Mapping
@@ -2903,7 +2904,7 @@ function Install-LabSoftwarePackage
         Write-ScreenInfo -Message "Copying files and initiating setup on '$($ComputerName -join ', ')' and waiting for completion" -NoNewLine
     }
 
-    $job = Invoke-LabCommand @parameters -Variable (Get-Variable -Name installParams)
+    $job = Invoke-LabCommand @parameters -Variable (Get-Variable -Name installParams) -Function (Get-Command Install-SoftwarePackage)
 
     if (-not $AsJob)
     {

@@ -7,6 +7,7 @@
 - Add validator to check if machine name and admin user name are the same
 - Validators now skip additional checks if SkipDeployment is used (#1442)
 - Allow integration of MOF and meta.MOF for first boot (in OS disk), enabling advanced configurations
+- Remove necessity to send Al.Common to all lab VMs
 
 ### Bugs
 
