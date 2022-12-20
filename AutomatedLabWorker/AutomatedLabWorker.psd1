@@ -99,9 +99,7 @@
         'Wait-LWAzureRestartVM',
         'Wait-LWHypervVMRestart',
         'Wait-LWLabJob',
-        'Wait-LWVMWareRestartVM',
-        'Get-RequiredModulesFromMOF',
-        'Get-ModuleDependency'
+        'Wait-LWVMWareRestartVM'
     )
 
     RequiredModules        = @(
@@ -110,7 +108,7 @@
         'PSFileTransfer',
         @{
             ModuleName    = "AutomatedLab.Common";
-            ModuleVersion = "2.2.247";
+            ModuleVersion = "2.3.0";
         }
     )
 
