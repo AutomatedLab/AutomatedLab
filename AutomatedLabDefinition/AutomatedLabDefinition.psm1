@@ -2938,7 +2938,7 @@ function Add-LabMachineDefinition
         {
             throw "$InitialDscConfigurationMofPath does not exist. Make sure it exists and is a mof"
         }
-        else
+        elseif ($script:lab.DefaultVirtualizationEngine -eq 'HyperV' -and $InitialDscConfigurationMofPath -and (Test-Path $InitialDscConfigurationMofPath))
         {
             if ($Machine.OperatingSystem.Version -lt 10.0) { Write-ScreenInfo -Type Warning -Message "Integrated PowerShell version of $Machine is less than 5. Please keep in mind that DSC has been introduced in PS4 and some resources may not work with versions older than PS5."}
             $Machine.InitialDscConfigurationMofPath = $InitialDscConfigurationMofPath
@@ -2948,7 +2948,7 @@ function Add-LabMachineDefinition
         {
             throw "$InitialDscLcmConfigurationMofPath does not exist. Make sure it exists and is a meta.mof"
         }
-        else
+        elseif ($script:lab.DefaultVirtualizationEngine -eq 'HyperV' -and $InitialDscLcmConfigurationMofPath -and (Test-Path $InitialDscLcmConfigurationMofPath))
         {
             if ($Machine.OperatingSystem.Version -lt 10.0) { Write-ScreenInfo -Type Warning -Message "Integrated PowerShell version of $Machine is less than 5. Please keep in mind that DSC has been introduced in PS4 and some resources may not work with versions older than PS5."}
             $Machine.InitialDscLcmConfigurationMofPath = $InitialDscLcmConfigurationMofPath
