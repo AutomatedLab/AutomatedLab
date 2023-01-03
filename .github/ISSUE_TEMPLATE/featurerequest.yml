@@ -1,0 +1,21 @@
+name: Feature Request
+description: Need a new feature? Request it here!
+title: "[New Feature]: "
+labels: ["feature"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this feature request!
+
+        Please describe your feature well enough for us to understand what you need.
+        Let us know if you are willing to contribute this feature!
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: |
+        Please describe your desired feature in as much detail as possible.
+      placeholder: Tell us what you want!
+    validations:
+      required: true

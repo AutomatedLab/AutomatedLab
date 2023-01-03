@@ -1,0 +1,58 @@
+name: Bug Report
+description: File a bug report
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+
+        Please describe your issue in as much detail as possible for us to understand it. Please
+        create **one GitHub issue for each problem you experience**. Otherwise it is hard to track
+        the progress.
+        Even though we develop AutomatedLab, we are not clairvoyant and need as many details as
+        possible to properly troubleshoot your issue. Thanks!
+
+        Optional:
+        After creating this report, you can additionally upload a support package. ***Be warned, this may contain PII and confidential information***. If
+        in doubt, have a look at it first.
+        Support packages can be generated in the *same PowerShell* session you experience an error in with `New-PSFSupportPackage -Include All`
+
+        The support package allows us to retrieve all errors as well as all verbose messages, regardless of whether you have
+        used the Verbose parameter or not.
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: |
+        Please describe your issue in as much detail as possible.
+      placeholder: Tell us what you see!
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce the issue
+      description: |
+        Please add all PowerShell Code necessary to reproduce your issue here.
+      placeholder: Tell us what you see!
+      render: PowerShell
+    validations:
+      required: true
+  - type: textarea
+    id: psv
+    attributes:
+      label: PowerShell Version
+      description: Please paste the output of $PSVersionTable in this output field.
+      render: Shell
+    validations:
+      required: true
+  - type: textarea
+    id: alv
+    attributes:
+      label: AutomatedLab Version
+      description: Please paste the output of Get-Module AutomatedLab* -List | Select Name,Version in this output field
+      render: Shell
+    validations:
+      required: true
