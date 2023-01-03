@@ -2164,7 +2164,7 @@ function Get-LWAzureVMConnectionInfo
         { continue }
 
         $net = $lab.VirtualNetworks.Where({ $_.Name -eq $name.Network[0] })
-        $ip = Get-AzPublicIpAddress -ResourceGroupName $resourceGroupName -ErrorAction SilentlyContinue | Where-Object { $_.Tag['vnet'] -eq $net.ResourceName }
+        $ip = Get-AzPublicIpAddress -ResourceGroupName $resourceGroupName -ErrorAction SilentlyContinue | Where-Object { $_.Tag['Vnet'] -eq $net.ResourceName }
 
         if (-not $ip)
         {

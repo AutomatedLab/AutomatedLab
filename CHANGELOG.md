@@ -8,6 +8,7 @@
 - Validators now skip additional checks if SkipDeployment is used (#1442)
 - Allow integration of MOF and meta.MOF for first boot (in OS disk), enabling advanced configurations
 - Remove necessity to send Al.Common to all lab VMs
+- Speed Test URLs for Azure updated
 
 ### Bugs
 
@@ -17,6 +18,7 @@
 - Fixed outbound NAT rules attached to wrong resource
 - Fixed issue with disks being stored in wrong folder if resourcename was used
 - Fixed issue with SkipDeployment parameter being ignored, failing read operations (#1443)
+- Fixed issue with Azure connection info - case sensitive dictionary
 
 ## 5.46.0 (2022-11-24)
 
