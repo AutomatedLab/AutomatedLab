@@ -1738,7 +1738,7 @@ Subsystem powershell c:/progra~1/powershell/7/pwsh.exe -sshs -NoLogo
     }
     Install-LabSshKnownHost
     Copy-LabFileItem -Path (Get-ChildItem -Path "$((Get-Module -Name AutomatedLab)[0].ModuleBase)\Tools\HyperV\*") -DestinationFolderPath /AL -ComputerName $Machine -UseAzureLabSourcesOnAzureVm $false
-    Send-ModuleToPSSession -Module (Get-Module -ListAvailable -Name AutomatedLab.Common | Select-Object -First 1) -Session (New-LabPSSession $Machine) -IncludeDependencies
+    Send-ModuleToPSSession -Module (Get-Module -ListAvailable -Name AutomatedLab.Common | Select-Object -First 1) -Session (New-LabPSSession $Machine) -IncludeDependencies -Force
     Write-ScreenInfo -Message 'Finished' -TaskEnd
 
     Write-ScreenInfo -Message 'Stopping all new machines except domain controllers'
