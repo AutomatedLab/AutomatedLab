@@ -30,23 +30,8 @@ PS C:\> {{ Add example code here }}
 
 ## PARAMETERS
 
-### -Name
-{{ Fill Name Description }}
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: 1
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ResourceGroup
-{{ Fill ResourceGroup Description }}
+### -AppServicePlan
+{{ Fill AppServicePlan Description }}
 
 ```yaml
 Type: String
@@ -54,7 +39,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 2
+Position: 4
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -75,16 +60,16 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -AppServicePlan
-{{ Fill AppServicePlan Description }}
+### -Name
+{{ Fill Name Description }}
 
 ```yaml
 Type: String
 Parameter Sets: (All)
 Aliases:
 
-Required: False
-Position: 4
+Required: True
+Position: 1
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -101,6 +86,21 @@ Aliases:
 Required: False
 Position: Named
 Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ResourceGroup
+{{ Fill ResourceGroup Description }}
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 2
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

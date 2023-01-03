@@ -24,9 +24,10 @@ Add-LabMachineDefinition -Name <String> [-Memory <Double>] [-MinMemory <Double>]
  [-EnableWindowsFirewall] [-AutoLogonDomainName <String>] [-AutoLogonUserName <String>]
  [-AutoLogonPassword <String>] [-AzureProperties <Hashtable>] [-HypervProperties <Hashtable>]
  [-Notes <Hashtable>] [-PassThru] [-ResourceName <String>] [-SkipDeployment] [-AzureRoleSize <String>]
- [-TimeZone <String>] [-RhelPackage <String[]>] [-SusePackage <String[]>] [-UbuntuPackage <String[]>] [-SshPublicKeyPath <String>]
- [-SshPrivateKeyPath <String>] [-OrganizationalUnit <String>] [-ReferenceDisk <String>]
- [-KmsServerName <String>] [-KmsPort <UInt16>] [-KmsLookupDomain <String>] [-ActivateWindows]
+ [-TimeZone <String>] [-RhelPackage <String[]>] [-SusePackage <String[]>] [-UbuntuPackage <String[]>]
+ [-SshPublicKeyPath <String>] [-SshPrivateKeyPath <String>] [-OrganizationalUnit <String>]
+ [-ReferenceDisk <String>] [-KmsServerName <String>] [-KmsPort <UInt16>] [-KmsLookupDomain <String>]
+ [-ActivateWindows] [-InitialDscConfigurationMofPath <String>] [-InitialDscLcmConfigurationMofPath <String>]
  [<CommonParameters>]
 ```
 
@@ -41,9 +42,10 @@ Add-LabMachineDefinition -Name <String> [-Memory <Double>] [-MinMemory <Double>]
  [-EnableWindowsFirewall] [-AutoLogonDomainName <String>] [-AutoLogonUserName <String>]
  [-AutoLogonPassword <String>] [-AzureProperties <Hashtable>] [-HypervProperties <Hashtable>]
  [-Notes <Hashtable>] [-PassThru] [-ResourceName <String>] [-SkipDeployment] [-AzureRoleSize <String>]
- [-TimeZone <String>] [-RhelPackage <String[]>] [-SusePackage <String[]>] [-UbuntuPackage <String[]>] [-SshPublicKeyPath <String>]
- [-SshPrivateKeyPath <String>] [-OrganizationalUnit <String>] [-ReferenceDisk <String>]
- [-KmsServerName <String>] [-KmsPort <UInt16>] [-KmsLookupDomain <String>] [-ActivateWindows]
+ [-TimeZone <String>] [-RhelPackage <String[]>] [-SusePackage <String[]>] [-UbuntuPackage <String[]>]
+ [-SshPublicKeyPath <String>] [-SshPrivateKeyPath <String>] [-OrganizationalUnit <String>]
+ [-ReferenceDisk <String>] [-KmsServerName <String>] [-KmsPort <UInt16>] [-KmsLookupDomain <String>]
+ [-ActivateWindows] [-InitialDscConfigurationMofPath <String>] [-InitialDscLcmConfigurationMofPath <String>]
  [<CommonParameters>]
 ```
 
@@ -304,6 +306,36 @@ Currently valid properties: 'AutomaticStartAction', 'AutomaticStartDelay', 'Auto
 
 ```yaml
 Type: Hashtable
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -InitialDscConfigurationMofPath
+Path to an initial mof (machine configuration) file. Applied at first boot.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -InitialDscLcmConfigurationMofPath
+Path to an initial meta.mof (LCM configuration) file. Applied at first boot.
+
+```yaml
+Type: String
 Parameter Sets: (All)
 Aliases:
 

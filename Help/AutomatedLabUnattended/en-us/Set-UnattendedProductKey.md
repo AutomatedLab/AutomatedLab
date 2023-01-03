@@ -12,24 +12,8 @@ Set the Windows product key.
 
 ## SYNTAX
 
-### Windows (Default)
 ```
 Set-UnattendedProductKey [-ProductKey] <String> [<CommonParameters>]
-```
-
-### CloudInit
-```
-Set-UnattendedProductKey [-ProductKey] <String> [-IsCloudInit] [<CommonParameters>]
-```
-
-### Yast
-```
-Set-UnattendedProductKey [-ProductKey] <String> [-IsAutoYast] [<CommonParameters>]
-```
-
-### Kickstart
-```
-Set-UnattendedProductKey [-ProductKey] <String> [-IsKickstart] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -46,51 +30,6 @@ PS C:\> Set-UnattendedProductKey -ProductKey FCKGW-YouKnowTheRest
 {{ Add example description here }}
 
 ## PARAMETERS
-
-### -IsAutoYast
-Indicates that this setting is placed in an AutoYAST file
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: Yast
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -IsCloudInit
-{{ Fill IsCloudInit Description }}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: CloudInit
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -IsKickstart
-Indicates that this setting is placed in a Kickstart file
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: Kickstart
-Aliases:
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
 
 ### -ProductKey
 The product key to set
@@ -119,3 +58,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
+

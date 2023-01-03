@@ -12,11 +12,19 @@ Adds Azure subscription data to lab
 
 ## SYNTAX
 
+### ByName (Default)
 ```
-Add-LabAzureSubscription [[-SubscriptionName] <String>] [-SubscriptionId <Guid>]
- [[-DefaultLocationName] <String>] [[-DefaultStorageAccountName] <String>] [[-Environment] <String>]
+Add-LabAzureSubscription [[-SubscriptionName] <String>] [-Environment <String>]
+ [[-DefaultLocationName] <String>] [[-DefaultStorageAccountName] <String>]
  [[-DefaultResourceGroupName] <String>] [-AutoShutdownTime <TimeSpan>] [-AutoShutdownTimeZone <String>]
  [-PassThru] [-AllowBastionHost] [-AzureStack] [<CommonParameters>]
+```
+
+### ById
+```
+Add-LabAzureSubscription [-SubscriptionId <Guid>] [-Environment <String>] [[-DefaultLocationName] <String>]
+ [[-DefaultStorageAccountName] <String>] [[-DefaultResourceGroupName] <String>] [-AutoShutdownTime <TimeSpan>]
+ [-AutoShutdownTimeZone <String>] [-PassThru] [-AllowBastionHost] [-AzureStack] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -179,7 +187,7 @@ Subscription GUID
 
 ```yaml
 Type: Guid
-Parameter Sets: (All)
+Parameter Sets: ById
 Aliases:
 
 Required: False
@@ -194,7 +202,7 @@ The name of the subscription to select, if necessary
 
 ```yaml
 Type: String
-Parameter Sets: (All)
+Parameter Sets: ByName
 Aliases:
 
 Required: False
@@ -215,4 +223,3 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 Author: Jan-Hendrik Peters
 
 ## RELATED LINKS
-
