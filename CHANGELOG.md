@@ -19,6 +19,7 @@
 - Fixed issue with disks being stored in wrong folder if resourcename was used
 - Fixed issue with SkipDeployment parameter being ignored, failing read operations (#1443)
 - Fixed issue with Azure connection info - case sensitive dictionary
+- Fixed issue with Mount-LWAzureIsoImage
 
 ## 5.46.0 (2022-11-24)
 
