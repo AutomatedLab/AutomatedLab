@@ -20,6 +20,7 @@
 - Fixed issue with SkipDeployment parameter being ignored, failing read operations (#1443)
 - Fixed issue with Azure connection info - case sensitive dictionary
 - Fixed issue with Mount-LWAzureIsoImage
+- Fixed issue with SQL setup on Azure using mounted ISO
 
 ## 5.46.0 (2022-11-24)
 
