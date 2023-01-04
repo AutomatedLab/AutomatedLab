@@ -166,6 +166,7 @@ GO
                 Write-ScreenInfo 'Done'
 
                 $dvdDrive = Mount-LabIsoImage -ComputerName $machine -IsoPath ($lab.Sources.ISOs | Where-Object Name -eq $role.Name).Path -PassThru -SupressOutput
+                Remove-LabPSSession -Machine $machine # Remove session to refresh drives, otherwise FileNotFound even if ISO is mounted
 
                 $global:setupArguments = ' /Q /Action=Install /IndicateProgress'
 
