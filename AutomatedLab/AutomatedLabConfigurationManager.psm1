@@ -318,7 +318,7 @@ function Install-LabConfigurationManager
         }
 
         Invoke-LabCommand -ComputerName $sql.Split('.')[0] -ActivityName 'Add computer account as local admin (why...)' -ScriptBlock {
-            Add-LocalGroupMember -Group Administrators -Member "$($vm.Name)\$($vm.DomainName)`$"
+            Add-LocalGroupMember -Group Administrators -Member "$($vm.DomainName)\$($vm.Name)`$"
         } -Variable (Get-Variable vm)
 
         if ($role.Properties.ContainsKey('DatabaseName'))

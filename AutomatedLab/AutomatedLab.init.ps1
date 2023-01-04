@@ -256,7 +256,8 @@ Set-PSFConfig -Module 'AutomatedLab' -Name cppredist32_2017 -Value 'https://aka.
 Set-PSFConfig -Module 'AutomatedLab' -Name cppredist64_2015 -Value 'https://download.microsoft.com/download/6/A/A/6AA4EDFF-645B-48C5-81CC-ED5963AEAD48/vc_redist.x64.exe' -Initialize -Validation string -Description 'Link to VC++ redist 2015 (x64)'
 Set-PSFConfig -Module 'AutomatedLab' -Name cppredist32_2015 -Value 'https://download.microsoft.com/download/6/A/A/6AA4EDFF-645B-48C5-81CC-ED5963AEAD48/vc_redist.x86.exe' -Initialize -Validation string -Description 'Link to VC++ redist 2015 (x86)'
 
-Set-PSFConfig -Module 'AutomatedLab' -Name cppredist64_2013 -Value 'https://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x64.exe' -Initialize -Validation string -Description 'Link to VC++ redist 2013 (x64)'
+#Set-PSFConfig -Module 'AutomatedLab' -Name cppredist64_2013 -Value 'https://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x64.exe' -Initialize -Validation string -Description 'Link to VC++ redist 2013 (x64)'
+Set-PSFConfig -Module 'AutomatedLab' -Name cppredist64_2013 -Value 'https://aka.ms/highdpimfc2013x64enu' -Initialize -Validation string -Description 'Link to VC++ redist 2013 (x64)'
 Set-PSFConfig -Module 'AutomatedLab' -Name cppredist32_2013 -Value 'https://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x86.exe' -Initialize -Validation string -Description 'Link to VC++ redist 2013 (x86)'
 
 Set-PSFConfig -Module 'AutomatedLab' -Name cppredist64_2012 -Value 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe' -Initialize -Validation string -Description 'Link to VC++ redist 2012 (x64)'
