@@ -24,10 +24,10 @@ Reliably restarts one or more services by utilising a retry count and properly o
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Restart-ServiceResilient -ComputerName POSHFS1 -ServiceName Spooler
 ```
 
-{{ Add example description here }}
+Restart spooler service on POSHFS1
 
 ## PARAMETERS
 

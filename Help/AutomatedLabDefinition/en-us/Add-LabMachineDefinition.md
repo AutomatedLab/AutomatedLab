@@ -619,7 +619,7 @@ Accept wildcard characters: False
 ```
 
 ### -PreInstallationActivity
-{{ Fill PreInstallationActivity Description }}
+List of activities to run before the machine is installed
 
 ```yaml
 Type: InstallationActivity[]
@@ -649,7 +649,7 @@ Accept wildcard characters: False
 ```
 
 ### -ReferenceDisk
-{{ Fill ReferenceDisk Description }}
+Path to a difference Reference Disk to be used for this machine
 
 ```yaml
 Type: String

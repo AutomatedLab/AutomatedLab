@@ -24,10 +24,10 @@ Installs lab domain controllers after the root and child domains have been set-u
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Install-LabDcs
 ```
 
-{{ Add example description here }}
+Installs lab domain controllers after the root and child domains have been set-up and the RootDC and FirstChildDC machines have been installed
 
 ## PARAMETERS
 

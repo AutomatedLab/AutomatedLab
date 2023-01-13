@@ -126,7 +126,7 @@ Accept wildcard characters: False
 ```
 
 ### -ManagementAdapter
-{{ Fill ManagementAdapter Description }}
+Which management adapter to use. Will add an IP address for that adapter.
 
 ```yaml
 Type: NetworkAdapter

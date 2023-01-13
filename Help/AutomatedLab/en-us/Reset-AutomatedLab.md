@@ -23,10 +23,10 @@ Resets the lab by removing the current lab and unloading all modules
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Reset-AutomatedLab
 ```
 
-{{ Add example description here }}
+Resets the lab by removing the current lab and unloading all modules
 
 ## PARAMETERS
 

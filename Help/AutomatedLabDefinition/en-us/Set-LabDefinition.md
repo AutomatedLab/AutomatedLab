@@ -8,7 +8,7 @@ schema: 2.0.0
 # Set-LabDefinition
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Helper cmdlet to update the lab definition
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ Set-LabDefinition [[-Lab] <Lab>] [[-Machines] <Machine[]>] [[-Disks] <Disk[]>] [
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Helper cmdlet to update the lab definition
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Set-LabDefinition -Lab (Get-LabDefinition) -Machines $machines -Disks $disks
 ```
 
-{{ Add example description here }}
+Update the existing lab definition with a current list of machines and disks
 
 ## PARAMETERS
 
 ### -Disks
-{{ Fill Disks Description }}
+A list of disk definitions
 
 ```yaml
 Type: Disk[]
@@ -46,7 +46,7 @@ Accept wildcard characters: False
 ```
 
 ### -Lab
-{{ Fill Lab Description }}
+The lab definition
 
 ```yaml
 Type: Lab
@@ -61,7 +61,7 @@ Accept wildcard characters: False
 ```
 
 ### -Machines
-{{ Fill Machines Description }}
+A list of machine definitions
 
 ```yaml
 Type: Machine[]

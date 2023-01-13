@@ -23,10 +23,10 @@ Deactivates one or more named firewall groups on one or more lab machines
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Disable-LabVMFirewallGroup -ComputerName Node1,Node2 -FirewallGroup 'Microsoft Store'
 ```
 
-{{ Add example description here }}
+Disable the named group 'Microsoft Store' on Node1 and Node2
 
 ## PARAMETERS
 

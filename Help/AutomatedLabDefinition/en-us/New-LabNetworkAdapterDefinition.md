@@ -111,7 +111,7 @@ Accept wildcard characters: False
 ```
 
 ### -Default
-{{ Fill Default Description }}
+Indicates that this adapter will be the default adapter
 
 ```yaml
 Type: Boolean
@@ -261,7 +261,7 @@ Accept wildcard characters: False
 ```
 
 ### -MacAddress
-{{ Fill MacAddress Description }}
+The hardware address of the virtual adapter
 
 ```yaml
 Type: String
@@ -276,7 +276,7 @@ Accept wildcard characters: False
 ```
 
 ### -ManagementAdapter
-{{ Fill ManagementAdapter Description }}
+Indicates that this adapter is used as a management adapter
 
 ```yaml
 Type: Boolean

@@ -24,10 +24,10 @@ Installs all root domain controllers (machines with role RootDC) and root domain
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Install-LabRootDcs
 ```
 
-{{ Add example description here }}
+Installs all root domain controllers (machines with role RootDC) and root domains in the current lab
 
 ## PARAMETERS
 

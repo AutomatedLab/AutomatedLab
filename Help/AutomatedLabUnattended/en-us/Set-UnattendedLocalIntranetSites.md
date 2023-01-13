@@ -34,17 +34,16 @@ Set-UnattendedLocalIntranetSites [-Values] <String[]> [-IsKickstart] [<CommonPar
 ```
 
 ## DESCRIPTION
-Set the local intranet sites.
-Windows only.
+Set the local intranet sites. Windows only.
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Set-UnattendedLocalIntranetSites -Values https://definitly.not.malicious,http://lobtool
 ```
 
-{{ Add example description here }}
+Adds two URLs to the local intranet sites
 
 ## PARAMETERS
 
@@ -94,7 +93,7 @@ Accept wildcard characters: False
 ```
 
 ### -Values
-{{ Fill Values Description }}
+The list of URLs to add
 
 ```yaml
 Type: String[]

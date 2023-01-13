@@ -23,15 +23,15 @@ Internal worker to disable Azure Auto Shutdown
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Disable-LWAzureAutoShutdown -ComputerName Host1, Host2 -Wait
 ```
 
-{{ Add example description here }}
+Disable the Azure auto shutdown by removing the configuration, wait for it to finish
 
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+List of hosts to disable auto shutdown for
 
 ```yaml
 Type: String[]
@@ -46,7 +46,7 @@ Accept wildcard characters: False
 ```
 
 ### -Wait
-{{ Fill Wait Description }}
+Indicates that cmdlet should wait for completion
 
 ```yaml
 Type: SwitchParameter

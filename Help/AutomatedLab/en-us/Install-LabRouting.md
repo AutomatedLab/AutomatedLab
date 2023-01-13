@@ -24,10 +24,11 @@ Will set up full NAT and a DNS proxy.
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Install-LabRouting
 ```
 
-{{ Add example description here }}
+Configures Routing and Remote Access Services on one or more lab machines connected to an externally facing interface.
+Will set up full NAT and a DNS proxy.
 
 ## PARAMETERS
 

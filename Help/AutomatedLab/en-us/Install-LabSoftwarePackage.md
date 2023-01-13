@@ -42,10 +42,17 @@ Installs a lab software package on one or more lab machines
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Install-LabSoftwarePackage -Path $labsources\SoftwarePackages\7zip.exe -CommandLine '/S' -ComputerName Host1,Host2
 ```
 
-{{ Add example description here }}
+From the LabSources folder, install the application 7zip.exe on one or more lab VMs.
+
+### Example 2
+```powershell
+PS C:\> Install-LabSoftwarePackage -LocalPath C:\7zip.exe -CommandLine '/S' -ComputerName Host1,Host2
+```
+
+From the machines' local path C:\7zip.exe, install the application 7zip.exe on one or more lab VMs.
 
 ## PARAMETERS
 

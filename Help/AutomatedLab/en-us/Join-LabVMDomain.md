@@ -23,10 +23,10 @@ Joins one or more lab VMs to their defined domain
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Join-LabVMDomain -Machine Node1,Node2
 ```
 
-{{ Add example description here }}
+Join Node1 and Node2 to their defined domains.
 
 ## PARAMETERS
 

@@ -23,10 +23,10 @@ Creates a new Active Directory subnet for the site Default-First-Site-Name
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> New-LabADSubnet 
 ```
 
-{{ Add example description here }}
+Creates a new Active Directory subnet for the site Default-First-Site-Name
 
 ## PARAMETERS
 

@@ -23,10 +23,10 @@ Installs Microsoft Office 2016 on designated lab machines
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Install-LabOffice2016
 ```
 
-{{ Add example description here }}
+Installs Microsoft Office 2016 on designated lab machines
 
 ## PARAMETERS
 

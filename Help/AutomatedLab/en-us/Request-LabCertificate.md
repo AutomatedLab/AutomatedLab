@@ -24,10 +24,10 @@ Requests a certificate from the lab CA
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Request-LabCertificate -Subject 'CN=ClusterName' -SAN 'ClusterName.contoso.com' -TemplateName WebServer -ComputerName POSHWEB1
 ```
 
-{{ Add example description here }}
+Request a new SSL certificate for POSHWEB1 from the Lab CA
 
 ## PARAMETERS
 
