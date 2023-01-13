@@ -41,10 +41,10 @@ SQLServer2008
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Install-LabSqlServers
 ```
 
-{{ Add example description here }}
+Installs all SQL servers in the current lab with the configured installation properties of each server.
 
 ## PARAMETERS
 

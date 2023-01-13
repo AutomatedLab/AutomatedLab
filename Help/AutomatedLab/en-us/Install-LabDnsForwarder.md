@@ -23,10 +23,10 @@ Creates conditional DNS forwarders for every forest in the lab
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Install-LabDnsForwarder
 ```
 
-{{ Add example description here }}
+Creates conditional DNS forwarders for every forest in the lab
 
 ## PARAMETERS
 

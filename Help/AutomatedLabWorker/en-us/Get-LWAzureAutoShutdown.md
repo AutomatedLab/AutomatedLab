@@ -23,10 +23,10 @@ Internal worker to list Azure Auto Shutdown
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Get-LWAzureAutoShutdown
 ```
 
-{{ Add example description here }}
+Return a list of auto shutdown times and time zones for all lab VMs running on azure
 
 ## PARAMETERS
 

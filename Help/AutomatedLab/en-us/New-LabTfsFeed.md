@@ -94,7 +94,7 @@ Accept wildcard characters: False
 ```
 
 ### -PassThru
-{{ Fill PassThru Description }}
+Indicates that the created feed should be returned
 
 ```yaml
 Type: SwitchParameter

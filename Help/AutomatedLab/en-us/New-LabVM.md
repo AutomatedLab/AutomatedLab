@@ -29,10 +29,10 @@ Creates new virtual machines for the machine definitions present in the lab
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> New-LabVm -All
 ```
 
-{{ Add example description here }}
+Creates new virtual machines for the machine definitions present in the lab
 
 ## PARAMETERS
 

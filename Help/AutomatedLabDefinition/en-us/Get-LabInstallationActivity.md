@@ -119,7 +119,7 @@ Accept wildcard characters: False
 ```
 
 ### -Function
-{{ Fill Function Description }}
+A list of functions that will be used inside your Installation Activity
 
 ```yaml
 Type: FunctionInfo[]
@@ -211,7 +211,7 @@ Accept wildcard characters: False
 ```
 
 ### -Variable
-{{ Fill Variable Description }}
+A list of variables that are used in your Installation Activity
 
 ```yaml
 Type: PSVariable[]

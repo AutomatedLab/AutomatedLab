@@ -30,10 +30,10 @@ Add-LabCertificate -Path <String> -Store <StoreName> -Location <CertStoreLocatio
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Add-LabCertificate -Path C:\MyPublicKey.cer -Location CERT_SYSTEM_STORE_LOCAL_MACHINE_ID -ComputerName LabVM1
 ```
 
-{{ Add example description here }}
+Add the certificate file MyPublicKey.cer to the local machine cert store on LabVM1
 
 ## PARAMETERS
 

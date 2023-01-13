@@ -53,7 +53,7 @@ Accept wildcard characters: False
 ```
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The lab VMs to remove
 
 ```yaml
 Type: String[]

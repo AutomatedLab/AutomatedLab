@@ -24,10 +24,10 @@ Sets the UAC for a lab machine
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Set-LabVMUacStatus -ComputerName host1 -EnableLUA $true
 ```
 
-{{ Add example description here }}
+Configure UAC on host1
 
 ## PARAMETERS
 

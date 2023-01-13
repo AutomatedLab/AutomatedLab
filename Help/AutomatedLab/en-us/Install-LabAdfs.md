@@ -23,10 +23,10 @@ Configures the Active Directory Federation Services for the current lab by gener
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Install-LabAdfs
 ```
 
-{{ Add example description here }}
+Configures the Active Directory Federation Services for the current lab by generating certificates from the lab CA, creating a service user and the necessary DNS entries as well as setting up an ADFS farm
 
 ## PARAMETERS
 

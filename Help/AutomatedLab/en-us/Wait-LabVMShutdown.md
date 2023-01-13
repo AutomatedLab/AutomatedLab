@@ -24,10 +24,10 @@ Waits for one or more lab machines to shut down
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Wait-LabVMShutdown -ComputerName Host1 -TimeoutInMinutes 5
 ```
 
-{{ Add example description here }}
+Wait for 5 minutes for Host1 to shut down.
 
 ## PARAMETERS
 

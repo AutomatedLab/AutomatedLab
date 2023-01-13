@@ -27,10 +27,10 @@ Creates a new certificate template in the lab certificate authority
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> New-LabCATemplate  -TemplateName CustomWebServer -DisplayName 'Contoso Web' -SourceTemplateName WebServer -ValidityPeriod '90.00:00:00'
 ```
 
-{{ Add example description here }}
+Create a new template CustomWebServer with a validity period of 90 days from the template WebServer on the Lab CA
 
 ## PARAMETERS
 

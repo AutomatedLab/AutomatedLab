@@ -23,10 +23,10 @@ Configures the labs DSC pull servers with SSL
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Install-LabDscPullServer
 ```
 
-{{ Add example description here }}
+Configures the labs DSC pull servers with or without SSL and SQL
 
 ## PARAMETERS
 

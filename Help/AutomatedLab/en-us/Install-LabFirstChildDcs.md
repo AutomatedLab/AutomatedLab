@@ -25,10 +25,11 @@ This will set-up all child domains for a given lab
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Install-LabFirstChildDcs
 ```
 
-{{ Add example description here }}
+Installs all lab machines with the role FirstChildDc after all RootDCs have been installed.
+This will set-up all child domains for a given lab
 
 ## PARAMETERS
 

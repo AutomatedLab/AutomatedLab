@@ -23,10 +23,10 @@ Tests if the specified certificate template exists
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Test-LabCATemplate -TemplateName WebServer -ComputerName (Get-LabIssuingCa)
 ```
 
-{{ Add example description here }}
+Check if the WebServer template exists on the lab issuing CA
 
 ## PARAMETERS
 
