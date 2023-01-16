@@ -899,6 +899,12 @@ function Get-LWHypervVM
     }
 
     [object[]]$vm = Get-VM @param
+    $vm = $vm | Sort-Object -Unique -Property Name
+
+    if ($Name.Count -gt 0 -and $vm.Count -eq $Name.Count)
+    {
+        return $vm
+    }
 
     if (-not $script:clusterDetected -and (Get-Command -Name Get-Cluster -ErrorAction SilentlyContinue)) { $script:clusterDetected = Get-Cluster -ErrorAction SilentlyContinue -WarningAction SilentlyContinue}
 
