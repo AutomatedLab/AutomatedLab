@@ -9,6 +9,7 @@
 - Allow integration of MOF and meta.MOF for first boot (in OS disk), enabling advanced configurations
 - Remove necessity to send Al.Common to all lab VMs
 - Speed Test URLs for Azure updated
+- Speed up cluster check
 
 ### Bugs
 
