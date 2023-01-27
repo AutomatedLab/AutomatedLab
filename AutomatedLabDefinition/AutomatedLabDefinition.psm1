@@ -2032,7 +2032,7 @@ function Add-LabMachineDefinition
         }
 
         $azurePropertiesValidKeys = 'ResourceGroupName', 'UseAllRoleSizes', 'RoleSize', 'LoadBalancerRdpPort', 'LoadBalancerWinRmHttpPort', 'LoadBalancerWinRmHttpsPort', 'LoadBalancerAllowedIp', 'SubnetName', 'UseByolImage', 'AutoshutdownTime', 'AutoshutdownTimezoneId', 'StorageSku'
-        $hypervPropertiesValidKeys = 'AutomaticStartAction', 'AutomaticStartDelay', 'AutomaticStopAction'
+        $hypervPropertiesValidKeys = 'AutomaticStartAction', 'AutomaticStartDelay', 'AutomaticStopAction', 'EnableSecureBoot', 'SecureBootTemplate', 'EnableTpm'
 
         if (-not $VirtualizationHost -and -not (Get-LabDefinition).DefaultVirtualizationEngine)
         {

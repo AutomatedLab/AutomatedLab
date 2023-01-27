@@ -302,7 +302,13 @@ Accept wildcard characters: False
 
 ### -HypervProperties
 The HyperV properties.
-Currently valid properties: 'AutomaticStartAction', 'AutomaticStartDelay', 'AutomaticStopAction'
+Currently valid properties:
+- AutomaticStartAction, default Nothing, refer to Set-VM
+- AutomaticStartDelay, default 0, refer to Set-VM
+- AutomaticStopAction, default ShutDown, refer to Set-VM
+- EnableTpm, if value is 1, true or yes, TPM will be enabled
+- EnableSecureBoot, if value is on, SecureBoot will be enabled
+- SecureBootTemplate, MicrosoftWindows or MicrosoftUEFICertificateAuthority
 
 ```yaml
 Type: Hashtable
