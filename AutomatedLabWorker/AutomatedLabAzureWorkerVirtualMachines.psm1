@@ -737,7 +737,7 @@
                         createOption = "FromImage"
                         osType       = "Windows"
                         caching      = "ReadWrite"
-                        managedDisk = @{
+                        managedDisk  = @{
                             storageAccountType = if ($Machine.AzureProperties.ContainsKey('StorageSku') -and $Machine.AzureProperties['StorageSku'] -notmatch 'ultra')
                             {
                                 $Machine.AzureProperties['StorageSku']
@@ -783,6 +783,18 @@
             type       = "Microsoft.Compute/virtualMachines"
             apiVersion = $apiVersions['VmApi']
             location   = "[resourceGroup().location]"
+        }
+        
+        if ($machine.AzureProperties['EnableSecureBoot'] -and -not $lab.AzureSettings.IsAzureStack) # Available only in public regions
+        {            
+            $machTemplate.properties.securityProfile = @{
+                encryptionAtHost = $false
+                securityType     = 'TrustedLaunch'
+                uefiSettings     = @{
+                    secureBootEnabled = $true
+                    vTpmEnabled       = $Machine.AzureProperties['EnableTpm'] -match '1|true|yes'
+                }
+            }
         }
 
         $luncount = 0
@@ -1567,7 +1579,7 @@ Subsystem powershell c:/progra~1/powershell/7/pwsh.exe -sshs -NoLogo
             Set-DnsClientServerAddress -InterfaceIndex $idx -ServerAddresses $DnsServers
         }
 
-        if (-not $Disks) {$null = try{ Stop-Transcript -ErrorAction Stop } catch { }; return }
+        if (-not $Disks) { $null = try { Stop-Transcript -ErrorAction Stop } catch { }; return }
         
         # Azure InvokeRunAsCommand is not very clever, so we sent the stuff as JSON
         $Disks | Set-Content -Path C:\AL\disks.json
@@ -1590,7 +1602,7 @@ Subsystem powershell c:/progra~1/powershell/7/pwsh.exe -sshs -NoLogo
             $party | Format-Volume -Force -UseLargeFRS:$diskObject.UseLargeFRS -AllocationUnitSize $diskObject.AllocationUnitSize -NewFileSystemLabel $diskObject.Label
         }
 
-        $null = try{ Stop-Transcript -ErrorAction Stop } catch { }
+        $null = try { Stop-Transcript -ErrorAction Stop } catch { }
     }
 
     $initScriptFile = New-Item -ItemType File -Path (Join-Path -Path ([IO.Path]::GetTempPath()) -ChildPath "$($Lab.Name)vminit.ps1") -Force
@@ -1687,7 +1699,7 @@ Subsystem powershell c:/progra~1/powershell/7/pwsh.exe -sshs -NoLogo
 
             $content = Set-AzStorageBlobContent -File $initScriptFile -CloudBlobContainer $co.CloudBlobContainer -Blob $(Split-Path -Path $initScriptFile -Leaf) -Context $sa.Context -Force -ErrorAction Stop
             $token = New-AzStorageBlobSASToken -CloudBlob $content.ICloudBlob -StartTime (Get-Date) -ExpiryTime $(Get-Date).AddHours(1) -Protocol HttpsOnly -Context $sa.Context -Permission r -ErrorAction Stop
-            $uri = '{0}{1}/{2}{3}' -f $co.Context.BlobEndpoint,'customscriptextension', $(Split-Path -Path $initScriptFile -Leaf), $token
+            $uri = '{0}{1}/{2}{3}' -f $co.Context.BlobEndpoint, 'customscriptextension', $(Split-Path -Path $initScriptFile -Leaf), $token
             [version] $typehandler = (Get-AzVMExtensionImage -PublisherName Microsoft.Compute -Type CustomScriptExtension -Location (Get-LabAzureDefaultLocation).Location | Sort-Object { [version]$_.Version } | Select-Object -Last 1).Version
             
             $extArg = @{
@@ -2342,7 +2354,8 @@ catch
     $rgName = Get-LabAzureDefaultResourceGroup
 
     $jobs = foreach ($m in $Machine)
-    {if ($Lab.AzureSettings.IsAzureStack)
+    {
+        if ($Lab.AzureSettings.IsAzureStack)
         {
             $sa = Get-AzStorageAccount -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName -ErrorAction SilentlyContinue
             if (-not $sa)
@@ -2358,7 +2371,7 @@ catch
 
             $content = Set-AzStorageBlobContent -File $tempFileName -CloudBlobContainer $co.CloudBlobContainer -Blob $(Split-Path -Path $tempFileName -Leaf) -Context $sa.Context -Force -ErrorAction Stop
             $token = New-AzStorageBlobSASToken -CloudBlob $content.ICloudBlob -StartTime (Get-Date) -ExpiryTime $(Get-Date).AddHours(1) -Protocol HttpsOnly -Context $sa.Context -Permission r -ErrorAction Stop
-            $uri = '{0}{1}/{2}{3}' -f $co.Context.BlobEndpoint,'customscriptextension', $(Split-Path -Path $tempFileName -Leaf), $token
+            $uri = '{0}{1}/{2}{3}' -f $co.Context.BlobEndpoint, 'customscriptextension', $(Split-Path -Path $tempFileName -Leaf), $token
             [version] $typehandler = (Get-AzVMExtensionImage -PublisherName Microsoft.Compute -Type CustomScriptExtension -Location (Get-LabAzureDefaultLocation).Location | Sort-Object { [version]$_.Version } | Select-Object -Last 1).Version
             
             $extArg = @{
