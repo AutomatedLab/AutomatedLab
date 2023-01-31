@@ -10,6 +10,7 @@
 - Remove necessity to send Al.Common to all lab VMs
 - Speed Test URLs for Azure updated
 - Speed up cluster check
+- Additional MECM links and sample script
 
 ### Bugs
 
@@ -23,6 +24,7 @@
 - Fixed issue with Mount-LWAzureIsoImage
 - Fixed issue with SQL setup on Azure using mounted ISO
 - Fixed display issue if AutomatedLab is deployed an Cluster cmdlets exist without cluster (#1465)
+- Fixed issue with CM account for reporting not created
 
 ## 5.46.0 (2022-11-24)
 

@@ -407,6 +407,7 @@ function Install-CMSite
     {
         $AdminUser = $labCred.UserName.Split('\')[1]
     }
+    $AdminPass = $labCred.GetNetworkCredential().Password
 
     Invoke-LabCommand -ComputerName $DCServerName -Variable (Get-Variable labCred, AdminUser) -ScriptBlock {
         try
@@ -553,7 +554,7 @@ function Install-CMSite
     }
     else
     {
-        Write-ScreenInfo -Message "Software Update Point not included in -CMRoles, skipping" -TaskEnd
+        Write-ScreenInfo -Message "Software Update Point not included in Roles, skipping" -TaskEnd
     }
     #endregion
     
@@ -628,7 +629,7 @@ function Install-CMSite
     }
     else
     {
-        Write-ScreenInfo -Message "Software Update Point not included in -CMRoles, skipping" -TaskEnd
+        Write-ScreenInfo -Message "Software Update Point not included in Roles, skipping" -TaskEnd
     }
     #endregion
 
@@ -643,7 +644,7 @@ function Install-CMSite
     }
     else
     {
-        Write-ScreenInfo -Message "Software Update Point not included in -CMRoles, skipping" -TaskEnd
+        Write-ScreenInfo -Message "Software Update Point not included in Roles, skipping" -TaskEnd
     }
     #endregion
 
@@ -715,7 +716,7 @@ function Install-CMSite
     }
     else
     {
-        Write-ScreenInfo -Message "Distribution Point not included in -CMRoles, skipping" -TaskEnd
+        Write-ScreenInfo -Message "Distribution Point not included in Roles, skipping" -TaskEnd
     }
     #endregion
 
@@ -732,7 +733,7 @@ function Install-CMSite
     }
     else
     {
-        Write-ScreenInfo -Message "Distribution Point not included in -CMRoles, skipping" -TaskEnd
+        Write-ScreenInfo -Message "Distribution Point not included in Roles, skipping" -TaskEnd
     }
     #endregion
 
@@ -748,7 +749,7 @@ function Install-CMSite
     }
     else
     {
-        Write-ScreenInfo -Message "Software Update Point not included in -CMRoles, skipping" -TaskEnd
+        Write-ScreenInfo -Message "Software Update Point not included in Roles, skipping" -TaskEnd
     }
     #endregion
 
@@ -766,7 +767,7 @@ function Install-CMSite
     }
     else
     {
-        Write-ScreenInfo -Message "Reporting Services Point not included in -CMRoles, skipping" -TaskEnd
+        Write-ScreenInfo -Message "Reporting Services Point not included in Roles, skipping" -TaskEnd
     }
     #endregion
 
@@ -783,7 +784,7 @@ function Install-CMSite
     }
     else
     {
-        Write-ScreenInfo -Message "Reporting Services Point not included in -CMRoles, skipping" -TaskEnd
+        Write-ScreenInfo -Message "Reporting Services Point not included in Roles, skipping" -TaskEnd
     }
     #endregion
 
@@ -799,7 +800,7 @@ function Install-CMSite
     }
     else
     {
-        Write-ScreenInfo -Message "Endpoint Protection Point not included in -CMRoles, skipping" -TaskEnd
+        Write-ScreenInfo -Message "Endpoint Protection Point not included in Roles, skipping" -TaskEnd
     }
     #endregion
 

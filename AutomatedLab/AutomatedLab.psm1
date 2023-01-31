@@ -1754,7 +1754,7 @@ function Get-LabAvailableOperatingSystem
         Write-PSFMessage 'Could not read OS image info from the cache'
     }
 
-    $present, $absent = $cachedOsList.Where({Test-Path $_.IsoPath}, 'Split')
+    $present, $absent = $cachedOsList.Where({$_.IsoPath -and (Test-Path $_.IsoPath)}, 'Split')
     foreach ($cachedOs in $absent)
     {
         Write-ScreenInfo -Type Verbose -Message "Evicting $cachedOs from cache"
