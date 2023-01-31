@@ -2997,18 +2997,17 @@ function Add-LabMachineDefinition
 
         if ($AzureProperties)
         {
+            if ($AzureRoleSize)
+            {
+                $AzureProperties['RoleSize'] = $AzureRoleSize # Adding keys to properties later did silently fail
+            }
+
             $machine.AzureProperties = $AzureProperties
         }
-        if ($AzureRoleSize)
+
+        if ($AzureRoleSize -and -not $AzureProperties)
         {
-            if (-not $AzureProperties)
-            {
-                $machine.AzureProperties = @{ RoleSize = $AzureRoleSize }
-            }
-            else
-            {
-                $machine.AzureProperties.RoleSize = $AzureRoleSize
-            }
+            $machine.AzureProperties = @{ RoleSize = $AzureRoleSize }
         }
 
         $machine.ToolsPath = $ToolsPath.Replace('<machinename>', $machine.Name)

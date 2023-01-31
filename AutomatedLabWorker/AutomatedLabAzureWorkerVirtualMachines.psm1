@@ -788,7 +788,6 @@
         if ($machine.AzureProperties['EnableSecureBoot'] -and -not $lab.AzureSettings.IsAzureStack) # Available only in public regions
         {            
             $machTemplate.properties.securityProfile = @{
-                encryptionAtHost = $false
                 securityType     = 'TrustedLaunch'
                 uefiSettings     = @{
                     secureBootEnabled = $true

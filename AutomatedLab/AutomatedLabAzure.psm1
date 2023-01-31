@@ -1471,13 +1471,13 @@ function Get-LabAzureAvailableRoleSize
     $availableRoleSizes = if ((Get-Command Get-AzComputeResourceSku).Parameters.ContainsKey('Location'))
     {
         Get-AzComputeResourceSku -Location $azLocation.Location | Where-Object {
-            $_.ResourceType -eq 'virtualMachines' -and $_.Restrictions.ReasonCode -notcontains 'NotAvailableForSubscription' -and ($_.Capabilities | Where-Object Name -eq CpuArchitectureType).CpuArchitectureType -notlike '*arm*'
+            $_.ResourceType -eq 'virtualMachines' -and $_.Restrictions.ReasonCode -notcontains 'NotAvailableForSubscription' -and ($_.Capabilities | Where-Object Name -eq CpuArchitectureType).Value -notlike '*arm*'
         }
     }
     else
     {
         Get-AzComputeResourceSku | Where-Object {
-            $_.Locations -contains $azLocation.Location -and $_.ResourceType -eq 'virtualMachines' -and $_.Restrictions.ReasonCode -notcontains 'NotAvailableForSubscription' -and ($_.Capabilities | Where-Object Name -eq CpuArchitectureType).CpuArchitectureType -notlike '*arm*'
+            $_.Locations -contains $azLocation.Location -and $_.ResourceType -eq 'virtualMachines' -and $_.Restrictions.ReasonCode -notcontains 'NotAvailableForSubscription' -and ($_.Capabilities | Where-Object Name -eq CpuArchitectureType).Value -notlike '*arm*'
         }
     }
     
