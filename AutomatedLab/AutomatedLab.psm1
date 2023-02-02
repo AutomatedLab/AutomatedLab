@@ -1410,7 +1410,13 @@ function Install-Lab
     if (-not $NoValidation -and ($performAll -or $PostDeploymentTests))
     {
         if ((Get-Module -ListAvailable -Name Pester -ErrorAction SilentlyContinue).Version -ge [version]'5.0')
-        {    
+        {
+            if ($m = Get-Module -Name Pester | Where-Object Version -lt ([version]'5.0'))
+            {
+                Write-PSFMessage "The loaded version of Pester $($m.Version) is not compatible with AutomatedLab. Unloading it." -Level Verbose
+                $m | Remove-Module
+            }
+            
             Write-ScreenInfo -Type Verbose -Message "Testing deployment with Pester"
             $result = Invoke-LabPester -Lab (Get-Lab) -Show Normal -PassThru
             if ($result.Result -eq 'Failed')

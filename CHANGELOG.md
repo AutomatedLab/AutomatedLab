@@ -26,6 +26,7 @@
 - Fixed issue with SQL setup on Azure using mounted ISO
 - Fixed display issue if AutomatedLab is deployed an Cluster cmdlets exist without cluster (#1465)
 - Fixed issue with CM account for reporting not created
+- Fixed issue when Pester <5.0 was loaded (#1418)
 
 ## 5.46.0 (2022-11-24)
 
