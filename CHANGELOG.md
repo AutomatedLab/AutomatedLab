@@ -10,6 +10,7 @@
 - Remove necessity to send Al.Common to all lab VMs
 - Speed Test URLs for Azure updated
 - Speed up cluster check
+- Include settings to configure TPM and SecureBoot
 - Additional MECM links and sample script
 
 ### Bugs

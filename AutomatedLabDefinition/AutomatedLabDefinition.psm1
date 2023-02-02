@@ -2031,8 +2031,8 @@ function Add-LabMachineDefinition
             $machineRoles = " (Roles: $($Roles.Name -join ', '))" 
         }
 
-        $azurePropertiesValidKeys = 'ResourceGroupName', 'UseAllRoleSizes', 'RoleSize', 'LoadBalancerRdpPort', 'LoadBalancerWinRmHttpPort', 'LoadBalancerWinRmHttpsPort', 'LoadBalancerAllowedIp', 'SubnetName', 'UseByolImage', 'AutoshutdownTime', 'AutoshutdownTimezoneId', 'StorageSku'
-        $hypervPropertiesValidKeys = 'AutomaticStartAction', 'AutomaticStartDelay', 'AutomaticStopAction'
+        $azurePropertiesValidKeys = 'ResourceGroupName', 'UseAllRoleSizes', 'RoleSize', 'LoadBalancerRdpPort', 'LoadBalancerWinRmHttpPort', 'LoadBalancerWinRmHttpsPort', 'LoadBalancerAllowedIp', 'SubnetName', 'UseByolImage', 'AutoshutdownTime', 'AutoshutdownTimezoneId', 'StorageSku', 'EnableSecureBoot', 'EnableTpm'
+        $hypervPropertiesValidKeys = 'AutomaticStartAction', 'AutomaticStartDelay', 'AutomaticStopAction', 'EnableSecureBoot', 'SecureBootTemplate', 'EnableTpm'
 
         if (-not $VirtualizationHost -and -not (Get-LabDefinition).DefaultVirtualizationEngine)
         {
@@ -2997,18 +2997,17 @@ function Add-LabMachineDefinition
 
         if ($AzureProperties)
         {
+            if ($AzureRoleSize)
+            {
+                $AzureProperties['RoleSize'] = $AzureRoleSize # Adding keys to properties later did silently fail
+            }
+
             $machine.AzureProperties = $AzureProperties
         }
-        if ($AzureRoleSize)
+
+        if ($AzureRoleSize -and -not $AzureProperties)
         {
-            if (-not $AzureProperties)
-            {
-                $machine.AzureProperties = @{ RoleSize = $AzureRoleSize }
-            }
-            else
-            {
-                $machine.AzureProperties.RoleSize = $AzureRoleSize
-            }
+            $machine.AzureProperties = @{ RoleSize = $AzureRoleSize }
         }
 
         $machine.ToolsPath = $ToolsPath.Replace('<machinename>', $machine.Name)

@@ -534,6 +534,12 @@ function New-LWHypervVM
         }
 
         $vm | Set-VMFirmware @vmFirmwareParameters
+
+        if ($Machine.HyperVProperties.EnableTpm -match '1|true|yes')
+        {
+            $vm | Set-VMKeyProtector -NewLocalKeyProtector
+            $vm | Enable-VMTPM
+        }
     }
 
     #remove the unconnected default network adapter

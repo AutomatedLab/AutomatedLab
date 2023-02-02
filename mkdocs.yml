@@ -48,7 +48,6 @@ nav:
     - AzureStackHub.ps1: Wiki/SampleScripts/Azure/en-us/AzureStackHub.md
     - MultiForestLab 2012R2.ps1: Wiki/SampleScripts/Azure/en-us/MultiForestLab 2012R2.md
     - MultiNetMultiForest.ps1: Wiki/SampleScripts/Azure/en-us/MultiNetMultiForest.md
-    - Untitled-1.ps1: Wiki/SampleScripts/Azure/en-us/Untitled-1.md
     - VpnConnectedLab.ps1: Wiki/SampleScripts/Azure/en-us/VpnConnectedLab.md
     - VpnConnectedLabArc.ps1: Wiki/SampleScripts/Azure/en-us/VpnConnectedLabArc.md
   - HyperV:
