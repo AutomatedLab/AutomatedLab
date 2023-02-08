@@ -82,7 +82,7 @@ namespace AutomatedLab
         WindowsAdminCenter = 137438953472,
         Scvmm2016 = 274877906944,
         Scvmm2019 = 549755813888,
-        SCVMM = Scvmm2016 | Scvmm2019,
+        SCVMM = Scvmm2016 | Scvmm2019 | Scvmm2022,
         ScomManagement = 1099511627776,
         ScomConsole = 2199023255552,
         ScomWebConsole = 4398046511104,
@@ -102,7 +102,8 @@ namespace AutomatedLab
         RemoteDesktopLicensing = 9007199254740992,
         RemoteDesktopVirtualizationHost = 18014398509481984,
         RDS = RemoteDesktopConnectionBroker | RemoteDesktopGateway | RemoteDesktopLicensing | RemoteDesktopSessionHost | RemoteDesktopVirtualizationHost | RemoteDesktopWebAccess,
-        ConfigurationManager = 36028797018963968
+        ConfigurationManager = 36028797018963968,
+        Scvmm2022 = 72057594037927936
     }
 
     public enum ActiveDirectoryFunctionalLevel
