@@ -9,8 +9,9 @@ Context "Role deployment successful" {
             It "[$vm] Should have SCVMM 2016 installed" -TestCases @{
                 vm = $vm
             } {
-                Invoke-LabCommand -ComputerName $vm -NoDisplay -PassThru -ScriptBlock {
-                    $path = (Get-Content -Path C:\Server.ini -ErrorAction SilentlyContinue | Where-Object {$_ -like 'ProgramFiles*'}) -split '\s*=\s*' | Select-Object -Last 1
+                $whichIni = if ($vm.Roles.Properties.ContainsKey('SkipServer')) {'c:\Console.ini'} else {'C:\Server.ini'}
+                Invoke-LabCommand -ComputerName $vm -NoDisplay -Variable (Get-Variable whichIni) -PassThru -ScriptBlock {
+                    $path = (Get-Content -Path $whichIni -ErrorAction SilentlyContinue | Where-Object {$_ -like 'ProgramFiles*'}) -split '\s*=\s*' | Select-Object -Last 1
                     Test-Path -Path $path
                 } | Should -Be $true
             }

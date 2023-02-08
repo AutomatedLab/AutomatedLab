@@ -13,6 +13,7 @@
 - Include settings to configure TPM and SecureBoot
 - Additional MECM links and sample script
 - Make MECM timeout configurable for low-resource scenarios (#1479).
+- Additional logging to make troubleshooting easier
 
 ### Bugs
 

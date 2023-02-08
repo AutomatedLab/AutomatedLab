@@ -77,16 +77,22 @@ function Install-ScvmmServer
     $odbc = Get-LabConfigurationItem -Name SqlOdbc13
     $cpp64 = Get-LabConfigurationItem -Name cppredist64_2012
     $cpp32 = Get-LabConfigurationItem -Name cppredist32_2012
+    $cpp1464 = Get-LabConfigurationItem -Name cppredist64_2015
+    $cpp1432 = Get-LabConfigurationItem -Name cppredist32_2015
     $sqlFile = Get-LabInternetFile -Uri $sqlcmd -Path $labsources\SoftwarePackages -FileName sqlcmd.msi -PassThru
     $odbcFile = Get-LabInternetFile -Uri $odbc -Path $labsources\SoftwarePackages -FileName odbc.msi -PassThru
     $adkFile = Get-LabInternetFile -Uri $adk -Path $labsources\SoftwarePackages -FileName adk.exe -PassThru
     $adkpeFile = Get-LabInternetFile -Uri $adkpe -Path $labsources\SoftwarePackages -FileName adkpe.exe -PassThru
     $cpp64File = Get-LabInternetFile -uri $cpp64 -Path $labsources\SoftwarePackages -FileName vcredist_64_2012.exe -PassThru
     $cpp32File = Get-LabInternetFile -uri $cpp32 -Path $labsources\SoftwarePackages -FileName vcredist_32_2012.exe -PassThru
+    $cpp1464File = Get-LabInternetFile -uri $cpp1464 -Path $labsources\SoftwarePackages -FileName vcredist_64_2015.exe -PassThru
+    $cpp1432File = Get-LabInternetFile -uri $cpp1432 -Path $labsources\SoftwarePackages -FileName vcredist_32_2015.exe -PassThru
     Install-LabSoftwarePackage -Path $odbcFile.FullName -ComputerName $Computer -CommandLine '/QN ADDLOCAL=ALL IACCEPTMSODBCSQLLICENSETERMS=YES /L*v C:\odbc.log'
     Install-LabSoftwarePackage -Path $sqlFile.FullName -ComputerName $Computer -CommandLine '/QN IACCEPTMSSQLCMDLNUTILSLICENSETERMS=YES /L*v C:\sqlcmd.log'
     Install-LabSoftwarePackage -path $cpp64File.FullName -ComputerName $Computer -CommandLine '/quiet /norestart /log C:\DeployDebug\cpp64_2012.log'
     Install-LabSoftwarePackage -path $cpp32File.FullName -ComputerName $Computer -CommandLine '/quiet /norestart /log C:\DeployDebug\cpp32_2012.log'
+    Install-LabSoftwarePackage -path $cpp1464File.FullName -ComputerName $Computer -CommandLine '/quiet /norestart /log C:\DeployDebug\cpp64_2015.log'
+    Install-LabSoftwarePackage -path $cpp1432File.FullName -ComputerName $Computer -CommandLine '/quiet /norestart /log C:\DeployDebug\cpp32_2015.log'
 
     if ($(Get-Lab).DefaultVirtualizationEngine -eq 'Azure' -or (Test-LabMachineInternetConnectivity -ComputerName $Computer[0]))
     {

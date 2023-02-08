@@ -368,6 +368,27 @@ GO
         Write-ScreenInfo -Message "All SQL Servers '$($onPremisesMachines -join ', ')' have now been installed and restarted. Waiting for these to be ready." -NoNewline
 
         Wait-LabVM -ComputerName $onPremisesMachines -TimeoutInMinutes 30 -ProgressIndicator 10
+        $logResult = Invoke-LabCommand -ComputerName $onPremisesMachines -ScriptBlock {
+            $log = Get-ChildItem -Path (Join-Path -Path $env:ProgramFiles -ChildPath 'Microsoft SQL Server\*\Setup Bootstrap\Log\summary.txt') | Select-String -Pattern 'Exit code \(Decimal\):\s+(\d+)'
+            if ($log.Matches.Groups[1].Value -notin 0,3010)
+            {
+                @{
+                    Content  = Get-ChildItem -Path (Join-Path -Path $env:ProgramFiles -ChildPath 'Microsoft SQL Server\*\Setup Bootstrap\Log\summary.txt') | Get-Content -Raw
+                    Node     = $env:COMPUTERNAME
+                    ExitCode = $log.Matches.Groups[1].Value
+                }
+            }
+        } -ActivityName 'Collecting installation logs' -NoDisplay -PassThru
+        
+        foreach ($log in $logResult)
+        {
+            New-Variable -Name "$($log.Node)SQLSETUP" -Value $log.Content -Force -Scope Global
+            Write-PSFMessage -Message "====$($log.Node) SQL log content begin===="
+            Write-PSFMessage -Message $log.Content
+            
+            Write-PSFMessage -Message "====$($log.Node) SQL log content end===="
+            Write-ScreenInfo -Type Error -Message "Installation of SQL Server seems to have failed with exit code $($log.ExitCode) on $($log.Node). Examine the result of `$$($log.Node)SQLSETUP"
+        }
     }
         
     $servers = Get-LabVM -Role SQLServer | Where-Object { $_.Roles.Name -ge 'SQLServer2016' }
