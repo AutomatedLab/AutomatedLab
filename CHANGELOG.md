@@ -12,6 +12,7 @@
 - Speed up cluster check
 - Include settings to configure TPM and SecureBoot
 - Additional MECM links and sample script
+- Make MECM timeout configurable for low-resource scenarios (#1479).
 
 ### Bugs
 

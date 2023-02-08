@@ -107,6 +107,7 @@ Set-PSFConfig -Module 'AutomatedLab' -Name Timeout_DcPromotionAdwsReady -Value 2
 Set-PSFConfig -Module 'AutomatedLab' -Name Timeout_Sql2008Installation -Value 90 -Initialize -Validation integer -Description 'Timeout in minutes for SQL 2008'
 Set-PSFConfig -Module 'AutomatedLab' -Name Timeout_Sql2012Installation -Value 90 -Initialize -Validation integer -Description 'Timeout in minutes for SQL 2012'
 Set-PSFConfig -Module 'AutomatedLab' -Name Timeout_Sql2014Installation -Value 90 -Initialize -Validation integer -Description 'Timeout in minutes for SQL 2014'
+Set-PSFConfig -Module 'AutomatedLab' -Name Timeout_ConfigurationManagerInstallation -Value 60 -Initialize -Validation integer -Description 'Timeout in minutes to wait for the installation of Configuration Manager. Default value 60.'
 Set-PSFConfig -Module 'AutomatedLab' -Name Timeout_VisualStudio2013Installation -Value 90 -Initialize -Validation integer -Description 'Timeout in minutes for VS 2013'
 Set-PSFConfig -Module 'AutomatedLab' -Name Timeout_VisualStudio2015Installation -Value 90 -Initialize -Validation integer -Description 'Timeout in minutes for VS 2015'
 Set-PSFConfig -Module 'AutomatedLab' -Name DefaultProgressIndicator -Value 10 -Initialize -Validation integer -Description 'After how many minutes will a progress indicator be written'

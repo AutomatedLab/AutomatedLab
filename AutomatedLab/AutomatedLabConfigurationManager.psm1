@@ -549,7 +549,7 @@ function Install-CMSite
     if ($CMRoles -contains "Software Update Point")
     {
         $job = Invoke-LabCommand -ComputerName $CMServer -ActivityName "Creating directory for WSUS" -Variable (Get-Variable -Name "CMComputerAccount", WsusContentPath) -ScriptBlock {
-            $null = New-Item -Path $WsusContentPath -Force
+            $null = New-Item -Path $WsusContentPath -Force -ItemType Directory
         }
     }
     else
@@ -669,9 +669,9 @@ function Install-CMSite
     $exePath = "{0}\SMSSETUP\BIN\X64\setup.exe" -f $VMCMBinariesDirectory
     $iniPath = "C:\Install\ConfigurationFile-CM-$CMServer.ini"
     $cmd = "/Script `"{0}`" /NoUserInput" -f $iniPath
-    $timeout = 30
-    if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure') { $timeout = 60 } # Thanks for nothing, cloud :(
-    Install-LabSoftwarePackage -LocalPath $exePath -CommandLine $cmd -ProgressIndicator 2 -ExpectedReturnCodes 0 -ComputerName $CMServer -Timeout $timeout
+    $timeout = Get-LabConfigurationItem -Name Timeout_ConfigurationManagerInstallation -Default 60
+    if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure') { $timeout = $timeout + 30 }
+    Install-LabSoftwarePackage -LocalPath $exePath -CommandLine $cmd -ProgressIndicator 10 -ExpectedReturnCodes 0 -ComputerName $CMServer -Timeout $timeout
     Write-ScreenInfo -Message "Activity done" -TaskEnd
     #endregion
 
