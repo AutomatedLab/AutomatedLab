@@ -23,7 +23,7 @@ Install-LabSoftwarePackage -Path <String> [-CommandLine <String>] [-Timeout <Int
 ### SingleLocalPackage
 ```
 Install-LabSoftwarePackage -LocalPath <String> [-CommandLine <String>] [-Timeout <Int32>]
- [-CopyFolder <Boolean>] -ComputerName <String[]> [-DoNotUseCredSsp] [-AsJob] [-AsScheduledJob]
+ [-CopyFolder <Boolean>] -ComputerName <String[]> [-WorkingDirectory <string>][-DoNotUseCredSsp] [-AsJob] [-AsScheduledJob]
  [-UseExplicitCredentialsForScheduledJob] [-UseShellExecute] [-ExpectedReturnCodes <Int32[]>] [-PassThru]
  [-NoDisplay] [-ProgressIndicator <Int32>] [<CommonParameters>]
 ```
@@ -31,7 +31,7 @@ Install-LabSoftwarePackage -LocalPath <String> [-CommandLine <String>] [-Timeout
 ### MulitPackage
 ```
 Install-LabSoftwarePackage [-Timeout <Int32>] -Machine <Machine[]> -SoftwarePackage <SoftwarePackage>
- [-DoNotUseCredSsp] [-AsJob] [-AsScheduledJob] [-UseExplicitCredentialsForScheduledJob] [-UseShellExecute]
+ [-WorkingDirectory <string>] [-DoNotUseCredSsp] [-AsJob] [-AsScheduledJob] [-UseExplicitCredentialsForScheduledJob] [-UseShellExecute]
  [-ExpectedReturnCodes <Int32[]>] [-PassThru] [-NoDisplay] [-ProgressIndicator <Int32>] [<CommonParameters>]
 ```
 
@@ -309,6 +309,21 @@ Aliases:
 Required: False
 Position: Named
 Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -WorkingDirectory
+The working directory for the installation process, sometimes required.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
