@@ -246,21 +246,24 @@ GO
                 Invoke-Ternary -Decider { $role.Properties.ContainsKey('AgtSvcPassword') } `
                 { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AgtSvcPassword=" + """$($role.Properties.AgtSvcPassword)""") } `
                 { }
-                Invoke-Ternary -Decider { $role.Properties.ContainsKey('RsSvcAccount') } `
-                { $global:setupArguments += Write-ArgumentVerbose -Argument (" /RsSvcAccount=" + """$($role.Properties.RsSvcAccount)""") } `
-                { if ($null -eq $configurationFileContent.Where({$_.Key -eq 'RsSvcAccount'}).Value) { $global:setupArguments += Write-ArgumentVerbose -Argument ' /RsSvcAccount="NT Authority\Network Service"' } else {} }
-                Invoke-Ternary -Decider { $role.Properties.ContainsKey('RsSvcPassword') } `
-                { $global:setupArguments += Write-ArgumentVerbose -Argument (" /RsSvcPassword=" + """$($role.Properties.RsSvcPassword)""") } `
-                { }
+                if($role.Name -notin 'SQLServer2022')
+                {
+                    Invoke-Ternary -Decider { $role.Properties.ContainsKey('RsSvcAccount') } `
+                    { $global:setupArguments += Write-ArgumentVerbose -Argument (" /RsSvcAccount=" + """$($role.Properties.RsSvcAccount)""") } `
+                    { if ($null -eq $configurationFileContent.Where({$_.Key -eq 'RsSvcAccount'}).Value) { $global:setupArguments += Write-ArgumentVerbose -Argument ' /RsSvcAccount="NT Authority\Network Service"' } else {} }
+                    Invoke-Ternary -Decider { $role.Properties.ContainsKey('RsSvcPassword') } `
+                    { $global:setupArguments += Write-ArgumentVerbose -Argument (" /RsSvcPassword=" + """$($role.Properties.RsSvcPassword)""") } `
+                    { }
+                    Invoke-Ternary -Decider { $role.Properties.ContainsKey('RsSvcStartupType') } `
+                    { $global:setupArguments += Write-ArgumentVerbose -Argument (" /RsSvcStartupType=" + "$($role.Properties.RsSvcStartupType)") } `
+                    { if ($null -eq $configurationFileContent.Where({$_.Key -eq 'RsSvcStartupType'}).Value) { $global:setupArguments += Write-ArgumentVerbose -Argument ' /RsSvcStartupType=Automatic' } else {} }
+                }
                 Invoke-Ternary -Decider { $role.Properties.ContainsKey('AgtSvcStartupType') } `
                 { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AgtSvcStartupType=" + "$($role.Properties.AgtSvcStartupType)") } `
                 { if ($null -eq $configurationFileContent.Where({$_.Key -eq 'AgtSvcStartupType'}).Value) { $global:setupArguments += Write-ArgumentVerbose -Argument ' /AgtSvcStartupType=Disabled' } else {} }
                 Invoke-Ternary -Decider { $role.Properties.ContainsKey('BrowserSvcStartupType') } `
                 { $global:setupArguments += Write-ArgumentVerbose -Argument (" /BrowserSvcStartupType=" + "$($role.Properties.BrowserSvcStartupType)") } `
                 { if ($null -eq $configurationFileContent.Where({$_.Key -eq 'BrowserSvcStartupType'}).Value) { $global:setupArguments += Write-ArgumentVerbose -Argument ' /BrowserSvcStartupType=Disabled' } else {} }
-                Invoke-Ternary -Decider { $role.Properties.ContainsKey('RsSvcStartupType') } `
-                { $global:setupArguments += Write-ArgumentVerbose -Argument (" /RsSvcStartupType=" + "$($role.Properties.RsSvcStartupType)") } `
-                { if ($null -eq $configurationFileContent.Where({$_.Key -eq 'RsSvcStartupType'}).Value) { $global:setupArguments += Write-ArgumentVerbose -Argument ' /RsSvcStartupType=Automatic' } else {} }
                 Invoke-Ternary -Decider { $role.Properties.ContainsKey('AsSysAdminAccounts') } `
                 { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AsSysAdminAccounts=" + "$($role.Properties.AsSysAdminAccounts)") } `
                 { if ($null -eq $configurationFileContent.Where({$_.Key -eq 'AsSysAdminAccounts'}).Value) { $global:setupArguments += Write-ArgumentVerbose -Argument ' /AsSysAdminAccounts="BUILTIN\Administrators"' } else {} }
@@ -369,7 +372,7 @@ GO
 
         Wait-LabVM -ComputerName $onPremisesMachines -TimeoutInMinutes 30 -ProgressIndicator 10
         $logResult = Invoke-LabCommand -ComputerName $onPremisesMachines -ScriptBlock {
-            $log = Get-ChildItem -Path (Join-Path -Path $env:ProgramFiles -ChildPath 'Microsoft SQL Server\*\Setup Bootstrap\Log\summary.txt') | Select-String -Pattern 'Exit code \(Decimal\):\s+(\d+)'
+            $log = Get-ChildItem -Path (Join-Path -Path $env:ProgramFiles -ChildPath 'Microsoft SQL Server\*\Setup Bootstrap\Log\summary.txt') | Select-String -Pattern 'Exit code \(Decimal\):\s+(-?\d+)'
             if ($log.Matches.Groups[1].Value -notin 0,3010)
             {
                 @{
@@ -415,10 +418,10 @@ GO
 
     #region install SSRS
     $servers = Get-LabVM -Role SQLServer | Where-Object { $_.SsRsUri }
-    Write-ScreenInfo -Message "Installing SSRS on'$($servers.Name -join ',')'"
 
     if ($servers)
     {
+        Write-ScreenInfo -Message "Installing SSRS on'$($servers.Name -join ',')'"
         Write-ScreenInfo -Message "Installing .net Framework 4.8 on '$($servers.Name -join ',')'"
         Install-LabSoftwarePackage -Path $dotnet48InstallFile.FullName -CommandLine '/q /norestart /log c:\DeployDebug\dotnet48.txt' -ComputerName $servers -UseShellExecute
         Restart-LabVM -ComputerName $servers -Wait
