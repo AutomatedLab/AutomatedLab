@@ -116,7 +116,7 @@ function Install-ScvmmServer
     $jobs = foreach ($vm in $Computer)
     {
         $iniServer = $iniContentServer.Clone()
-        $role = $vm.Roles | Where-Object Name -in Scvmm2016, Scvmm2019
+        $role = $vm.Roles | Where-Object Name -in Scvmm2016, Scvmm2019, Scvmm2022
 
         foreach ($property in $role.Properties.GetEnumerator())
         {
@@ -138,6 +138,11 @@ function Install-ScvmmServer
         if ($iniServer['SqlMachineName'] -eq 'REPLACE' -and $role.Name -eq 'Scvmm2019')
         {
             $iniServer['SqlMachineName'] = Get-LabVM -Role SQLServer2016, SQLServer2017 | Select-Object -First 1 -ExpandProperty Fqdn
+        }
+
+        if ($iniServer['SqlMachineName'] -eq 'REPLACE' -and $role.Name -eq 'Scvmm2022')
+        {
+            $iniServer['SqlMachineName'] = Get-LabVM -Role SQLServer2016, SQLServer2017, SQLServer2019, SQLServer2022 | Select-Object -First 1 -ExpandProperty Fqdn
         }
 
         Invoke-LabCommand -ComputerName (Get-LabVM -Role ADDS | Select-Object -First 1) -ScriptBlock {
@@ -170,7 +175,8 @@ function Install-ScvmmServer
             Start-Process -FilePath $setup.FullName -ArgumentList '/VERYSILENT', '/DIR=C:\SCVMM' -Wait
             '[OPTIONS]' | Set-Content C:\Server.ini
             $iniServer.GetEnumerator() | ForEach-Object { "$($_.Key) = $($_.Value)" | Add-Content C:\Server.ini }
-            "C:\SCVMM\setup.exe $commandline" | Set-Content C:\DeployDebug\VmmSetup.cmd
+            "cd C:\SCVMM; C:\SCVMM\setup.exe $commandline" | Set-Content C:\DeployDebug\VmmSetup.cmd
+            Set-Location -Path C:\SCVMM
         }
         Install-LabSoftwarePackage -ComputerName $vm -LocalPath C:\SCVMM\setup.exe -CommandLine $commandLine -AsJob -PassThru -UseShellExecute -Timeout 20
      }
@@ -193,7 +199,7 @@ function Install-ScvmmServer
     # Onboard Hyper-V servers
     foreach ($vm in $Computer)
     {
-        $role = $vm.Roles | Where-Object Name -in Scvmm2016, Scvmm2019
+        $role = $vm.Roles | Where-Object Name -in Scvmm2016, Scvmm2019, Scvmm2022
 
         if ($role.Properties.ContainsKey('ConnectHyperVRoleVms') -or $role.Properties.ContainsKey('ConnectClusters'))
         {
@@ -240,8 +246,8 @@ function Install-ScvmmConsole
     foreach ($vm in $Computer)
     {
         $iniConsole = $iniContentConsole.Clone()
-        $role = $vm.Roles | Where-Object Name -in Scvmm2016, Scvmm2019
-        if ([Convert]::ToBoolean($role.Properties['SkipServer']))
+        $role = $vm.Roles | Where-Object Name -in Scvmm2016, Scvmm2019, Scvmm2022
+        if ($role.Properties -and [Convert]::ToBoolean($role.Properties['SkipServer']))
         {
             foreach ($property in $role.Properties.GetEnumerator())
             {
@@ -257,6 +263,8 @@ function Install-ScvmmConsole
                 Start-Process -FilePath $setup.FullName -ArgumentList '/VERYSILENT', '/DIR=C:\SCVMM' -Wait
                 '[OPTIONS]' | Set-Content C:\Console.ini
                 $iniConsole.GetEnumerator() | ForEach-Object { "$($_.Key) = $($_.Value)" | Add-Content C:\Console.ini }
+                "cd C:\SCVMM; C:\SCVMM\setup.exe /client /i /f C:\Console.ini /IACCEPTSCEULA'" | Set-Content C:\DeployDebug\VmmSetup.cmd
+                Set-Location -Path C:\SCVMM
             }
 
             Install-LabSoftwarePackage -ComputerName $vm -LocalPath C:\SCVMM\setup.exe -CommandLine '/client /i /f C:\Console.ini /IACCEPTSCEULA' -AsJob -PassThru -UseShellExecute -Timeout 20
