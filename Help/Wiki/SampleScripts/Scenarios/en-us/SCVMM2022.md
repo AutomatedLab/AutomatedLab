@@ -1,6 +1,6 @@
-# Scenarios - SCVMM
+# Scenarios - SCVMM2022
 
-This sample lab deploys two VMM instances, one default and
+This sample lab deploys two VMM 2022 instances, one default and
 one customized. If you add HyperV roles to this lab, you can already
 have those included in your VMM environment as well, using the
 role property `ConnectHyperVRoleVms`.
@@ -21,25 +21,25 @@ $PSDefaultParameterValues = @{
     'Add-LabMachineDefinition:Network' = $LabName
     'Add-LabMachineDefinition:ToolsPath'= "$labSources\Tools"
     'Add-LabMachineDefinition:DomainName' = 'contoso.com'
-    'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2016 Datacenter (Desktop Experience)'
+    'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2022 Datacenter (Desktop Experience)'
 }
 
 if ($Engine -eq 'Azure')
 {
-    Sync-LabAzureLabSources -Filter *mu_system_center_virtual_machine_manager_2019_x64_dvd_06c18108*
-    Sync-LabAzureLabSources -Filter *en_sql_server_2017_enterprise_x64_dvd_11293666*
+    Sync-LabAzureLabSources -Filter *mul_system_center_virtual_machine_manager_2022_x64_dvd_fed2ae0f*
+    Sync-LabAzureLabSources -Filter *en_sql_server_2019_enterprise_x64_dvd_5e1ecc6b*
 }
-Add-LabIsoImageDefinition -Name Scvmm2019 -Path $labSources\ISOs\mu_system_center_virtual_machine_manager_2019_x64_dvd_06c18108.iso
-Add-LabIsoImageDefinition -Name SQLServer2017 -Path $labSources\ISOs\en_sql_server_2017_enterprise_x64_dvd_11293666.iso
+Add-LabIsoImageDefinition -Name Scvmm2022 -Path $labSources\ISOs\mul_system_center_virtual_machine_manager_2022_x64_dvd_fed2ae0f.iso
+Add-LabIsoImageDefinition -Name SQLServer2019 -Path $labSources\ISOs\en_sql_server_2019_enterprise_x64_dvd_5e1ecc6b.iso
 
-Add-LabMachineDefinition -DomainName contoso.com -Name DC1 -Memory 4GB -OperatingSystem 'Windows Server 2016 Datacenter (Desktop Experience)' -Roles RootDC
-Add-LabMachineDefinition -DomainName contoso.com -Name DB1 -Memory 4GB -OperatingSystem 'Windows Server 2016 Datacenter (Desktop Experience)' -Roles SQLServer2017
+Add-LabMachineDefinition -DomainName contoso.com -Name DC1 -Memory 1GB -OperatingSystem 'Windows Server 2022 Datacenter (Desktop Experience)' -Roles RootDC
+Add-LabMachineDefinition -DomainName contoso.com -Name DB1 -Memory 4GB -OperatingSystem 'Windows Server 2022 Datacenter (Desktop Experience)' -Roles SQLServer2019
 
 # Plain SCVMM
-Add-LabMachineDefinition -DomainName contoso.com -Name VMM1 -Memory 8GB -OperatingSystem 'Windows Server 2016 Datacenter (Desktop Experience)' -Roles Scvmm2019
+Add-LabMachineDefinition -DomainName contoso.com -Name VMM1 -Memory 4GB -OperatingSystem 'Windows Server 2022 Datacenter (Desktop Experience)' -Roles Scvmm2022
 
 # Customized Setup, here: Only deploy Console
-$role = Get-LabMachineRoleDefinition -Role Scvmm2019 -Properties @{
+$role = Get-LabMachineRoleDefinition -Role Scvmm2022 -Properties @{
     SkipServer = 'true'
     # UserName                    = 'Administrator'
     # CompanyName                 = 'AutomatedLab'
@@ -62,7 +62,7 @@ $role = Get-LabMachineRoleDefinition -Role Scvmm2019 -Properties @{
     # VmmServiceLocalAccount      = '0'
     # ConnectHyperVRoleVms        = 'VM1, VM2, VM3' # Single string with comma- or semicolon-separated values
 }
-Add-LabMachineDefinition -DomainName contoso.com -Name VMC1 -Memory 8GB -OperatingSystem 'Windows Server 2016 Datacenter (Desktop Experience)' -Roles $role
+Add-LabMachineDefinition -DomainName contoso.com -Name VMC1 -Memory 4GB -OperatingSystem 'Windows Server 2022 Datacenter (Desktop Experience)' -Roles $role
 Install-Lab
 if ($Engine -eq 'Azure')
 {
