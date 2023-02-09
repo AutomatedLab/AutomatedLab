@@ -1080,7 +1080,7 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
-    if (($SQLServers -or $performAll) -and (Get-LabVM -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016, SQLServer2017, SQLServer2019 | Where-Object { -not $_.SkipDeployment }))
+    if (($SQLServers -or $performAll) -and (Get-LabVM -Role SQLServer | Where-Object { -not $_.SkipDeployment }))
     {
         Write-ScreenInfo -Message 'Installing SQL Servers' -TaskStart
         $jobs = Invoke-LabCommand -PreInstallationActivity -ActivityName 'Pre-installation' -ComputerName $(Get-LabVM -Role SQLServer | Where-Object { -not $_.SkipDeployment }) -PassThru -NoDisplay
@@ -1092,6 +1092,7 @@ function Install-Lab
         if (Get-LabVM -Role SQLServer2016)   { Write-ScreenInfo -Message "Machines to have SQL Server 2016 installed: '$((Get-LabVM -Role SQLServer2016).Name -join ', ')'" }
         if (Get-LabVM -Role SQLServer2017)   { Write-ScreenInfo -Message "Machines to have SQL Server 2017 installed: '$((Get-LabVM -Role SQLServer2017).Name -join ', ')'" }
         if (Get-LabVM -Role SQLServer2019)   { Write-ScreenInfo -Message "Machines to have SQL Server 2019 installed: '$((Get-LabVM -Role SQLServer2019).Name -join ', ')'" }
+        if (Get-LabVM -Role SQLServer2022)   { Write-ScreenInfo -Message "Machines to have SQL Server 2022 installed: '$((Get-LabVM -Role SQLServer2022).Name -join ', ')'" }
         Install-LabSqlServers -CreateCheckPoints:$CreateCheckPoints
 
         Write-ScreenInfo -Message 'Done' -TaskEnd
@@ -2716,6 +2717,8 @@ function Install-LabSoftwarePackage
         [Parameter(Mandatory, ParameterSetName = 'MulitPackage')]
         [AutomatedLab.SoftwarePackage]$SoftwarePackage,
 
+        [string]$WorkingDirectory,
+
         [switch]$DoNotUseCredSsp,
 
         [switch]$AsJob,
@@ -2821,9 +2824,7 @@ function Install-LabSoftwarePackage
         {
             $parameters.Add('DependencyFolderPath', $Path)
             $installPath = Join-Path -Path (Get-LabConfigurationItem -Name OsRoot) -ChildPath (Split-Path -Path $Path -Leaf)
-        }
-
-        
+        }        
     }
     elseif ($parameterSetName -eq 'SingleLocalPackage')
     {
@@ -2856,6 +2857,7 @@ function Install-LabSoftwarePackage
     if ($UseShellExecute) { $installParams.UseShellExecute = $true }
     if ($AsScheduledJob -and $UseExplicitCredentialsForScheduledJob) { $installParams.Credential = $Machine[0].GetCredential((Get-Lab)) }
     if ($ExpectedReturnCodes) { $installParams.ExpectedReturnCodes = $ExpectedReturnCodes }
+    if ($WorkingDirectory) { $installParams.WorkingDirectory = $WorkingDirectory }
     if ($CopyFolder -and (Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
     {
         $child = Split-Path -Leaf -Path $parameters.DependencyFolderPath

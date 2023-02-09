@@ -178,7 +178,7 @@ function Install-ScvmmServer
             "cd C:\SCVMM; C:\SCVMM\setup.exe $commandline" | Set-Content C:\DeployDebug\VmmSetup.cmd
             Set-Location -Path C:\SCVMM
         }
-        Install-LabSoftwarePackage -ComputerName $vm -LocalPath C:\SCVMM\setup.exe -CommandLine $commandLine -AsJob -PassThru -UseShellExecute -Timeout 20
+        Install-LabSoftwarePackage -ComputerName $vm -WorkingDirectory C:\SCVMM -LocalPath C:\SCVMM\setup.exe -CommandLine $commandLine -AsJob -PassThru -UseShellExecute -Timeout 20
      }
 
     if ($jobs) { Wait-LWLabJob -Job $jobs }
@@ -263,11 +263,11 @@ function Install-ScvmmConsole
                 Start-Process -FilePath $setup.FullName -ArgumentList '/VERYSILENT', '/DIR=C:\SCVMM' -Wait
                 '[OPTIONS]' | Set-Content C:\Console.ini
                 $iniConsole.GetEnumerator() | ForEach-Object { "$($_.Key) = $($_.Value)" | Add-Content C:\Console.ini }
-                "cd C:\SCVMM; C:\SCVMM\setup.exe /client /i /f C:\Console.ini /IACCEPTSCEULA'" | Set-Content C:\DeployDebug\VmmSetup.cmd
+                "cd C:\SCVMM; C:\SCVMM\setup.exe /client /i /f C:\Console.ini /IACCEPTSCEULA" | Set-Content C:\DeployDebug\VmmSetup.cmd
                 Set-Location -Path C:\SCVMM
             }
 
-            Install-LabSoftwarePackage -ComputerName $vm -LocalPath C:\SCVMM\setup.exe -CommandLine '/client /i /f C:\Console.ini /IACCEPTSCEULA' -AsJob -PassThru -UseShellExecute -Timeout 20
+            Install-LabSoftwarePackage -ComputerName $vm -WorkingDirectory C:\SCVMM -LocalPath C:\SCVMM\setup.exe -CommandLine '/client /i /f C:\Console.ini /IACCEPTSCEULA' -AsJob -PassThru -UseShellExecute -Timeout 20
             Dismount-LabIsoImage -ComputerName $vm -SupressOutput
         }
     }
