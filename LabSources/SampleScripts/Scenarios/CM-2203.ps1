@@ -3,24 +3,34 @@ Deploy ConfigurationManager in a lab
 #>
 param
 (
+    # Lab Name
     [string]
     $LabName = 'cm2203',
 
+    # Hypervisor to use
     [ValidateSet('Azure', 'HyperV')]
     [string]
     $Engine = 'HyperV',
 
+    # Domain FQDn
     [string]
     $DomainName = 'contoso.com',
 
+    # Path to SQL 2019, leave empty to auto-select
     [string]
     $SqlServerIsoPath,
 
+    # Azure region, if used
     [string]
     $AzureRegionDisplayName = 'west europe',
 
+    # Azure subscription name. Leave empty to use current subscription
     [string]
-    $AzureSubscriptionName
+    $AzureSubscriptionName,
+
+    # OS Name, refer to Get-LabAvailableOperatingSystem to select
+    [string]
+    $OSName = 'Windows Server 2022 Datacenter Evaluation (Desktop Experience)'
 )
 
 if ($Engine -eq 'Azure' -and -not $AzureSubscriptionName)
@@ -63,7 +73,7 @@ Set-LabInstallationCredential -Username install -Password Somepass1
 
 $PSDefaultParameterValues = @{
     'Add-LabMachineDefinition:Memory'          = 4GB
-    'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2022 Datacenter (Desktop Experience)'
+    'Add-LabMachineDefinition:OperatingSystem' = $OSName
     'Add-LabMachineDefinition:DomainName'      = $DomainName
 }
 
