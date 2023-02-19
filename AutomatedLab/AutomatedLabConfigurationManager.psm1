@@ -695,7 +695,9 @@ function Install-CMSite
     {
         $Message = "Failed to validate install, could not find site code '{0}' in SMS_Site class ({1})" -f $CMSiteCode, $ReceiveJobErr.ErrorRecord.Exception.Message
         Write-ScreenInfo -Message $Message -Type "Error" -TaskEnd
-        throw $ReceiveJobErr
+        Write-PSFMessage -Message "====ConfMgrSetup log content===="
+        Invoke-LabCommand -ComputerName $CMServer -PassThru -ScriptBlock { Get-Content -Path C:\ConfigMgrSetup.log } | Write-PSFMessage
+        return
     }
     Write-ScreenInfo -Message "Activity done" -TaskEnd
     #endregion
@@ -830,6 +832,22 @@ function Update-CMSite
     #region Initialise
     $CMServer = Get-LabVM -ComputerName $CMServerName
     $CMServerFqdn = $CMServer.FQDN
+
+    Write-ScreenInfo -Message "Validating install" -TaskStart
+    $cim = New-LabCimSession -ComputerName $CMServer
+    $Query = "SELECT * FROM SMS_Site WHERE SiteCode='{0}'" -f $CMSiteCode
+    $Namespace = "ROOT/SMS/site_{0}" -f $CMSiteCode
+
+    try
+    {
+        $result = Get-CimInstance -Namespace $Namespace -Query $Query -ErrorAction "Stop" -CimSession $cim -ErrorVariable ReceiveJobErr
+    }
+    catch
+    {
+        $Message = "Failed to validate install, could not find site code '{0}' in SMS_Site class ({1})" -f $CMSiteCode, $ReceiveJobErr.ErrorRecord.Exception.Message
+        Write-ScreenInfo -Message $Message -Type "Error" -TaskEnd
+        return
+    }
     #endregion
 
     #region Define enums

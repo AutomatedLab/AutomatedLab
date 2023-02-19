@@ -1,12 +1,12 @@
-Describe "[$($Lab.Name)] SCVMM2016" -Tag SCVMM2016 {
+Describe "[$($Lab.Name)] SCVMM2022" -Tag SCVMM2022 {
 Context "Role deployment successful" {
-        It "[SCVMM2016] Should return the correct amount of machines" {
-            (Get-LabVm -Role SCVMM2016).Count | Should -Be $(Get-Lab).Machines.Where({$_.Roles.Name -contains 'SCVMM2016'}).Count
+        It "[SCVMM2022] Should return the correct amount of machines" {
+            (Get-LabVm -Role SCVMM2022).Count | Should -Be $(Get-Lab).Machines.Where({$_.Roles.Name -contains 'SCVMM2022'}).Count
         }
         
-        foreach ($vm in (Get-LabVM -Role SCVMM2016))
+        foreach ($vm in (Get-LabVM -Role SCVMM2022))
         {
-            It "[$vm] Should have SCVMM 2016 installed" -TestCases @{
+            It "[$vm] Should have SCVMM 2022 installed" -TestCases @{
                 vm = $vm
             } {
                 $whichIni = if ($vm.Roles.Properties.ContainsKey('SkipServer')) {'c:\Console.ini'} else {'C:\Server.ini'}

@@ -12,6 +12,10 @@ New-LabDefinition -Name 'MyLab' -DefaultVirtualizationEngine Azure
 Add-LabAzureSubscription -DefaultLocation 'West Europe'
 ```
 
+> **Warning**
+> Please use VM sizes with a decent number of IOPS! If you opt not to do this,
+> you will notice your deployments running into errors, timeouts and the like.
+
 This will enable AutomatedLab to create a lab sources resource group for you as well as a separate resource group for each lab you deploy. Your lab resource group will contain the entire lab deployment and will be removed when you call `Remove-Lab`.
 
 ## Azure Stack Hub

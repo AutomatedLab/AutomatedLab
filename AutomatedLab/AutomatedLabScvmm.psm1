@@ -77,16 +77,22 @@ function Install-ScvmmServer
     $odbc = Get-LabConfigurationItem -Name SqlOdbc13
     $cpp64 = Get-LabConfigurationItem -Name cppredist64_2012
     $cpp32 = Get-LabConfigurationItem -Name cppredist32_2012
+    $cpp1464 = Get-LabConfigurationItem -Name cppredist64_2015
+    $cpp1432 = Get-LabConfigurationItem -Name cppredist32_2015
     $sqlFile = Get-LabInternetFile -Uri $sqlcmd -Path $labsources\SoftwarePackages -FileName sqlcmd.msi -PassThru
     $odbcFile = Get-LabInternetFile -Uri $odbc -Path $labsources\SoftwarePackages -FileName odbc.msi -PassThru
     $adkFile = Get-LabInternetFile -Uri $adk -Path $labsources\SoftwarePackages -FileName adk.exe -PassThru
     $adkpeFile = Get-LabInternetFile -Uri $adkpe -Path $labsources\SoftwarePackages -FileName adkpe.exe -PassThru
     $cpp64File = Get-LabInternetFile -uri $cpp64 -Path $labsources\SoftwarePackages -FileName vcredist_64_2012.exe -PassThru
     $cpp32File = Get-LabInternetFile -uri $cpp32 -Path $labsources\SoftwarePackages -FileName vcredist_32_2012.exe -PassThru
+    $cpp1464File = Get-LabInternetFile -uri $cpp1464 -Path $labsources\SoftwarePackages -FileName vcredist_64_2015.exe -PassThru
+    $cpp1432File = Get-LabInternetFile -uri $cpp1432 -Path $labsources\SoftwarePackages -FileName vcredist_32_2015.exe -PassThru
     Install-LabSoftwarePackage -Path $odbcFile.FullName -ComputerName $Computer -CommandLine '/QN ADDLOCAL=ALL IACCEPTMSODBCSQLLICENSETERMS=YES /L*v C:\odbc.log'
     Install-LabSoftwarePackage -Path $sqlFile.FullName -ComputerName $Computer -CommandLine '/QN IACCEPTMSSQLCMDLNUTILSLICENSETERMS=YES /L*v C:\sqlcmd.log'
     Install-LabSoftwarePackage -path $cpp64File.FullName -ComputerName $Computer -CommandLine '/quiet /norestart /log C:\DeployDebug\cpp64_2012.log'
     Install-LabSoftwarePackage -path $cpp32File.FullName -ComputerName $Computer -CommandLine '/quiet /norestart /log C:\DeployDebug\cpp32_2012.log'
+    Install-LabSoftwarePackage -path $cpp1464File.FullName -ComputerName $Computer -CommandLine '/quiet /norestart /log C:\DeployDebug\cpp64_2015.log'
+    Install-LabSoftwarePackage -path $cpp1432File.FullName -ComputerName $Computer -CommandLine '/quiet /norestart /log C:\DeployDebug\cpp32_2015.log'
 
     if ($(Get-Lab).DefaultVirtualizationEngine -eq 'Azure' -or (Test-LabMachineInternetConnectivity -ComputerName $Computer[0]))
     {
@@ -110,7 +116,7 @@ function Install-ScvmmServer
     $jobs = foreach ($vm in $Computer)
     {
         $iniServer = $iniContentServer.Clone()
-        $role = $vm.Roles | Where-Object Name -in Scvmm2016, Scvmm2019
+        $role = $vm.Roles | Where-Object Name -in Scvmm2016, Scvmm2019, Scvmm2022
 
         foreach ($property in $role.Properties.GetEnumerator())
         {
@@ -132,6 +138,11 @@ function Install-ScvmmServer
         if ($iniServer['SqlMachineName'] -eq 'REPLACE' -and $role.Name -eq 'Scvmm2019')
         {
             $iniServer['SqlMachineName'] = Get-LabVM -Role SQLServer2016, SQLServer2017 | Select-Object -First 1 -ExpandProperty Fqdn
+        }
+
+        if ($iniServer['SqlMachineName'] -eq 'REPLACE' -and $role.Name -eq 'Scvmm2022')
+        {
+            $iniServer['SqlMachineName'] = Get-LabVM -Role SQLServer2016, SQLServer2017, SQLServer2019, SQLServer2022 | Select-Object -First 1 -ExpandProperty Fqdn
         }
 
         Invoke-LabCommand -ComputerName (Get-LabVM -Role ADDS | Select-Object -First 1) -ScriptBlock {
@@ -164,9 +175,10 @@ function Install-ScvmmServer
             Start-Process -FilePath $setup.FullName -ArgumentList '/VERYSILENT', '/DIR=C:\SCVMM' -Wait
             '[OPTIONS]' | Set-Content C:\Server.ini
             $iniServer.GetEnumerator() | ForEach-Object { "$($_.Key) = $($_.Value)" | Add-Content C:\Server.ini }
-            "C:\SCVMM\setup.exe $commandline" | Set-Content C:\DeployDebug\VmmSetup.cmd
+            "cd C:\SCVMM; C:\SCVMM\setup.exe $commandline" | Set-Content C:\DeployDebug\VmmSetup.cmd
+            Set-Location -Path C:\SCVMM
         }
-        Install-LabSoftwarePackage -ComputerName $vm -LocalPath C:\SCVMM\setup.exe -CommandLine $commandLine -AsJob -PassThru -UseShellExecute -Timeout 20
+        Install-LabSoftwarePackage -ComputerName $vm -WorkingDirectory C:\SCVMM -LocalPath C:\SCVMM\setup.exe -CommandLine $commandLine -AsJob -PassThru -UseShellExecute -Timeout 20
      }
 
     if ($jobs) { Wait-LWLabJob -Job $jobs }
@@ -187,7 +199,7 @@ function Install-ScvmmServer
     # Onboard Hyper-V servers
     foreach ($vm in $Computer)
     {
-        $role = $vm.Roles | Where-Object Name -in Scvmm2016, Scvmm2019
+        $role = $vm.Roles | Where-Object Name -in Scvmm2016, Scvmm2019, Scvmm2022
 
         if ($role.Properties.ContainsKey('ConnectHyperVRoleVms') -or $role.Properties.ContainsKey('ConnectClusters'))
         {
@@ -234,8 +246,8 @@ function Install-ScvmmConsole
     foreach ($vm in $Computer)
     {
         $iniConsole = $iniContentConsole.Clone()
-        $role = $vm.Roles | Where-Object Name -in Scvmm2016, Scvmm2019
-        if ([Convert]::ToBoolean($role.Properties['SkipServer']))
+        $role = $vm.Roles | Where-Object Name -in Scvmm2016, Scvmm2019, Scvmm2022
+        if ($role.Properties -and [Convert]::ToBoolean($role.Properties['SkipServer']))
         {
             foreach ($property in $role.Properties.GetEnumerator())
             {
@@ -251,9 +263,11 @@ function Install-ScvmmConsole
                 Start-Process -FilePath $setup.FullName -ArgumentList '/VERYSILENT', '/DIR=C:\SCVMM' -Wait
                 '[OPTIONS]' | Set-Content C:\Console.ini
                 $iniConsole.GetEnumerator() | ForEach-Object { "$($_.Key) = $($_.Value)" | Add-Content C:\Console.ini }
+                "cd C:\SCVMM; C:\SCVMM\setup.exe /client /i /f C:\Console.ini /IACCEPTSCEULA" | Set-Content C:\DeployDebug\VmmSetup.cmd
+                Set-Location -Path C:\SCVMM
             }
 
-            Install-LabSoftwarePackage -ComputerName $vm -LocalPath C:\SCVMM\setup.exe -CommandLine '/client /i /f C:\Console.ini /IACCEPTSCEULA' -AsJob -PassThru -UseShellExecute -Timeout 20
+            Install-LabSoftwarePackage -ComputerName $vm -WorkingDirectory C:\SCVMM -LocalPath C:\SCVMM\setup.exe -CommandLine '/client /i /f C:\Console.ini /IACCEPTSCEULA' -AsJob -PassThru -UseShellExecute -Timeout 20
             Dismount-LabIsoImage -ComputerName $vm -SupressOutput
         }
     }

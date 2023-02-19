@@ -1252,32 +1252,49 @@ function Sync-LabAzureLabSources
         $azureFile = Get-AzStorageFile -Share $share -Path $fileName -ErrorAction SilentlyContinue
         if ($azureFile)
         {
-            $azureHash = $azureFile.CloudFile.Properties.ContentMD5
-            $fileHash = (Get-FileHash -Path $file.FullName -Algorithm MD5).Hash
-            Write-PSFMessage "$fileName already exists in Azure. Source hash is $fileHash and Azure hash is $azureHash"
+            $sBuilder = [System.Text.StringBuilder]::new()
+            foreach ($byte in $azureFile.FileProperties.ContentHash)
+            {
+                $null = $sBuilder.Append($byte.ToString("x2"))
+            }
+            $azureHash = $sBuilder.ToString()
+
+            $sBuilder = [System.Text.StringBuilder]::new()
+            $md5 = New-Object -TypeName System.Security.Cryptography.MD5CryptoServiceProvider
+            $data = $md5.ComputeHash([System.IO.File]::ReadAllBytes($file.Fullname))
+            foreach ($byte in $data)
+            {
+                $null = $sBuilder.Append($byte.ToString("x2"))
+            }
+            $localHash = $sBuilder.ToString()
+            $fileHash = [System.Convert]::ToBase64String($data)
+            
+            # Azure expects base64 MD5 in the request, returns MD5 :)
+            Write-PSFMessage "$fileName already exists in Azure. Source hash is $localHash and Azure hash is $azureHash"
         }
 
-        if (-not $azureFile -or ($azureFile -and $fileHash -ne $azureHash))
+        if ($azureFile -and $localHash -eq $azureHash)
+        {
+            continue
+        }
+
+        if (-not $azureFile -or ($azureFile -and $localHash -ne $azureHash))
         {
             $null = New-LabSourcesPath -RelativePath $fileName -Share $share
             $null = Set-AzStorageFileContent -Share $share -Source $file.FullName -Path $fileName -ErrorAction SilentlyContinue -Force
-            Write-PSFMessage "Azure file $fileName successfully uploaded. Generating file hash..."
+            Write-PSFMessage "Azure file $fileName successfully uploaded. Updating file hash..."
         }
 
         # Try to set the file hash
         $uploadedFile = Get-AzStorageFile -Share $share -Path $fileName -ErrorAction SilentlyContinue
         try
         {
-            $uploadedFile.CloudFile.Properties.ContentMD5 = (Get-FileHash -Path $file.FullName -Algorithm MD5).Hash
-            $apiResponse = $uploadedFile.CloudFile.SetPropertiesAsync()
-            if (-not $apiResponse.Status -eq "RanToCompletion")
-            {
-                Write-ScreenInfo "Could not generate MD5 hash for file $fileName. Status was $($apiResponse.Status)" -Type Warning
-            }
+            $uploadedFile.CloudFile.Properties.ContentMD5 = $fileHash
+            $apiResponse = $uploadedFile.CloudFile.SetProperties()
         }
         catch
         {
-            Write-ScreenInfo "Could not generate MD5 hash for file $fileName." -Type Warning
+            Write-ScreenInfo "Could not update MD5 hash for file $fileName." -Type Warning
         }
 
         Write-PSFMessage "Azure file $fileName successfully uploaded and hash generated"
