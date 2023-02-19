@@ -345,7 +345,7 @@ function Get-LabVHDX
     if (-not (Get-LabMachineDefinition -ErrorAction SilentlyContinue))
     {
         Import-LabDefinition -Name $lab.Name
-        Import-Lab -Name $lab.Name -NoDisplay -NoValidation
+        Import-Lab -Name $lab.Name -NoDisplay -NoValidation -DoNotRemoveExistingLabPSSessions
     }
 
     if ($disks)

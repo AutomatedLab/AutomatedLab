@@ -383,6 +383,8 @@ function Import-Lab
         [Parameter(Mandatory, ParameterSetName = 'ByValue', Position = 1)]
         [byte[]]$LabBytes,
 
+        [switch]$DoNotRemoveExistingLabPSSessions,
+
         [switch]$PassThru,
 
         [switch]$NoValidation,
@@ -422,7 +424,7 @@ function Import-Lab
             throw "The file '$Path' is missing. Please point to an existing lab file / folder."
         }
 
-        if (Get-PSsession)
+        if ((Get-PSsession) -and -not $DoNotRemoveExistingLabPSSessions)
         {
             Get-PSSession | Where-Object Name -ne WinPSCompatSession | Remove-PSSession -ErrorAction SilentlyContinue
         }
@@ -644,7 +646,7 @@ function Export-Lab
 
     $lab.Export($lab.LabFilePath)
 
-    Import-Lab -Name $lab.Name -NoValidation -NoDisplay
+    Import-Lab -Name $lab.Name -NoValidation -NoDisplay -DoNotRemoveExistingLabPSSessions
 
     Write-LogFunctionExit
 }
