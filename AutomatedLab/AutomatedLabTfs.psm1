@@ -341,7 +341,7 @@ function Install-LabBuildWorker
             
             if ($useSsl)
             {
-                $machine.InternalNotes.Add('CertificateThumpbrint', 'Use Ssl')
+                $machine.InternalNotes.CertificateThumpbrint = 'Use Ssl'
                 $shouldExport = $true
             }
         }
@@ -350,7 +350,7 @@ function Install-LabBuildWorker
             $useSsl = $tfsServer.InternalNotes.ContainsKey('CertificateThumbprint') -or ($tfsServer.Roles.Name -eq 'AzDevOps' -and $tfsServer.SkipDeployment)
             if ($useSsl)
             {
-                $machine.InternalNotes.Add('CertificateThumpbrint', 'Use Ssl')
+                $machine.InternalNotes.CertificateThumpbrint = 'Use Ssl'
             }
             $role.Properties.Add('TfsServer', $tfsServer.Name)
             $shouldExport = $true
