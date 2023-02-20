@@ -2,6 +2,8 @@
 
 ## Unreleased (yyyy-MM-dd)
 
+## 5.47.0 (2022-11-24)
+
 ### Enhancements
 
 - Add validator to check if machine name and admin user name are the same
