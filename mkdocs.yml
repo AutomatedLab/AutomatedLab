@@ -45,9 +45,11 @@ nav:
   - Using the Bastion host: Wiki/Basic/useazurebastion.md
 - Sample scripts:
   - Azure:
+    - AzureStackHub.ps1: Wiki/SampleScripts/Azure/en-us/AzureStackHub.md
     - MultiForestLab 2012R2.ps1: Wiki/SampleScripts/Azure/en-us/MultiForestLab 2012R2.md
     - MultiNetMultiForest.ps1: Wiki/SampleScripts/Azure/en-us/MultiNetMultiForest.md
     - VpnConnectedLab.ps1: Wiki/SampleScripts/Azure/en-us/VpnConnectedLab.md
+    - VpnConnectedLabArc.ps1: Wiki/SampleScripts/Azure/en-us/VpnConnectedLabArc.md
   - HyperV:
     - AL Loves Linux.ps1: Wiki/SampleScripts/HyperV/en-us/AL Loves Linux.md
     - BigLab 2012R2 EX SQL ORCH VS OFF.ps1: Wiki/SampleScripts/HyperV/en-us/BigLab 2012R2 EX SQL ORCH VS OFF.md
@@ -106,6 +108,7 @@ nav:
     - Failover Clustering 3 MultipleNetworks.ps1: Wiki/SampleScripts/Scenarios/en-us/Failover Clustering 3 MultipleNetworks.md
     - Failover Clustering 3 MultipleNetworksAzure.ps1: Wiki/SampleScripts/Scenarios/en-us/Failover Clustering 3 MultipleNetworksAzure.md
     - Hybrid Environment HyperV and Azure 1.ps1: Wiki/SampleScripts/Scenarios/en-us/Hybrid Environment HyperV and Azure 1.md
+    - HybridHyperVAzureArc.ps1: Wiki/SampleScripts/Scenarios/en-us/HybridHyperVAzureArc.md
     - HyperVClusterWithVmm.ps1: Wiki/SampleScripts/Scenarios/en-us/HyperVClusterWithVmm.md
     - InternalRouting.ps1: Wiki/SampleScripts/Scenarios/en-us/InternalRouting.md
     - Lab in a Box 1 - HyperV.ps1: Wiki/SampleScripts/Scenarios/en-us/Lab in a Box 1 - HyperV.md

@@ -13,11 +13,13 @@ Install required Azure modules for AutomatedLab
 ## SYNTAX
 
 ```
-Install-LabAzureRequiredModule [[-Repository] <String>] [[-Scope] <String>] [<CommonParameters>]
+Install-LabAzureRequiredModule [[-Repository] <String>] [[-Scope] <String>] [-AzureStack] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-Install required Azure modules for AutomatedLab
+Install required Azure modules for AutomatedLab.
+Check versions using Get-LabConfigurationItem -Name RequiredAzModules or
+Get-LabConfigurationItem -Name RequiredAzStackModules if you use Azure Stack.
 
 ## EXAMPLES
 
@@ -29,6 +31,21 @@ PS C:\> Install-LabAzureRequiredModule
 Download and install required Az modules from PSGallery
 
 ## PARAMETERS
+
+### -AzureStack
+Indicates that the endpoint is running Azure Stack Hub with its considerably older API versions.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
 
 ### -Repository
 The gallery to use

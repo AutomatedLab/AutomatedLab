@@ -14,7 +14,7 @@ Add lab disk definition
 
 ```
 Add-LabDiskDefinition [-Name] <String> [-DiskSizeInGb] <Int32> [-Label <String>] [-DriveLetter <Char>]
- [-UseLargeFRS] [-AllocationUnitSize <Int64>] [-PartitionStyle <string>] [-SkipInitialize] [-PassThru]
+ [-UseLargeFRS] [-AllocationUnitSize <Int64>] [-PartitionStyle <String>] [-SkipInitialize] [-PassThru]
  [<CommonParameters>]
 ```
 

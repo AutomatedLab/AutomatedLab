@@ -42,10 +42,17 @@ Get-LabCertificate [-Location <CertStoreLocation>] [-Store <StoreName>] [-Servic
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Get-LabCertificate -All -ComputerName Node1, Node2 -Location CERT_SYSTEM_STORE_LOCAL_MACHINE_ID
 ```
 
-{{ Add example description here }}
+List all certificates on Node1 and Node2 in the local machine cert store.
+
+### Example 2
+```powershell
+PS C:\> Get-LabCertificate -SearchString 'CN=Glorb' -FindType FindBySubjectName -ComputerName Node1, Node2
+```
+
+Find the certificate with the subject 'CN=Glorb' on Node1 and Node2
 
 ## PARAMETERS
 

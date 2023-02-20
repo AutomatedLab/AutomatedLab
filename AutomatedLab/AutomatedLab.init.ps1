@@ -107,6 +107,7 @@ Set-PSFConfig -Module 'AutomatedLab' -Name Timeout_DcPromotionAdwsReady -Value 2
 Set-PSFConfig -Module 'AutomatedLab' -Name Timeout_Sql2008Installation -Value 90 -Initialize -Validation integer -Description 'Timeout in minutes for SQL 2008'
 Set-PSFConfig -Module 'AutomatedLab' -Name Timeout_Sql2012Installation -Value 90 -Initialize -Validation integer -Description 'Timeout in minutes for SQL 2012'
 Set-PSFConfig -Module 'AutomatedLab' -Name Timeout_Sql2014Installation -Value 90 -Initialize -Validation integer -Description 'Timeout in minutes for SQL 2014'
+Set-PSFConfig -Module 'AutomatedLab' -Name Timeout_ConfigurationManagerInstallation -Value 60 -Initialize -Validation integer -Description 'Timeout in minutes to wait for the installation of Configuration Manager. Default value 60.'
 Set-PSFConfig -Module 'AutomatedLab' -Name Timeout_VisualStudio2013Installation -Value 90 -Initialize -Validation integer -Description 'Timeout in minutes for VS 2013'
 Set-PSFConfig -Module 'AutomatedLab' -Name Timeout_VisualStudio2015Installation -Value 90 -Initialize -Validation integer -Description 'Timeout in minutes for VS 2015'
 Set-PSFConfig -Module 'AutomatedLab' -Name DefaultProgressIndicator -Value 10 -Initialize -Validation integer -Description 'After how many minutes will a progress indicator be written'
@@ -123,7 +124,6 @@ else
 Set-PSFConfig -Module 'AutomatedLab' -Name OsRoot -Value $osroot -Initialize -Validation string
 Set-PSFConfig -Module 'AutomatedLab' -Name OverridePowerPlan -Value $true -Initialize -Validation bool -Description 'On Windows: Indicates that power settings will be set to High Power during lab deployment'
 Set-PSFConfig -Module 'AutomatedLab' -Name SendFunctionTelemetry -Value $false -Initialize -Validation bool -Description 'Indicates if function call telemetry is sent' -Hidden
-Set-PSFConfig -Module 'AutomatedLab' -Name DoNotPrompt -Value $false -Initialize -Validation bool -Description 'Indicates that AutomatedLab should not display prompts. Workaround for environments that register as interactive, even if they are not' -Hidden
 Set-PSFConfig -Module 'AutomatedLab' -Name DoNotWaitForLinux -Value $false -Initialize -Validation bool -Description 'Indicates that you will not wait for Linux VMs to be ready, e.g. because you are offline and PowerShell cannot be installed.'
 Set-PSFConfig -Module 'AutomatedLab' -Name DoNotPrompt -Value $false -Initialize -Validation bool -Description 'Indicates that AutomatedLab should not display prompts. Workaround for environments that register as interactive, even if they are not. Skips enabling telemetry, skips Azure lab sources sync, forcibly configures remoting' -Hidden
 
@@ -152,7 +152,7 @@ Set-PSFConfig -Module 'AutomatedLab' -Name DisableClusterCheck -Value $false -In
 Set-PSFConfig -Module 'AutomatedLab' -Name DoNotAddVmsToCluster -Value $false -Initialize -Validation bool -Description 'Set to true to skip adding VMs to a cluster if AutomatedLab is being run on a cluster node'
 
 #Hyper-V Network settings
-Set-PSFConfig -Module 'AutomatedLab' -Name MacAddressPrefix -Value '0017FB' -Initialize -Validation string -Description 'The MAC address prefix for Hyper-V labs' -Handler { if ($args[0].Length -eq 0 -or $args[0].Length -gt 11){Write-PSFMessage -Level Error -Message "Invalid prefix length for MacAddressPrefix! $($args[0]) needs to be at least one character and at most 11 characters"; throw "Invalid prefix length for MacAddressPrefix! $($args[0]) needs to be at least one character and at most 11 characters"} }
+Set-PSFConfig -Module 'AutomatedLab' -Name MacAddressPrefix -Value '0017FB' -Initialize -Validation string -Description 'The MAC address prefix for Hyper-V labs' -Handler { if ($args[0].Length -eq 0 -or $args[0].Length -gt 11) { Write-PSFMessage -Level Error -Message "Invalid prefix length for MacAddressPrefix! $($args[0]) needs to be at least one character and at most 11 characters"; throw "Invalid prefix length for MacAddressPrefix! $($args[0]) needs to be at least one character and at most 11 characters" } }
 Set-PSFConfig -Module 'AutomatedLab' -Name DisableDeviceNaming -Value $false -Validation bool -Initialize -Description 'Disables Device Naming for VM NICs. Enabled by default for Hosts > 2016 and Gen 2 Guests > 2016'
 
 #Hyper-V Disk Settings
@@ -177,34 +177,61 @@ Set-PSFConfig -Module 'AutomatedLab' -Name AzureEnableJit -Value $false -Initial
 Set-PSFConfig -Module 'AutomatedLab' -Name RequiredAzModules -Value @(
     # Syntax: Name, MinimumVersion, RequiredVersion
     @{
-        Name = 'Az.Accounts'
+        Name           = 'Az.Accounts'
         MinimumVersion = '2.7.6'
     }
     @{
-        Name = 'Az.Storage'
+        Name           = 'Az.Storage'
         MinimumVersion = '4.5.0'
     }
     @{
-        Name = 'Az.Compute'
+        Name           = 'Az.Compute'
         MinimumVersion = '4.26.0'
     }
     @{
-        Name = 'Az.Network'
+        Name           = 'Az.Network'
         MinimumVersion = '4.16.1'
     }
     @{
-        Name = 'Az.Resources'
+        Name           = 'Az.Resources'
         MinimumVersion = '5.6.0'
     }
     @{
-        Name = 'Az.Websites'
+        Name           = 'Az.Websites'
         MinimumVersion = '2.11.1'
     }
     @{
-        Name = 'Az.Security'
+        Name           = 'Az.Security'
         MinimumVersion = '1.2.0'
     }
- ) -Initialize -Description 'Required Az modules'
+) -Initialize -Description 'Required Az modules'
+
+Set-PSFConfig -Module 'AutomatedLab' -Name RequiredAzStackModules -Value @(
+    @{
+        Name           = 'Az.Accounts'
+        MinimumVersion = '2.2.8'
+    }
+    @{
+        Name           = 'Az.Storage'
+        MinimumVersion = '2.6.2'
+    }
+    @{
+        Name           = 'Az.Compute'
+        MinimumVersion = '3.3.0'
+    }
+    @{
+        Name           = 'Az.Network'
+        MinimumVersion = '1.2.0'
+    }
+    @{
+        Name           = 'Az.Resources'
+        MinimumVersion = '0.12.0'
+    }
+    @{
+        Name           = 'Az.Websites'
+        MinimumVersion = '0.11.0'
+    }
+) -Initialize -Description 'Required Az Stack Hub modules'
 Set-PSFConfig -Module 'AutomatedLab' -Name UseLatestAzureProviderApi -Value $true -Description 'Indicates that the latest provider API versions available in the labs region should be used' -Initialize -Validation bool
 
 #Office
@@ -230,8 +257,8 @@ Set-PSFConfig -Module 'AutomatedLab' -Name cppredist32_2017 -Value 'https://aka.
 Set-PSFConfig -Module 'AutomatedLab' -Name cppredist64_2015 -Value 'https://download.microsoft.com/download/6/A/A/6AA4EDFF-645B-48C5-81CC-ED5963AEAD48/vc_redist.x64.exe' -Initialize -Validation string -Description 'Link to VC++ redist 2015 (x64)'
 Set-PSFConfig -Module 'AutomatedLab' -Name cppredist32_2015 -Value 'https://download.microsoft.com/download/6/A/A/6AA4EDFF-645B-48C5-81CC-ED5963AEAD48/vc_redist.x86.exe' -Initialize -Validation string -Description 'Link to VC++ redist 2015 (x86)'
 
-Set-PSFConfig -Module 'AutomatedLab' -Name cppredist64_2013 -Value 'https://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x64.exe' -Initialize -Validation string -Description 'Link to VC++ redist 2013 (x64)'
-Set-PSFConfig -Module 'AutomatedLab' -Name cppredist32_2013 -Value 'https://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x86.exe' -Initialize -Validation string -Description 'Link to VC++ redist 2013 (x86)'
+Set-PSFConfig -Module 'AutomatedLab' -Name cppredist64_2013 -Value 'https://aka.ms/highdpimfc2013x64enu' -Initialize -Validation string -Description 'Link to VC++ redist 2013 (x64)'
+Set-PSFConfig -Module 'AutomatedLab' -Name cppredist32_2013 -Value 'https://aka.ms/highdpimfc2013x86enu' -Initialize -Validation string -Description 'Link to VC++ redist 2013 (x86)'
 
 Set-PSFConfig -Module 'AutomatedLab' -Name cppredist64_2012 -Value 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe' -Initialize -Validation string -Description 'Link to VC++ redist 2012 (x64)'
 Set-PSFConfig -Module 'AutomatedLab' -Name cppredist32_2012 -Value 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x86.exe' -Initialize -Validation string -Description 'Link to VC++ redist 2012 (x86)'
@@ -245,11 +272,13 @@ Set-PSFConfig -Module automatedlab -Name IisUrlRewriteDownloadUrl -Value "https:
 Set-PSFConfig -Module 'AutomatedLab' -Name Sql2016ManagementStudio -Value 'https://go.microsoft.com/fwlink/?LinkID=840946' -Initialize -Validation string -Description 'Link to SSMS 2016'
 Set-PSFConfig -Module 'AutomatedLab' -Name Sql2017ManagementStudio -Value 'https://go.microsoft.com/fwlink/?linkid=2099720' -Initialize -Validation string -Description 'Link to SSMS 2017 18.2'
 Set-PSFConfig -Module 'AutomatedLab' -Name Sql2019ManagementStudio -Value 'https://aka.ms/ssmsfullsetup' -Initialize -Validation string -Description 'Link to SSMS latest'
+Set-PSFConfig -Module 'AutomatedLab' -Name Sql2022ManagementStudio -Value 'https://aka.ms/ssmsfullsetup' -Initialize -Validation string -Description 'Link to SSMS latest'
 
 # SSRS
 Set-PSFConfig -Module 'AutomatedLab' -Name SqlServerReportBuilder -Value https://download.microsoft.com/download/5/E/B/5EB40744-DC0A-47C0-8B0A-1830E74D3C23/ReportBuilder.msi
 Set-PSFConfig -Module 'AutomatedLab' -Name Sql2017SSRS -Value https://download.microsoft.com/download/E/6/4/E6477A2A-9B58-40F7-8AD6-62BB8491EA78/SQLServerReportingServices.exe
 Set-PSFConfig -Module 'AutomatedLab' -Name Sql2019SSRS -Value https://download.microsoft.com/download/1/a/a/1aaa9177-3578-4931-b8f3-373b24f63342/SQLServerReportingServices.exe
+Set-PSFConfig -Module 'AutomatedLab' -Name Sql2022SSRS -Value https://download.microsoft.com/download/8/3/2/832616ff-af64-42b5-a0b1-5eb07f71dec9/SQLServerReportingServices.exe
 
 #SQL Server sample database contents
 Set-PSFConfig -Module 'AutomatedLab' -Name SQLServer2008 -Value 'http://download-codeplex.sec.s-msft.com/Download/Release?ProjectName=msftdbprodsamples&DownloadId=478218&FileTime=129906742909030000&Build=21063' -Initialize -Validation string -Description 'Link to SQL sample DB for SQL 2008'
@@ -259,6 +288,7 @@ Set-PSFConfig -Module 'AutomatedLab' -Name SQLServer2014 -Value 'https://github.
 Set-PSFConfig -Module 'AutomatedLab' -Name SQLServer2016 -Value 'https://github.com/Microsoft/sql-server-samples/releases/download/wide-world-importers-v1.0/WideWorldImporters-Full.bak' -Initialize -Validation string -Description 'Link to SQL sample DB for SQL 2016'
 Set-PSFConfig -Module 'AutomatedLab' -Name SQLServer2017 -Value 'https://github.com/Microsoft/sql-server-samples/releases/download/wide-world-importers-v1.0/WideWorldImporters-Full.bak' -Initialize -Validation string -Description 'Link to SQL sample DB for SQL 2017'
 Set-PSFConfig -Module 'AutomatedLab' -Name SQLServer2019 -Value 'https://github.com/Microsoft/sql-server-samples/releases/download/wide-world-importers-v1.0/WideWorldImporters-Full.bak' -Initialize -Validation string -Description 'Link to SQL sample DB for SQL 2019'
+Set-PSFConfig -Module 'AutomatedLab' -Name SQLServer2022 -Value 'https://github.com/Microsoft/sql-server-samples/releases/download/wide-world-importers-v1.0/WideWorldImporters-Full.bak' -Initialize -Validation string -Description 'Link to SQL sample DB for SQL 2022'
 
 #Access Database Engine
 Set-PSFConfig -Module 'AutomatedLab' -Name AccessDatabaseEngine2016x86 -Value 'https://download.microsoft.com/download/3/5/C/35C84C36-661A-44E6-9324-8786B8DBE231/AccessDatabaseEngine.exe' -Initialize -Validation string -Description 'Link to Access Database Engine (required for DSC Pull)'
@@ -280,35 +310,40 @@ Set-PSFConfig -Module 'AutomatedLab' -Name ReportViewer2015 -Value 'https://down
 
 # OpenSSH
 Set-PSFConfig -Module 'AutomatedLab' -Name OpenSshUri -Value 'https://github.com/PowerShell/Win32-OpenSSH/releases/download/v7.6.0.0p1-Beta/OpenSSH-Win64.zip' -Initialize -Validation string -Description 'Link to OpenSSH binaries'
-
 Set-PSFConfig -Module 'AutomatedLab' -Name 'AzureLocationsUrls' -Value @{
-    'West Europe'         = 'speedtestwe'
-    'Southeast Asia'      = 'speedtestsea'
-    'East Asia'           = 'speedtestea'
-    'North Central US'    = 'speedtestnsus'
-    'North Europe'        = 'speedtestne'
-    'South Central US'    = 'speedtestscus'
-    'West US'             = 'speedtestwus'
     'East US'             = 'speedtesteus'
-    'Japan East'          = 'speedtestjpe'
-    'Japan West'          = 'speedtestjpw'
-    'Brazil South'        = 'speedtestbs'
-    'Central US'          = 'speedtestcus'
     'East US 2'           = 'speedtesteus2'
-    'Australia Southeast' = 'mickmel'
-    'Australia East'      = 'micksyd'
-    'West UK'             = 'speedtestukw'
-    'South UK'            = 'speedtestuks'
-    'Canada Central'      = 'speedtestcac'
-    'Canada East'         = 'speedtestcae'
+    'South Central US'    = 'speedtestscus'
     'West US 2'           = 'speedtestwestus2'
-    'West India'          = 'speedtestwestindia'
-    'East India'          = 'speedtesteastindia'
+    'Australia East'      = 'speedtestoze'
+    'Southeast Asia'      = 'speedtestsea'
+    'North Europe'        = 'speedtestne'
+    'Sweden Central'      = 'speedtestesc'
+    'UK South'            = 'speedtestuks'
+    'West Europe'         = 'speedtestwe'
+    'Central US'          = 'speedtestcus'
+    'South Africa North'  = 'speedtestsan'
     'Central India'       = 'speedtestcentralindia'
-    'Korea Central'       = 'speedtestkoreacentral'
-    'Korea South'         = 'speedtestkoreasouth'
-    'West Central US'     = 'speedtestwestcentralus'
+    'East Asia'           = 'speedtestea'
+    'Japan East'          = 'speedtestjpe'
+    'Canada Central'      = 'speedtestcac'
     'France Central'      = 'speedtestfrc'
+    'Norway East'         = 'azspeednoeast'
+    'Switzerland North'   = 'speedtestchn'
+    'UAE North'           = 'speedtestuaen'
+    'Brazil'              = 'speedtestnea'
+    'North Central US'    = 'speedtestnsus'
+    'West US'             = 'speedtestwus'
+    'West Central US'     = 'speedtestwestcentralus'
+    'Australia Southeast' = 'speedtestozse'
+    'Japan West'          = 'speedtestjpw'
+    'Korea South'         = 'speedtestkoreasouth'
+    'South India'         = 'speedtesteastindia'
+    'West India'          = 'speedtestwestindia'
+    'Canada East'         = 'speedtestcae'
+    'Germany North'       = 'speedtestden'
+    'Switzerland West'    = 'speedtestchw'
+    'UK West'             = 'speedtestukw'
 } -Initialize -Description 'Hashtable containing all Azure Speed Test URLs for automatic region placement'
 
 Set-PSFConfig -Module 'AutomatedLab' -Name SupportGen2VMs -Value $true -Initialize -Validation bool -Description 'Indicates that Gen2 VMs are supported'
@@ -366,8 +401,8 @@ Set-PSFConfig -Module AutomatedLab -Name Dynamics365Uri -Value 'https://download
 
 # Exchange Server
 Set-PSFConfig -Module AutomatedLab -Name Exchange2013DownloadUrl -Value 'https://download.microsoft.com/download/7/F/D/7FDCC96C-26C0-4D49-B5DB-5A8B36935903/Exchange2013-x64-cu23.exe'
-Set-PSFConfig -Module AutomatedLab -Name Exchange2016DownloadUrl -Value 'https://download.microsoft.com/download/f/0/e/f0e65686-3761-4c9d-b8b2-9fb71a207b8d/ExchangeServer2016-x64-CU22.ISO'
-Set-PSFConfig -Module AutomatedLab -Name Exchange2019DownloadUrl -Value 'https://download.microsoft.com/download/5/3/e/53e75dbd-ca33-496a-bd23-1d861feaa02a/ExchangeServer2019-x64-CU11.ISO'
+Set-PSFConfig -Module AutomatedLab -Name Exchange2016DownloadUrl -Value 'https://download.microsoft.com/download/8/d/2/8d2d01b4-5bbb-4726-87da-0e331bc2b76f/ExchangeServer2016-x64-CU23.ISO'
+Set-PSFConfig -Module AutomatedLab -Name Exchange2019DownloadUrl -Value 'https://download.microsoft.com/download/b/c/7/bc766694-8398-4258-8e1e-ce4ddb9b3f7d/ExchangeServer2019-x64-CU12.ISO'
 
 # ConfigMgr
 Set-PSFConfig -Module AutomatedLab -Name ConfigurationManagerWmiExplorer -Value 'https://github.com/vinaypamnani/wmie2/releases/download/v2.0.0.2/WmiExplorer_2.0.0.2.zip'
@@ -377,7 +412,8 @@ Set-PSFConfig -Module AutomatedLab -Name ConfigurationManagerUrl2002CB -Value "h
 Set-PSFConfig -Module AutomatedLab -Name ConfigurationManagerUrl2002TP -Value "https://download.microsoft.com/download/D/8/E/D8E795CE-44D7-40B7-9067-D3D1313865E5/Configmgr_TechPreview2010.exe"
 Set-PSFConfig -Module AutomatedLab -Name ConfigurationManagerUrl2103CB -Value "https://download.microsoft.com/download/8/8/8/888d525d-5523-46ba-aca8-4709f54affa8/MEM_Configmgr_2103.exe"
 Set-PSFConfig -Module AutomatedLab -Name ConfigurationManagerUrl2103TP -Value "https://download.microsoft.com/download/D/8/E/D8E795CE-44D7-40B7-9067-D3D1313865E5/Configmgr_TechPreview2103.exe"
-
+Set-PSFConfig -Module AutomatedLab -Name ConfigurationManagerUrl2203CB -Value 'https://download.microsoft.com/download/f/5/5/f55e3b9c-781d-493b-932b-16aa1b2f6371/MEM_Configmgr_2203.exe'
+Set-PSFConfig -Module AutomatedLab -Name ConfigurationManagerUrl2210TP -Value "https://download.microsoft.com/download/D/8/E/D8E795CE-44D7-40B7-9067-D3D1313865E5/Configmgr_TechPreview2210.exe"
 # Validation
 Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
     ValidRoleProperties     = @{
@@ -789,7 +825,7 @@ $fPath = Join-Path -Path (Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRo
 $fcPath = Join-Path -Path (Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot) -ChildPath 'Assets/ProductKeysCustom.xml'
 if (-not (Test-Path -Path $fPath -ErrorAction SilentlyContinue))
 {
-    $null = if (-not (Test-Path -Path (Split-Path $fPath -Parent))) {New-Item -Path (Split-Path $fPath -Parent) -ItemType Directory} 
+    $null = if (-not (Test-Path -Path (Split-Path $fPath -Parent))) { New-Item -Path (Split-Path $fPath -Parent) -ItemType Directory } 
     Copy-Item -Path "$PSScriptRoot/ProductKeys.xml" -Destination $fPath -Force -ErrorAction SilentlyContinue
 }
 Set-PSFConfig -Module AutomatedLab -Name ProductKeyFilePath -Value $fPath -Initialize -Validation string -Description 'Destination of the ProductKeys file for Windows products'
@@ -892,20 +928,20 @@ Register-PSFTeppScriptblock -Name AutomatedLab-TimeZone -ScriptBlock {
 
 Register-PSFTeppScriptblock -Name AutomatedLab-RhelPackage -ScriptBlock {
     (Get-LabAvailableOperatingSystem -UseOnlyCache -ErrorAction SilentlyContinue |
-        Where-Object { $_.OperatingSystemType -eq 'Linux' -and $_.LinuxType -eq 'RedHat' } |
+    Where-Object { $_.OperatingSystemType -eq 'Linux' -and $_.LinuxType -eq 'RedHat' } |
     Sort-Object Version | Select-Object -Last 1).LinuxPackageGroup
 }
 
 Register-PSFTeppScriptblock -Name AutomatedLab-SusePackage -ScriptBlock {
     (Get-LabAvailableOperatingSystem -UseOnlyCache -ErrorAction SilentlyContinue |
-        Where-Object { $_.OperatingSystemType -eq 'Linux' -and $_.LinuxType -eq 'SuSE' } |
+    Where-Object { $_.OperatingSystemType -eq 'Linux' -and $_.LinuxType -eq 'SuSE' } |
     Sort-Object Version | Select-Object -Last 1).LinuxPackageGroup
 
 }
 
 Register-PSFTeppScriptblock -Name AutomatedLab-UbuntuPackage -ScriptBlock {
     (Get-LabAvailableOperatingSystem -UseOnlyCache -ErrorAction SilentlyContinue |
-        Where-Object { $_.OperatingSystemType -eq 'Linux' -and $_.LinuxType -eq 'Ubuntu' } |
+    Where-Object { $_.OperatingSystemType -eq 'Linux' -and $_.LinuxType -eq 'Ubuntu' } |
     Sort-Object Version | Select-Object -Last 1).LinuxPackageGroup
 
 }

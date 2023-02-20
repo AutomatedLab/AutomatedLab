@@ -8,7 +8,7 @@ schema: 2.0.0
 # Import-UnattendedFile
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Import a lab unattended file
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ Import-UnattendedFile [-Path] <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Import a lab unattended file
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Import-UnattendedFile -Path ks.cfg
 ```
 
-{{ Add example description here }}
+Import an unattended file, here: A Kickstart configuration
 
 ## PARAMETERS
 
 ### -Path
-{{ Fill Path Description }}
+The path to your unattend.xml, Kickstart, CloudInit or YAST config
 
 ```yaml
 Type: String

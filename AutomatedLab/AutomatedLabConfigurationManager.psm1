@@ -318,7 +318,7 @@ function Install-LabConfigurationManager
         }
 
         Invoke-LabCommand -ComputerName $sql.Split('.')[0] -ActivityName 'Add computer account as local admin (why...)' -ScriptBlock {
-            Add-LocalGroupMember -Group Administrators -Member "$($vm.Name)\$($vm.DomainName)`$"
+            Add-LocalGroupMember -Group Administrators -Member "$($vm.DomainName)\$($vm.Name)`$"
         } -Variable (Get-Variable vm)
 
         if ($role.Properties.ContainsKey('DatabaseName'))
@@ -407,6 +407,7 @@ function Install-CMSite
     {
         $AdminUser = $labCred.UserName.Split('\')[1]
     }
+    $AdminPass = $labCred.GetNetworkCredential().Password
 
     Invoke-LabCommand -ComputerName $DCServerName -Variable (Get-Variable labCred, AdminUser) -ScriptBlock {
         try
@@ -548,12 +549,12 @@ function Install-CMSite
     if ($CMRoles -contains "Software Update Point")
     {
         $job = Invoke-LabCommand -ComputerName $CMServer -ActivityName "Creating directory for WSUS" -Variable (Get-Variable -Name "CMComputerAccount", WsusContentPath) -ScriptBlock {
-            $null = New-Item -Path $WsusContentPath -Force
+            $null = New-Item -Path $WsusContentPath -Force -ItemType Directory
         }
     }
     else
     {
-        Write-ScreenInfo -Message "Software Update Point not included in -CMRoles, skipping" -TaskEnd
+        Write-ScreenInfo -Message "Software Update Point not included in Roles, skipping" -TaskEnd
     }
     #endregion
     
@@ -628,7 +629,7 @@ function Install-CMSite
     }
     else
     {
-        Write-ScreenInfo -Message "Software Update Point not included in -CMRoles, skipping" -TaskEnd
+        Write-ScreenInfo -Message "Software Update Point not included in Roles, skipping" -TaskEnd
     }
     #endregion
 
@@ -643,7 +644,7 @@ function Install-CMSite
     }
     else
     {
-        Write-ScreenInfo -Message "Software Update Point not included in -CMRoles, skipping" -TaskEnd
+        Write-ScreenInfo -Message "Software Update Point not included in Roles, skipping" -TaskEnd
     }
     #endregion
 
@@ -668,9 +669,9 @@ function Install-CMSite
     $exePath = "{0}\SMSSETUP\BIN\X64\setup.exe" -f $VMCMBinariesDirectory
     $iniPath = "C:\Install\ConfigurationFile-CM-$CMServer.ini"
     $cmd = "/Script `"{0}`" /NoUserInput" -f $iniPath
-    $timeout = 30
-    if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure') { $timeout = 60 } # Thanks for nothing, cloud :(
-    Install-LabSoftwarePackage -LocalPath $exePath -CommandLine $cmd -ProgressIndicator 2 -ExpectedReturnCodes 0 -ComputerName $CMServer -Timeout $timeout
+    $timeout = Get-LabConfigurationItem -Name Timeout_ConfigurationManagerInstallation -Default 60
+    if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure') { $timeout = $timeout + 30 }
+    Install-LabSoftwarePackage -LocalPath $exePath -CommandLine $cmd -ProgressIndicator 10 -ExpectedReturnCodes 0 -ComputerName $CMServer -Timeout $timeout
     Write-ScreenInfo -Message "Activity done" -TaskEnd
     #endregion
 
@@ -694,7 +695,9 @@ function Install-CMSite
     {
         $Message = "Failed to validate install, could not find site code '{0}' in SMS_Site class ({1})" -f $CMSiteCode, $ReceiveJobErr.ErrorRecord.Exception.Message
         Write-ScreenInfo -Message $Message -Type "Error" -TaskEnd
-        throw $ReceiveJobErr
+        Write-PSFMessage -Message "====ConfMgrSetup log content===="
+        Invoke-LabCommand -ComputerName $CMServer -PassThru -ScriptBlock { Get-Content -Path C:\ConfigMgrSetup.log } | Write-PSFMessage
+        return
     }
     Write-ScreenInfo -Message "Activity done" -TaskEnd
     #endregion
@@ -715,7 +718,7 @@ function Install-CMSite
     }
     else
     {
-        Write-ScreenInfo -Message "Distribution Point not included in -CMRoles, skipping" -TaskEnd
+        Write-ScreenInfo -Message "Distribution Point not included in Roles, skipping" -TaskEnd
     }
     #endregion
 
@@ -732,7 +735,7 @@ function Install-CMSite
     }
     else
     {
-        Write-ScreenInfo -Message "Distribution Point not included in -CMRoles, skipping" -TaskEnd
+        Write-ScreenInfo -Message "Distribution Point not included in Roles, skipping" -TaskEnd
     }
     #endregion
 
@@ -748,7 +751,7 @@ function Install-CMSite
     }
     else
     {
-        Write-ScreenInfo -Message "Software Update Point not included in -CMRoles, skipping" -TaskEnd
+        Write-ScreenInfo -Message "Software Update Point not included in Roles, skipping" -TaskEnd
     }
     #endregion
 
@@ -766,7 +769,7 @@ function Install-CMSite
     }
     else
     {
-        Write-ScreenInfo -Message "Reporting Services Point not included in -CMRoles, skipping" -TaskEnd
+        Write-ScreenInfo -Message "Reporting Services Point not included in Roles, skipping" -TaskEnd
     }
     #endregion
 
@@ -783,7 +786,7 @@ function Install-CMSite
     }
     else
     {
-        Write-ScreenInfo -Message "Reporting Services Point not included in -CMRoles, skipping" -TaskEnd
+        Write-ScreenInfo -Message "Reporting Services Point not included in Roles, skipping" -TaskEnd
     }
     #endregion
 
@@ -799,7 +802,7 @@ function Install-CMSite
     }
     else
     {
-        Write-ScreenInfo -Message "Endpoint Protection Point not included in -CMRoles, skipping" -TaskEnd
+        Write-ScreenInfo -Message "Endpoint Protection Point not included in Roles, skipping" -TaskEnd
     }
     #endregion
 
@@ -829,6 +832,22 @@ function Update-CMSite
     #region Initialise
     $CMServer = Get-LabVM -ComputerName $CMServerName
     $CMServerFqdn = $CMServer.FQDN
+
+    Write-ScreenInfo -Message "Validating install" -TaskStart
+    $cim = New-LabCimSession -ComputerName $CMServer
+    $Query = "SELECT * FROM SMS_Site WHERE SiteCode='{0}'" -f $CMSiteCode
+    $Namespace = "ROOT/SMS/site_{0}" -f $CMSiteCode
+
+    try
+    {
+        $result = Get-CimInstance -Namespace $Namespace -Query $Query -ErrorAction "Stop" -CimSession $cim -ErrorVariable ReceiveJobErr
+    }
+    catch
+    {
+        $Message = "Failed to validate install, could not find site code '{0}' in SMS_Site class ({1})" -f $CMSiteCode, $ReceiveJobErr.ErrorRecord.Exception.Message
+        Write-ScreenInfo -Message $Message -Type "Error" -TaskEnd
+        return
+    }
     #endregion
 
     #region Define enums

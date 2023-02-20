@@ -19,114 +19,6 @@ function Reset-AutomatedLab
 }
 #endregion Reset-AutomatedLab
 
-#region Test-FileHashes
-function Test-FileHashes
-{
-    [OutputType([System.Boolean])]
-    [cmdletbinding()]
-    param
-    (
-        $Filename = 'C:\ALFiles.txt'
-    )
-
-    $ModulePath = "$([environment]::getfolderpath('mydocuments'))\WindowsPowerShell\Modules"
-
-    $StoredHashes = Import-Csv -Path $Filename
-
-    $Issues = $False
-    foreach ($File in $StoredHashes)
-    {
-        if (-not (Test-Path $File.path.replace('<MODULEPATH>', $ModulePath)))
-        {
-            Write-PSFMessage -Level Host -Message "'$File' is missing"
-            $Issues = $True
-        }
-        else
-        {
-            if ((Get-FileHash -Path $File.path.replace('<MODULEPATH>', $ModulePath)).hash -ne $File.Hash)
-            {
-                Write-PSFMessage -Level Host -Message "'$File.Path' has wrong hash and is thereby not the file you think it is"
-                $Issues = $True
-            }
-        }
-    }
-
-    $Issues
-}
-#endregion Test-FileHashes
-
-#region Save-FileList
-function Save-FileList
-{
-
-    [cmdletbinding()]
-    param
-    (
-        $Filename = 'C:\ALfiles.txt'
-    )
-
-    Get-ChildItem $ModulePath -Recurse -Directory -Include 'AutomatedLab', 'AutomatedLabDefinition', 'AutomatedLabUnattended', 'AutomatedLabWorker', 'HostsFile', 'PSFileTransfer', 'PSLog' | ForEach-Object { Get-ChildItem $_.FullName | Select-Object FullName } | Export-Csv -Path $Filename
-}
-#endregion Save-FileList
-
-#region Test-FileList
-function Test-FileList
-{
-    [OutputType([System.Boolean])]
-    [cmdletbinding()]
-    param
-    (
-        $Filename = 'C:\ALfiles.txt'
-    )
-
-    $StoredFiles = Import-Csv -Path $Filename
-    $Files = Get-ChildItem $ModulePath -Recurse -Directory -Include 'AutomatedLab', 'AutomatedLabDefinition', 'AutomatedLabUnattended', 'AutomatedLabWorker', 'HostsFile', 'PSFileTransfer', 'PSLog' | ForEach-Object { Get-ChildItem $_.FullName | Select-Object FullName }
-
-    if (Compare-Object -ReferenceObject $StoredFiles -DifferenceObject $Files)
-    {
-        $true
-    }
-    else
-    {
-        $false
-    }
-}
-#endregion Test-FileList
-
-#region Test-FolderExist
-function Test-FolderExist
-{
-
-    [cmdletbinding()]
-    param
-    (
-        $FolderName
-    )
-
-    if (-not (Test-Path -Path $FolderName))
-    {
-        throw "The folder '$FolderName' is missing or is at the wrong level. This folder is required for setting up this lab"
-    }
-}
-#endregion Test-FolderExist
-
-#region Test-FolderNotExist
-function Test-FolderNotExist
-{
-
-    [cmdletbinding()]
-    param
-    (
-        $FolderName
-    )
-
-    if (Test-Path -Path $FolderName)
-    {
-        throw "The folder '$FolderName' exist while it should NOT exist"
-    }
-}
-#endregion Test-FolderNotExist
-
 #region Restart-ServiceResilient
 function Restart-ServiceResilient
 {
@@ -782,6 +674,11 @@ function Get-LabSourcesLocationInternal
     $defaultEngine = if ($lab)
     {
         $lab.DefaultVirtualizationEngine
+    }
+
+    if ($lab.AzureSettings -and $lab.AzureSettings.IsAzureStack)
+    {
+        $Local = $true
     }
 
     if ($defaultEngine -eq 'kvm' -or ($IsLinux -and $Local.IsPresent))

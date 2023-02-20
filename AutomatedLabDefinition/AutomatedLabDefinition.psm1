@@ -767,7 +767,7 @@ function New-LabDefinition
 
     if ($DefaultVirtualizationEngine -eq 'Azure')
     {
-        $null = Test-LabAzureModuleAvailability -ErrorAction Stop
+        $null = Test-LabAzureModuleAvailability -ErrorAction SilentlyContinue
     }
 
     #settings for a new log
@@ -847,7 +847,7 @@ function New-LabDefinition
     $script:existingHyperVVirtualSwitches = $null
 
     #cleanup $PSDefaultParameterValues for entries for AL functions
-    $automatedLabPSDefaultParameterValues = $global:PSDefaultParameterValues.GetEnumerator() | Where-Object { (Get-Command ($_.Name).Split(':')[0]).Module -like 'Automated*' }
+    $automatedLabPSDefaultParameterValues = $global:PSDefaultParameterValues.GetEnumerator() | Where-Object { (Get-Command ($_.Name).Split(':')[0] -ErrorAction SilentlyContinue).Module -like 'Automated*' }
     if ($automatedLabPSDefaultParameterValues)
     {
         foreach ($entry in $automatedLabPSDefaultParameterValues)
@@ -1501,7 +1501,7 @@ function Add-LabDomainDefinition
 
     if ($PassThru)
     {
-        $network
+        $domain
     }
 
     Write-LogFunctionExit
@@ -1629,6 +1629,11 @@ function Add-LabIsoImageDefinition
                     $isoFiles = Get-LabAzureLabSourcesContent -Path $isoRoot -RegexFilter '\.iso' -File -ErrorAction SilentlyContinue | Where-Object {$_.Name -eq (Split-Path -Path $Path -Leaf)}
                 }
             }
+        }
+        else
+        {
+            Write-ScreenInfo -Type Warning -Message "$Path is not on Azure LabSources $()! If you intend to use`r`nMount-LabIsoImage it will result in the ISO getting copied to the remote machine!"
+            $isoFiles = Get-ChildItem -Path $Path -Filter *.iso -Recurse -ErrorAction SilentlyContinue
         }
     }
     else
@@ -2006,7 +2011,11 @@ function Add-LabMachineDefinition
 
         [string]$KmsLookupDomain,
 
-        [switch]$ActivateWindows
+        [switch]$ActivateWindows,
+
+        [string]$InitialDscConfigurationMofPath,
+
+        [string]$InitialDscLcmConfigurationMofPath
     )
 
     begin
@@ -2022,8 +2031,8 @@ function Add-LabMachineDefinition
             $machineRoles = " (Roles: $($Roles.Name -join ', '))" 
         }
 
-        $azurePropertiesValidKeys = 'ResourceGroupName', 'UseAllRoleSizes', 'RoleSize', 'LoadBalancerRdpPort', 'LoadBalancerWinRmHttpPort', 'LoadBalancerWinRmHttpsPort', 'LoadBalancerAllowedIp', 'SubnetName', 'UseByolImage', 'AutoshutdownTime', 'AutoshutdownTimezoneId', 'StorageSku'
-        $hypervPropertiesValidKeys = 'AutomaticStartAction', 'AutomaticStartDelay', 'AutomaticStopAction'
+        $azurePropertiesValidKeys = 'ResourceGroupName', 'UseAllRoleSizes', 'RoleSize', 'LoadBalancerRdpPort', 'LoadBalancerWinRmHttpPort', 'LoadBalancerWinRmHttpsPort', 'LoadBalancerAllowedIp', 'SubnetName', 'UseByolImage', 'AutoshutdownTime', 'AutoshutdownTimezoneId', 'StorageSku', 'EnableSecureBoot', 'EnableTpm'
+        $hypervPropertiesValidKeys = 'AutomaticStartAction', 'AutomaticStartDelay', 'AutomaticStopAction', 'EnableSecureBoot', 'SecureBootTemplate', 'EnableTpm'
 
         if (-not $VirtualizationHost -and -not (Get-LabDefinition).DefaultVirtualizationEngine)
         {
@@ -2925,6 +2934,26 @@ function Add-LabMachineDefinition
             $machine.OperatingSystem = $OperatingSystem
         }
 
+        if ($script:lab.DefaultVirtualizationEngine -eq 'HyperV' -and $InitialDscConfigurationMofPath -and -not (Test-Path $InitialDscConfigurationMofPath))
+        {
+            throw "$InitialDscConfigurationMofPath does not exist. Make sure it exists and is a mof"
+        }
+        elseif ($script:lab.DefaultVirtualizationEngine -eq 'HyperV' -and $InitialDscConfigurationMofPath -and (Test-Path $InitialDscConfigurationMofPath))
+        {
+            if ($Machine.OperatingSystem.Version -lt 10.0) { Write-ScreenInfo -Type Warning -Message "Integrated PowerShell version of $Machine is less than 5. Please keep in mind that DSC has been introduced in PS4 and some resources may not work with versions older than PS5."}
+            $Machine.InitialDscConfigurationMofPath = $InitialDscConfigurationMofPath
+        }
+
+        if ($script:lab.DefaultVirtualizationEngine -eq 'HyperV' -and $InitialDscLcmConfigurationMofPath -and -not (Test-Path $InitialDscLcmConfigurationMofPath))
+        {
+            throw "$InitialDscLcmConfigurationMofPath does not exist. Make sure it exists and is a meta.mof"
+        }
+        elseif ($script:lab.DefaultVirtualizationEngine -eq 'HyperV' -and $InitialDscLcmConfigurationMofPath -and (Test-Path $InitialDscLcmConfigurationMofPath))
+        {
+            if ($Machine.OperatingSystem.Version -lt 10.0) { Write-ScreenInfo -Type Warning -Message "Integrated PowerShell version of $Machine is less than 5. Please keep in mind that DSC has been introduced in PS4 and some resources may not work with versions older than PS5."}
+            $Machine.InitialDscLcmConfigurationMofPath = $InitialDscLcmConfigurationMofPath
+        }
+
         if (-not $TimeZone)
         {
             $TimeZone = (Get-TimeZone).StandardName
@@ -2968,18 +2997,17 @@ function Add-LabMachineDefinition
 
         if ($AzureProperties)
         {
+            if ($AzureRoleSize)
+            {
+                $AzureProperties['RoleSize'] = $AzureRoleSize # Adding keys to properties later did silently fail
+            }
+
             $machine.AzureProperties = $AzureProperties
         }
-        if ($AzureRoleSize)
+
+        if ($AzureRoleSize -and -not $AzureProperties)
         {
-            if (-not $AzureProperties)
-            {
-                $machine.AzureProperties = @{ RoleSize = $AzureRoleSize }
-            }
-            else
-            {
-                $machine.AzureProperties.RoleSize = $AzureRoleSize
-            }
+            $machine.AzureProperties = @{ RoleSize = $AzureRoleSize }
         }
 
         $machine.ToolsPath = $ToolsPath.Replace('<machinename>', $machine.Name)

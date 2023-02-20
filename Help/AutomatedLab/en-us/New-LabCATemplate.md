@@ -27,10 +27,10 @@ Creates a new certificate template in the lab certificate authority
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> New-LabCATemplate  -TemplateName CustomWebServer -DisplayName 'Contoso Web' -SourceTemplateName WebServer -ValidityPeriod '90.00:00:00'
 ```
 
-{{ Add example description here }}
+Create a new template CustomWebServer with a validity period of 90 days from the template WebServer on the Lab CA
 
 ## PARAMETERS
 
@@ -41,7 +41,7 @@ The names of the application policies
 Type: String[]
 Parameter Sets: (All)
 Aliases:
-Accepted values: EFS_RECOVERY, Auto Update CA Revocation, No OCSP Failover to CRL, OEM_WHQL_CRYPTO, Windows TCB Component, DNS Server Trust, Windows Third Party Application Component, ANY_APPLICATION_POLICY, KP_LIFETIME_SIGNING, Disallowed List, DS_EMAIL_REPLICATION, LICENSE_SERVER, KP_KEY_RECOVERY, Windows Kits Component, AUTO_ENROLL_CTL_USAGE, PKIX_KP_TIMESTAMP_SIGNING, Windows Update, Document Encryption, KP_CTL_USAGE_SIGNING, IPSEC_KP_IKE_INTERMEDIATE, PKIX_KP_IPSEC_TUNNEL, Code Signing, KP_KEY_RECOVERY_AGENT, KP_QUALIFIED_SUBORDINATION, Early Launch Antimalware Driver, Remote Desktop, WHQL_CRYPTO, EMBEDDED_NT_CRYPTO, System Health Authentication, DRM, PKIX_KP_EMAIL_PROTECTION, KP_TIME_STAMP_SIGNING, Protected Process Light Verification, Endorsement Key Certificate, KP_IPSEC_USER, PKIX_KP_IPSEC_END_SYSTEM, LICENSES, Protected Process Verification, IdMsKpScLogon, HAL Extension, KP_OCSP_SIGNING, Server Authentication, Auto Update End Revocation, KP_EFS, KP_DOCUMENT_SIGNING, Windows Store, Kernel Mode Code Signing, ENROLLMENT_AGENT, ROOT_LIST_SIGNER, Windows RT Verification, NT5_CRYPTO, Revoked List Signer, Microsoft Publisher, Platform Certificate,  Windows Software Extension Verification, KP_CA_EXCHANGE, PKIX_KP_IPSEC_USER, Dynamic Code Generator, Client Authentication, DRM_INDIVIDUALIZATION
+Accepted values: EFS_RECOVERY, Auto Update CA Revocation, No OCSP Failover to CRL, OEM_WHQL_CRYPTO, Windows TCB Component, DNS Server Trust, Windows Third Party Application Component, ANY_APPLICATION_POLICY, KP_LIFETIME_SIGNING, Disallowed List, DS_EMAIL_REPLICATION, LICENSE_SERVER, KP_KEY_RECOVERY, Windows Kits Component, AUTO_ENROLL_CTL_USAGE, PKIX_KP_TIMESTAMP_SIGNING, Windows Update, Document Encryption, KP_CTL_USAGE_SIGNING, IPSEC_KP_IKE_INTERMEDIATE, PKIX_KP_IPSEC_TUNNEL, Code Signing, KP_KEY_RECOVERY_AGENT, KP_QUALIFIED_SUBORDINATION, Early Launch Antimalware Driver, Remote Desktop, WHQL_CRYPTO, EMBEDDED_NT_CRYPTO, System Health Authentication, DRM, PKIX_KP_EMAIL_PROTECTION, KP_TIME_STAMP_SIGNING, Protected Process Light Verification, Endorsement Key Certificate, KP_IPSEC_USER, PKIX_KP_IPSEC_END_SYSTEM, LICENSES, Protected Process Verification, IdMsKpScLogon, HAL Extension, KP_OCSP_SIGNING, Server Authentication, Auto Update End Revocation, KP_EFS, KP_DOCUMENT_SIGNING, Windows Store, Kernel Mode Code Signing, ENROLLMENT_AGENT, ROOT_LIST_SIGNER, Windows RT Verification, NT5_CRYPTO, Revoked List Signer, Microsoft Publisher, Platform Certificate, Windows Software Extension Verification, KP_CA_EXCHANGE, PKIX_KP_IPSEC_USER, Dynamic Code Generator, Client Authentication, DRM_INDIVIDUALIZATION
 
 Required: False
 Position: 3

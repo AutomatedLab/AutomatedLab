@@ -23,10 +23,10 @@ Removes all variables matching  'AL_(\[a-zA-Z0-9\]{8})+\[-.\]+(\[a-zA-Z0-9\]{4})
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Remove-LabVariable
 ```
 
-{{ Add example description here }}
+Removes all variables matching  'AL_(\[a-zA-Z0-9\]{8})+\[-.\]+(\[a-zA-Z0-9\]{4})+\[-.\]+(\[a-zA-Z0-9\]{4})+\[-.\]+(\[a-zA-Z0-9\]{4})+\[-.\]+(\[a-zA-Z0-9\]{12})'
 
 ## PARAMETERS
 

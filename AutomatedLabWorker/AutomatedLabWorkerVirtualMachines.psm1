@@ -25,6 +25,7 @@ function New-LWHypervVM
     )
 
     $PSBoundParameters.Add('ProgressIndicator', 1) #enables progress indicator
+    if ($Machine.SkipDeployment) { return }
 
     Write-LogFunctionEntry
 
@@ -424,6 +425,55 @@ function New-LWHypervVM
         $referenceDiskPath = if ($Machine.ReferenceDiskPath) { $Machine.ReferenceDiskPath } else { $Machine.OperatingSystem.BaseDiskPath }
         $systemDisk = New-VHD -Path $path -Differencing -ParentPath $referenceDiskPath -ErrorAction Stop
         Write-PSFMessage "`tcreated differencing disk '$($systemDisk.Path)' pointing to '$ReferenceVhdxPath'"
+
+        if ($Machine.InitialDscLcmConfigurationMofPath -or $Machine.InitialDscConfigurationMofPath)
+        {
+            $mountedOsDisk = Mount-VHD -Path $path -Passthru
+            try
+            {
+                $drive = $mountedosdisk | get-disk | Get-Partition | Get-Volume  | Where {$_.DriveLetter -and $_.FileSystemLabel -eq 'System'}
+
+                if ($Machine.InitialDscConfigurationMofPath)
+                {
+                    $exportedModules = Get-RequiredModulesFromMOF -Path $Machine.InitialDscConfigurationMofPath
+                    foreach ($exportedModule in $exportedModules.GetEnumerator())
+                    {
+                        $moduleInfo = Get-Module -ListAvailable -Name $exportedModule.Key | Where-Object Version -eq $exportedModule.Value | Select-Object -First 1
+                        if (-not $moduleInfo)
+                        {
+                            Write-ScreenInfo -Type Warning -Message "Unable to find $($exportedModule.Key). Attempting to download from PSGallery"
+                            Save-Module -Path "$($drive.DriveLetter):\Program Files\WindowsPowerShell\Modules" -Name $exportedModule.Key -RequiredVersion $exportedModule.Value -Repository PSGallery -Force -AllowPrerelease
+                        }
+                        else
+                        {
+                            $source = Get-ModuleDependency -Module $moduleInfo | Sort-Object -Unique | ForEach-Object { 
+                                if ((Get-Item $_).BaseName -match '\d{1,4}\.\d{1,4}\.\d{1,4}' -and $Machine.OperatingSystem.Version -ge 10.0)
+                                {
+                                    #parent folder contains a specific version. In order to copy the module right, the parent of this parent is required
+                                    Split-Path -Path $_ -Parent
+                                }
+                                else
+                                {
+                                    $_
+                                }    
+                            }
+
+                            Copy-Item -Recurse -Path $source -Destination "$($drive.DriveLetter):\Program Files\WindowsPowerShell\Modules"
+                        }
+                    }
+                    Copy-Item -Path $Machine.InitialDscConfigurationMofPath -Destination "$($drive.DriveLetter):\Windows\System32\configuration\pending.mof"
+                }
+
+                if ($Machine.InitialDscLcmConfigurationMofPath)
+                {
+                    Copy-Item -Path $Machine.InitialDscLcmConfigurationMofPath -Destination "$($drive.DriveLetter):\Windows\System32\configuration\MetaConfig.mof"
+                }
+            }
+            finally
+            {
+                $mountedOsDisk | Dismount-VHD
+            }            
+        }
     }
 
     Write-ProgressIndicator
@@ -484,6 +534,12 @@ function New-LWHypervVM
         }
 
         $vm | Set-VMFirmware @vmFirmwareParameters
+
+        if ($Machine.HyperVProperties.EnableTpm -match '1|true|yes')
+        {
+            $vm | Set-VMKeyProtector -NewLocalKeyProtector
+            $vm | Enable-VMTPM
+        }
     }
 
     #remove the unconnected default network adapter
@@ -849,8 +905,14 @@ function Get-LWHypervVM
     }
 
     [object[]]$vm = Get-VM @param
+    $vm = $vm | Sort-Object -Unique -Property Name
 
-    if (-not $script:clusterDetected -and (Get-Command -Name Get-Cluster -ErrorAction SilentlyContinue)) { $script:clusterDetected = Get-Cluster -ErrorAction SilentlyContinue}
+    if ($Name.Count -gt 0 -and $vm.Count -eq $Name.Count)
+    {
+        return $vm
+    }
+
+    if (-not $script:clusterDetected -and (Get-Command -Name Get-Cluster -ErrorAction SilentlyContinue)) { $script:clusterDetected = Get-Cluster -ErrorAction SilentlyContinue -WarningAction SilentlyContinue}
 
     if (-not $DisableClusterCheck -and $script:clusterDetected)
     {
@@ -908,7 +970,7 @@ function Remove-LWHypervVM
 
     Write-PSFMessage "Removing VM '$($Name)'"
     $doNotAddToCluster = Get-LabConfigurationItem -Name DoNotAddVmsToCluster -Default $false
-    if (-not $doNotAddToCluster -and (Get-Command -Name Get-Cluster -ErrorAction SilentlyContinue) -and (Get-Cluster -ErrorAction SilentlyContinue))
+    if (-not $doNotAddToCluster -and (Get-Command -Name Get-Cluster -ErrorAction SilentlyContinue) -and (Get-Cluster -ErrorAction SilentlyContinue -WarningAction SilentlyContinue))
     {
         Write-PSFMessage "Removing Clustered Resource: $Name"
         $null = Get-ClusterGroup -Name $Name | Remove-ClusterGroup -RemoveResources -Force
@@ -1115,7 +1177,7 @@ function Start-LWHypervVM
         Wait-LWLabJob -Job $job -NoNewLine -ProgressIndicator $ProgressIndicator -Timeout 15 -NoDisplay
     }
 
-    foreach ($Name in $(Get-LabVM -ComputerName $ComputerName -IncludeLinux))
+    foreach ($Name in $(Get-LabVM -ComputerName $ComputerName -IncludeLinux | Where-Object SkipDeployment -eq $false))
     {
         $machine = Get-LabVM -ComputerName $Name -IncludeLinux
 
@@ -1220,7 +1282,7 @@ function Stop-LWHypervVM
     else
     {
         $jobs = @()
-        foreach ($name in (Get-LabVm -ComputerName $ComputerName -IncludeLinux).ResourceName)
+        foreach ($name in (Get-LabVm -ComputerName $ComputerName -IncludeLinux | Where-Object SkipDeployment -eq $false).ResourceName)
         {
             $job = Get-LWHypervVm -Name $name -ErrorAction SilentlyContinue | Stop-VM -AsJob -Force -ErrorAction Stop
             $job | Add-Member -Name ComputerName -MemberType NoteProperty -Value $name

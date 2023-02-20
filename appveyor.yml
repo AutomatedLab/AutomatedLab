@@ -1,4 +1,4 @@
-version: 5.46.{build}
+version: 5.47.{build}
 image:
   - Visual Studio 2022
   - Ubuntu2004
@@ -60,6 +60,16 @@ for:
         prerelease: false
         on:
           branch: master
+      - provider: GitHub
+        description: "This is an automated prerelease deployment"
+        auth_token:
+          secure: HsE6rIUR/bsL7wBhrBgfFf3HFDkiqASb96bKgW34XOZVjLUYVIq/yFAVs1a5Ydxy # your encrypted token from GitHub
+        artifact: alinstaller
+        draft: false
+        force_update: true
+        prerelease: true
+        on:
+          branch: develop
   - matrix:
       only:
         - image: Ubuntu2004
@@ -85,6 +95,26 @@ for:
         prerelease: false
         on:
           branch: master
+      - provider: GitHub
+        description: "This is an automated prerelease deployment"
+        auth_token:
+          secure: HsE6rIUR/bsL7wBhrBgfFf3HFDkiqASb96bKgW34XOZVjLUYVIq/yFAVs1a5Ydxy # your encrypted token from GitHub
+        artifact: aldebianpackage
+        draft: false
+        force_update: true
+        prerelease: true
+        on:
+          branch: develop
+      - provider: GitHub
+        description: "This is an automated prerelease deployment"
+        auth_token:
+          secure: HsE6rIUR/bsL7wBhrBgfFf3HFDkiqASb96bKgW34XOZVjLUYVIq/yFAVs1a5Ydxy # your encrypted token from GitHub
+        artifact: alrpmpackage
+        draft: false
+        force_update: true
+        prerelease: true
+        on:
+          branch: develop
 
 after_build:
   - ps: "& $env:APPVEYOR_BUILD_FOLDER/.build/afterbuild.ps1"

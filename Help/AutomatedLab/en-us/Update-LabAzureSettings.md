@@ -17,17 +17,16 @@ Update-LabAzureSettings [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-Updates the lab's Azure settings after e.g.
-Add-LabAzureSubscription is called
+Updates the lab's Azure settings after e.g. Add-LabAzureSubscription is called
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Update-LabAzureSettings
 ```
 
-{{ Add example description here }}
+Updates the lab's Azure settings after e.g. Add-LabAzureSubscription is called
 
 ## PARAMETERS
 

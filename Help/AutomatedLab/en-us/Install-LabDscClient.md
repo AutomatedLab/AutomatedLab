@@ -29,10 +29,10 @@ Configures all lab machines' LCM to work with the lab's DSC pull server
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Install-LabDscClient -All
 ```
 
-{{ Add example description here }}
+Configures all lab machines' LCM to work with the lab's DSC pull server, except for 'DC', 'RootDC', 'FirstChildDC', 'DSCPullServer'
 
 ## PARAMETERS
 

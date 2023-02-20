@@ -31,7 +31,7 @@ Install lab Dynamics 365 environment
 ## PARAMETERS
 
 ### -CreateCheckPoints
-{{ Fill CreateCheckPoints Description }}
+Indicates that Checkpoints should be created before installing D365
 
 ```yaml
 Type: SwitchParameter

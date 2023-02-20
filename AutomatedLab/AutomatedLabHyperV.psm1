@@ -7,7 +7,7 @@ function Install-LabHyperV
 
     Write-LogFunctionEntry
 
-    $vms = Get-LabVm -Role HyperV
+    $vms = Get-LabVm -Role HyperV | Where-Object SkipDeployment -eq $false
 
     Write-ScreenInfo -Message 'Exposing virtualization extensions...' -NoNewLine
     $hyperVVms = $vms | Where-Object -Property HostType -eq HyperV

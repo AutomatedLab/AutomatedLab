@@ -29,10 +29,10 @@ Creates new VHDX files for the lab and initializing them with NTFS and a partiti
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> New-LabVHDX -All
 ```
 
-{{ Add example description here }}
+Creates new VHDX files for the lab and initializing them with NTFS and a partition called Data
 
 ## PARAMETERS
 

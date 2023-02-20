@@ -8,20 +8,20 @@ options that Connect-Lab provides to specify the VPN gateway of the resources in
 # Define your labs. Make sure that the virtual network address spaces do not overlap.
 $labs = @(
     @{
-        LabName = 'SourceNameHere'
+        LabName      = 'SourceNameHere'
         AddressSpace = '192.168.50.0/24'
-        Domain = 'powershell.isawesome'
-        Dns1 = '192.168.50.10'
-        Dns2 ='192.168.50.11'
-        Location = 'West Europe'
+        Domain       = 'powershell.isawesome'
+        Dns1         = '192.168.50.10'
+        Dns2         = '192.168.50.11'
+        Location     = 'West Europe'
     }
     @{
-        LabName = 'DestinationNameHere'
+        LabName      = 'DestinationNameHere'
         AddressSpace = '192.168.100.0/24'
-        Domain = 'powershell.power'
-        Dns1 = '192.168.100.10'
-        Dns2 ='192.168.100.11'
-        Location = 'East US'
+        Domain       = 'powershell.power'
+        Dns1         = '192.168.100.10'
+        Dns2         = '192.168.100.11'
+        Location     = 'East US'
     }
 )
 
@@ -41,11 +41,11 @@ foreach ($lab in $labs.GetEnumerator())
 
     #defining default parameter values, as these ones are the same for all the machines
     $PSDefaultParameterValues = @{
-        'Add-LabMachineDefinition:Network' = $lab.LabName
-        'Add-LabMachineDefinition:ToolsPath'= "$labSources\Tools"
-        'Add-LabMachineDefinition:DomainName' = $lab.Domain
-        'Add-LabMachineDefinition:DnsServer1' = $lab.Dns1
-        'Add-LabMachineDefinition:DnsServer2' = $lab.Dns2
+        'Add-LabMachineDefinition:Network'         = $lab.LabName
+        'Add-LabMachineDefinition:ToolsPath'       = "$labSources\Tools"
+        'Add-LabMachineDefinition:DomainName'      = $lab.Domain
+        'Add-LabMachineDefinition:DnsServer1'      = $lab.Dns1
+        'Add-LabMachineDefinition:DnsServer2'      = $lab.Dns2
         'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2016 Datacenter (Desktop Experience)'
     }
 

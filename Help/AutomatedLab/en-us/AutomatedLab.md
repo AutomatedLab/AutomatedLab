@@ -373,7 +373,7 @@ Wrapper to create a new resource group and include it in the lab metadata
 
 
 ### [New-LabBaseImages](New-LabBaseImages.md)
-{{ Fill in the Synopsis }}
+Function to create base images for all OSses used in the current lab
 
 ### [New-LabCATemplate](New-LabCATemplate.md)
 Create CA template

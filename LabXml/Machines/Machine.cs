@@ -95,6 +95,8 @@ namespace AutomatedLab
         public string SshPrivateKeyPath { get; set; }
         public string OrganizationalUnit { get; set; }
         public string ReferenceDiskPath {get; set;}
+        public string InitialDscConfigurationMofPath {get; set;}
+        public string InitialDscLcmConfigurationMofPath {get; set;}
 
         public OperatingSystemType OperatingSystemType
         {

@@ -24,10 +24,14 @@ Installs one or more software packages on lab machines by calling Install-LabSof
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+$packs = @()
+$packs += Get-LabSoftwarePackage -Path $labSources\SoftwarePackages\Notepad++.exe -CommandLine /S
+$packs += Get-LabSoftwarePackage -Path $labSources\SoftwarePackages\winrar.exe -CommandLine /S
+
+Install-LabSoftwarePackages -Machine (Get-LabVM -All) -SoftwarePackage $packs
 ```
 
-{{ Add example description here }}
+Install a list of packages on a list of machines
 
 ## PARAMETERS
 

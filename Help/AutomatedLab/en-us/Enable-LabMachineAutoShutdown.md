@@ -62,7 +62,7 @@ Accept wildcard characters: False
 ```
 
 ### -TimeZone
-{{ Fill TimeZone Description }}
+Timezone of shutdown time, refer to Get-TimeZone
 
 ```yaml
 Type: String

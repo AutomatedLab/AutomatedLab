@@ -166,6 +166,7 @@ GO
                 Write-ScreenInfo 'Done'
 
                 $dvdDrive = Mount-LabIsoImage -ComputerName $machine -IsoPath ($lab.Sources.ISOs | Where-Object Name -eq $role.Name).Path -PassThru -SupressOutput
+                Remove-LabPSSession -Machine $machine # Remove session to refresh drives, otherwise FileNotFound even if ISO is mounted
 
                 $global:setupArguments = ' /Q /Action=Install /IndicateProgress'
 
@@ -245,21 +246,24 @@ GO
                 Invoke-Ternary -Decider { $role.Properties.ContainsKey('AgtSvcPassword') } `
                 { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AgtSvcPassword=" + """$($role.Properties.AgtSvcPassword)""") } `
                 { }
-                Invoke-Ternary -Decider { $role.Properties.ContainsKey('RsSvcAccount') } `
-                { $global:setupArguments += Write-ArgumentVerbose -Argument (" /RsSvcAccount=" + """$($role.Properties.RsSvcAccount)""") } `
-                { if ($null -eq $configurationFileContent.Where({$_.Key -eq 'RsSvcAccount'}).Value) { $global:setupArguments += Write-ArgumentVerbose -Argument ' /RsSvcAccount="NT Authority\Network Service"' } else {} }
-                Invoke-Ternary -Decider { $role.Properties.ContainsKey('RsSvcPassword') } `
-                { $global:setupArguments += Write-ArgumentVerbose -Argument (" /RsSvcPassword=" + """$($role.Properties.RsSvcPassword)""") } `
-                { }
+                if($role.Name -notin 'SQLServer2022')
+                {
+                    Invoke-Ternary -Decider { $role.Properties.ContainsKey('RsSvcAccount') } `
+                    { $global:setupArguments += Write-ArgumentVerbose -Argument (" /RsSvcAccount=" + """$($role.Properties.RsSvcAccount)""") } `
+                    { if ($null -eq $configurationFileContent.Where({$_.Key -eq 'RsSvcAccount'}).Value) { $global:setupArguments += Write-ArgumentVerbose -Argument ' /RsSvcAccount="NT Authority\Network Service"' } else {} }
+                    Invoke-Ternary -Decider { $role.Properties.ContainsKey('RsSvcPassword') } `
+                    { $global:setupArguments += Write-ArgumentVerbose -Argument (" /RsSvcPassword=" + """$($role.Properties.RsSvcPassword)""") } `
+                    { }
+                    Invoke-Ternary -Decider { $role.Properties.ContainsKey('RsSvcStartupType') } `
+                    { $global:setupArguments += Write-ArgumentVerbose -Argument (" /RsSvcStartupType=" + "$($role.Properties.RsSvcStartupType)") } `
+                    { if ($null -eq $configurationFileContent.Where({$_.Key -eq 'RsSvcStartupType'}).Value) { $global:setupArguments += Write-ArgumentVerbose -Argument ' /RsSvcStartupType=Automatic' } else {} }
+                }
                 Invoke-Ternary -Decider { $role.Properties.ContainsKey('AgtSvcStartupType') } `
                 { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AgtSvcStartupType=" + "$($role.Properties.AgtSvcStartupType)") } `
                 { if ($null -eq $configurationFileContent.Where({$_.Key -eq 'AgtSvcStartupType'}).Value) { $global:setupArguments += Write-ArgumentVerbose -Argument ' /AgtSvcStartupType=Disabled' } else {} }
                 Invoke-Ternary -Decider { $role.Properties.ContainsKey('BrowserSvcStartupType') } `
                 { $global:setupArguments += Write-ArgumentVerbose -Argument (" /BrowserSvcStartupType=" + "$($role.Properties.BrowserSvcStartupType)") } `
                 { if ($null -eq $configurationFileContent.Where({$_.Key -eq 'BrowserSvcStartupType'}).Value) { $global:setupArguments += Write-ArgumentVerbose -Argument ' /BrowserSvcStartupType=Disabled' } else {} }
-                Invoke-Ternary -Decider { $role.Properties.ContainsKey('RsSvcStartupType') } `
-                { $global:setupArguments += Write-ArgumentVerbose -Argument (" /RsSvcStartupType=" + "$($role.Properties.RsSvcStartupType)") } `
-                { if ($null -eq $configurationFileContent.Where({$_.Key -eq 'RsSvcStartupType'}).Value) { $global:setupArguments += Write-ArgumentVerbose -Argument ' /RsSvcStartupType=Automatic' } else {} }
                 Invoke-Ternary -Decider { $role.Properties.ContainsKey('AsSysAdminAccounts') } `
                 { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AsSysAdminAccounts=" + "$($role.Properties.AsSysAdminAccounts)") } `
                 { if ($null -eq $configurationFileContent.Where({$_.Key -eq 'AsSysAdminAccounts'}).Value) { $global:setupArguments += Write-ArgumentVerbose -Argument ' /AsSysAdminAccounts="BUILTIN\Administrators"' } else {} }
@@ -367,6 +371,27 @@ GO
         Write-ScreenInfo -Message "All SQL Servers '$($onPremisesMachines -join ', ')' have now been installed and restarted. Waiting for these to be ready." -NoNewline
 
         Wait-LabVM -ComputerName $onPremisesMachines -TimeoutInMinutes 30 -ProgressIndicator 10
+        $logResult = Invoke-LabCommand -ComputerName $onPremisesMachines -ScriptBlock {
+            $log = Get-ChildItem -Path (Join-Path -Path $env:ProgramFiles -ChildPath 'Microsoft SQL Server\*\Setup Bootstrap\Log\summary.txt') | Select-String -Pattern 'Exit code \(Decimal\):\s+(-?\d+)'
+            if ($log.Matches.Groups[1].Value -notin 0,3010)
+            {
+                @{
+                    Content  = Get-ChildItem -Path (Join-Path -Path $env:ProgramFiles -ChildPath 'Microsoft SQL Server\*\Setup Bootstrap\Log\summary.txt') | Get-Content -Raw
+                    Node     = $env:COMPUTERNAME
+                    ExitCode = $log.Matches.Groups[1].Value
+                }
+            }
+        } -ActivityName 'Collecting installation logs' -NoDisplay -PassThru
+        
+        foreach ($log in $logResult)
+        {
+            New-Variable -Name "$($log.Node)SQLSETUP" -Value $log.Content -Force -Scope Global
+            Write-PSFMessage -Message "====$($log.Node) SQL log content begin===="
+            Write-PSFMessage -Message $log.Content
+            
+            Write-PSFMessage -Message "====$($log.Node) SQL log content end===="
+            Write-ScreenInfo -Type Error -Message "Installation of SQL Server seems to have failed with exit code $($log.ExitCode) on $($log.Node). Examine the result of `$$($log.Node)SQLSETUP"
+        }
     }
         
     $servers = Get-LabVM -Role SQLServer | Where-Object { $_.Roles.Name -ge 'SQLServer2016' }
@@ -393,10 +418,10 @@ GO
 
     #region install SSRS
     $servers = Get-LabVM -Role SQLServer | Where-Object { $_.SsRsUri }
-    Write-ScreenInfo -Message "Installing SSRS on'$($servers.Name -join ',')'"
 
     if ($servers)
     {
+        Write-ScreenInfo -Message "Installing SSRS on'$($servers.Name -join ',')'"
         Write-ScreenInfo -Message "Installing .net Framework 4.8 on '$($servers.Name -join ',')'"
         Install-LabSoftwarePackage -Path $dotnet48InstallFile.FullName -CommandLine '/q /norestart /log c:\DeployDebug\dotnet48.txt' -ComputerName $servers -UseShellExecute
         Restart-LabVM -ComputerName $servers -Wait
@@ -659,6 +684,29 @@ function Install-LabSqlSampleDatabases
         'C:\Program Files\Microsoft SQL Server\MSSQL15.$roleInstance\MSSQL\DATA\WideWorldImporters.ldf',
         MOVE 'WWI_InMemory_Data_1' TO
         'C:\Program Files\Microsoft SQL Server\MSSQL15.$roleInstance\MSSQL\DATA\WideWorldImporters_InMemory_Data_1',
+        REPLACE
+"@
+                Invoke-Sqlcmd -ServerInstance $connectionInstance -Query $query
+            } -DependencyFolderPath $dependencyFolder -Variable (Get-Variable roleInstance)
+        }
+        'SQLServer2022'
+        {
+            Invoke-LabCommand -ActivityName "$roleName Sample DBs" -ComputerName $Machine -ScriptBlock {
+                $backupFile = Get-ChildItem -Filter *.bak -Path C:\SQLServer2022
+                $connectionInstance = if ($roleInstance -ne 'MSSQLSERVER') { "localhost\$roleInstance" } else { "localhost" }
+                $query = @"
+        USE master
+        RESTORE DATABASE WideWorldImporters
+        FROM disk =
+        '$($backupFile.FullName)'
+        WITH MOVE 'WWI_Primary' TO
+        'C:\Program Files\Microsoft SQL Server\MSSQL16.$roleInstance\MSSQL\DATA\WideWorldImporters.mdf',
+        MOVE 'WWI_UserData' TO
+        'C:\Program Files\Microsoft SQL Server\MSSQL16.$roleInstance\MSSQL\DATA\WideWorldImporters_UserData.ndf',
+        MOVE 'WWI_Log' TO
+        'C:\Program Files\Microsoft SQL Server\MSSQL16.$roleInstance\MSSQL\DATA\WideWorldImporters.ldf',
+        MOVE 'WWI_InMemory_Data_1' TO
+        'C:\Program Files\Microsoft SQL Server\MSSQL16.$roleInstance\MSSQL\DATA\WideWorldImporters_InMemory_Data_1',
         REPLACE
 "@
                 Invoke-Sqlcmd -ServerInstance $connectionInstance -Query $query

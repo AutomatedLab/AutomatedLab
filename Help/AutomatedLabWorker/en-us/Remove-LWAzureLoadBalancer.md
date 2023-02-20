@@ -23,10 +23,11 @@ Remove an Azure load balancer
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Remove-LWAzureLoadBalancer 
 ```
 
-{{ Add example description here }}
+Remove the Azure load balancer(s) we put in front of your lab VMs. This will disable
+all communication unless you manually provide an alternative such as VPN, ExpressRoute, ...
 
 ## PARAMETERS
 

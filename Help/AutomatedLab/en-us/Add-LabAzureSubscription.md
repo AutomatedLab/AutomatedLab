@@ -12,11 +12,19 @@ Adds Azure subscription data to lab
 
 ## SYNTAX
 
+### ByName (Default)
 ```
-Add-LabAzureSubscription [[-SubscriptionName] <String>] [-SubscriptionId <Guid>]
+Add-LabAzureSubscription [[-SubscriptionName] <String>] [-Environment <String>]
  [[-DefaultLocationName] <String>] [[-DefaultStorageAccountName] <String>]
  [[-DefaultResourceGroupName] <String>] [-AutoShutdownTime <TimeSpan>] [-AutoShutdownTimeZone <String>]
- [-PassThru] [-AllowBastionHost] [<CommonParameters>]
+ [-PassThru] [-AllowBastionHost] [-AzureStack] [<CommonParameters>]
+```
+
+### ById
+```
+Add-LabAzureSubscription [-SubscriptionId <Guid>] [-Environment <String>] [[-DefaultLocationName] <String>]
+ [[-DefaultStorageAccountName] <String>] [[-DefaultResourceGroupName] <String>] [-AutoShutdownTime <TimeSpan>]
+ [-AutoShutdownTimeZone <String>] [-PassThru] [-AllowBastionHost] [-AzureStack] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -83,6 +91,21 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -AzureStack
+Indicates that the endpoint is running Azure Stack Hub with its considerably older API versions.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -DefaultLocationName
 The default location to choose
 
@@ -128,6 +151,22 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -Environment
+Azure environment to use. Defaults to AzureGlobal. Intended use: Adding a connected Azure Stack environment.
+Theoretically possible but untested: Other environments like AzureChina.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -PassThru
 Returns the lab's subscription
 
@@ -148,7 +187,7 @@ Subscription GUID
 
 ```yaml
 Type: Guid
-Parameter Sets: (All)
+Parameter Sets: ById
 Aliases:
 
 Required: False
@@ -163,7 +202,7 @@ The name of the subscription to select, if necessary
 
 ```yaml
 Type: String
-Parameter Sets: (All)
+Parameter Sets: ByName
 Aliases:
 
 Required: False
@@ -184,4 +223,3 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 Author: Jan-Hendrik Peters
 
 ## RELATED LINKS
-

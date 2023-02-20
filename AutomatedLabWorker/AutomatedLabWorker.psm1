@@ -884,7 +884,7 @@ function Wait-LWLabJob
         $jobs = Get-Job -Name $Name
     }
 
-    Write-ScreenInfo -Message "Waiting for job(s) to complete with ID(s): $($Job.Id -join ', ')" -TaskStart
+    Write-ScreenInfo -Message "Waiting for job(s) to complete with ID(s): $($jobs.Id -join ', ')" -TaskStart
 
     if ($jobs -and ($jobs.State -contains 'Running' -or $jobs.State -contains 'AtBreakpoint'))
     {

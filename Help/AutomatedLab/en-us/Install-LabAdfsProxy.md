@@ -23,10 +23,10 @@ Configures an ADFS proxy for existing ADFS lab machines by retrieving a valid ce
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Install-LabAdfsProxy
 ```
 
-{{ Add example description here }}
+Configures an ADFS proxy for existing ADFS lab machines by retrieving a valid certificate for one ADFS machine and then installing a web application proxy
 
 ## PARAMETERS
 

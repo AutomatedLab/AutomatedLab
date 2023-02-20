@@ -24,10 +24,10 @@ Monitors the uptime of a VM to wait for it to restart
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Wait-LWHypervVMRestart -ComputerName host1,host2 -TimeoutInMinutes 10
 ```
 
-{{ Add example description here }}
+Wait 10 minutes for a restart of host1 and host2, for example because of a pending installation.
 
 ## PARAMETERS
 

@@ -2,6 +2,38 @@
 
 ## Unreleased (yyyy-MM-dd)
 
+## 5.47.0 (2022-11-24)
+
+### Enhancements
+
+- Add validator to check if machine name and admin user name are the same
+- Validators now skip additional checks if SkipDeployment is used (#1442)
+- Allow integration of MOF and meta.MOF for first boot (in OS disk), enabling advanced configurations
+- Remove necessity to send Al.Common to all lab VMs
+- Speed Test URLs for Azure updated
+- Speed up cluster check
+- Include settings to configure TPM and SecureBoot
+- Additional MECM links and sample script
+- Make MECM timeout configurable for low-resource scenarios (#1479).
+- Additional logging to make troubleshooting easier.
+- Setting version of 'AutomatedLab.Common' to '2.3.5'.
+
+### Bugs
+
+- Fixed using wrong variable in `Wait-LWLabJob` (#1425).
+- Fixed output of `Add-LabDomainDefinition` (#1428)
+- Fixed OS disk ignoring Storage SKU (#1434)
+- Fixed outbound NAT rules attached to wrong resource
+- Fixed issue with disks being stored in wrong folder if resourcename was used
+- Fixed issue with SkipDeployment parameter being ignored, failing read operations (#1443)
+- Fixed issue with Azure connection info - case sensitive dictionary
+- Fixed issue with Mount-LWAzureIsoImage
+- Fixed issue with SQL setup on Azure using mounted ISO
+- Fixed display issue if AutomatedLab is deployed an Cluster cmdlets exist without cluster (#1465)
+- Fixed issue with CM account for reporting not created
+- Fixed issue when Pester <5.0 was loaded (#1418)
+- Fixed PSSession handling when by adding parameter `DoNotRemoveExistingLabPSSessions` to `Import-Lab` (#1485)
+
 ## 5.46.0 (2022-11-24)
 
 ### Enhancements
@@ -10,6 +42,8 @@
 - Including tests for existing help content to ensure quality of help content
 - Including basic Ubuntu support: VMs can be added but are not installed due to cloud-init not working.
 - Added key for Windows 11 Enterprise Evaluation version 10.0.22621.525
+- Adding official Azure Stack Hub support
+  - Inofficially supports other Azure Environments now as well - in theory. This is hard to test without access.
 
 ### Bugs
 

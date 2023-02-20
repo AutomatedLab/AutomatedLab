@@ -43,7 +43,7 @@ Currently not supported on Linux, but in a future release will configure the ent
 PS C:\> Set-UnattendedProductKey -ProductKey FCKGW-YouKnowTheRest
 ```
 
-{{ Add example description here }}
+Set product key in unattended XML template
 
 ## PARAMETERS
 
@@ -63,7 +63,7 @@ Accept wildcard characters: False
 ```
 
 ### -IsCloudInit
-{{ Fill IsCloudInit Description }}
+Indicates that this setting is placed in a cloudinit file
 
 ```yaml
 Type: SwitchParameter
@@ -119,3 +119,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
+

@@ -383,6 +383,8 @@ function Import-Lab
         [Parameter(Mandatory, ParameterSetName = 'ByValue', Position = 1)]
         [byte[]]$LabBytes,
 
+        [switch]$DoNotRemoveExistingLabPSSessions,
+
         [switch]$PassThru,
 
         [switch]$NoValidation,
@@ -422,7 +424,7 @@ function Import-Lab
             throw "The file '$Path' is missing. Please point to an existing lab file / folder."
         }
 
-        if (Get-PSsession)
+        if ((Get-PSsession) -and -not $DoNotRemoveExistingLabPSSessions)
         {
             Get-PSSession | Where-Object Name -ne WinPSCompatSession | Remove-PSSession -ErrorAction SilentlyContinue
         }
@@ -539,7 +541,7 @@ function Import-Lab
         }
 
         $minimumAzureModuleVersion = Get-LabConfigurationItem -Name MinimumAzureModuleVersion
-        if (($Script:data.Machines | Where-Object HostType -eq Azure) -and -not (Test-LabAzureModuleAvailability))
+        if (($Script:data.Machines | Where-Object HostType -eq Azure) -and -not (Test-LabAzureModuleAvailability -AzureStack:$($script:data.AzureSettings.IsAzureStack)))
         {
             throw "The Azure PowerShell modules required to run AutomatedLab are not available. Please install them using the command 'Install-LabAzureRequiredModule'"
         }
@@ -644,7 +646,7 @@ function Export-Lab
 
     $lab.Export($lab.LabFilePath)
 
-    Import-Lab -Name $lab.Name -NoValidation -NoDisplay
+    Import-Lab -Name $lab.Name -NoValidation -NoDisplay -DoNotRemoveExistingLabPSSessions
 
     Write-LogFunctionExit
 }
@@ -900,9 +902,9 @@ function Install-Lab
                 Write-ScreenInfo -Message "The hosts file has been added $hostFileAddedEntries records. Clean them up using 'Remove-Lab' or manually if needed" -Type Warning
             }
 
-            if ($script:data.Machines)
+            if ($script:data.Machines | Where-Object SkipDeployment -eq $false)
             {
-                New-LabVM -Name $script:data.Machines -CreateCheckPoints:$CreateCheckPoints
+                New-LabVM -Name ($script:data.Machines | Where-Object SkipDeployment -eq $false) -CreateCheckPoints:$CreateCheckPoints
             }
 
             #VMs created, export lab definition again to update MAC addresses
@@ -1080,7 +1082,7 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
-    if (($SQLServers -or $performAll) -and (Get-LabVM -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016, SQLServer2017, SQLServer2019 | Where-Object { -not $_.SkipDeployment }))
+    if (($SQLServers -or $performAll) -and (Get-LabVM -Role SQLServer | Where-Object { -not $_.SkipDeployment }))
     {
         Write-ScreenInfo -Message 'Installing SQL Servers' -TaskStart
         $jobs = Invoke-LabCommand -PreInstallationActivity -ActivityName 'Pre-installation' -ComputerName $(Get-LabVM -Role SQLServer | Where-Object { -not $_.SkipDeployment }) -PassThru -NoDisplay
@@ -1092,6 +1094,7 @@ function Install-Lab
         if (Get-LabVM -Role SQLServer2016)   { Write-ScreenInfo -Message "Machines to have SQL Server 2016 installed: '$((Get-LabVM -Role SQLServer2016).Name -join ', ')'" }
         if (Get-LabVM -Role SQLServer2017)   { Write-ScreenInfo -Message "Machines to have SQL Server 2017 installed: '$((Get-LabVM -Role SQLServer2017).Name -join ', ')'" }
         if (Get-LabVM -Role SQLServer2019)   { Write-ScreenInfo -Message "Machines to have SQL Server 2019 installed: '$((Get-LabVM -Role SQLServer2019).Name -join ', ')'" }
+        if (Get-LabVM -Role SQLServer2022)   { Write-ScreenInfo -Message "Machines to have SQL Server 2022 installed: '$((Get-LabVM -Role SQLServer2022).Name -join ', ')'" }
         Install-LabSqlServers -CreateCheckPoints:$CreateCheckPoints
 
         Write-ScreenInfo -Message 'Done' -TaskEnd
@@ -1329,7 +1332,7 @@ function Install-Lab
 
         Write-ScreenInfo -Message 'Waiting for machines to start up...' -NoNewLine
 
-        $toStart = Get-LabVM -IncludeLinux:$(-not (Get-LabConfigurationItem -Name DoNotWaitForLinux -Default $false))
+        $toStart = Get-LabVM -IncludeLinux:$(-not (Get-LabConfigurationItem -Name DoNotWaitForLinux -Default $false)) | Where-Object SkipDeployment -eq $false
         Start-LabVM -ComputerName $toStart -DelayBetweenComputers $DelayBetweenComputers -ProgressIndicator 30 -TimeoutInMinutes $timeoutRemaining -Wait
 
         $userName = (Get-Lab).DefaultInstallationCredential.UserName
@@ -1355,7 +1358,7 @@ function Install-Lab
     # until a restart was done
     if ($lab.DefaultVirtualizationEngine -eq 'Azure')
     {
-        $vms = Get-LabVm
+        $vms = Get-LabVm | Where-Object SkipDeployment -eq $false
         $disconnectedVms = Invoke-LabCommand -PassThru -NoDisplay -ComputerName $vms -ScriptBlock { $null -eq (Get-NetConnectionProfile -IPv4Connectivity Internet -ErrorAction SilentlyContinue) } | Where-Object { $_}
         if ($disconnectedVms) { Restart-LabVm $disconnectedVms.PSComputerName -Wait -NoDisplay -NoNewLine }
     }
@@ -1410,7 +1413,13 @@ function Install-Lab
     if (-not $NoValidation -and ($performAll -or $PostDeploymentTests))
     {
         if ((Get-Module -ListAvailable -Name Pester -ErrorAction SilentlyContinue).Version -ge [version]'5.0')
-        {    
+        {
+            if ($m = Get-Module -Name Pester | Where-Object Version -lt ([version]'5.0'))
+            {
+                Write-PSFMessage "The loaded version of Pester $($m.Version) is not compatible with AutomatedLab. Unloading it." -Level Verbose
+                $m | Remove-Module
+            }
+            
             Write-ScreenInfo -Type Verbose -Message "Testing deployment with Pester"
             $result = Invoke-LabPester -Lab (Get-Lab) -Show Normal -PassThru
             if ($result.Result -eq 'Failed')
@@ -1482,7 +1491,14 @@ function Remove-Lab
             if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure' -and -not (Get-AzContext))
             {
                 Write-ScreenInfo -Type Info -Message "Your Azure session is expired. Please log in to remove your resource group"
-                Connect-AzAccount -UseDeviceAuthentication -WarningAction Continue
+                $param = @{
+                    UseDeviceAuthentication = $true
+                    ErrorAction             = 'SilentlyContinue' 
+                    WarningAction           = 'Continue'
+                    Environment             = $(Get-Lab).AzureSettings.Environment
+                }
+
+                $null = Connect-AzAccount @param
             }
 
             try
@@ -1554,7 +1570,7 @@ function Remove-Lab
                         Write-PSFMessage 'Removing disks...'
                         foreach ($disk in $disks)
                         {
-                            Write-PSFMessage "Removing disk '($disk.Name)'"
+                            Write-PSFMessage "Removing disk '$($disk.Name)'"
 
                             if (Test-Path -Path $disk.Path)
                             {
@@ -1682,7 +1698,8 @@ function Get-LabAvailableOperatingSystem
         $cachedOsList = New-Object $type
         foreach ($os in $cachedSkus)
         {
-            $cachedOs = [AutomatedLab.OperatingSystem]::new($os.Skus, $true)
+            # Converting ToLower() as Azure Stack Hub images seem to mix case
+            $cachedOs = [AutomatedLab.OperatingSystem]::new($os.Skus.ToLower(), $true)
             if ($cachedOs.OperatingSystemName) {$cachedOsList.Add($cachedOs)}
         }
 
@@ -1697,11 +1714,24 @@ function Get-LabAvailableOperatingSystem
 
         foreach ($sku in $skus)
         {
-            $azureOs = ([AutomatedLab.OperatingSystem]::new($sku.Skus, $true))
+            # Converting ToLower() as Azure Stack Hub images seem to mix case
+            $azureOs = ([AutomatedLab.OperatingSystem]::new($sku.Skus.ToLower(), $true))
             if (-not $azureOs.OperatingSystemName) { continue }
 
             $osList.Add($azureOs )
         }
+
+        $osList.Timestamp = Get-Date
+    
+        if ($IsLinux -or $IsMacOS)
+        {
+            $osList.Export((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath "Stores/$($storeLocationName)OperatingSystems.xml"))
+        }
+        else
+        {
+            $osList.ExportToRegistry('Cache', "$($storeLocationName)OperatingSystems")
+        }
+
         return $osList.ToArray()
     }
 
@@ -1733,7 +1763,7 @@ function Get-LabAvailableOperatingSystem
         Write-PSFMessage 'Could not read OS image info from the cache'
     }
 
-    $present, $absent = $cachedOsList.Where({Test-Path $_.IsoPath}, 'Split')
+    $present, $absent = $cachedOsList.Where({$_.IsoPath -and (Test-Path $_.IsoPath)}, 'Split')
     foreach ($cachedOs in $absent)
     {
         Write-ScreenInfo -Type Verbose -Message "Evicting $cachedOs from cache"
@@ -2689,6 +2719,8 @@ function Install-LabSoftwarePackage
         [Parameter(Mandatory, ParameterSetName = 'MulitPackage')]
         [AutomatedLab.SoftwarePackage]$SoftwarePackage,
 
+        [string]$WorkingDirectory,
+
         [switch]$DoNotUseCredSsp,
 
         [switch]$AsJob,
@@ -2794,9 +2826,7 @@ function Install-LabSoftwarePackage
         {
             $parameters.Add('DependencyFolderPath', $Path)
             $installPath = Join-Path -Path (Get-LabConfigurationItem -Name OsRoot) -ChildPath (Split-Path -Path $Path -Leaf)
-        }
-
-        
+        }        
     }
     elseif ($parameterSetName -eq 'SingleLocalPackage')
     {
@@ -2829,6 +2859,7 @@ function Install-LabSoftwarePackage
     if ($UseShellExecute) { $installParams.UseShellExecute = $true }
     if ($AsScheduledJob -and $UseExplicitCredentialsForScheduledJob) { $installParams.Credential = $Machine[0].GetCredential((Get-Lab)) }
     if ($ExpectedReturnCodes) { $installParams.ExpectedReturnCodes = $ExpectedReturnCodes }
+    if ($WorkingDirectory) { $installParams.WorkingDirectory = $WorkingDirectory }
     if ($CopyFolder -and (Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
     {
         $child = Split-Path -Leaf -Path $parameters.DependencyFolderPath
@@ -2840,6 +2871,7 @@ function Install-LabSoftwarePackage
     Write-PSFMessage -Message "Starting background job for '$($parameters.ActivityName)'"
 
     $parameters.ScriptBlock = {
+        Import-Module -Name AutomatedLab.Common -ErrorAction SilentlyContinue
         if ($installParams.Path.StartsWith('\\') -and (Test-Path /ALAzure))
         {
             # Often issues with Zone Mapping
@@ -2882,7 +2914,7 @@ function Install-LabSoftwarePackage
         Write-ScreenInfo -Message "Copying files and initiating setup on '$($ComputerName -join ', ')' and waiting for completion" -NoNewLine
     }
 
-    $job = Invoke-LabCommand @parameters -Variable (Get-Variable -Name installParams)
+    $job = Invoke-LabCommand @parameters -Variable (Get-Variable -Name installParams) -Function (Get-Command Install-SoftwarePackage)
 
     if (-not $AsJob)
     {
@@ -3012,7 +3044,7 @@ function Update-LabMemorySettings
 
     Write-LogFunctionEntry
 
-    $machines = Get-LabVM -All -IncludeLinux
+    $machines = Get-LabVM -All -IncludeLinux | Where-Object SkipDeployment -eq $false
     $lab = Get-LabDefinition
 
     if ($machines | Where-Object Memory -lt 32)

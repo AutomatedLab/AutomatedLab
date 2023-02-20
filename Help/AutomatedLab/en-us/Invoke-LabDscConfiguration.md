@@ -112,7 +112,7 @@ Accept wildcard characters: False
 ```
 
 ### -Parameter
-{{ Fill Parameter Description }}
+Parameters to pass to the DSC configuration
 
 ```yaml
 Type: Hashtable

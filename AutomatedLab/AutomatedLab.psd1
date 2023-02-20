@@ -66,7 +66,7 @@
         'HostsFile',
         'AutomatedLabUnattended',
         'AutomatedLabNotifications',
-        @{ModuleName='AutomatedLab.Common'; ModuleVersion='2.2.247'; }
+        @{ModuleName='AutomatedLab.Common'; ModuleVersion='2.3.5'; }
         'PSFramework'
         'AutomatedLabTest'
     )
@@ -191,7 +191,6 @@
         'Restart-ServiceResilient',
         'Restore-LabConnection',
         'Restore-LabVMSnapshot',
-        'Save-Hashes',
         'Save-LabVM',
         'Enable-LabAutoLogon',
         'Disable-LabAutoLogon',
@@ -209,11 +208,7 @@
         'Stop-LabAzureWebApp',
         'Stop-LabVM',
         'Sync-LabActiveDirectory',
-        'Sync-LabAzureLabSources',
-        'Test-FileHashes',
-        'Test-FileList',
-        'Test-FolderExist',
-        'Test-FolderNotExist',
+        'Sync-LabAzureLabSources',        
         'Test-LabADReady',
         'Test-LabAutoLogon',
         'Test-LabAzureLabSourcesStorage',

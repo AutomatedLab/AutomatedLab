@@ -23,10 +23,10 @@ Creates DNS forwarders and a bidirectional trust for all forests in the current 
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Install-LabADDSTrust
 ```
 
-{{ Add example description here }}
+Creates DNS forwarders and a bidirectional trust for all forests in the current lab
 
 ## PARAMETERS
 
