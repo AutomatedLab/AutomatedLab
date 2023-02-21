@@ -2,6 +2,10 @@
 
 ## Unreleased (yyyy-MM-dd)
 
+### Enhancements
+
+- Migrated AppInsights from Instrumentation Key to Connection String (#1483)
+
 ## 5.47.0 (2022-11-24)
 
 ### Enhancements
