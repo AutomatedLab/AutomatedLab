@@ -1694,6 +1694,7 @@ function Mount-LWIsoImage
         return
     }
 
+    $IsoPath = (Resolve-Path -Path $IsoPath).Path
     $machines = Get-LabVM -ComputerName $ComputerName
 
     foreach ($machine in $machines)
