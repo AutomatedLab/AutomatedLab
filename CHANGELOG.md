@@ -6,6 +6,10 @@
 
 - Migrated AppInsights from Instrumentation Key to Connection String (#1483)
 
+### Bugs
+
+- Fix issue with relative ISO paths in Mount-LabIsoImage (#1491)
+
 ## 5.47.0 (2022-11-24)
 
 ### Enhancements
