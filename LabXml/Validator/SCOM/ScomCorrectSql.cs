@@ -21,7 +21,7 @@ namespace AutomatedLab
         public override IEnumerable<ValidationMessage> Validate()
         {
             var scomRoles = ((Roles[])Enum.GetValues(typeof(AutomatedLab.Roles))).Where(r => r.ToString().Equals("ScomManagement") || r.ToString().Equals("ScomReporting"));
-            var iso = lab.Sources.ISOs.First(isoSource => isoSource.Name.StartsWith("Scom"));
+            
             var sqlRoles = ((Roles[])Enum.GetValues(typeof(AutomatedLab.Roles))).Where(r => r.ToString().StartsWith("SQLServer"));
             var sqlvms = new List<Machine>();
             foreach (var role in sqlRoles)
@@ -30,8 +30,10 @@ namespace AutomatedLab
             }
 
             foreach (var role in scomRoles)
-            {
+            {   
                 var scomvms = lab.Machines.Where(m => m.Roles.Where(r => r.Name == role).Count() > 0);
+                if (scomvms.Count() == 0) continue;
+                var iso = lab.Sources.ISOs.First(isoSource => isoSource.Name.StartsWith("Scom"));
                 foreach (var vm in scomvms.Where(m => ! m.Roles.FirstOrDefault(r => r.Name == role).Properties.ContainsKey("SkipServer")))
                 {
                     if (Regex.IsMatch(System.IO.Path.GetFileNameWithoutExtension(iso.Path), "_2016_") && sqlvms.Where(m => m.Roles.FirstOrDefault(r => r.Name == Roles.SQLServer2012 || r.Name == Roles.SQLServer2014 || r.Name == Roles.SQLServer2016) != null).Count() == 0)
