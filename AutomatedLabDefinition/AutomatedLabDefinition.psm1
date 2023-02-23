@@ -2892,11 +2892,16 @@ function Add-LabMachineDefinition
                 $machine.LinuxPackageGroup = $UbuntuPackage
             }
 
-            if ($OperatingSystemVersion)
+            if ($OperatingSystem.IsoPath)
+            {
+                $os = $OperatingSystem
+            }
+
+            if (-not $OperatingSystem.IsoPath -and $OperatingSystemVersion)
             {
                 $os = Get-LabAvailableOperatingSystem -NoDisplay | Where-Object { $_.OperatingSystemName -eq $OperatingSystem -and $_.Version -eq $OperatingSystemVersion }
             }
-            else
+            elseif (-not $OperatingSystem.IsoPath -and -not $OperatingSystemVersion)
             {
                 $os = Get-LabAvailableOperatingSystem -NoDisplay | Where-Object OperatingSystemName -eq $OperatingSystem
                 if ($os.Count -gt 1)

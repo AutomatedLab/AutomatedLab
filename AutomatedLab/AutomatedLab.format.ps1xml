@@ -185,6 +185,9 @@
             <Label>Idx</Label>
           </TableColumnHeader>
           <TableColumnHeader>
+            <Label>Arch</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
             <Label>Version</Label>
           </TableColumnHeader>
           <TableColumnHeader>
@@ -202,6 +205,9 @@
               </TableColumnItem>
               <TableColumnItem>
                 <PropertyName>ImageIndex</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>Architecture</PropertyName>
               </TableColumnItem>
               <TableColumnItem>
                 <PropertyName>Version</PropertyName>

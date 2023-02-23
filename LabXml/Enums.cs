@@ -138,4 +138,11 @@ namespace AutomatedLab
         EnabledCredSsp = 2,
         NetworkAdapterBindingCorrected = 4
     }
+
+    public enum Architecture
+    {
+        x86 = 0, // Map DISM output
+        x64 = 9, // Map DISM output
+        Unknown
+    }
 }
