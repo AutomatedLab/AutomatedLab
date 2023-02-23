@@ -10,8 +10,8 @@ Describe "[$($Lab.Name)] ScomWebConsole" -Tag ScomWebConsole {
                     vm = $vm
                 } {
                     Invoke-LabCommand -ComputerName $vm -NoDisplay -PassThru -ScriptBlock {
-                        (Get-Package -Name 'System Center Operations Web Console' -Provider msi -ErrorAction SilentlyContinue).Name
-                    } | Should -Be 'System Center Operations Web Console'
+                        (Get-Package -Name 'System Center Operations Manager Web Console' -Provider msi -ErrorAction SilentlyContinue).Name
+                    } | Should -Be 'System Center Operations Manager Web Console'
                 }
             }
         }

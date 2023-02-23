@@ -9,6 +9,7 @@
 ### Bugs
 
 - Fix issue with relative ISO paths in Mount-LabIsoImage (#1491)
+- Fix wrong test for Scom Web Console (#1493)
 
 ## 5.47.0 (2022-11-24)
 
