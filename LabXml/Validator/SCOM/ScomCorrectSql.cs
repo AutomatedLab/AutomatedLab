@@ -7,8 +7,9 @@ namespace AutomatedLab
 {
     /// <summary>
     /// This validator makes sure the required SQL Versions are present
-    /// SCVMM 2019: SQL 2016, SQL 2017 (not SQL 2019)
-    /// SCVMM 2016: SQL 2012, SQL 2014, SQL 2016
+    /// Scom 2022: SQL 2017, SQL 2019, SQL 2022
+    /// Scom 2019: SQL 2016, SQL 2017, SQL 2019
+    /// Scom 2016: SQL 2012, SQL 2014, SQL 2016
     /// </summary>
     public class ScomCorrectSql : LabValidator, IValidate
     {
@@ -33,7 +34,7 @@ namespace AutomatedLab
                 var scomvms = lab.Machines.Where(m => m.Roles.Where(r => r.Name == role).Count() > 0);
                 foreach (var vm in scomvms.Where(m => ! m.Roles.FirstOrDefault(r => r.Name == role).Properties.ContainsKey("SkipServer")))
                 {
-                    if (Regex.IsMatch(iso.Name, "_2016_") && sqlvms.Where(m => m.Roles.FirstOrDefault(r => r.Name == Roles.SQLServer2012 || r.Name == Roles.SQLServer2014 || r.Name == Roles.SQLServer2016) != null).Count() == 0)
+                    if (Regex.IsMatch(System.IO.Path.GetFileNameWithoutExtension(iso.Path), "_2016_") && sqlvms.Where(m => m.Roles.FirstOrDefault(r => r.Name == Roles.SQLServer2012 || r.Name == Roles.SQLServer2014 || r.Name == Roles.SQLServer2016) != null).Count() == 0)
                     {
                         yield return new ValidationMessage
                         {
@@ -42,7 +43,7 @@ namespace AutomatedLab
                             TargetObject = vm.ToString()
                         };
                     }
-                    if (Regex.IsMatch(iso.Name, "_2019_") && sqlvms.Where(m => m.Roles.FirstOrDefault(r => r.Name == Roles.SQLServer2016 || r.Name == Roles.SQLServer2017 || r.Name == Roles.SQLServer2019) != null).Count() == 0)
+                    if (Regex.IsMatch(System.IO.Path.GetFileNameWithoutExtension(iso.Path), "_2019_") && sqlvms.Where(m => m.Roles.FirstOrDefault(r => r.Name == Roles.SQLServer2016 || r.Name == Roles.SQLServer2017 || r.Name == Roles.SQLServer2019) != null).Count() == 0)
                     {
                         yield return new ValidationMessage
                         {
@@ -51,7 +52,7 @@ namespace AutomatedLab
                             TargetObject = vm.ToString()
                         };
                     }
-                    if (Regex.IsMatch(iso.Name, "_2022_") && sqlvms.Where(m => m.Roles.FirstOrDefault(r => r.Name == Roles.SQLServer2017 || r.Name == Roles.SQLServer2019 || r.Name == Roles.SQLServer2022) != null).Count() == 0)
+                    if (Regex.IsMatch(System.IO.Path.GetFileNameWithoutExtension(iso.Path), "_2022_") && sqlvms.Where(m => m.Roles.FirstOrDefault(r => r.Name == Roles.SQLServer2017 || r.Name == Roles.SQLServer2019 || r.Name == Roles.SQLServer2022) != null).Count() == 0)
                     {
                         yield return new ValidationMessage
                         {
@@ -61,7 +62,7 @@ namespace AutomatedLab
                         };
                     }
 
-                    if (!Regex.IsMatch(iso.Name, "_2016_|_2019_|_2022_") && sqlvms.Where(m => m.Roles.FirstOrDefault(r => r.Name == Roles.SQLServer2012 || r.Name == Roles.SQLServer2014 || r.Name == Roles.SQLServer2016 || r.Name == Roles.SQLServer2016 || r.Name == Roles.SQLServer2017 || r.Name == Roles.SQLServer2022) != null).Count() == 0)
+                    if (!Regex.IsMatch(System.IO.Path.GetFileNameWithoutExtension(iso.Path), "_2016_|_2019_|_2022_") && sqlvms.Where(m => m.Roles.FirstOrDefault(r => r.Name == Roles.SQLServer2012 || r.Name == Roles.SQLServer2014 || r.Name == Roles.SQLServer2016 || r.Name == Roles.SQLServer2016 || r.Name == Roles.SQLServer2017 || r.Name == Roles.SQLServer2022) != null).Count() == 0)
                     {
                         yield return new ValidationMessage
                         {
