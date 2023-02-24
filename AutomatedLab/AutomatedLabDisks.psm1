@@ -32,11 +32,12 @@ function New-LabBaseImages
             throw $message
         }
 
-        $legacyDiskPath = Join-Path -Path $lab.Target.Path -ChildPath "BASE_$($os.OperatingSystemName.Replace(' ', ''))_$($os.Version).vhdx"
+        $archString = if ($os.Architecture -eq 'x86') { "_$($os.Architecture)"} else { '' }
+        $legacyDiskPath = Join-Path -Path $lab.Target.Path -ChildPath "BASE_$($os.OperatingSystemName.Replace(' ', ''))$($archString)_$($os.Version).vhdx"
         if (Test-Path $legacyDiskPath)
         {
             [int]$legacySize = (Get-Vhd -Path $legacyDiskPath).Size / 1GB
-            $newName = Join-Path -Path $lab.Target.Path -ChildPath "BASE_$($os.OperatingSystemName.Replace(' ', ''))_$($os.Version)_$($legacySize).vhdx"
+            $newName = Join-Path -Path $lab.Target.Path -ChildPath "BASE_$($os.OperatingSystemName.Replace(' ', ''))$($archString)_$($os.Version)_$($legacySize).vhdx"
             $affectedDisks = @()
             $affectedDisks += Get-LWHypervVM | Get-VMHardDiskDrive | Get-VHD | Where-Object ParentPath -eq $legacyDiskPath
             $affectedDisks += Get-LWHypervVM | Get-VMSnapshot | Get-VMHardDiskDrive | Get-VHD | Where-Object ParentPath -eq $legacyDiskPath
@@ -78,7 +79,7 @@ function New-LabBaseImages
             }
         }
 
-        $baseDiskPath = Join-Path -Path $lab.Target.Path -ChildPath "BASE_$($os.OperatingSystemName.Replace(' ', ''))_$($os.Version)_$($lab.Target.ReferenceDiskSizeInGB).vhdx"
+        $baseDiskPath = Join-Path -Path $lab.Target.Path -ChildPath "BASE_$($os.OperatingSystemName.Replace(' ', ''))$($archString)_$($os.Version)_$($lab.Target.ReferenceDiskSizeInGB).vhdx"
         $os.BaseDiskPath = $baseDiskPath
 
 

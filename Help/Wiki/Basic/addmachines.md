@@ -8,6 +8,19 @@ Add-LabMachineDefinition -Name DC1 -Roles RootDC -OperatingSystem 'Windows Serve
 
 When you are using the automatic machine definitions, the memory requirements will be calculated based on the machines' roles.
 
+If the normal operating system and version combinations are not sufficient on Hyper-V, you can also find your OS
+and pass the entire object instead of the OS name. This takes care of oddities such as 32bit Windows versions
+that unfortunately have the same name as their normal 64bit kin.
+
+```powershell
+$x86os = (Get-LabAvailableOperatingSystem -UseOnlyCache | Where {$_.OperatingSystemName -eq 'Windows 10 Enterprise LTSC' -and $_.Architecture -eq 'x86'})
+$x64os = (Get-LabAvailableOperatingSystem -UseOnlyCache | Where {$_.OperatingSystemName -eq 'Windows 10 Enterprise LTSC' -and $_.Architecture -eq 'x64'})
+Add-LabMachineDefinition -Name test64 -OperatingSystem $x64os
+Add-LabMachineDefinition -Name test32 -OperatingSystem $x86os
+
+Install-Lab
+```
+
 ## Deploying a lab with Linux VMs
 With AutomatedLab Linux VMs can be deployed just as easily as Windows VMs. The current implementation should take care of the following distributions:
 - RHEL 7+ (*)

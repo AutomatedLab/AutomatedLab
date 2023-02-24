@@ -44,6 +44,7 @@ namespace AutomatedLab
         private static ListXmlStore<ProductKey> productKeys = null;
         private static ListXmlStore<ProductKey> productKeysCustom = null;
 
+        public Architecture Architecture { get; set; }
         public string OperatingSystemName
         {
             get { return operatingSystemName; }
@@ -392,6 +393,7 @@ namespace AutomatedLab
             return operatingSystemName == os.operatingSystemName &&
                 version == os.version &&
                 edition == os.edition &&
+                Architecture == os.Architecture &&
                 installation == os.installation;
         }
 

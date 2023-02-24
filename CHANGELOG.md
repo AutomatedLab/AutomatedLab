@@ -5,6 +5,7 @@
 ### Enhancements
 
 - Migrated AppInsights from Instrumentation Key to Connection String (#1483)
+- Enable using 32bit lab OSses as well (#1490)
 
 ### Bugs
 
