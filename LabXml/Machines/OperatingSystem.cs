@@ -37,7 +37,62 @@ namespace AutomatedLab
             {"20h2-ent", "Windows 10 Enterprise" },
             {"20h2-pro", "Windows 10 Pro" },
             {"win11-21h2-ent", "Windows 11 Enterprise" },
-            {"win11-21h2-pro", "Windows 11 Pro" }
+            {"centos-7-8", "CentOS 7.8" },
+            {"centos-7-9", "CentOS-7.9"},
+            {"centos-75", "CentOS 7.5 LTS"},
+            {"centos-76", "CentOS 7.6 LTS"},
+            {"centos-77", "CentOS 7.7"},
+            {"centos-8-0", "CentOS 8.0"},
+            {"centos-8-1", "CentOS 8.1"},
+            {"centos-8-2", "CentOS 8.2"},
+            {"centos-8-3", "CentOS 8.3" },
+            {"centos-8-stream", "CentOS 8 Stream"},
+            {"19_10", "Ubuntu-Server 19.10 \"Eoan Ermine\"" },
+            {"19_10-gen2", "Ubuntu-Server 19.10 Eoan Ermine"},
+            {"20_04-lts", "Ubuntu-Server 20.04 LTS  \"Focal Fossa\""},
+            {"20_04-lts-gen2", "Ubuntu-Server 20.04 LTS \"Focal Fossa\"" },
+            {"20_10-gen2", "Ubuntu-Server 20.10 \"Groovy Gorilla\""},
+            {"21_10", "Ubuntu-Server 21.10 \"Impish Indri\""},
+            {"21_10-gen2", "Ubuntu-Server 21.10 \"Impish Indri\""},
+            {"22_04-lts", "Ubuntu-Server 22.04 LTS \"Jammy Jellyfish\"" },
+            {"22_04-lts-gen2", "Ubuntu-Server 22.04 LTS \"Jammy Jellyfish\""},
+            {"22_10", "Ubuntu-Server 22.10 \"Kinetic Kudu\""},
+            {"22_10-gen2", "Ubuntu-Server 22.10 \"Kinetic Kudu\""},
+            {"6.10", "Red Hat Enterprise Linux 6.1" },
+            {"7.2", "Red Hat Enterprise Linux 7.2" },
+            {"7.3", "Red Hat Enterprise Linux 7.3" },
+            {"7.4", "Red Hat Enterprise Linux 7.4" },
+            {"7.5", "Red Hat Enterprise Linux 7.5" },
+            {"7.6", "Red Hat Enterprise Linux 7.6" },
+            {"7.7", "Red Hat Enterprise Linux 7.7" },
+            {"7.8", "Red Hat Enterprise Linux 7.8" },
+            {"74-gen2", "Red Hat Enterprise Linux 7.4" },
+            {"75-gen2", "Red Hat Enterprise Linux 7.5" },
+            {"76-gen2", "Red Hat Enterprise Linux 7.6" },
+            {"77-gen2", "Red Hat Enterprise Linux 7.7" },
+            {"78-gen2", "Red Hat Enterprise Linux 7.8" },
+            {"79-gen2", "Red Hat Enterprise Linux 7.9" },
+            {"7_9", "Red Hat Enterprise Linux 7.9" },
+            {"8", "Red Hat Enterprise Linux 8" },
+            {"8-gen2", "Red Hat Enterprise Linux 8" },
+            {"8.1", "Red Hat Enterprise Linux 8.1" },
+            {"8.2", "Red Hat Enterprise Linux 8.2" },
+            {"81gen2", "Red Hat Enterprise Linux 8.1" },
+            {"82gen2", "Red Hat Enterprise Linux 8.2" },
+            {"83-gen2", "Red Hat Enterprise Linux 8.3" },
+            {"84-gen2", "Red Hat Enterprise Linux 8.4" },
+            {"85-gen2", "Red Hat Enterprise Linux 8.5" },
+            {"86-gen2", "Red Hat Enterprise Linux 8.6" },
+            {"87-gen2", "Red Hat Enterprise Linux 8.7" },
+            {"8_3", "Red Hat Enterprise Linux 8.3" },
+            {"8_4", "Red Hat Enterprise Linux 8.4" },
+            {"8_5", "Red Hat Enterprise Linux 8.5" },
+            {"8_6", "Red Hat Enterprise Linux 8.6" },
+            {"8_7", "Red Hat Enterprise Linux 8.7" },
+            {"90-gen2", "Red Hat Enterprise Linux 9" },
+            {"91-gen2", "Red Hat Enterprise Linux 9.1" },
+            {"9_0", "Red Hat Enterprise Linux 9" },
+            {"9_1", "Red Hat Enterprise Linux 9.1" }
             };
         private Dictionary<string, string> isoNameToAzureSku;
 
@@ -220,12 +275,14 @@ namespace AutomatedLab
         public OperatingSystem()
         {
             LinuxPackageGroup = new List<String>();
+            Architecture = Architecture.Unknown;
             isoNameToAzureSku = azureToIsoName.ToDictionary(kp => kp.Value, kp => kp.Key);
         }
 
         public OperatingSystem(string azureSkuName, bool azure = true)
         {
             isoNameToAzureSku = azureToIsoName.ToDictionary(kp => kp.Value, kp => kp.Key);
+            Architecture = Architecture.Unknown;
 
             try
             {
@@ -294,6 +351,7 @@ namespace AutomatedLab
             isoNameToAzureSku = azureToIsoName.ToDictionary(kp => kp.Value, kp => kp.Key);
             this.operatingSystemName = operatingSystemName;
             LinuxPackageGroup = new List<String>();
+            Architecture = Architecture.Unknown;
             if (operatingSystemName.ToLower().Contains("windows server"))
             {
                 installation = "Server";

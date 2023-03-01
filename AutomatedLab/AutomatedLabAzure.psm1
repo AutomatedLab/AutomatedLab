@@ -1549,6 +1549,46 @@ function Get-LabAzureAvailableSku
     Group-Object -Property Skus, Offer |
     ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
 
+    # Linux
+    # Ubuntu - official
+    $publishers |
+    Where-Object PublisherName -eq 'Canonical' |
+    Get-AzVMImageOffer |
+    Where-Object Offer -match '0001-com-ubuntu-server-\w+$' |
+    Get-AzVMImageSku |
+    Where-Object Skus -notmatch 'arm64' |
+    Get-AzVMImage |
+    Group-Object -Property Skus, Offer |
+    ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
+    # RedHat - official
+    $publishers |
+    Where-Object PublisherName -eq 'RedHat' |
+    Get-AzVMImageOffer |
+    Where-Object Offer -eq 'RHEL' |
+    Get-AzVMImageSku |
+    Where-Object Skus -notmatch '(RAW|LVM|CI)' |
+    Get-AzVMImage |
+    Group-Object -Property Skus, Offer |
+    ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
+    # CentOS - random third-party
+    # Fedora: Not free
+    $publishers |
+    Where-Object PublisherName -eq 'Cognosys' |
+    Get-AzVMImageOffer |
+    Where-Object Offer -match '^centos-.*-free$' |
+    Get-AzVMImageSku |
+    Get-AzVMImage |
+    Group-Object -Property Skus, Offer |
+    ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
+    # Activate once Kali is supported on-premises ;)
+    #$publishers |
+    #Where-Object PublisherName -eq 'Kali-Linux' |
+    #Get-AzVMImageOffer |
+    #Get-AzVMImageSku |
+    #Get-AzVMImage |
+    #Group-Object -Property Skus, Offer |
+    #ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
+
     # Desktop
     $publishers |
     Where-Object PublisherName -eq 'MicrosoftWindowsDesktop' |
