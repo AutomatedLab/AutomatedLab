@@ -104,7 +104,7 @@
 
     # RHEL, CentOS, Fedora, OpenSuse Tumbleweed et al
     $rhelPath = "$DriveLetter`:\.treeinfo" # TreeInfo Syntax https://release-engineering.github.io/productmd/treeinfo-1.0.html
-    $rhelPackageInfo = "$DriveLetter`:{0}\repodata"
+    $rhelPackageInfo = "$DriveLetter`:{0}\*\repodata"
     if (Test-Path -Path $rhelPath -PathType Leaf)
     {
         $contentMatch = (Get-Content -Path $rhelPath -Raw) -match '(?s)(?<=\[general\]).*?(?=\[)'
@@ -138,7 +138,7 @@
         if (-not $packageXml)
         {
             # CentOS ISO for some reason contained only GUIDs
-            $packageXml = Get-ChildItem -Path $rhelPackageInfo -PipelineVariable file -File |
+            $packageXml = Get-ChildItem -Path $rhelPackageInfo -ErrorAction SilentlyContinue -PipelineVariable file -File |
             Get-Content -TotalCount 10 |
             Where-Object { $_ -like "*<comps>*" } |
             ForEach-Object { $file.FullName } |

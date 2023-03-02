@@ -1699,7 +1699,9 @@ function Get-LabAvailableOperatingSystem
         foreach ($os in $cachedSkus)
         {
             # Converting ToLower() as Azure Stack Hub images seem to mix case
-            $cachedOs = [AutomatedLab.OperatingSystem]::new($os.Skus.ToLower(), $true)
+            # building longer SKU to take care of bad naming conventions with the linux images
+            $osname = '{0}_{1}' -f $os.Skus, $os.PublisherName
+            $cachedOs = [AutomatedLab.OperatingSystem]::new($osname.ToLower(), $true)
             if ($cachedOs.OperatingSystemName) {$cachedOsList.Add($cachedOs)}
         }
 
@@ -1715,7 +1717,8 @@ function Get-LabAvailableOperatingSystem
         foreach ($sku in $skus)
         {
             # Converting ToLower() as Azure Stack Hub images seem to mix case
-            $azureOs = ([AutomatedLab.OperatingSystem]::new($sku.Skus.ToLower(), $true))
+            $osname = '{0}_{1}' -f $sku.Skus, $sku.PublisherName
+            $azureOs = [AutomatedLab.OperatingSystem]::new($osname.ToLower(), $true)
             if (-not $azureOs.OperatingSystemName) { continue }
 
             $osList.Add($azureOs )

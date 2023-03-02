@@ -1570,12 +1570,11 @@ function Get-LabAzureAvailableSku
     Get-AzVMImage |
     Group-Object -Property Skus, Offer |
     ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
-    # CentOS - random third-party
-    # Fedora: Not free
+    # CentOS - Roguewave, sounds slightly suspicious
     $publishers |
-    Where-Object PublisherName -eq 'Cognosys' |
+    Where-Object PublisherName -eq 'OpenLogic' |
     Get-AzVMImageOffer |
-    Where-Object Offer -match '^centos-.*-free$' |
+    Where-Object Offer -eq CentOS |
     Get-AzVMImageSku |
     Get-AzVMImage |
     Group-Object -Property Skus, Offer |

@@ -735,7 +735,7 @@
                 storageProfile  = @{
                     osDisk         = @{
                         createOption = "FromImage"
-                        osType       = "Windows"
+                        osType       = $Machine.OperatingSystemType.ToString()
                         caching      = "ReadWrite"
                         managedDisk  = @{
                             storageAccountType = if ($Machine.AzureProperties.ContainsKey('StorageSku') -and $Machine.AzureProperties['StorageSku'] -notmatch 'ultra')
@@ -763,18 +763,7 @@
                     adminPassword            = $machine.GetLocalCredential($true).GetNetworkCredential().Password
                     computerName             = $machine.Name
                     allowExtensionOperations = $true
-                    adminUsername            = ($machine.GetLocalCredential($true).UserName -split '\\')[-1]
-                    windowsConfiguration     = @{
-                        enableAutomaticUpdates = $true
-                        provisionVMAgent       = $true
-                        winRM                  = @{
-                            listeners = @(
-                                @{
-                                    protocol = "Http"
-                                }
-                            )
-                        }
-                    }
+                    adminUsername            = if ($machine.OperatingSystemType -eq 'Linux') { 'automatedlab' } else { ($machine.GetLocalCredential($true).UserName -split '\\')[-1] }
                 }
                 hardwareProfile = @{
                     vmSize = $vmSize.Name
@@ -784,12 +773,143 @@
             apiVersion = $apiVersions['VmApi']
             location   = "[resourceGroup().location]"
         }
+
+        if ($machine.OperatingSystemType -eq 'Windows')
+        {
+            $machTemplate.properties.osProfile.windowsConfiguration = @{
+                enableAutomaticUpdates = $true
+                provisionVMAgent       = $true
+                winRM                  = @{
+                    listeners = @(
+                        @{
+                            protocol = "Http"
+                        }
+                    )
+                }
+            }
+        }
+
+        if ($machine.OperatingSystemType -eq 'Linux')
+        {
+            if ($machine.LinuxType -eq 'Ubuntu')
+            {
+                $release = '{0:d2}.{1:d2}' -f $machine.OperatingSystem.Version.Major, $machine.OperatingSystem.Version.Minor
+                $repo = @'
+apt:
+  primary:
+  - arches: [amd64]
+    uri: http://us.archive.ubuntu.com/ubuntu
+  security:
+  - arches: [amd64]
+    uri: http://us.archive.ubuntu.com/ubuntu
+  sources_list: |
+    deb [arch=amd64] $PRIMARY $RELEASE main universe restricted multiverse
+    deb [arch=amd64] $PRIMARY $RELEASE-updates main universe restricted multiverse
+    deb [arch=amd64] $SECURITY $RELEASE-security main universe restricted multiverse
+    deb [arch=amd64] $PRIMARY $RELEASE-backports main universe restricted multiverse
+  sources:
+  microsoft-powershell.list:
+      source: 'deb [arch=amd64,armhf,arm64 signed-by=BC528686B50D79E339D3721CEB3E94ADBE1229CF] https://packages.microsoft.com/ubuntu/REPLACERELEASE/prod $RELEASE main'
+      keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF # https://packages.microsoft.com/keys/microsoft.asc
+'@
+            }
+            elseif ($machine.LinuxType -eq 'RedHat')
+            {
+                $release = $machine.OperatingSystem.Version.Major
+                $repo = @'
+yum_repos:
+microsoft-powershell:
+    name: PowerShell
+    baseurl: https://packages.microsoft.com/config/rhel/REPLACERELEASE/packages-microsoft-prod.rpm
+    skip_if_unavailable: true
+    gpgcheck: true
+    gpgkey: https://packages.microsoft.com/keys/microsoft.asc
+    enabled_metadata: 1
+'@
+            }
+            else
+            {
+                Write-ScreenInfo -Type Warning -Message "$($Machine.LinuxType) is not covered by our cloudinit script. Please open an issue at https://github.com/automatedlab/automatedlab/issues"
+            }
+
+            $repo = $repo -replace 'REPLACERELEASE', $release
+
+            # Use specific, slightly shorter cloud-init
+            $cloudInitContent = @"
+version: v1
+storage:
+  layout:
+    name: lvm
+@REPO@
+packages:
+  - oddjob
+  - oddjob-mkhomedir
+  - sssd
+  - adcli
+  - krb5-workstation
+  - realmd
+  - samba-common
+  - samba-common-tools
+  - authselect-compat
+  - sshd
+  - powershell
+  - openssl
+  - omi
+  - omi-psrp-server
+identity:
+  username: {}
+  hostname: {}
+  password: {}
+late-commands:
+  - 'mkdir -p /automatedlab/.ssh'
+  - 'mkdir -p /home/$($Machine.InstallationUser.UserName)/.ssh'
+  - 'echo "$($Machine.SshPublicKey -replace "\s*$")" > /automatedlab/.ssh/authorized_keys'
+  - 'echo "$($Machine.SshPublicKey -replace "\s*$")" > /home/$($Machine.InstallationUser.UserName)/.ssh/authorized_keys'
+  - 'chown -R automatedlab:automatedlab /automatedlab/.ssh'
+  - 'chown -R $($Machine.InstallationUser.UserName):$($Machine.InstallationUser.UserName) /home/$($Machine.InstallationUser.UserName)/.ssh'
+  - 'chmod 700 /automatedlab/.ssh && chmod 600 /automatedlab/.ssh/authorized_keys'
+  - "sed -i 's|[#]*GSSAPIAuthentication yes|GSSAPIAuthentication yes|g' /etc/ssh/sshd_config"
+  - 'chmod 700 /home/$($Machine.InstallationUser.UserName)/.ssh && chmod 600 /home/$($Machine.InstallationUser.UserName)/.ssh/authorized_keys'
+  - "sed -i 's|[#]*PasswordAuthentication yes|PasswordAuthentication no|g' /etc/ssh/sshd_config"
+  - "sed -i 's|[#]*PubkeyAuthentication yes|PubkeyAuthentication yes|g' /etc/ssh/sshd_config"
+  - 'restorecon -R /$($Machine.InstallationUser.UserName)/.ssh/'
+  - 'restorecon -R /automatedlab/.ssh/'
+  - "sed -i '/^%wheel.*/a %$($Machine.DomainName.ToUpper())\\\\domain\\ admins ALL=(ALL) NOPASSWD: ALL' /etc/sudoers"
+  - 'echo "Subsystem powershell /usr/bin/pwsh -sshs -NoLogo" >> /etc/ssh/sshd_config'
+"@
+            if ($Machine.DomainName -and -not [string]::IsNullOrEmpty($Machine.SshPublicKey))
+            {
+                $cloudinitcontent += "`r`n  - 'restorecon -R /$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/'"
+                $cloudinitcontent += "`r`n  - 'echo `"$($Machine.SshPublicKey -replace "\s*$")`" > /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/authorized_keys'"
+                $cloudinitcontent += "`r`n  - 'chmod 700 /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh && chmod 600 /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/authorized_keys'"
+                $cloudinitcontent += "`r`n  - 'chown -R $($Machine.InstallationUser.UserName)@$($Machine.DomainName):$($Machine.InstallationUser.UserName)@$($Machine.DomainName) /home/$($Machine.InstallationUser.UserName)@$($Machine.DomainName)/.ssh'"
+                $cloudinitcontent += "`r`n  - 'mkdir -p /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh'"
+            }
+            $cloudinitcontent = $cloudinitcontent -replace '@REPO@', $repo
+            Import-UnattendedContent -Content $cloudinitcontent -IsCloudInit
+            Set-UnattendedComputerName -ComputerName $Machine.Name -IsCloudInit
+            Set-UnattendedAdministratorName -Name $Machine.InstallationUser.UserName -IsCloudInit
+            Set-UnattendedAdministratorPassword -Password $Machine.InstallationUser.Password -IsCloudInit
+            Set-UnattendedUserLocale -UserLocale $Machine.UserLocale -IsCloudInit
+
+            if ($Machine.TimeZone)
+            {
+                Set-UnattendedTimeZone -TimeZone $Machine.TimeZone -IsCloudInit
+            }
+            else
+            {
+                Set-UnattendedTimeZone -TimeZone ([System.TimeZoneInfo]::Local.Id) -IsCloudInit
+            }
+
+            $cloudinit = Get-UnattendedContent
+            $machTemplate.properties.osprofile.customData = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($cloudinit))
+        }
         
         if ($machine.AzureProperties['EnableSecureBoot'] -and -not $lab.AzureSettings.IsAzureStack) # Available only in public regions
         {            
             $machTemplate.properties.securityProfile = @{
-                securityType     = 'TrustedLaunch'
-                uefiSettings     = @{
+                securityType = 'TrustedLaunch'
+                uefiSettings = @{
                     secureBootEnabled = $true
                     vTpmEnabled       = $Machine.AzureProperties['EnableTpm'] -match '1|true|yes'
                 }
@@ -1091,7 +1211,7 @@ function Get-LWAzureSku
         }
 
         $vmImage = $lab.AzureSettings.VmImages |
-        Where-Object Skus -eq $vmImageName  |
+        Where-Object {"$($_.Skus)_$($_.PublisherName)" -eq $vmImageName}  |
         Select-Object -First 1
 
         $offerName = $vmImageName = ($vmImage).Offer
@@ -1616,7 +1736,7 @@ Subsystem powershell c:/progra~1/powershell/7/pwsh.exe -sshs -NoLogo
         Enable-LWAzureAutoShutdown -ComputerName (Get-LabVm | Where-Object Name -notin $machineSpecific.Name) -Time $time -TimeZone $tz.Id -Wait
     }
 
-    $machineSpecific = Get-LabVm -SkipConnectionInfo | Where-Object {
+    $machineSpecific = Get-LabVm -SkipConnectionInfo -IncludeLinux | Where-Object {
         $_.AzureProperties.ContainsKey('AutoShutdownTime')
     }
 
@@ -1630,7 +1750,7 @@ Subsystem powershell c:/progra~1/powershell/7/pwsh.exe -sshs -NoLogo
 
     Write-ScreenInfo -Message 'Configuring localization and additional disks' -TaskStart -NoNewLine
     if (-not $lab.AzureSettings.IsAzureStack) { $labsourcesStorage = Get-LabAzureLabSourcesStorage }
-    $jobs = foreach ($m in $Machine)
+    $jobs = foreach ($m in ($Machine | Where-Object OperatingSystemType -eq 'Windows'))
     {
         [string[]]$DnsServers = ($m.NetworkAdapters | Where-Object { $_.VirtualSwitch.Name -eq $Lab.Name }).Ipv4DnsServers.AddressAsString
         $azVmDisks = (Get-AzVm -Name $m.ResourceName -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName).StorageProfile.DataDisks
@@ -1748,8 +1868,17 @@ Subsystem powershell c:/progra~1/powershell/7/pwsh.exe -sshs -NoLogo
         }
     }
     Install-LabSshKnownHost
-    Copy-LabFileItem -Path (Get-ChildItem -Path "$((Get-Module -Name AutomatedLab)[0].ModuleBase)\Tools\HyperV\*") -DestinationFolderPath /AL -ComputerName $Machine -UseAzureLabSourcesOnAzureVm $false
-    Send-ModuleToPSSession -Module (Get-Module -ListAvailable -Name AutomatedLab.Common | Select-Object -First 1) -Session (New-LabPSSession $Machine) -IncludeDependencies -Force
+    Copy-LabFileItem -Path (Get-ChildItem -Path "$((Get-Module -Name AutomatedLab)[0].ModuleBase)\Tools\HyperV\*") -DestinationFolderPath /AL -ComputerName ($Machine | Where OperatingSystemType -eq 'Windows') -UseAzureLabSourcesOnAzureVm $false
+    $sessions = if ($PSVersionTable.PSVersion -ge 7)
+    {
+        New-LabPSSession $Machine
+    }
+    else
+    {
+        Write-ScreenInfo -Type Warning -Message "Skipping copy of AutomatedLab.Common to Linux VMs as Windows PowerShell is used on the host."
+        New-LabPSSession ($Machine | Where OperatingSystemType -eq 'Windows')
+    }
+    Send-ModuleToPSSession -Module (Get-Module -ListAvailable -Name AutomatedLab.Common | Select-Object -First 1) -Session $sessions -IncludeDependencies -Force
     Write-ScreenInfo -Message 'Finished' -TaskEnd
 
     Write-ScreenInfo -Message 'Stopping all new machines except domain controllers'

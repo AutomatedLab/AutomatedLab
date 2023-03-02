@@ -102,14 +102,15 @@ function New-LabVM
 
     Write-ScreenInfo -Message 'Done' -TaskEnd
 
-    $azureVms = Get-LabVM -ComputerName $machines | Where-Object { $_.HostType -eq 'Azure' -and -not $_.SkipDeployment }
+    $azureVms = Get-LabVM -ComputerName $machines -IncludeLinux | Where-Object { $_.HostType -eq 'Azure' -and -not $_.SkipDeployment }
+    $winAzVm, $linuxAzVm = $azureVms.Where({$_.OperatingSystemType -eq 'Windows'})
 
     if ($azureVMs)
     {
         Write-ScreenInfo -Message 'Initializing machines' -TaskStart
 
         Write-PSFMessage -Message 'Calling Enable-PSRemoting on machines'
-        Enable-LWAzureWinRm -Machine $azureVMs -Wait
+        Enable-LWAzureWinRm -Machine $winAzVm -Wait
 
         Write-PSFMessage -Message 'Executing initialization script on machines'
         Initialize-LWAzureVM -Machine $azureVMs
@@ -1440,6 +1441,30 @@ function Join-LabVMDomain
 
             [bool]$AlwaysReboot = $false
         )
+
+        if ($IsLinux)
+        {
+            if (-not (Get-Command -Name realm -ErrorAction SilentlyContinue) -and (Get-Command -Name apt -ErrorAction SilentlyContinue))
+            {
+                apt install -y oddjob oddjob-mkhomedir sssd adcli krb5-workstation realmd samba-common samba-common-tools authselect-compat
+            }
+            elseif (-not (Get-Command -Name realm -ErrorAction SilentlyContinue) -and (Get-Command -Name dnf -ErrorAction SilentlyContinue))
+            {
+                dnf install -y oddjob oddjob-mkhomedir sssd adcli krb5-workstation realmd samba-common samba-common-tools authselect-compat
+            }
+            elseif (-not (Get-Command -Name realm -ErrorAction SilentlyContinue) -and (Get-Command -Name yum -ErrorAction SilentlyContinue))
+            {
+                yum install -y oddjob oddjob-mkhomedir sssd adcli krb5-workstation realmd samba-common samba-common-tools authselect-compat
+            }
+            else
+            {
+                # realm package missing, no known package manager
+                return $false
+            }
+            
+            $null = echo $Password | realm join -U $UserName $DomainName
+            return $true
+        }
 
         $Credential = New-Object -TypeName PSCredential -ArgumentList $UserName, ($Password | ConvertTo-SecureString -AsPlainText -Force)
 
