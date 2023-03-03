@@ -1339,8 +1339,8 @@ function Install-LabSshKnownHost
         if ((Get-LabVmStatus -ComputerName $machine) -ne 'Started' ) {continue}
         if ($lab.DefaultVirtualizationEngine -eq 'Azure')
         {
-            $keyScanHost = ssh-keyscan -p $machine.LoadBalancerSshPort $machine.AzureConnectionInfo.DnsName 2>$null | ConvertFrom-String -Delimiter ' ' -PropertyNames ComputerName,Cipher,Fingerprint -ErrorAction SilentlyContinue
-            $keyScanIp = ssh-keyscan -p $machine.LoadBalancerSshPort $machine.AzureConnectionInfo.VIP 2>$null | ConvertFrom-String -Delimiter ' ' -PropertyNames ComputerName,Cipher,Fingerprint -ErrorAction SilentlyContinue
+            $keyScanHosts = ssh-keyscan -p $machine.LoadBalancerSshPort $machine.AzureConnectionInfo.DnsName 2>$null | ConvertFrom-String -Delimiter ' ' -PropertyNames ComputerName,Cipher,Fingerprint -ErrorAction SilentlyContinue
+            $keyScanIps = ssh-keyscan -p $machine.LoadBalancerSshPort $machine.AzureConnectionInfo.VIP 2>$null | ConvertFrom-String -Delimiter ' ' -PropertyNames ComputerName,Cipher,Fingerprint -ErrorAction SilentlyContinue
 
             foreach ($keyScanHost in $keyScanHosts)
             {
