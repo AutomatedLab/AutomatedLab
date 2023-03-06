@@ -81,7 +81,7 @@
     
     #region Network Security Group
     Write-ScreenInfo -Type Verbose -Message 'Adding network security group to template, enabling traffic to ports 3389,5985,5986,22 for VMs behind load balancer'
-    [string[]]$allowedIps = (Get-LabVm).AzureProperties["LoadBalancerAllowedIp"] | Foreach-Object { $_ -split '\s*[,;]\s*' } | Where-Object { -not [string]::IsNullOrWhitespace($_) }
+    [string[]]$allowedIps = (Get-LabVm -IncludeLinux).AzureProperties["LoadBalancerAllowedIp"] | Foreach-Object { $_ -split '\s*[,;]\s*' } | Where-Object { -not [string]::IsNullOrWhitespace($_) }
     $nsg = @{
         type       = "Microsoft.Network/networkSecurityGroups"
         apiVersion = $apiVersions['NsgApi']
@@ -793,118 +793,19 @@
         {
             if ($machine.SshPublicKey)
             {
-                $machTemplate.properties.osProfile.linuxOperatingSystemProfile = @{
-                    username   = 'automatedlab'
-                    sshProfile = @{
-                        publicKeys = @{
-                            certificateData = $machine.SshPublicKey
-                        }
+                $machTemplate.properties.osProfile.linuxConfiguration = @{
+                    disablePasswordAuthentication = $true
+                    enableVMAgentPlatformUpdates  = $true
+                    provisionVMAgent              = $true
+                    ssh                           = @{
+                        publicKeys = [hashtable[]]@(@{
+                                keyData = $machine.SshPublicKey
+                                path    = "/home/automatedlab/.ssh/authorized_keys"
+                            }
+                        )
                     }
                 }
             }
-
-            if ($machine.LinuxType -eq 'Ubuntu')
-            {
-                $release = '{0:d2}.{1:d2}' -f $machine.OperatingSystem.Version.Major, $machine.OperatingSystem.Version.Minor
-                $repo = @'
-apt:
-  primary:
-  - arches: [amd64]
-    uri: http://us.archive.ubuntu.com/ubuntu
-  security:
-  - arches: [amd64]
-    uri: http://us.archive.ubuntu.com/ubuntu
-  sources_list: |
-    deb [arch=amd64] $PRIMARY $RELEASE main universe restricted multiverse
-    deb [arch=amd64] $PRIMARY $RELEASE-updates main universe restricted multiverse
-    deb [arch=amd64] $SECURITY $RELEASE-security main universe restricted multiverse
-    deb [arch=amd64] $PRIMARY $RELEASE-backports main universe restricted multiverse
-  sources:
-  microsoft-powershell.list:
-      source: 'deb [arch=amd64,armhf,arm64 signed-by=BC528686B50D79E339D3721CEB3E94ADBE1229CF] https://packages.microsoft.com/ubuntu/REPLACERELEASE/prod $RELEASE main'
-      keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF # https://packages.microsoft.com/keys/microsoft.asc
-'@
-            }
-            elseif ($machine.LinuxType -eq 'RedHat')
-            {
-                $release = $machine.OperatingSystem.Version.Major
-                $repo = @'
-yum_repos:
-microsoft-powershell:
-    name: PowerShell
-    baseurl: https://packages.microsoft.com/config/rhel/REPLACERELEASE/packages-microsoft-prod.rpm
-    skip_if_unavailable: true
-    gpgcheck: true
-    gpgkey: https://packages.microsoft.com/keys/microsoft.asc
-    enabled_metadata: 1
-'@
-            }
-            else
-            {
-                Write-ScreenInfo -Type Warning -Message "$($Machine.LinuxType) is not covered by our cloudinit script. Please open an issue at https://github.com/automatedlab/automatedlab/issues"
-            }
-
-            $repo = $repo -replace 'REPLACERELEASE', $release
-
-            # Use specific, slightly shorter cloud-init
-            $cloudInitContent = @"
-version: v1
-storage:
-  layout:
-    name: lvm
-@REPO@
-packages:
-  - oddjob
-  - oddjob-mkhomedir
-  - sssd
-  - adcli
-  - krb5-workstation
-  - realmd
-  - samba-common
-  - samba-common-tools
-  - authselect-compat
-  - sshd
-  - powershell
-  - openssl
-  - omi
-  - omi-psrp-server
-identity:
-  username: {}
-  hostname: {}
-  password: {}
-late-commands:
-  - "sed -i 's|[#]*GSSAPIAuthentication yes|GSSAPIAuthentication yes|g' /etc/ssh/sshd_config"
-  - "sed -i 's|[#]*PasswordAuthentication yes|PasswordAuthentication no|g' /etc/ssh/sshd_config"
-  - "sed -i 's|[#]*PubkeyAuthentication yes|PubkeyAuthentication yes|g' /etc/ssh/sshd_config"
-  - 'echo "Subsystem powershell /usr/bin/pwsh -sshs -NoLogo" >> /etc/ssh/sshd_config'
-"@
-            if ($Machine.DomainName -and -not [string]::IsNullOrEmpty($Machine.SshPublicKey))
-            {
-                $cloudinitcontent += "`r`n  - `"sed -i '/^%wheel.*/a %$($Machine.DomainName.ToUpper())\\\\domain\\ admins ALL=(ALL) NOPASSWD: ALL' /etc/sudoers`""
-                $cloudinitcontent += "`r`n  - 'mkdir -p /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh'"
-                $cloudinitcontent += "`r`n  - 'echo `"$($Machine.SshPublicKey -replace "\s*$")`" > /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/authorized_keys'"
-                $cloudinitcontent += "`r`n  - 'chmod 700 /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh && chmod 600 /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/authorized_keys'"
-                $cloudinitcontent += "`r`n  - 'chown -R $($Machine.InstallationUser.UserName)@$($Machine.DomainName):$($Machine.InstallationUser.UserName)@$($Machine.DomainName) /home/$($Machine.InstallationUser.UserName)@$($Machine.DomainName)/.ssh'"
-                $cloudinitcontent += "`r`n  - 'restorecon -R /$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/'"
-            }
-            $cloudinitcontent = $cloudinitcontent -replace '@REPO@', $repo
-            Import-UnattendedContent -Content $cloudinitcontent -IsCloudInit
-            Set-UnattendedComputerName -ComputerName $Machine.Name -IsCloudInit
-            Set-UnattendedAdministratorName -Name $Machine.InstallationUser.UserName -IsCloudInit
-            Set-UnattendedAdministratorPassword -Password $Machine.InstallationUser.Password -IsCloudInit
-            Set-UnattendedUserLocale -UserLocale $Machine.UserLocale -IsCloudInit
-
-            if ($Machine.TimeZone)
-            {
-                Set-UnattendedTimeZone -TimeZone $Machine.TimeZone -IsCloudInit
-            }
-            else
-            {
-                Set-UnattendedTimeZone -TimeZone ([System.TimeZoneInfo]::Local.Id) -IsCloudInit
-            }
-
-            $cloudinit = Get-UnattendedContent
-            $machTemplate.properties.osprofile.customData = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($cloudinit))
         }
         
         if ($machine.AzureProperties['EnableSecureBoot'] -and -not $lab.AzureSettings.IsAzureStack) # Available only in public regions
@@ -1725,6 +1626,40 @@ Subsystem powershell c:/progra~1/powershell/7/pwsh.exe -sshs -NoLogo
 
         $null = try { Stop-Transcript -ErrorAction Stop } catch { }
     }
+    
+    # bash for Linux to install PowerShell, configure SSH subsystem, PubKey/GSSAPI auth
+    $initScriptLinux = @'
+#!bin/bash
+sudo sed -i 's|[#]*GSSAPIAuthentication yes|GSSAPIAuthentication yes|g' /etc/ssh/sshd_config
+sudo sed -i 's|[#]*PasswordAuthentication yes|PasswordAuthentication no|g' /etc/ssh/sshd_config
+sudo sed -i 's|[#]*PubkeyAuthentication yes|PubkeyAuthentication yes|g' /etc/ssh/sshd_config
+echo "Subsystem powershell /usr/bin/pwsh -sshs -NoLogo" | sudo tee --append /etc/ssh/sshd_config
+
+IF [ -n "$(which apt)" ]; then
+    curl -sSL https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
+    curl -sSL https://packages.microsoft.com/keys/microsoft.asc | sudo tee /etc/apt/trusted.gpg.d/microsoft.asc
+    sudo apt update
+    sudo apt install -y wget apt-transport-https software-properties-common
+    wget -q "https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb"
+    sudo dpkg -i packages-microsoft-prod.deb
+    sudo apt update
+    sudo apt install -y powershell
+    sudo apt install -y openssl omi omi-psrp-server
+    sudo apt install -y oddjob oddjob-mkhomedir sssd adcli krb5-workstation realmd samba-common samba-common-tools authselect-compat sshd
+FI
+
+IF [ -n "$(which yum)" ]; then
+    sudo rpm -Uvh https://packages.microsoft.com/config/rhel/8/packages-microsoft-prod.rpm
+    sudo yum install -y https://github.com/PowerShell/PowerShell/releases/download/v7.3.2/powershell-7.3.2-1.rh.x86_64.rpm
+    sudo yum install -y openssl omi omi-psrp-server
+    sudo yum install -y oddjob oddjob-mkhomedir sssd adcli krb5-workstation realmd samba-common samba-common-tools authselect-compat sshd
+ELIF [ -n "$(which dnf)" ]; then
+    sudo rpm -Uvh https://packages.microsoft.com/config/rhel/8/packages-microsoft-prod.rpm
+    sudo dnf install -y https://github.com/PowerShell/PowerShell/releases/download/v7.3.2/powershell-7.3.2-1.rh.x86_64.rpm
+    sudo dnf install -y openssl omi omi-psrp-server
+    sudo dnf install -y oddjob oddjob-mkhomedir sssd adcli krb5-workstation realmd samba-common samba-common-tools authselect-compat sshd
+FI
+'@
 
     $initScriptFile = New-Item -ItemType File -Path (Join-Path -Path ([IO.Path]::GetTempPath()) -ChildPath "$($Lab.Name)vminit.ps1") -Force
     $initScript.ToString() | Set-Content -Path $initScriptFile -Force
@@ -1735,7 +1670,7 @@ Subsystem powershell c:/progra~1/powershell/7/pwsh.exe -sshs -NoLogo
         $time = $lab.AzureSettings.AutoShutdownTime
         $tz = if (-not $lab.AzureSettings.AutoShutdownTimeZone) { Get-TimeZone } else { Get-TimeZone -Id $lab.AzureSettings.AutoShutdownTimeZone }
         Write-ScreenInfo -Message "Configuring auto-shutdown of all VMs daily at $($time) in timezone $($tz.Id)"
-        Enable-LWAzureAutoShutdown -ComputerName (Get-LabVm | Where-Object Name -notin $machineSpecific.Name) -Time $time -TimeZone $tz.Id -Wait
+        Enable-LWAzureAutoShutdown -ComputerName (Get-LabVm -IncludeLinux | Where-Object Name -notin $machineSpecific.Name) -Time $time -TimeZone $tz.Id -Wait
     }
 
     $machineSpecific = Get-LabVm -SkipConnectionInfo -IncludeLinux | Where-Object {
@@ -1752,7 +1687,8 @@ Subsystem powershell c:/progra~1/powershell/7/pwsh.exe -sshs -NoLogo
 
     Write-ScreenInfo -Message 'Configuring localization and additional disks' -TaskStart -NoNewLine
     if (-not $lab.AzureSettings.IsAzureStack) { $labsourcesStorage = Get-LabAzureLabSourcesStorage }
-    $jobs = foreach ($m in ($Machine | Where-Object OperatingSystemType -eq 'Windows'))
+    $jobs = [System.Collections.ArrayList]::new()
+    foreach ($m in ($Machine | Where-Object OperatingSystemType -eq 'Windows'))
     {
         [string[]]$DnsServers = ($m.NetworkAdapters | Where-Object { $_.VirtualSwitch.Name -eq $Lab.Name }).Ipv4DnsServers.AddressAsString
         $azVmDisks = (Get-AzVm -Name $m.ResourceName -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName).StorageProfile.DataDisks
@@ -1838,27 +1774,55 @@ Subsystem powershell c:/progra~1/powershell/7/pwsh.exe -sshs -NoLogo
         }
         else
         {
-            Invoke-AzVMRunCommand -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName -VMName $m.ResourceName -ScriptPath $initScriptFile -Parameter $scriptParam -CommandId 'RunPowerShellScript' -ErrorAction Stop -AsJob
+            $null = $jobs.Add((Invoke-AzVMRunCommand -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName -VMName $m.ResourceName -ScriptPath $initScriptFile -Parameter $scriptParam -CommandId 'RunPowerShellScript' -ErrorAction Stop -AsJob))
         }
     }
 
-    $initScriptFile | Remove-Item -ErrorAction SilentlyContinue
+    $linuxInitFiles = foreach ($m in ($Machine | Where-Object OperatingSystemType -eq 'Linux'))
+    {
+        if ($Lab.AzureSettings.IsAzureStack)
+        {
+            Write-ScreenInfo -Type Warning -Message 'Linux VMs not yet implemented on Azure Stack, sorry.'
+            continue
+        }
+        if (-not [string]::IsNullOrWhiteSpace($m.DomainName))
+        {
+            $domain = (Get-LabDefinition).Domains.Where({$_.Name -eq $m.DomainName})    
+            $initScriptLinux += @"
+
+sed -i "/^%wheel.*/a %$($m.DomainName.ToUpper())\\\\domain\\ admins ALL=(ALL) NOPASSWD: ALL" /etc/sudoers
+mkdir -p "/home/$($domain.Administrator.UserName)@$($m.DomainName)/.ssh"
+echo "$($m.SshPublicKey -replace '\s*$')" >> /home/$($domain.Administrator.UserName)@$($m.DomainName)/.ssh/authorized_keys
+chmod 700 /home/$($domain.Administrator.UserName)@$($m.DomainName)/.ssh && chmod 600 /home/$($domain.Administrator.UserName)@$($m.DomainName)/.ssh/authorized_keys
+chown -R $($m.InstallationUser.UserName)@$($m.DomainName):$($m.InstallationUser.UserName)@$($m.DomainName) /home/$($m.InstallationUser.UserName)@$($m.DomainName)
+restorecon -R /$($domain.Administrator.UserName)@$($m.DomainName)/.ssh/
+"@
+        }
+        $initScriptFileLinux = New-Item -ItemType File -Path (Join-Path -Path ([IO.Path]::GetTempPath()) -ChildPath "$($Lab.Name)$($m.Name)vminitlinux.sh") -Force
+        $initScriptLinux | Set-Content -Path $initScriptFile -Force
+        $initScriptLinux
+
+        $null = $jobs.Add((Invoke-AzVMRunCommand -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName -VMName $m.ResourceName -ScriptPath $initScriptLinux -CommandId 'RunShellScript' -ErrorAction Stop -AsJob))
+    }
 
     if ($jobs)
     {
         Wait-LWLabJob -Job $jobs -ProgressIndicator 5 -Timeout 30 -NoDisplay
     }
 
+    $initScriptFile | Remove-Item -ErrorAction SilentlyContinue
+    $linuxInitFiles | Remove-Item -ErrorAction SilentlyContinue
+
     # Wait for VM extensions to be "done"
     if ($lab.AzureSettings.IsAzureStack)
     {
-        $extensionStatuus = Get-LabVm | Foreach-Object { Get-AzVMCustomScriptExtension -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName -VMName $_.ResourceName -Name initcustomizations -ErrorAction SilentlyContinue }
+        $extensionStatuus = Get-LabVm -IncludeLinux | Foreach-Object { Get-AzVMCustomScriptExtension -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName -VMName $_.ResourceName -Name initcustomizations -ErrorAction SilentlyContinue }
         $start = Get-Date
         $timeout = New-TimeSpan -Minutes 5
         while (($extensionStatuus.ProvisioningState -contains 'Updating' -or $extensionStatuus.ProvisioningState -contains 'Creating') -and ((Get-Date) - $start) -lt $timeout)
         {
             Start-Sleep -Seconds 5
-            $extensionStatuus = Get-LabVm | Foreach-Object { Get-AzVMCustomScriptExtension -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName -VMName $_.ResourceName -Name initcustomizations -ErrorAction SilentlyContinue }
+            $extensionStatuus = Get-LabVm -IncludeLinux | Foreach-Object { Get-AzVMCustomScriptExtension -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName -VMName $_.ResourceName -Name initcustomizations -ErrorAction SilentlyContinue }
         }
 
         foreach ($network in $Lab.VirtualNetworks)
@@ -1974,7 +1938,7 @@ function Start-LWAzureVM
     Write-LogFunctionEntry
 
     $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
-    $machines = Get-LabVm -ComputerName $ComputerName
+    $machines = Get-LabVm -ComputerName $ComputerName -IncludeLinux
 
     $azureVms = Get-LWAzureVm -ComputerName $ComputerName
 
@@ -2239,7 +2203,7 @@ function Get-LWAzureVMStatus
     $result = @{ }
     $azureVms = Get-LWAzureVm @PSBoundParameters
 
-    $resourceGroups = (Get-LabVM).AzureConnectionInfo.ResourceGroupName | Select-Object -Unique
+    $resourceGroups = (Get-LabVM -IncludeLinux).AzureConnectionInfo.ResourceGroupName | Select-Object -Unique
     $azureVms = $azureVms | Where-Object { $_.Name -in $ComputerName -and $_.ResourceGroupName -in $resourceGroups }
 
     $vmTable = @{ }
@@ -2361,11 +2325,11 @@ function Enable-LWAzureVMRemoting
 
     if ($ComputerName)
     {
-        $machines = Get-LabVM -All | Where-Object Name -in $ComputerName
+        $machines = Get-LabVM -All -IncludeLinux | Where-Object Name -in $ComputerName
     }
     else
     {
-        $machines = Get-LabVM -All
+        $machines = Get-LabVM -All -IncludeLinux
     }
 
     $script = {
@@ -2712,7 +2676,7 @@ function Checkpoint-LWAzureVM
 
     $lab = Get-Lab
     $resourceGroupName = $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName
-    $runningMachines = Get-LabVM -IsRunning -ComputerName $ComputerName
+    $runningMachines = Get-LabVM -IsRunning -ComputerName $ComputerName -IncludeLinux
     if ($runningMachines)
     {
         Stop-LWAzureVM -ComputerName $runningMachines -StayProvisioned $true
@@ -2783,7 +2747,7 @@ function Restore-LWAzureVmSnapshot
     $lab = Get-Lab
     $resourceGroupName = $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName
 
-    $runningMachines = Get-LabVM -IsRunning -ComputerName $ComputerName
+    $runningMachines = Get-LabVM -IsRunning -ComputerName $ComputerName -IncludeLinux
     if ($runningMachines)
     {
         Stop-LWAzureVM -ComputerName $runningMachines -StayProvisioned $true
