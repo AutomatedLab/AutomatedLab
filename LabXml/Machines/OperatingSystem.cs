@@ -44,7 +44,6 @@ namespace AutomatedLab
             {"7.5_openlogic", "CentOS 7.5"},
             {"7.6_openlogic", "CentOS 7.6"},
             {"7.7_openlogic", "CentOS 7.7"},
-            {"7_4_openlogic", "CentOS 7.4"},
             {"7_8_openlogic", "CentOS 7.8"},
             {"7_9_openlogic", "CentOS 7.9"},
             {"8.0_openlogic", "CentOS 8.0"},

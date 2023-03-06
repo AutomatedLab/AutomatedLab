@@ -791,6 +791,18 @@
 
         if ($machine.OperatingSystemType -eq 'Linux')
         {
+            if ($machine.SshPublicKey)
+            {
+                $machTemplate.properties.osProfile.linuxOperatingSystemProfile = @{
+                    username   = 'automatedlab'
+                    sshProfile = @{
+                        publicKeys = @{
+                            certificateData = $machine.SshPublicKey
+                        }
+                    }
+                }
+            }
+
             if ($machine.LinuxType -eq 'Ubuntu')
             {
                 $release = '{0:d2}.{1:d2}' -f $machine.OperatingSystem.Version.Major, $machine.OperatingSystem.Version.Minor
@@ -861,29 +873,19 @@ identity:
   hostname: {}
   password: {}
 late-commands:
-  - 'mkdir -p /automatedlab/.ssh'
-  - 'mkdir -p /home/$($Machine.InstallationUser.UserName)/.ssh'
-  - 'echo "$($Machine.SshPublicKey -replace "\s*$")" > /automatedlab/.ssh/authorized_keys'
-  - 'echo "$($Machine.SshPublicKey -replace "\s*$")" > /home/$($Machine.InstallationUser.UserName)/.ssh/authorized_keys'
-  - 'chown -R automatedlab:automatedlab /automatedlab/.ssh'
-  - 'chown -R $($Machine.InstallationUser.UserName):$($Machine.InstallationUser.UserName) /home/$($Machine.InstallationUser.UserName)/.ssh'
-  - 'chmod 700 /automatedlab/.ssh && chmod 600 /automatedlab/.ssh/authorized_keys'
   - "sed -i 's|[#]*GSSAPIAuthentication yes|GSSAPIAuthentication yes|g' /etc/ssh/sshd_config"
-  - 'chmod 700 /home/$($Machine.InstallationUser.UserName)/.ssh && chmod 600 /home/$($Machine.InstallationUser.UserName)/.ssh/authorized_keys'
   - "sed -i 's|[#]*PasswordAuthentication yes|PasswordAuthentication no|g' /etc/ssh/sshd_config"
   - "sed -i 's|[#]*PubkeyAuthentication yes|PubkeyAuthentication yes|g' /etc/ssh/sshd_config"
-  - 'restorecon -R /$($Machine.InstallationUser.UserName)/.ssh/'
-  - 'restorecon -R /automatedlab/.ssh/'
-  - "sed -i '/^%wheel.*/a %$($Machine.DomainName.ToUpper())\\\\domain\\ admins ALL=(ALL) NOPASSWD: ALL' /etc/sudoers"
   - 'echo "Subsystem powershell /usr/bin/pwsh -sshs -NoLogo" >> /etc/ssh/sshd_config'
 "@
             if ($Machine.DomainName -and -not [string]::IsNullOrEmpty($Machine.SshPublicKey))
             {
-                $cloudinitcontent += "`r`n  - 'restorecon -R /$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/'"
+                $cloudinitcontent += "`r`n  - `"sed -i '/^%wheel.*/a %$($Machine.DomainName.ToUpper())\\\\domain\\ admins ALL=(ALL) NOPASSWD: ALL' /etc/sudoers`""
+                $cloudinitcontent += "`r`n  - 'mkdir -p /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh'"
                 $cloudinitcontent += "`r`n  - 'echo `"$($Machine.SshPublicKey -replace "\s*$")`" > /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/authorized_keys'"
                 $cloudinitcontent += "`r`n  - 'chmod 700 /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh && chmod 600 /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/authorized_keys'"
                 $cloudinitcontent += "`r`n  - 'chown -R $($Machine.InstallationUser.UserName)@$($Machine.DomainName):$($Machine.InstallationUser.UserName)@$($Machine.DomainName) /home/$($Machine.InstallationUser.UserName)@$($Machine.DomainName)/.ssh'"
-                $cloudinitcontent += "`r`n  - 'mkdir -p /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh'"
+                $cloudinitcontent += "`r`n  - 'restorecon -R /$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/'"
             }
             $cloudinitcontent = $cloudinitcontent -replace '@REPO@', $repo
             Import-UnattendedContent -Content $cloudinitcontent -IsCloudInit
@@ -1211,7 +1213,7 @@ function Get-LWAzureSku
         }
 
         $vmImage = $lab.AzureSettings.VmImages |
-        Where-Object {"$($_.Skus)_$($_.PublisherName)" -eq $vmImageName}  |
+        Where-Object { "$($_.Skus)_$($_.PublisherName)" -eq $vmImageName }  |
         Select-Object -First 1
 
         $offerName = $vmImageName = ($vmImage).Offer
