@@ -1649,13 +1649,13 @@ IF [ -n "$(which apt)" ]; then
 FI
 
 IF [ -n "$(which yum)" ]; then
-    sudo rpm -Uvh https://packages.microsoft.com/config/rhel/8/packages-microsoft-prod.rpm
-    sudo yum install -y https://github.com/PowerShell/PowerShell/releases/download/v7.3.2/powershell-7.3.2-1.rh.x86_64.rpm
+    sudo rpm -Uvh "https://packages.microsoft.com/config/rhel/$(sudo cat /etc/redhat-release | grep -oP "(\d)" | head -1)/packages-microsoft-prod.rpm"
+    sudo yum install -y powershell
     sudo yum install -y openssl omi omi-psrp-server
     sudo yum install -y oddjob oddjob-mkhomedir sssd adcli krb5-workstation realmd samba-common samba-common-tools authselect-compat sshd
 ELIF [ -n "$(which dnf)" ]; then
-    sudo rpm -Uvh https://packages.microsoft.com/config/rhel/8/packages-microsoft-prod.rpm
-    sudo dnf install -y https://github.com/PowerShell/PowerShell/releases/download/v7.3.2/powershell-7.3.2-1.rh.x86_64.rpm
+    sudo rpm -Uvh https://packages.microsoft.com/config/rhel/$(sudo cat /etc/redhat-release | grep -oP "(\d)" | head -1)/packages-microsoft-prod.rpm
+    sudo dnf install -y powershell
     sudo dnf install -y openssl omi omi-psrp-server
     sudo dnf install -y oddjob oddjob-mkhomedir sssd adcli krb5-workstation realmd samba-common samba-common-tools authselect-compat sshd
 FI
@@ -1800,7 +1800,7 @@ restorecon -R /$($domain.Administrator.UserName)@$($m.DomainName)/.ssh/
         }
         $initScriptFileLinux = New-Item -ItemType File -Path (Join-Path -Path ([IO.Path]::GetTempPath()) -ChildPath "$($Lab.Name)$($m.Name)vminitlinux.sh") -Force
         $initScriptLinux | Set-Content -Path $initScriptFile -Force
-        $initScriptLinux
+        $initScriptFile
 
         $null = $jobs.Add((Invoke-AzVMRunCommand -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName -VMName $m.ResourceName -ScriptPath $initScriptLinux -CommandId 'RunShellScript' -ErrorAction Stop -AsJob))
     }
@@ -1811,6 +1811,7 @@ restorecon -R /$($domain.Administrator.UserName)@$($m.DomainName)/.ssh/
     }
 
     $initScriptFile | Remove-Item -ErrorAction SilentlyContinue
+    $linuxInitFiles | Copy-Item -Destination $Lab.LabPath
     $linuxInitFiles | Remove-Item -ErrorAction SilentlyContinue
 
     # Wait for VM extensions to be "done"
