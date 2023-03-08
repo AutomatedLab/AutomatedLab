@@ -1439,30 +1439,44 @@ function Join-LabVMDomain
             [Parameter(Mandatory = $true)]
             [string]$Password,
 
-            [bool]$AlwaysReboot = $false
+            [bool]$AlwaysReboot = $false,
+
+            [string]$SshPublicKey
         )
 
         if ($IsLinux)
         {
             if (-not (Get-Command -Name realm -ErrorAction SilentlyContinue) -and (Get-Command -Name apt -ErrorAction SilentlyContinue))
             {
-                apt install -y oddjob oddjob-mkhomedir sssd adcli krb5-workstation realmd samba-common samba-common-tools authselect-compat
+                sudo apt install -y realmd libnss-sss libpam-sss sssd sssd-tools adcli samba-common-bin oddjob oddjob-mkhomedir packagekit *>$null
             }
             elseif (-not (Get-Command -Name realm -ErrorAction SilentlyContinue) -and (Get-Command -Name dnf -ErrorAction SilentlyContinue))
             {
-                dnf install -y oddjob oddjob-mkhomedir sssd adcli krb5-workstation realmd samba-common samba-common-tools authselect-compat
+                sudo dnf install -y oddjob oddjob-mkhomedir sssd adcli krb5-workstation realmd samba-common samba-common-tools authselect-compat *>$null
             }
             elseif (-not (Get-Command -Name realm -ErrorAction SilentlyContinue) -and (Get-Command -Name yum -ErrorAction SilentlyContinue))
             {
-                yum install -y oddjob oddjob-mkhomedir sssd adcli krb5-workstation realmd samba-common samba-common-tools authselect-compat
+                sudo yum install -y oddjob oddjob-mkhomedir sssd adcli krb5-workstation realmd samba-common samba-common-tools authselect-compat *>$null
             }
             else
             {
-                # realm package missing, no known package manager
+                # realm package missing or no known package manager
                 return $false
             }
             
             $null = echo $Password | realm join -U $UserName $DomainName
+            $null = sudo sed -i "/^%wheel.*/a %$($DomainName.ToUpper())\\\\domain\\ admins ALL=(ALL) NOPASSWD: ALL" /etc/sudoers
+            $null = sudo mkdir -p "/home/$($UserName)@$($DomainName)"
+            $null = sudo chown -R "$($UserName)@$($DomainName):$($UserName)@$($DomainName)" /home/$($UserName)@$($DomainName) 2>$null
+            if (-not [string]::IsNullOrWhiteSpace($SshPublicKey))
+            {
+                $null = sudo mkdir -p "/home/$($UserName)@$($DomainName)/.ssh"
+                $null = echo "$($SshPublicKey -replace '\s*$')" | sudo tee --append /home/$($UserName)@$($DomainName)/.ssh/authorized_keys
+                $null = sudo chmod 700 /home/$($UserName)@$($DomainName)/.ssh
+                $null = sudo chmod 600 /home/$($UserName)@$($DomainName)/.ssh/authorized_keys 2>$null                
+                $null = sudo restorecon -R /$($UserName)@$($DomainName)/.ssh 2>$null
+            }
+
             return $true
         }
 
@@ -1528,7 +1542,7 @@ function Join-LabVMDomain
             ActivityName = "DomainJoin_$m"
             ScriptBlock = (Get-Command Join-Computer).ScriptBlock
             UseLocalCredential = $true
-            ArgumentList = $domain, $cred.UserName, $cred.GetNetworkCredential().Password
+            ArgumentList = $domain, $cred.UserName, $cred.GetNetworkCredential().Password, $m.SshPublicKey
             AsJob = $true
             PassThru = $true
             NoDisplay = $true

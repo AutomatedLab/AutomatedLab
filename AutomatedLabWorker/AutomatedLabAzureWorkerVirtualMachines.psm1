@@ -1751,10 +1751,13 @@ sudo sed -i 's|[#]*GSSAPIAuthentication yes|GSSAPIAuthentication yes|g' /etc/ssh
 sudo sed -i 's|[#]*PasswordAuthentication yes|PasswordAuthentication no|g' /etc/ssh/sshd_config
 sudo sed -i 's|[#]*PubkeyAuthentication yes|PubkeyAuthentication yes|g' /etc/ssh/sshd_config
 if [ -n "$(sudo cat /etc/ssh/sshd_config | grep 'Subsystem powershell')" ]; then
+    echo "PowerShell subsystem configured"
+else
     echo "Subsystem powershell /usr/bin/pwsh -sshs -NoLogo -NoProfile" | sudo tee --append /etc/ssh/sshd_config
 fi
 sudo systemctl restart sshd
-sudo chmod 775 -R /usr/local/share/powershell
+sudo mkdir -p /usr/local/share/powershell 2>/dev/null
+sudo chmod 777 -R /usr/local/share/powershell
 
 if [ -n "$(which apt 2>/dev/null)" ]; then
     curl -sSL https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
@@ -1779,20 +1782,6 @@ elif [ -n "$(which dnf 2>/dev/null)" ]; then
     sudo dnf install -y oddjob oddjob-mkhomedir sssd adcli krb5-workstation realmd samba-common samba-common-tools authselect-compat openssh-server
 fi
 '@
-
-        if (-not [string]::IsNullOrWhiteSpace($m.DomainName))
-        {
-            $domain = (Get-LabDefinition).Domains.Where({$_.Name -eq $m.DomainName})
-            $initScriptLinux += @"
-
-sed -i "/^%wheel.*/a %$($m.DomainName.ToUpper())\\\\domain\\ admins ALL=(ALL) NOPASSWD: ALL" /etc/sudoers
-mkdir -p "/home/$($domain.Administrator.UserName)@$($m.DomainName)/.ssh"
-echo "$($m.SshPublicKey -replace '\s*$')" >> /home/$($domain.Administrator.UserName)@$($m.DomainName)/.ssh/authorized_keys
-chmod 700 /home/$($domain.Administrator.UserName)@$($m.DomainName)/.ssh && chmod 600 /home/$($domain.Administrator.UserName)@$($m.DomainName)/.ssh/authorized_keys
-chown -R $($m.InstallationUser.UserName)@$($m.DomainName):$($m.InstallationUser.UserName)@$($m.DomainName) /home/$($m.InstallationUser.UserName)@$($m.DomainName)
-restorecon -R /$($domain.Administrator.UserName)@$($m.DomainName)/.ssh/
-"@
-        }
 
         $initScriptFileLinux = New-Item -ItemType File -Path (Join-Path -Path ([IO.Path]::GetTempPath()) -ChildPath "$($Lab.Name)$($m.Name)vminitlinux.bash") -Force
         $initScriptLinux | Set-Content -Path $initScriptFileLinux -Force

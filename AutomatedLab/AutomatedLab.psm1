@@ -936,17 +936,21 @@ function Install-Lab
                 $null = $vmNic | Set-AzNetworkInterface
                 $nicCount++
             }
+        }
 
-            foreach ($azNet in (Get-Lab).VirtualNetworks)
+        foreach ($azNet in ((Get-Lab).VirtualNetworks | Where HostType -eq 'Azure'))
+        {
+            # Set VNET DNS
+            if ($null -eq $aznet.DnsServers.AddressAsString) { continue }
+
+            $net = Get-AzVirtualNetwork -Name $aznet.ResourceName
+            if (-not $net.DhcpOptions)
             {
-                # Set VNET DNS
-                $aznet = (Get-Lab).VirtualNetworks | Where {$_.Name -eq $azvm.Network}
-                if ($null -eq $aznet.DnsServers.AddressAsString) { continue }
-
                 $net.DhcpOptions = @{}
-                $net.DhcpOptions.DnsServers = [Collections.Generic.List[string]]$aznet.DnsServers.AddressAsString
-                $null - $net | Set-AzVirtualNetwork
             }
+
+            $net.DhcpOptions.DnsServers = [Collections.Generic.List[string]]$aznet.DnsServers.AddressAsString
+            $null = $net | Set-AzVirtualNetwork
         }
 
         $jobs = Invoke-LabCommand -PreInstallationActivity -ActivityName 'Pre-installation' -ComputerName $(Get-LabVM -Role RootDC | Where-Object { -not $_.SkipDeployment }) -PassThru -NoDisplay
