@@ -234,12 +234,6 @@
             }
         }
 
-        if ($network.DnsServers -and -not $lab.AzureSettings.IsAzureStack)
-        {
-            Write-ScreenInfo -Type Verbose -Message ('Adding DNS Servers to VNet template: {0}' -f $network.DnsServers)
-            $vNet.properties.dhcpOptions.dnsServers = [string[]]($network.DnsServers.AddressAsString)
-        }
-
         if (-not $network.Subnets)
         {
             Write-ScreenInfo -Type Verbose -Message ('Adding default subnet ({0}) to VNet' -f $network.AddressSpace)
@@ -1626,40 +1620,6 @@ Subsystem powershell c:/progra~1/powershell/7/pwsh.exe -sshs -NoLogo
 
         $null = try { Stop-Transcript -ErrorAction Stop } catch { }
     }
-    
-    # bash for Linux to install PowerShell, configure SSH subsystem, PubKey/GSSAPI auth
-    $initScriptLinux = @'
-#!bin/bash
-sudo sed -i 's|[#]*GSSAPIAuthentication yes|GSSAPIAuthentication yes|g' /etc/ssh/sshd_config
-sudo sed -i 's|[#]*PasswordAuthentication yes|PasswordAuthentication no|g' /etc/ssh/sshd_config
-sudo sed -i 's|[#]*PubkeyAuthentication yes|PubkeyAuthentication yes|g' /etc/ssh/sshd_config
-echo "Subsystem powershell /usr/bin/pwsh -sshs -NoLogo" | sudo tee --append /etc/ssh/sshd_config
-
-IF [ -n "$(which apt)" ]; then
-    curl -sSL https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
-    curl -sSL https://packages.microsoft.com/keys/microsoft.asc | sudo tee /etc/apt/trusted.gpg.d/microsoft.asc
-    sudo apt update
-    sudo apt install -y wget apt-transport-https software-properties-common
-    wget -q "https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb"
-    sudo dpkg -i packages-microsoft-prod.deb
-    sudo apt update
-    sudo apt install -y powershell
-    sudo apt install -y openssl omi omi-psrp-server
-    sudo apt install -y oddjob oddjob-mkhomedir sssd adcli krb5-workstation realmd samba-common samba-common-tools authselect-compat sshd
-FI
-
-IF [ -n "$(which yum)" ]; then
-    sudo rpm -Uvh "https://packages.microsoft.com/config/rhel/$(sudo cat /etc/redhat-release | grep -oP "(\d)" | head -1)/packages-microsoft-prod.rpm"
-    sudo yum install -y powershell
-    sudo yum install -y openssl omi omi-psrp-server
-    sudo yum install -y oddjob oddjob-mkhomedir sssd adcli krb5-workstation realmd samba-common samba-common-tools authselect-compat sshd
-ELIF [ -n "$(which dnf)" ]; then
-    sudo rpm -Uvh https://packages.microsoft.com/config/rhel/$(sudo cat /etc/redhat-release | grep -oP "(\d)" | head -1)/packages-microsoft-prod.rpm
-    sudo dnf install -y powershell
-    sudo dnf install -y openssl omi omi-psrp-server
-    sudo dnf install -y oddjob oddjob-mkhomedir sssd adcli krb5-workstation realmd samba-common samba-common-tools authselect-compat sshd
-FI
-'@
 
     $initScriptFile = New-Item -ItemType File -Path (Join-Path -Path ([IO.Path]::GetTempPath()) -ChildPath "$($Lab.Name)vminit.ps1") -Force
     $initScript.ToString() | Set-Content -Path $initScriptFile -Force
@@ -1785,9 +1745,41 @@ FI
             Write-ScreenInfo -Type Warning -Message 'Linux VMs not yet implemented on Azure Stack, sorry.'
             continue
         }
+
+        $initScriptLinux = @'
+sudo sed -i 's|[#]*GSSAPIAuthentication yes|GSSAPIAuthentication yes|g' /etc/ssh/sshd_config
+sudo sed -i 's|[#]*PasswordAuthentication yes|PasswordAuthentication no|g' /etc/ssh/sshd_config
+sudo sed -i 's|[#]*PubkeyAuthentication yes|PubkeyAuthentication yes|g' /etc/ssh/sshd_config
+echo "Subsystem powershell /usr/bin/pwsh -sshs -NoLogo -NoProfile" | sudo tee --append /etc/ssh/sshd_config
+sudo systemctl restart sshd
+
+if [ -n "$(which apt 2>/dev/null)" ]; then
+    curl -sSL https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
+    curl -sSL https://packages.microsoft.com/keys/microsoft.asc | sudo tee /etc/apt/trusted.gpg.d/microsoft.asc
+    sudo apt update
+    sudo apt install -y wget apt-transport-https software-properties-common
+    wget -q "https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb"
+    sudo dpkg -i packages-microsoft-prod.deb
+    sudo apt update
+    sudo apt install -y powershell
+    sudo apt install -y openssl omi omi-psrp-server
+    sudo apt install -y oddjob oddjob-mkhomedir sssd adcli krb5-workstation realmd samba-common samba-common-tools authselect-compat openssh-server
+elif [ -n "$(which yum 2>/dev/null)" ]; then
+    sudo rpm -Uvh "https://packages.microsoft.com/config/rhel/$(sudo cat /etc/redhat-release | grep -oP "(\d)" | head -1)/packages-microsoft-prod.rpm"
+    sudo yum install -y powershell
+    sudo yum install -y openssl omi omi-psrp-server
+    sudo yum install -y oddjob oddjob-mkhomedir sssd adcli krb5-workstation realmd samba-common samba-common-tools authselect-compat openssh-server
+elif [ -n "$(which dnf 2>/dev/null)" ]; then
+    sudo rpm -Uvh https://packages.microsoft.com/config/rhel/$(sudo cat /etc/redhat-release | grep -oP "(\d)" | head -1)/packages-microsoft-prod.rpm
+    sudo dnf install -y powershell
+    sudo dnf install -y openssl omi omi-psrp-server
+    sudo dnf install -y oddjob oddjob-mkhomedir sssd adcli krb5-workstation realmd samba-common samba-common-tools authselect-compat openssh-server
+fi
+'@
+
         if (-not [string]::IsNullOrWhiteSpace($m.DomainName))
         {
-            $domain = (Get-LabDefinition).Domains.Where({$_.Name -eq $m.DomainName})    
+            $domain = (Get-LabDefinition).Domains.Where({$_.Name -eq $m.DomainName})
             $initScriptLinux += @"
 
 sed -i "/^%wheel.*/a %$($m.DomainName.ToUpper())\\\\domain\\ admins ALL=(ALL) NOPASSWD: ALL" /etc/sudoers
@@ -1798,11 +1790,12 @@ chown -R $($m.InstallationUser.UserName)@$($m.DomainName):$($m.InstallationUser.
 restorecon -R /$($domain.Administrator.UserName)@$($m.DomainName)/.ssh/
 "@
         }
-        $initScriptFileLinux = New-Item -ItemType File -Path (Join-Path -Path ([IO.Path]::GetTempPath()) -ChildPath "$($Lab.Name)$($m.Name)vminitlinux.sh") -Force
-        $initScriptLinux | Set-Content -Path $initScriptFile -Force
-        $initScriptFile
 
-        $null = $jobs.Add((Invoke-AzVMRunCommand -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName -VMName $m.ResourceName -ScriptPath $initScriptLinux -CommandId 'RunShellScript' -ErrorAction Stop -AsJob))
+        $initScriptFileLinux = New-Item -ItemType File -Path (Join-Path -Path ([IO.Path]::GetTempPath()) -ChildPath "$($Lab.Name)$($m.Name)vminitlinux.bash") -Force
+        $initScriptLinux | Set-Content -Path $initScriptFileLinux -Force
+        $initScriptFileLinux
+
+        $null = $jobs.Add((Invoke-AzVMRunCommand -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName -VMName $m.ResourceName -ScriptPath $initScriptFileLinux.FullName -CommandId 'RunShellScript' -ErrorAction Stop -AsJob))
     }
 
     if ($jobs)
@@ -1834,6 +1827,7 @@ restorecon -R /$($domain.Administrator.UserName)@$($m.DomainName)/.ssh/
             $null = $vnet | Set-AzVirtualNetwork
         }
     }
+
     Install-LabSshKnownHost
     Copy-LabFileItem -Path (Get-ChildItem -Path "$((Get-Module -Name AutomatedLab)[0].ModuleBase)\Tools\HyperV\*") -DestinationFolderPath /AL -ComputerName ($Machine | Where OperatingSystemType -eq 'Windows') -UseAzureLabSourcesOnAzureVm $false
     $sessions = if ($PSVersionTable.PSVersion -ge 7)
@@ -1845,6 +1839,7 @@ restorecon -R /$($domain.Administrator.UserName)@$($m.DomainName)/.ssh/
         Write-ScreenInfo -Type Warning -Message "Skipping copy of AutomatedLab.Common to Linux VMs as Windows PowerShell is used on the host."
         New-LabPSSession ($Machine | Where OperatingSystemType -eq 'Windows')
     }
+
     Send-ModuleToPSSession -Module (Get-Module -ListAvailable -Name AutomatedLab.Common | Select-Object -First 1) -Session $sessions -IncludeDependencies -Force
     Write-ScreenInfo -Message 'Finished' -TaskEnd
 

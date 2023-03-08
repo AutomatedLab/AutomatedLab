@@ -173,6 +173,7 @@ function New-LabPSSession
 
             if (((Get-Command New-PSSession).Parameters.Values.Name -contains 'HostName') -and -not [string]::IsNullOrWhiteSpace($m.SshPrivateKeyPath))
             {
+                Write-PSFMessage -Message "Using private key from $($m.SshPrivateKeyPath) to connect to $($m.Name)"
                 $param['HostName'] = $param['ComputerName']
                 $param.Remove('ComputerName')
                 $param.Remove('PSSessionOption')

@@ -1034,29 +1034,18 @@ function Export-LabDefinition
     }
 
     #Automatic DNS configuration in Azure if no DNS server is specified and an AD is being deployed
-    foreach ($network in (Get-LabVirtualNetworkDefinition))
+    foreach ($network in (Get-LabVirtualNetworkDefinition | Where HostType -eq Azure))
     {
-        if ($network.HostType -eq 'Azure' -and (Get-LabMachineDefinition -Role RootDC))
-        {
-            $rootDCs = Get-LabMachineDefinition -Role RootDC
-            $dnsServerIP = ''
-            if ($rootDCs | Where-Object Network -eq $network)
-            {
-                $dnsServerIP = ($rootDCs)[0].IpV4Address
-            }
-            elseif ($rootDCs | Where-Object Network -eq $network)
-            {
-                $dnsServerIP = ($rootDCs | Where-Object Network -eq $network)[0].IpV4Address
-            }
-            if (-not ((Get-LabVirtualNetworkDefinition)[0].DnsServers) -and $dnsServerIP)
-            {
-                (Get-LabVirtualNetworkDefinition)[0].DnsServers = $dnsServerIP
-                $dnsServerName = (Get-LabMachineDefinition | Where-Object { $_.IpV4Address -eq $dnsServerIP }).Name
+        $rootDCs = Get-LabMachineDefinition -Role RootDC | Where-Object Network -eq $network
+        $dnsServerIP = $rootDCs.IpV4Address
 
-                if (-not $Silent)
-                {
-                    Write-ScreenInfo -Message "No DNS server was defined for Azure virtual network while AD is being deployed. Setting DNS server to IP address of '$dnsServerName'" -Type Warning
-                }
+        if (-not $network.DnsServers -and $dnsServerIP)
+        {
+            $network.DnsServers = $dnsServerIP
+
+            if (-not $Silent)
+            {
+                Write-ScreenInfo -Message "No DNS server was defined for Azure virtual network while AD is being deployed. Setting DNS server to IP address of '$($rootDCs -join ',')'" -Type Warning
             }
         }
     }
