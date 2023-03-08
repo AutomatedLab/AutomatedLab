@@ -1750,8 +1750,11 @@ Subsystem powershell c:/progra~1/powershell/7/pwsh.exe -sshs -NoLogo
 sudo sed -i 's|[#]*GSSAPIAuthentication yes|GSSAPIAuthentication yes|g' /etc/ssh/sshd_config
 sudo sed -i 's|[#]*PasswordAuthentication yes|PasswordAuthentication no|g' /etc/ssh/sshd_config
 sudo sed -i 's|[#]*PubkeyAuthentication yes|PubkeyAuthentication yes|g' /etc/ssh/sshd_config
-echo "Subsystem powershell /usr/bin/pwsh -sshs -NoLogo -NoProfile" | sudo tee --append /etc/ssh/sshd_config
+if [ -n "$(sudo cat /etc/ssh/sshd_config | grep 'Subsystem powershell')" ]; then
+    echo "Subsystem powershell /usr/bin/pwsh -sshs -NoLogo -NoProfile" | sudo tee --append /etc/ssh/sshd_config
+fi
 sudo systemctl restart sshd
+sudo chmod 775 -R /usr/local/share/powershell
 
 if [ -n "$(which apt 2>/dev/null)" ]; then
     curl -sSL https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
