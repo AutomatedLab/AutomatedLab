@@ -25,7 +25,7 @@ Install-Lab
 With AutomatedLab Linux VMs can be deployed just as easily as Windows VMs. The current implementation should take care of the following distributions:
 - RHEL 7+ (*)
 - CentOS 7+
-- Ubuntu 14.04+ (Not on Hyper-V, nyanhp was not able to get cloudinit to work properly)
+- Ubuntu 14.04+, Kali (Not on Hyper-V, nyanhp was not able to get cloudinit to work properly)
 - Fedora 27+ (not on Azure, there are only paid plans)
 - SLES 12.3+ (*) (not on Azure, there are only paid plans)
 - OpenSuSE (not on Azure, there are only paid plans)

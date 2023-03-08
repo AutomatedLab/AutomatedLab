@@ -37,7 +37,6 @@
             PublicIpApi        = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'publicIpAddresses').ApiVersions[0] # 2022-01-01
             VirtualNetworkApi  = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'virtualNetworks').ApiVersions[0] # 2022-01-01
             NsgApi             = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'networkSecurityGroups').ApiVersions[0] # 2022-01-01
-            AvailabilitySetApi = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Compute').ResourceTypes | Where-Object ResourceTypeName -eq 'availabilitySets').ApiVersions[1] # 2022-03-01
             VmApi              = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Compute').ResourceTypes | Where-Object ResourceTypeName -eq 'virtualMachines').ApiVersions[1] # 2022-03-01
         }
         if (-not $lab.AzureSettings.IsAzureStack)
@@ -46,7 +45,6 @@
         }
         if ($lab.AzureSettings.IsAzureStack)
         {
-            $provHash.AvailabilitySetApi = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Compute').ResourceTypes | Where-Object ResourceTypeName -eq 'availabilitySets').ApiVersions[0]
             $provHash.VmApi = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Compute').ResourceTypes | Where-Object ResourceTypeName -eq 'virtualMachines').ApiVersions[0]
         }
         $provHash
@@ -56,7 +54,6 @@
         @{
             NicApi             = '2018-11-01'
             DiskApi            = '2018-11-01'
-            AvailabilitySetApi = '2020-06-01'
             LoadBalancerApi    = '2018-11-01'
             PublicIpApi        = '2018-11-01'
             VirtualNetworkApi  = '2018-11-01'
@@ -69,7 +66,6 @@
         @{
             NicApi             = '2022-01-01'
             DiskApi            = '2022-01-01'
-            AvailabilitySetApi = '2022-03-01'
             LoadBalancerApi    = '2022-01-01'
             PublicIpApi        = '2022-01-01'
             VirtualNetworkApi  = '2022-01-01'
@@ -538,26 +534,6 @@
         $template.resources += $loadBalancer
         #endregion
 
-        #region AvailabilitySet
-        Write-ScreenInfo -Type Verbose -Message ('Adding availability set to template')
-        $template.resources += @{
-            type       = "Microsoft.Compute/availabilitySets"
-            tags       = @{ 
-                AutomatedLab = $Lab.Name
-                CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
-            }
-            apiVersion = $apiVersions['AvailabilitySetApi']
-            name       = "$($network.ResourceName)"
-            location   = "[resourceGroup().location]"
-            sku        = @{
-                name = "Aligned"
-            }
-            properties = @{
-                platformUpdateDomainCount = 2
-                platformFaultDomainCount  = 2
-            }
-        }
-        #endregion
         $vnetCount++
     }
 
@@ -719,13 +695,8 @@
                 AutomatedLab = $Lab.Name
                 CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
             }
-            dependsOn  = @(
-                "[resourceId('Microsoft.Compute/availabilitySets', '$($machNet.ResourceName)')]"
-            )
+            dependsOn  = @()
             properties = @{
-                availabilitySet = @{
-                    id = "[resourceId('Microsoft.Compute/availabilitySets', '$($machNet.ResourceName)')]"
-                }
                 storageProfile  = @{
                     osDisk         = @{
                         createOption = "FromImage"
@@ -766,6 +737,16 @@
             type       = "Microsoft.Compute/virtualMachines"
             apiVersion = $apiVersions['VmApi']
             location   = "[resourceGroup().location]"
+        }
+
+        if ($machine.OperatingSystem.OperatingSystemName -like 'Kali*')
+        {
+            # This is a marketplace offer, so we have to do redundant stuff for no good reason
+            $machTemplate.plan = @{
+                    name = $imageRef.sku # Otherwise known as sku
+                    product = $imageRef.offer # Otherwise known as offer
+                    publisher = $imageRef.publisher # publisher
+            }
         }
 
         if ($machine.OperatingSystemType -eq 'Windows')

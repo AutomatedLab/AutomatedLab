@@ -1579,14 +1579,14 @@ function Get-LabAzureAvailableSku
     Get-AzVMImage |
     Group-Object -Property Skus, Offer |
     ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
-    # Activate once Kali is supported on-premises ;)
-    #$publishers |
-    #Where-Object PublisherName -eq 'Kali-Linux' |
-    #Get-AzVMImageOffer |
-    #Get-AzVMImageSku |
-    #Get-AzVMImage |
-    #Group-Object -Property Skus, Offer |
-    #ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
+    # Kali
+    $publishers |
+    Where-Object PublisherName -eq 'Kali-Linux' |
+    Get-AzVMImageOffer |
+    Get-AzVMImageSku |
+    Get-AzVMImage |
+    Group-Object -Property Skus, Offer |
+    ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
 
     # Desktop
     $publishers |

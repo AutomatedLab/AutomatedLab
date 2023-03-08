@@ -1446,6 +1446,11 @@ function Join-LabVMDomain
 
         if ($IsLinux)
         {
+            if ((Get-Command -Name realm -ErrorAction SilentlyContinue) -and (sudo realm list --name-only | Where {$_ -eq $DomainName}))
+            {
+                return $true
+            }
+
             if (-not (Get-Command -Name realm -ErrorAction SilentlyContinue) -and (Get-Command -Name apt -ErrorAction SilentlyContinue))
             {
                 sudo apt install -y realmd libnss-sss libpam-sss sssd sssd-tools adcli samba-common-bin oddjob oddjob-mkhomedir packagekit *>$null
@@ -1458,13 +1463,14 @@ function Join-LabVMDomain
             {
                 sudo yum install -y oddjob oddjob-mkhomedir sssd adcli krb5-workstation realmd samba-common samba-common-tools authselect-compat *>$null
             }
-            else
+
+            if (-not (Get-Command -Name realm -ErrorAction SilentlyContinue))
             {
                 # realm package missing or no known package manager
                 return $false
             }
-            
-            $null = echo $Password | realm join -U $UserName $DomainName
+
+            $null = realm join --one-time-password "'$Password'" $DomainName
             $null = sudo sed -i "/^%wheel.*/a %$($DomainName.ToUpper())\\\\domain\\ admins ALL=(ALL) NOPASSWD: ALL" /etc/sudoers
             $null = sudo mkdir -p "/home/$($UserName)@$($DomainName)"
             $null = sudo chown -R "$($UserName)@$($DomainName):$($UserName)@$($DomainName)" /home/$($UserName)@$($DomainName) 2>$null
@@ -1529,7 +1535,7 @@ function Join-LabVMDomain
     $jobs = @()
     $startTime = Get-Date
 
-    $machinesToJoin = $Machine | Where-OBject SkipDeployment -eq $false
+    $machinesToJoin = $Machine | Where-Object SkipDeployment -eq $false
     Write-PSFMessage "Starting joining $($machinesToJoin.Count) machines to domains"
     foreach ($m in $machinesToJoin)
     {
@@ -1542,7 +1548,7 @@ function Join-LabVMDomain
             ActivityName = "DomainJoin_$m"
             ScriptBlock = (Get-Command Join-Computer).ScriptBlock
             UseLocalCredential = $true
-            ArgumentList = $domain, $cred.UserName, $cred.GetNetworkCredential().Password, $m.SshPublicKey
+            ArgumentList = $domain, $cred.UserName, $cred.GetNetworkCredential().Password
             AsJob = $true
             PassThru = $true
             NoDisplay = $true
@@ -1551,6 +1557,14 @@ function Join-LabVMDomain
         if ($m.HostType -eq 'Azure')
         {
             $jobParameters.ArgumentList += $true
+        }
+        if ($m.SshPublicKey)
+        {
+            if ($jobParameters.ArgumentList.Count -eq 3)
+            {
+                $jobParameters.ArgumentList += $false
+            }
+            $jobParameters.ArgumentList += $m.SshPublicKey
         }
         $jobs += Invoke-LabCommand @jobParameters
     }

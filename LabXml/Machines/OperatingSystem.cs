@@ -76,7 +76,9 @@ namespace AutomatedLab
             {"8_6_redhat", "Red Hat Enterprise Linux 8.6" },
             {"8_7_redhat", "Red Hat Enterprise Linux 8.7" },
             {"9_0_redhat", "Red Hat Enterprise Linux 9" },
-            {"9_1_redhat", "Red Hat Enterprise Linux 9.1" }
+            {"9_1_redhat", "Red Hat Enterprise Linux 9.1" },
+            {"kali_kali-linux", "Kali Linux 2022.3" },
+            {"kali-20224_kali-linux", "Kali Linux 2022.4" }
             };
         private Dictionary<string, string> isoNameToAzureSku;
 
@@ -386,7 +388,11 @@ namespace AutomatedLab
         {
             get
             {
-                return (System.Text.RegularExpressions.Regex.IsMatch(OperatingSystemName, "CentOS|Red Hat|Fedora")) ? LinuxType.RedHat : LinuxType.SuSE;
+                if (System.Text.RegularExpressions.Regex.IsMatch(OperatingSystemName, "CentOS|Red Hat|Fedora")) return LinuxType.RedHat;
+                if (System.Text.RegularExpressions.Regex.IsMatch(OperatingSystemName, "Suse")) return LinuxType.SuSE;
+                if (System.Text.RegularExpressions.Regex.IsMatch(OperatingSystemName, "Ubuntu|Kali")) return LinuxType.Ubuntu;
+
+                return LinuxType.Unknown;
             }
         }
         public OperatingSystemType OperatingSystemType

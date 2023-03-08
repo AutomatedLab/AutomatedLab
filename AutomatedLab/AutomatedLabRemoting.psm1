@@ -1349,7 +1349,15 @@ function Install-LabSshKnownHost
                 if (-not $sshHostEntry -or $keyScanHost.Fingerprint -ne $sshHostEntry.Fingerprint)
                 {
                     Write-ScreenInfo -Type Verbose -Message ("Adding line to $home/.ssh/known_hosts: {0} {1} {2}" -f $keyScanHost.ComputerName,$keyScanHost.Cipher,$keyScanHost.Fingerprint)
-                    '{0} {1} {2}' -f $keyScanHost.ComputerName,$keyScanHost.Cipher,$keyScanHost.Fingerprint | Add-Content $home/.ssh/known_hosts
+                    try
+                    {
+                        '{0} {1} {2}' -f $keyScanHost.ComputerName,$keyScanHost.Cipher,$keyScanHost.Fingerprint | Add-Content $home/.ssh/known_hosts -ErrorAction Stop
+                    }
+                    catch
+                    {
+                        Start-Sleep -Milliseconds 125
+                        '{0} {1} {2}' -f $keyScanHost.ComputerName,$keyScanHost.Cipher,$keyScanHost.Fingerprint | Add-Content $home/.ssh/known_hosts
+                    }
                 }
             }
 
@@ -1359,7 +1367,15 @@ function Install-LabSshKnownHost
                 if (-not $sshHostEntryIp -or $keyScanIp.Fingerprint -ne $sshHostEntryIp.Fingerprint)
                 {
                     Write-ScreenInfo -Type Verbose -Message ("Adding line to $home/.ssh/known_hosts: {0} {1} {2}" -f $keyScanIp.ComputerName,$keyScanIp.Cipher,$keyScanIp.Fingerprint)
-                    '{0} {1} {2}' -f $keyScanIp.ComputerName,$keyScanIp.Cipher,$keyScanIp.Fingerprint | Add-Content $home/.ssh/known_hosts
+                    try
+                    {
+                        '{0} {1} {2}' -f $keyScanIp.ComputerName,$keyScanIp.Cipher,$keyScanIp.Fingerprint | Add-Content $home/.ssh/known_hosts -ErrorAction Stop
+                    }
+                    catch
+                    {
+                        Start-Sleep -Milliseconds 125
+                        '{0} {1} {2}' -f $keyScanIp.ComputerName,$keyScanIp.Cipher,$keyScanIp.Fingerprint | Add-Content $home/.ssh/known_hosts
+                    }
                 }
             }
         }
@@ -1372,7 +1388,15 @@ function Install-LabSshKnownHost
                 if (-not $sshHostEntry -or $keyScanHost.Fingerprint -ne $sshHostEntry.Fingerprint)
                 {
                     Write-ScreenInfo -Type Verbose -Message ("Adding line to $home/.ssh/known_hosts: {0} {1} {2}" -f $keyScanHost.ComputerName,$keyScanHost.Cipher,$keyScanHost.Fingerprint)
-                    '{0} {1} {2}' -f $keyScanHost.ComputerName,$keyScanHost.Cipher,$keyScanHost.Fingerprint | Add-Content $home/.ssh/known_hosts
+                    try
+                    {
+                        '{0} {1} {2}' -f $keyScanHost.ComputerName,$keyScanHost.Cipher,$keyScanHost.Fingerprint | Add-Content $home/.ssh/known_hosts -ErrorAction Stop
+                    }
+                    catch
+                    {
+                        Start-Sleep -Milliseconds 125
+                        '{0} {1} {2}' -f $keyScanHost.ComputerName,$keyScanHost.Cipher,$keyScanHost.Fingerprint | Add-Content $home/.ssh/known_hosts
+                    }
                 }
             }
             if ($machine.IpV4Address)
@@ -1384,7 +1408,15 @@ function Install-LabSshKnownHost
                     if (-not $sshHostEntryIp -or $keyScanIp.Fingerprint -ne $sshHostEntryIp.Fingerprint)
                     {
                         Write-ScreenInfo -Type Verbose -Message ("Adding line to $home/.ssh/known_hosts: {0} {1} {2}" -f $keyScanIp.ComputerName,$keyScanIp.Cipher,$keyScanIp.Fingerprint)
-                        '{0} {1} {2}' -f $keyScanIp.ComputerName,$keyScanIp.Cipher,$keyScanIp.Fingerprint | Add-Content $home/.ssh/known_hosts
+                        try
+                        {
+                            '{0} {1} {2}' -f $keyScanIp.ComputerName,$keyScanIp.Cipher,$keyScanIp.Fingerprint | Add-Content $home/.ssh/known_hosts -ErrorAction Stop
+                        }
+                        catch
+                        {
+                            Start-Sleep -Milliseconds 125
+                            '{0} {1} {2}' -f $keyScanIp.ComputerName,$keyScanIp.Cipher,$keyScanIp.Fingerprint | Add-Content $home/.ssh/known_hosts
+                        }
                     }
                 }
             }
