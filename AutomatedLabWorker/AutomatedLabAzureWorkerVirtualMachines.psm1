@@ -31,13 +31,13 @@
     {
         $providers = Get-AzResourceProvider -Location $lab.AzureSettings.DefaultLocation.Location -ErrorAction SilentlyContinue | Where-Object RegistrationState -eq 'Registered'
         $provHash = @{
-            NicApi             = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'networkInterfaces').ApiVersions[0] # 2022-01-01
-            DiskApi            = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Compute').ResourceTypes | Where-Object ResourceTypeName -eq 'disks').ApiVersions[0] # 2022-01-01
-            LoadBalancerApi    = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'loadBalancers').ApiVersions[0] # 2022-01-01
-            PublicIpApi        = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'publicIpAddresses').ApiVersions[0] # 2022-01-01
-            VirtualNetworkApi  = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'virtualNetworks').ApiVersions[0] # 2022-01-01
-            NsgApi             = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'networkSecurityGroups').ApiVersions[0] # 2022-01-01
-            VmApi              = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Compute').ResourceTypes | Where-Object ResourceTypeName -eq 'virtualMachines').ApiVersions[1] # 2022-03-01
+            NicApi            = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'networkInterfaces').ApiVersions[0] # 2022-01-01
+            DiskApi           = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Compute').ResourceTypes | Where-Object ResourceTypeName -eq 'disks').ApiVersions[0] # 2022-01-01
+            LoadBalancerApi   = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'loadBalancers').ApiVersions[0] # 2022-01-01
+            PublicIpApi       = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'publicIpAddresses').ApiVersions[0] # 2022-01-01
+            VirtualNetworkApi = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'virtualNetworks').ApiVersions[0] # 2022-01-01
+            NsgApi            = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'networkSecurityGroups').ApiVersions[0] # 2022-01-01
+            VmApi             = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Compute').ResourceTypes | Where-Object ResourceTypeName -eq 'virtualMachines').ApiVersions[1] # 2022-03-01
         }
         if (-not $lab.AzureSettings.IsAzureStack)
         {
@@ -52,26 +52,26 @@
     elseif ($Lab.AzureSettings.IsAzureStack)
     {
         @{
-            NicApi             = '2018-11-01'
-            DiskApi            = '2018-11-01'
-            LoadBalancerApi    = '2018-11-01'
-            PublicIpApi        = '2018-11-01'
-            VirtualNetworkApi  = '2018-11-01'
-            NsgApi             = '2018-11-01'
-            VmApi              = '2020-06-01'
+            NicApi            = '2018-11-01'
+            DiskApi           = '2018-11-01'
+            LoadBalancerApi   = '2018-11-01'
+            PublicIpApi       = '2018-11-01'
+            VirtualNetworkApi = '2018-11-01'
+            NsgApi            = '2018-11-01'
+            VmApi             = '2020-06-01'
         }
     }
     else
     {
         @{
-            NicApi             = '2022-01-01'
-            DiskApi            = '2022-01-01'
-            LoadBalancerApi    = '2022-01-01'
-            PublicIpApi        = '2022-01-01'
-            VirtualNetworkApi  = '2022-01-01'
-            BastionHostApi     = '2022-01-01'
-            NsgApi             = '2022-01-01'
-            VmApi              = '2022-03-01'
+            NicApi            = '2022-01-01'
+            DiskApi           = '2022-01-01'
+            LoadBalancerApi   = '2022-01-01'
+            PublicIpApi       = '2022-01-01'
+            VirtualNetworkApi = '2022-01-01'
+            BastionHostApi    = '2022-01-01'
+            NsgApi            = '2022-01-01'
+            VmApi             = '2022-03-01'
         }
     }
     
@@ -743,9 +743,9 @@
         {
             # This is a marketplace offer, so we have to do redundant stuff for no good reason
             $machTemplate.plan = @{
-                    name = $imageRef.sku # Otherwise known as sku
-                    product = $imageRef.offer # Otherwise known as offer
-                    publisher = $imageRef.publisher # publisher
+                name      = $imageRef.sku # Otherwise known as sku
+                product   = $imageRef.offer # Otherwise known as offer
+                publisher = $imageRef.publisher # publisher
             }
         }
 
@@ -1719,15 +1719,8 @@ Subsystem powershell c:/progra~1/powershell/7/pwsh.exe -sshs -NoLogo
         }
     }
 
-    $linuxInitFiles = foreach ($m in ($Machine | Where-Object OperatingSystemType -eq 'Linux'))
-    {
-        if ($Lab.AzureSettings.IsAzureStack)
-        {
-            Write-ScreenInfo -Type Warning -Message 'Linux VMs not yet implemented on Azure Stack, sorry.'
-            continue
-        }
 
-        $initScriptLinux = @'
+    $initScriptLinux = @'
 sudo sed -i 's|[#]*GSSAPIAuthentication yes|GSSAPIAuthentication yes|g' /etc/ssh/sshd_config
 sudo sed -i 's|[#]*PasswordAuthentication yes|PasswordAuthentication no|g' /etc/ssh/sshd_config
 sudo sed -i 's|[#]*PubkeyAuthentication yes|PubkeyAuthentication yes|g' /etc/ssh/sshd_config
@@ -1736,7 +1729,6 @@ if [ -n "$(sudo cat /etc/ssh/sshd_config | grep 'Subsystem powershell')" ]; then
 else
     echo "Subsystem powershell /usr/bin/pwsh -sshs -NoLogo -NoProfile" | sudo tee --append /etc/ssh/sshd_config
 fi
-sudo systemctl restart sshd
 sudo mkdir -p /usr/local/share/powershell 2>/dev/null
 sudo chmod 777 -R /usr/local/share/powershell
 
@@ -1762,7 +1754,15 @@ elif [ -n "$(which dnf 2>/dev/null)" ]; then
     sudo dnf install -y openssl omi omi-psrp-server
     sudo dnf install -y oddjob oddjob-mkhomedir sssd adcli krb5-workstation realmd samba-common samba-common-tools authselect-compat openssh-server
 fi
+sudo systemctl restart sshd
 '@
+    $linuxInitFiles = foreach ($m in ($Machine | Where-Object OperatingSystemType -eq 'Linux'))
+    {
+        if ($Lab.AzureSettings.IsAzureStack)
+        {
+            Write-ScreenInfo -Type Warning -Message 'Linux VMs not yet implemented on Azure Stack, sorry.'
+            continue
+        }
 
         $initScriptFileLinux = New-Item -ItemType File -Path (Join-Path -Path ([IO.Path]::GetTempPath()) -ChildPath "$($Lab.Name)$($m.Name)vminitlinux.bash") -Force
         $initScriptLinux | Set-Content -Path $initScriptFileLinux -Force
@@ -1779,6 +1779,16 @@ fi
     $initScriptFile | Remove-Item -ErrorAction SilentlyContinue
     $linuxInitFiles | Copy-Item -Destination $Lab.LabPath
     $linuxInitFiles | Remove-Item -ErrorAction SilentlyContinue
+
+    # And once again for all the VMs that for some unknown reason did not *really* execute the RunCommand
+    if (Get-Command ssh -ErrorAction SilentlyContinue)
+    {
+        foreach ($m in ($Machine | Where-Object {$_.OperatingSystemType -eq 'Linux' -and $_.SshPrivateKeyPath}))
+        {
+            $ci = $m.AzureConnectionInfo
+            $null = ssh -p $ci.SshPort $ci.DnsName -i $m.SshPrivateKeyPath 'bash -s' $initScriptLinux
+        }
+    }
 
     # Wait for VM extensions to be "done"
     if ($lab.AzureSettings.IsAzureStack)
