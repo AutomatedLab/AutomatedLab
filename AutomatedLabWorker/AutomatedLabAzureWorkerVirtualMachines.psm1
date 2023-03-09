@@ -1787,7 +1787,7 @@ sudo systemctl restart sshd
         foreach ($m in ($Machine | Where-Object {$_.OperatingSystemType -eq 'Linux' -and $_.SshPrivateKeyPath}))
         {
             $ci = $m.AzureConnectionInfo
-            $null = ssh -p $ci.SshPort $ci.DnsName -i $m.SshPrivateKeyPath 'bash -s' $initScriptLinux
+            $null = ssh -p $ci.SshPort "automatedlab@$($ci.DnsName)" -i $m.SshPrivateKeyPath $initScriptLinux 2>$null
         }
     }
 
@@ -1812,7 +1812,6 @@ sudo systemctl restart sshd
         }
     }
 
-    Install-LabSshKnownHost
     Copy-LabFileItem -Path (Get-ChildItem -Path "$((Get-Module -Name AutomatedLab)[0].ModuleBase)\Tools\HyperV\*") -DestinationFolderPath /AL -ComputerName ($Machine | Where OperatingSystemType -eq 'Windows') -UseAzureLabSourcesOnAzureVm $false
     $sessions = if ($PSVersionTable.PSVersion -ge 7)
     {

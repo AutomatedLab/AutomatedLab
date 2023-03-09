@@ -1444,15 +1444,15 @@ function UnInstall-LabSshKnownHost
     {
         if ($lab.DefaultVirtualizationEngine -eq 'Azure')
         {
-            $content = $content | Where {$_ -notmatch "$($machine.AzureConnectionInfo.DnsName.Replace('.','\.'))\s.*"}
-            $content = $content | Where {$_ -notmatch "$($machine.AzureConnectionInfo.VIP.Replace('.','\.'))\s.*"}
+            $content = $content | Where {$_ -notmatch "$($machine.AzureConnectionInfo.DnsName.Replace('.','\.'))"}
+            $content = $content | Where {$_ -notmatch "$($machine.AzureConnectionInfo.VIP.Replace('.','\.'))"}
         }
         else
         {
             $content = $content | Where {$_ -notmatch "$($machine.Name)\s.*"}
             if ($machine.IpV4Address)
             {
-                $content = $content | Where {$_ -notmatch "$($machine.Ipv4Address.Replace('.','\.'))\s.*"}
+                $content = $content | Where {$_ -notmatch "$($machine.Ipv4Address.Replace('.','\.'))"}
             }
         }
     }
