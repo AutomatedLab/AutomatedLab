@@ -1783,6 +1783,7 @@ sudo systemctl restart sshd
     # And once again for all the VMs that for some unknown reason did not *really* execute the RunCommand
     if (Get-Command ssh -ErrorAction SilentlyContinue)
     {
+        Install-LabSshKnownHost
         foreach ($m in ($Machine | Where-Object {$_.OperatingSystemType -eq 'Linux' -and $_.SshPrivateKeyPath}))
         {
             $ci = $m.AzureConnectionInfo
