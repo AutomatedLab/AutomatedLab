@@ -12,6 +12,7 @@ Context "Role deployment successful" {
                 } -PassThru -NoDisplay | Should -Be Running
             }
 
+            if (-not $vm.IsDomainJoined) { continue }
             It "[$vm] Should be discoverable" {
                 Invoke-LabCommand -ComputerName $vm -Function (Get-Command Find-CertificateAuthority) -ScriptBlock {
                     Find-CertificateAuthority -DomainName ([System.DirectoryServices.ActiveDirectory.Domain]::GetComputerDomain().Name)
