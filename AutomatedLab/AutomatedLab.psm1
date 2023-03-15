@@ -1704,6 +1704,8 @@ function Get-LabAvailableOperatingSystem
         $Path = "$(Get-LabSourcesLocationInternal -Local)/ISOs"
     }
 
+    $labData = if (Get-LabDefinition -ErrorAction SilentlyContinue) {Get-LabDefinition} elseif (Get-Lab -ErrorAction SilentlyContinue) {Get-Lab}
+    if ($labData -and $labData.DefaultVirtualizationEngine -eq 'Azure') { $Azure = $true }
     $storeLocationName = if ($Azure.IsPresent) { 'Azure' } else { 'Local' }
 
     if ($Azure)
@@ -1711,6 +1713,16 @@ function Get-LabAvailableOperatingSystem
         if (-not (Get-AzContext -ErrorAction SilentlyContinue).Subscription)
         {
             throw 'Please login to Azure before trying to list Azure image SKUs'
+        }
+
+        if (-not $Location -and $labData.AzureSettings.DefaultLocation.Location)
+        {
+            $Location = $labData.AzureSettings.DefaultLocation.DisplayName
+        }
+
+        if (-not $Location)
+        {
+            throw 'Please add your subscription using Add-LabAzureSubscription before viewing available operating systems, or use the parameters -Azure and -Location'
         }
 
         $type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.Azure.AzureOSImage
