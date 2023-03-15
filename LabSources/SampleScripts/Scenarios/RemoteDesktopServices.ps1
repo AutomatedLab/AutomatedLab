@@ -14,13 +14,13 @@ Set-LabInstallationCredential -Username Install -Password Somepass1
 $PSDefaultParameterValues = @{
     'Add-LabMachineDefinition:ToolsPath'       = "$labSources\Tools"
     'Add-LabMachineDefinition:DomainName'      = 'contoso.com'
-    'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2019 Datacenter (Desktop Experience)'
+    'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2022 Datacenter (Desktop Experience)'
     'Add-LabMachineDefinition:Memory'          = 4gb
 }
 
 # Base infra: Domain and Certificate Authority
-Add-LabMachineDefinition -Name RDSDC01 -Role RootDc -Domain contoso.com -OperatingSystem 'Windows Server 2019 Datacenter'
-Add-LabMachineDefinition -Name RDSCA01 -Role CaRoot -Domain contoso.com -OperatingSystem 'Windows Server 2019 Datacenter'
+Add-LabMachineDefinition -Name RDSDC01 -Role RootDc -Domain contoso.com -OperatingSystem 'Windows Server 2022 Datacenter'
+Add-LabMachineDefinition -Name RDSCA01 -Role CaRoot -Domain contoso.com -OperatingSystem 'Windows Server 2022 Datacenter'
 
 # Gateway and Web
 Add-LabMachineDefinition -Name RDSGW01 -Role RemoteDesktopGateway, RemoteDesktopWebAccess
@@ -32,6 +32,12 @@ Add-LabMachineDefinition -Name RDSCB01 -Role RemoteDesktopConnectionBroker, Remo
 foreach ($count in 1..2)
 {
     Add-LabMachineDefinition -Name RDSSH0$count -Roles RemoteDesktopSessionHost
+}
+
+# Virtualization Host Pool, automatically assigned to collection AutomatedLab
+foreach ($count in 1..2)
+{
+    Add-LabMachineDefinition -Name RDSVH0$count -Roles RemoteDesktopVirtualizationHost
 }
 
 Install-Lab

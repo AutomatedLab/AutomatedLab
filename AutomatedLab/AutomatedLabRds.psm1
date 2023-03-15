@@ -174,10 +174,11 @@
     }
 
     $destination = Join-Path -Path (Get-LabSourcesLocation -Local) -ChildPath SoftwarePackages
-    Save-Module -Name RDWebClientManagement -Path $destination -AcceptLicense
-    Send-ModuleToPSSession -Module (Get-Module (Join-Path -Path $destination -ChildPath 'RDWebClientManagement/*/RDWebClientManagement.psd1' -Resolve) -ListAvailable) -Session (New-LabPSSession -ComputerName $webAccess)
-    
-    $clientInfo = (Invoke-RestMethod -Uri 'https://go.microsoft.com/fwlink/?linkid=2005418' -UseBasicParsing).packages
+    $mod = Find-Module -Name RDWebClientManagement -Repository PSGallery
+    $mod | Save-Module -Name RDWebClientManagement -Path $destination -AcceptLicense
+    Send-ModuleToPSSession -Module (Get-Module (Join-Path -Path $destination -ChildPath "RDWebClientManagement/$($mod.Version)/RDWebClientManagement.psd1" -Resolve) -ListAvailable) -Session (New-LabPSSession -ComputerName $webAccess)
+
+    $clientInfo = (Invoke-RestMethod -Uri 'https://go.microsoft.com/fwlink/?linkid=2005418' -UseBasicParsing).packages | Sort Version | Select -Last 1
 
     $client = Get-LabInternetFile -NoDisplay -PassThru -Uri $clientInfo.url -Path $labsources/SoftwarePackages -FileName "rdwebclient-$($clientInfo.version).zip"
     $localPath = Copy-LabFileItem -Path $client.FullName -ComputerName $webAccess -PassThru -DestinationFolderPath C:\
@@ -197,14 +198,7 @@
     } -NoDisplay
     $certPath = Join-Path -Path ([IO.Path]::GetTempPath()) -ChildPath LabRootCa.cer
     Receive-File -SourceFilePath C:\LabRootCa.cer -DestinationFilePath $certPath -Session (New-LabPSSession -ComputerName (Get-LabVm -Role CaRoot))
-    <#
-    # This technique does not work in ISE for some reason
-    $cert = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new($certPath)
-    $rootStore = Get-Item cert:\CurrentUser\Root
-    $rootStore.Open("ReadWrite")
-    $rootStore.Add($cert)
-    $rootStore.Close()
-    #>
+
     Write-ScreenInfo -Message "RDWeb Client available at $($prefix)://$gwFqdn/RDWeb/webclient"
     Write-LogFunctionExit
 }
