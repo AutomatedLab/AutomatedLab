@@ -342,7 +342,7 @@ function Get-LabExchangeSetupVersion
         
         (Get-Item -Path $args[0] -ErrorAction SilentlyContinue).VersionInfo
         
-    } -ArgumentList $path -PassThru
+    } -ArgumentList $path -PassThru -NoDisplay
     
     [version]$result.ProductVersion
 }
