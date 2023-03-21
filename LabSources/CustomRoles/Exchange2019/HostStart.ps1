@@ -140,7 +140,21 @@ function Start-ExchangeInstallSequence
     Write-LogFunctionEntry
 
     Write-ScreenInfo -Message "Starting activity '$Activity'" -TaskStart -NoNewLine
+    
+    $exchangeVersion = Get-LabExchangeSetupVersion -DvdDriveLetter $disk.DriveLetter[0] -ComputerName $ComputerName
 
+    #Starting with CU11 the switch '/IAcceptExchangeServerLicenseTerms' was replaced with '/IAcceptExchangeServerLicenseTerms_DiagnosticDataON'
+    $acceptLicenseTerms = if ($exchangeVersion -gt [version]'15.02.0922.027')
+    {
+        ' /IAcceptExchangeServerLicenseTerms_DiagnosticDataON'
+    }
+    else
+    {
+        ' /IAcceptExchangeServerLicenseTerms'
+    }
+    
+    $CommandLine += $acceptLicenseTerms
+    
     try
     {
         $job = Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath "$($disk.DriveLetter)\setup.exe" -CommandLine $CommandLine `
@@ -242,7 +256,7 @@ function Start-ExchangeInstallation
     {
         $disk = Mount-LabIsoImage -ComputerName $prepMachine -IsoPath $exchangeInstallFile.FullName -PassThru -SupressOutput
 
-        $commandLine = '/InstallWindowsComponents /PrepareSchema /IAcceptExchangeServerLicenseTerms_DiagnosticDataON'
+        $commandLine = '/InstallWindowsComponents /PrepareSchema'
         $result = Start-ExchangeInstallSequence -Activity 'Exchange PrepareSchema' -ComputerName $prepMachine -CommandLine $commandLine -ErrorAction Stop
         Set-Variable -Name "AL_Result_PrepareSchema_$prepMachine" -Scope Global -Value $result -Force
 
@@ -254,7 +268,7 @@ function Start-ExchangeInstallation
     {
         $disk = Mount-LabIsoImage -ComputerName $prepMachine -IsoPath $exchangeInstallFile.FullName -PassThru -SupressOutput
 
-        $commandLine = '/PrepareAD /OrganizationName:"{0}" /IAcceptExchangeServerLicenseTerms_DiagnosticDataON' -f $OrganizationName
+        $commandLine = '/PrepareAD /OrganizationName:"{0}"' -f $OrganizationName
         $result = Start-ExchangeInstallSequence -Activity 'Exchange PrepareAD' -ComputerName $prepMachine -CommandLine $commandLine -ErrorAction Stop
         Set-Variable -Name "AL_Result_PrepareAD_$prepMachine" -Scope Global -Value $result -Force
 
@@ -266,7 +280,7 @@ function Start-ExchangeInstallation
     {
         $disk = Mount-LabIsoImage -ComputerName $prepMachine -IsoPath $exchangeInstallFile.FullName -PassThru -SupressOutput
 
-        $commandLine = '/PrepareAllDomains /IAcceptExchangeServerLicenseTerms_DiagnosticDataON'
+        $commandLine = '/PrepareAllDomains'
         $result = Start-ExchangeInstallSequence -Activity 'Exchange PrepareAllDomains' -ComputerName $prepMachine -CommandLine $commandLine -ErrorAction Stop
         Set-Variable -Name "AL_Result_AL_Result_PrepareAllDomains_$prepMachine" -Scope Global -Value $result -Force
 
@@ -293,7 +307,7 @@ function Start-ExchangeInstallation
         $disk = Mount-LabIsoImage -ComputerName $prepMachine -IsoPath $exchangeInstallFile.FullName -PassThru -SupressOutput
 
         #Actual Exchange Installaton
-        $commandLine = '/Mode:Install /Roles:mb,mt /InstallWindowsComponents /OrganizationName:"{0}" /IAcceptExchangeServerLicenseTerms_DiagnosticDataON' -f $OrganizationName
+        $commandLine = '/Mode:Install /Roles:mb,mt /InstallWindowsComponents /OrganizationName:"{0}"' -f $OrganizationName
         $result = Start-ExchangeInstallSequence -Activity 'Exchange Components' -ComputerName $vm -CommandLine $commandLine -ErrorAction Stop
         Set-Variable -Name "AL_Result_ExchangeInstall_$vm" -Value $result -Scope Global
 
@@ -304,6 +318,33 @@ function Start-ExchangeInstallation
         Write-ScreenInfo -Message "Restarting machines '$vm'" -NoNewLine
         Restart-LabVM -ComputerName $vm -Wait -ProgressIndicator 15
     }
+}
+
+function Get-LabExchangeSetupVersion
+{
+    param (
+        [Parameter(Mandatory)]
+        [char]$DvdDriveLetter,
+        
+        [Parameter(Mandatory)]
+        [string]$ComputerName
+    )
+    
+    $path = "$($DvdDriveLetter):\Setup.exe"
+    
+    $result = Invoke-LabCommand -ActivityName "Retrieving Exchange Version from 'Setup.exe' on drive '$DvdDriveLetter'" -ComputerName $ComputerName -ScriptBlock {
+
+        if (-not (Test-Path -Path $args[0]))
+        {
+            Write-Error "The path '$($args[0])' does not exist"
+            return
+        }
+        
+        (Get-Item -Path $args[0] -ErrorAction SilentlyContinue).VersionInfo
+        
+    } -ArgumentList $path -PassThru -NoDisplay
+    
+    [version]$result.ProductVersion
 }
 
 $exchangeDownloadLink = Get-LabConfigurationItem -Name Exchange2019DownloadUrl

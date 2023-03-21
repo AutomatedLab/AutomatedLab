@@ -11,6 +11,8 @@
 
 - Fix issue with relative ISO paths in Mount-LabIsoImage (#1491)
 - Fix wrong test for Scom Web Console (#1493)
+- Fixed an issue with the Exchange 2019 custom role that after the last update was only
+- able to deploy Exchange 2019 CU11 and CU12 because of a change in the command line parameters.
 
 ## 5.47.0 (2022-11-24)
 
