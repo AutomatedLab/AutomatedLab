@@ -855,8 +855,6 @@ function Wait-LabVM
 
                     Set-LWHypervVMDescription -Hashtable $machineMetadata -ComputerName $(Get-LabVM -ComputerName $machine).ResourceName
                 }
-
-                Send-ModuleToPSSession -Module (Get-Module -ListAvailable -Name AutomatedLab.Common | Select-Object -First 1) -Session (New-LabPSSession $machine) -IncludeDependencies -Force
             }
 
             Write-LogFunctionExit
