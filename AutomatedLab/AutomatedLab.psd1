@@ -255,7 +255,8 @@
         'Install-LabSshKnownHost',
         'UnInstall-LabSshKnownHost',
         'Get-LabSshKnownHost',
-        'Initialize-LabWindowsActivation'
+        'Initialize-LabWindowsActivation',
+        'Register-LabAzureRequiredResourceProvider'
     )
 
     AliasesToExport        = @(
