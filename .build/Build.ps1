@@ -85,4 +85,8 @@ if ($IsLinux)
 Resolve-Module -Name Psake, PSDeploy, Pester, BuildHelpers, AutomatedLab.Common, AutomatedLab, Ships, PSFramework, xPSDesiredStateConfiguration, xDscDiagnostics, xWebAdministration
 
 Invoke-psake ./.build/psake.ps1
-exit ( [int]( -not $psake.build_success ) )
+
+if (-not $psake.build_success)
+{
+    throw 'build failed'
+}
