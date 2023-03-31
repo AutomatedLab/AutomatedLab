@@ -19,8 +19,6 @@
 
     DotNetFrameworkVersion = '4.0'
 
-    ModuleList             = @('AutomatedLabWorker')
-
     FunctionsToExport      = @(
         'Add-LWAzureLoadBalancedPort',
         'Add-LWVMVHDX',
@@ -112,27 +110,9 @@
         }
     )
 
-    NestedModules          = @(
-        'AutomatedLabWorkerInternals.psm1',
-        'AutomatedLabWorkerADCS.psm1',
-        'AutomatedLabWorkerDisks.psm1',
-        'AutomatedLabWorkerVirtualMachines.psm1',
-        'AutomatedLabWorkerNetwork.psm1',
-        'AutomatedLabAzureWorkerNetwork.psm1',
-        'AutomatedLabAzureWorkerVirtualMachines.psm1',
-        'AutomatedLabVMWareWorkerVirtualMachines.psm1',
-        'AutomatedLabVMWareWorkerNetwork.psm1')
+    NestedModules          = @( )
 
-    FileList               = @('AutomatedLabWorker.psm1',
-        'AutomatedLabWorkerInternals.psm1',
-        'AutomatedLabWorkerADCS.psm1',
-        'AutomatedLabWorkerDisks.psm1',
-        'AutomatedLabWorkerVirtualMachines.psm1',
-        'AutomatedLabWorkerNetwork.psm1',
-        'AutomatedLabAzureWorkerNetwork.psm1',
-        'AutomatedLabAzureWorkerVirtualMachines.psm1',
-        'AutomatedLabVMWareWorkerVirtualMachines.psm1',
-        'AutomatedLabVMWareWorkerNetwork.psm1')
+    FileList               = @( )
 
 
     PrivateData            = @{

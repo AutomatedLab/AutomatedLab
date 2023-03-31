@@ -19,11 +19,9 @@
 
     DotNetFrameworkVersion = '4.0'
 
-    ModuleList             = @('AutomatedLabDefinition')
+    NestedModules          = @()
 
-    NestedModules          = @('AutomatedLabDefinitionNetwork.psm1', 'AutomatedLabDefinitionAzureServices.psm1')
-
-    FileList               = @('AutomatedLabDefinition.psm1', 'AutomatedLabDefinition.init.ps1', 'AutomatedLabDefinitionNetwork.psm1', 'AutomatedLabDefinitionAzureServices.psm1')
+    FileList               = @()
 
     RequiredModules        = @(
         'AutomatedLabUnattended'
@@ -70,6 +68,7 @@
 
     AliasesToExport = @(
         'Get-LabPostInstallationActivity'
+        'Get-LabPreInstallationActivity'
     )
 
     PrivateData       = @{

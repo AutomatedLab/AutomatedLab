@@ -1,4 +1,4 @@
-﻿$null = mkdir D:\AL
+﻿$null = New-Item -ItemType Directory D:\AL
 
 $ProgressPreference = 'SilentlyContinue'
 

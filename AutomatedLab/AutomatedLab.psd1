@@ -21,42 +21,11 @@
 
     CLRVersion             = '4.0'
 
-    ModuleList             = @('AutomatedLab')
-
-    ScriptsToProcess       = @('AutomatedLab.init.ps1')
+    ScriptsToProcess       = @()
 
     FormatsToProcess       = @('AutomatedLab.format.ps1xml')
 
-    NestedModules          = @(
-        'AutomatedLabAzureServices.psm1',
-        'AutomatedLabADDS.psm1',
-        'AutomatedLabADCS.psm1',
-        'AutomatedLabADFS.psm1',
-        'AutomatedLabDisks.psm1',
-        'AutomatedLabInternals.psm1',
-        'AutomatedLabVirtualMachines.psm1',
-        'AutomatedLabSharePoint.psm1',
-        'AutomatedLabSQL.psm1',
-        'AutomatedLabNetwork.psm1',
-        'AutomatedLabAzure.psm1',
-        'AutomatedLabVMWare.psm1',
-        'AutomatedLabRouting.psm1',
-        'AutomatedLabDsc.psm1',
-        'AutomatedLabOffice.psm1',
-        'AutomatedLabHybrid.psm1',
-        'AutomatedLabFailover.psm1',
-        'AutomatedLabTfs.psm1',
-        'AutomatedLabWac.psm1',
-        'AutomatedLabHyperV.psm1',
-        'AutomatedLabDiskImageLinux.psm1',
-        'AutomatedLabDiskImageWindows.psm1',
-        'AutomatedLabRemoting.psm1',
-        'AutomatedLabScvmm.psm1',
-        'AutomatedLabScom.psm1'
-        'AutomatedLabDynamics.psm1',
-        'AutomatedLabRds.psm1',
-        'AutomatedLabConfigurationManager.psm1'
-    )
+    NestedModules          = @( )
 
     RequiredModules        = @(
         'AutomatedLabDefinition',
@@ -260,35 +229,11 @@
     )
 
     AliasesToExport        = @(
-        'Disable-LabHostRemoting'
+        'Disable-LabHostRemoting',
+        '??'
     )
 
-    FileList               = @(
-        'AutomatedLab.format.ps1xml',
-        'AutomatedLab.init.ps1',
-        'AutomatedLab.psd1',
-        'AutomatedLab.psm1',
-        'AutomatedLabADCS.psm1',
-        'AutomatedLabADDS.psm1',
-        'AutomatedLabADFS.psm1',
-        'AutomatedLabAzure.psm1',
-        'AutomatedLabAzureServices.psm1',
-        'AutomatedLabDisks.psm1',
-        'AutomatedLabDsc.psm1',
-        'AutomatedLabFailover.psm1',
-        'AutomatedLabHybrid.psm1',
-        'AutomatedLabInternals.psm1',
-        'AutomatedLabNetwork.psm1',
-        'AutomatedLabOffice.psm1',
-        'AutomatedLabRouting.psm1',
-        'AutomatedLabSharePoint.psm1',
-        'AutomatedLabSQL.psm1',
-        'AutomatedLabVirtualMachines.psm1',
-        'AutomatedLabVMWare.psm1',
-        'AutomatedLabDiskImageLinux.psm1',
-        'AutomatedLabDiskImageWindows.psm1',
-        'AutomatedLabRds.psm1'
-    )
+    FileList               = @( )
 
     PrivateData       = @{
 

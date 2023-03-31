@@ -19,11 +19,31 @@
 
     DotNetFrameworkVersion = '4.0'
 
-    ModuleList             = @('AutomatedLabUnattended')
-
-    FileList               = @('AutomatedLabUnattended.psm1')
-
     RequiredModules        = @('powershell-yaml')
+
+    FunctionsToExport      = @(
+        'Add-UnattendedNetworkAdapter',
+        'Add-UnattendedRenameNetworkAdapters',
+        'Add-UnattendedSynchronousCommand',
+        'Export-UnattendedFile',
+        'Get-UnattendedContent',
+        'Import-UnattendedContent',
+        'Import-UnattendedFile',
+        'Set-UnattendedAdministratorName',
+        'Set-UnattendedAdministratorPassword',
+        'Set-UnattendedAntiMalware',
+        'Set-UnattendedAutoLogon',
+        'Set-UnattendedComputerName',
+        'Set-UnattendedDomain',
+        'Set-UnattendedFirewallState',
+        'Set-UnattendedIpSettings',
+        'Set-UnattendedLocalIntranetSites',
+        'Set-UnattendedPackage',
+        'Set-UnattendedProductKey',
+        'Set-UnattendedTimeZone',
+        'Set-UnattendedUserLocale',
+        'Set-UnattendedWorkgroup'
+    )
 
     PrivateData            = @{
 

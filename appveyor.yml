@@ -21,9 +21,6 @@ branches:
 
 skip_tags: true
 
-install:
-  - ps: "& $env:APPVEYOR_BUILD_FOLDER/.build/install.ps1"
-
 dotnet_csproj:
   patch: true
   file: '**\LabXml.csproj'
@@ -41,14 +38,16 @@ assembly_info:
   assembly_informational_version: "{version}"
 
 before_build:
-  - ps: "& $env:APPVEYOR_BUILD_FOLDER/.build/beforebuild.ps1"
+  - ps: "& $env:APPVEYOR_BUILD_FOLDER/.build/01-prerequisites.ps1"
+
+build_script:
+  - ps: "& $env:APPVEYOR_BUILD_FOLDER/.build/02-build.ps1"
+  - ps: "& $env:APPVEYOR_BUILD_FOLDER/.build/03-validate.ps1"
 
 for:
   - matrix:
       only:
         - image: Visual Studio 2022
-    build:
-      project: AutomatedLab.sln
     deploy:
       - provider: GitHub
         description: "This is an automated deployment"
@@ -73,7 +72,6 @@ for:
   - matrix:
       only:
         - image: Ubuntu2004
-    build_script: dotnet build -f net6.0 LabXml/LabXml.csproj
     deploy:
       - provider: GitHub
         description: "This is an automated deployment"
@@ -117,8 +115,5 @@ for:
           branch: develop
 
 after_build:
-  - ps: "& $env:APPVEYOR_BUILD_FOLDER/.build/afterbuild.ps1"
-  - ps: "& $env:APPVEYOR_BUILD_FOLDER/.build/afterdeploy.ps1"
+  - ps: "& $env:APPVEYOR_BUILD_FOLDER/.build/04-publish.ps1"
 
-on_finish:
-  - ps: "& $env:APPVEYOR_BUILD_FOLDER/.build/onfinish.ps1"
