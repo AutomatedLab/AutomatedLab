@@ -173,6 +173,7 @@ function New-LabPSSession
 
             if (((Get-Command New-PSSession).Parameters.Values.Name -contains 'HostName') -and -not [string]::IsNullOrWhiteSpace($m.SshPrivateKeyPath))
             {
+                Write-PSFMessage -Message "Using private key from $($m.SshPrivateKeyPath) to connect to $($m.Name)"
                 $param['HostName'] = $param['ComputerName']
                 $param.Remove('ComputerName')
                 $param.Remove('PSSessionOption')
@@ -1339,8 +1340,8 @@ function Install-LabSshKnownHost
         if ((Get-LabVmStatus -ComputerName $machine) -ne 'Started' ) {continue}
         if ($lab.DefaultVirtualizationEngine -eq 'Azure')
         {
-            $keyScanHost = ssh-keyscan -p $machine.LoadBalancerSshPort $machine.AzureConnectionInfo.DnsName 2>$null | ConvertFrom-String -Delimiter ' ' -PropertyNames ComputerName,Cipher,Fingerprint -ErrorAction SilentlyContinue
-            $keyScanIp = ssh-keyscan -p $machine.LoadBalancerSshPort $machine.AzureConnectionInfo.VIP 2>$null | ConvertFrom-String -Delimiter ' ' -PropertyNames ComputerName,Cipher,Fingerprint -ErrorAction SilentlyContinue
+            $keyScanHosts = ssh-keyscan -p $machine.LoadBalancerSshPort $machine.AzureConnectionInfo.DnsName 2>$null | ConvertFrom-String -Delimiter ' ' -PropertyNames ComputerName,Cipher,Fingerprint -ErrorAction SilentlyContinue
+            $keyScanIps = ssh-keyscan -p $machine.LoadBalancerSshPort $machine.AzureConnectionInfo.VIP 2>$null | ConvertFrom-String -Delimiter ' ' -PropertyNames ComputerName,Cipher,Fingerprint -ErrorAction SilentlyContinue
 
             foreach ($keyScanHost in $keyScanHosts)
             {
@@ -1348,7 +1349,15 @@ function Install-LabSshKnownHost
                 if (-not $sshHostEntry -or $keyScanHost.Fingerprint -ne $sshHostEntry.Fingerprint)
                 {
                     Write-ScreenInfo -Type Verbose -Message ("Adding line to $home/.ssh/known_hosts: {0} {1} {2}" -f $keyScanHost.ComputerName,$keyScanHost.Cipher,$keyScanHost.Fingerprint)
-                    '{0} {1} {2}' -f $keyScanHost.ComputerName,$keyScanHost.Cipher,$keyScanHost.Fingerprint | Add-Content $home/.ssh/known_hosts
+                    try
+                    {
+                        '{0} {1} {2}' -f $keyScanHost.ComputerName,$keyScanHost.Cipher,$keyScanHost.Fingerprint | Add-Content $home/.ssh/known_hosts -ErrorAction Stop
+                    }
+                    catch
+                    {
+                        Start-Sleep -Milliseconds 125
+                        '{0} {1} {2}' -f $keyScanHost.ComputerName,$keyScanHost.Cipher,$keyScanHost.Fingerprint | Add-Content $home/.ssh/known_hosts
+                    }
                 }
             }
 
@@ -1358,7 +1367,15 @@ function Install-LabSshKnownHost
                 if (-not $sshHostEntryIp -or $keyScanIp.Fingerprint -ne $sshHostEntryIp.Fingerprint)
                 {
                     Write-ScreenInfo -Type Verbose -Message ("Adding line to $home/.ssh/known_hosts: {0} {1} {2}" -f $keyScanIp.ComputerName,$keyScanIp.Cipher,$keyScanIp.Fingerprint)
-                    '{0} {1} {2}' -f $keyScanIp.ComputerName,$keyScanIp.Cipher,$keyScanIp.Fingerprint | Add-Content $home/.ssh/known_hosts
+                    try
+                    {
+                        '{0} {1} {2}' -f $keyScanIp.ComputerName,$keyScanIp.Cipher,$keyScanIp.Fingerprint | Add-Content $home/.ssh/known_hosts -ErrorAction Stop
+                    }
+                    catch
+                    {
+                        Start-Sleep -Milliseconds 125
+                        '{0} {1} {2}' -f $keyScanIp.ComputerName,$keyScanIp.Cipher,$keyScanIp.Fingerprint | Add-Content $home/.ssh/known_hosts
+                    }
                 }
             }
         }
@@ -1371,7 +1388,15 @@ function Install-LabSshKnownHost
                 if (-not $sshHostEntry -or $keyScanHost.Fingerprint -ne $sshHostEntry.Fingerprint)
                 {
                     Write-ScreenInfo -Type Verbose -Message ("Adding line to $home/.ssh/known_hosts: {0} {1} {2}" -f $keyScanHost.ComputerName,$keyScanHost.Cipher,$keyScanHost.Fingerprint)
-                    '{0} {1} {2}' -f $keyScanHost.ComputerName,$keyScanHost.Cipher,$keyScanHost.Fingerprint | Add-Content $home/.ssh/known_hosts
+                    try
+                    {
+                        '{0} {1} {2}' -f $keyScanHost.ComputerName,$keyScanHost.Cipher,$keyScanHost.Fingerprint | Add-Content $home/.ssh/known_hosts -ErrorAction Stop
+                    }
+                    catch
+                    {
+                        Start-Sleep -Milliseconds 125
+                        '{0} {1} {2}' -f $keyScanHost.ComputerName,$keyScanHost.Cipher,$keyScanHost.Fingerprint | Add-Content $home/.ssh/known_hosts
+                    }
                 }
             }
             if ($machine.IpV4Address)
@@ -1383,7 +1408,15 @@ function Install-LabSshKnownHost
                     if (-not $sshHostEntryIp -or $keyScanIp.Fingerprint -ne $sshHostEntryIp.Fingerprint)
                     {
                         Write-ScreenInfo -Type Verbose -Message ("Adding line to $home/.ssh/known_hosts: {0} {1} {2}" -f $keyScanIp.ComputerName,$keyScanIp.Cipher,$keyScanIp.Fingerprint)
-                        '{0} {1} {2}' -f $keyScanIp.ComputerName,$keyScanIp.Cipher,$keyScanIp.Fingerprint | Add-Content $home/.ssh/known_hosts
+                        try
+                        {
+                            '{0} {1} {2}' -f $keyScanIp.ComputerName,$keyScanIp.Cipher,$keyScanIp.Fingerprint | Add-Content $home/.ssh/known_hosts -ErrorAction Stop
+                        }
+                        catch
+                        {
+                            Start-Sleep -Milliseconds 125
+                            '{0} {1} {2}' -f $keyScanIp.ComputerName,$keyScanIp.Cipher,$keyScanIp.Fingerprint | Add-Content $home/.ssh/known_hosts
+                        }
                     }
                 }
             }
@@ -1411,15 +1444,15 @@ function UnInstall-LabSshKnownHost
     {
         if ($lab.DefaultVirtualizationEngine -eq 'Azure')
         {
-            $content = $content | Where {$_ -notmatch "$($machine.AzureConnectionInfo.DnsName.Replace('.','\.'))\s.*"}
-            $content = $content | Where {$_ -notmatch "$($machine.AzureConnectionInfo.VIP.Replace('.','\.'))\s.*"}
+            $content = $content | Where {$_ -notmatch "$($machine.AzureConnectionInfo.DnsName.Replace('.','\.'))"}
+            $content = $content | Where {$_ -notmatch "$($machine.AzureConnectionInfo.VIP.Replace('.','\.'))"}
         }
         else
         {
             $content = $content | Where {$_ -notmatch "$($machine.Name)\s.*"}
             if ($machine.IpV4Address)
             {
-                $content = $content | Where {$_ -notmatch "$($machine.Ipv4Address.Replace('.','\.'))\s.*"}
+                $content = $content | Where {$_ -notmatch "$($machine.Ipv4Address.Replace('.','\.'))"}
             }
         }
     }

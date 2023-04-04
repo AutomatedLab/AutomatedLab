@@ -31,14 +31,13 @@
     {
         $providers = Get-AzResourceProvider -Location $lab.AzureSettings.DefaultLocation.Location -ErrorAction SilentlyContinue | Where-Object RegistrationState -eq 'Registered'
         $provHash = @{
-            NicApi             = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'networkInterfaces').ApiVersions[0] # 2022-01-01
-            DiskApi            = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Compute').ResourceTypes | Where-Object ResourceTypeName -eq 'disks').ApiVersions[0] # 2022-01-01
-            LoadBalancerApi    = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'loadBalancers').ApiVersions[0] # 2022-01-01
-            PublicIpApi        = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'publicIpAddresses').ApiVersions[0] # 2022-01-01
-            VirtualNetworkApi  = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'virtualNetworks').ApiVersions[0] # 2022-01-01
-            NsgApi             = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'networkSecurityGroups').ApiVersions[0] # 2022-01-01
-            AvailabilitySetApi = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Compute').ResourceTypes | Where-Object ResourceTypeName -eq 'availabilitySets').ApiVersions[1] # 2022-03-01
-            VmApi              = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Compute').ResourceTypes | Where-Object ResourceTypeName -eq 'virtualMachines').ApiVersions[1] # 2022-03-01
+            NicApi            = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'networkInterfaces').ApiVersions[0] # 2022-01-01
+            DiskApi           = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Compute').ResourceTypes | Where-Object ResourceTypeName -eq 'disks').ApiVersions[0] # 2022-01-01
+            LoadBalancerApi   = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'loadBalancers').ApiVersions[0] # 2022-01-01
+            PublicIpApi       = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'publicIpAddresses').ApiVersions[0] # 2022-01-01
+            VirtualNetworkApi = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'virtualNetworks').ApiVersions[0] # 2022-01-01
+            NsgApi            = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Network').ResourceTypes | Where-Object ResourceTypeName -eq 'networkSecurityGroups').ApiVersions[0] # 2022-01-01
+            VmApi             = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Compute').ResourceTypes | Where-Object ResourceTypeName -eq 'virtualMachines').ApiVersions[1] # 2022-03-01
         }
         if (-not $lab.AzureSettings.IsAzureStack)
         {
@@ -46,7 +45,6 @@
         }
         if ($lab.AzureSettings.IsAzureStack)
         {
-            $provHash.AvailabilitySetApi = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Compute').ResourceTypes | Where-Object ResourceTypeName -eq 'availabilitySets').ApiVersions[0]
             $provHash.VmApi = (($providers | Where-Object ProviderNamespace -eq 'Microsoft.Compute').ResourceTypes | Where-Object ResourceTypeName -eq 'virtualMachines').ApiVersions[0]
         }
         $provHash
@@ -54,34 +52,32 @@
     elseif ($Lab.AzureSettings.IsAzureStack)
     {
         @{
-            NicApi             = '2018-11-01'
-            DiskApi            = '2018-11-01'
-            AvailabilitySetApi = '2020-06-01'
-            LoadBalancerApi    = '2018-11-01'
-            PublicIpApi        = '2018-11-01'
-            VirtualNetworkApi  = '2018-11-01'
-            NsgApi             = '2018-11-01'
-            VmApi              = '2020-06-01'
+            NicApi            = '2018-11-01'
+            DiskApi           = '2018-11-01'
+            LoadBalancerApi   = '2018-11-01'
+            PublicIpApi       = '2018-11-01'
+            VirtualNetworkApi = '2018-11-01'
+            NsgApi            = '2018-11-01'
+            VmApi             = '2020-06-01'
         }
     }
     else
     {
         @{
-            NicApi             = '2022-01-01'
-            DiskApi            = '2022-01-01'
-            AvailabilitySetApi = '2022-03-01'
-            LoadBalancerApi    = '2022-01-01'
-            PublicIpApi        = '2022-01-01'
-            VirtualNetworkApi  = '2022-01-01'
-            BastionHostApi     = '2022-01-01'
-            NsgApi             = '2022-01-01'
-            VmApi              = '2022-03-01'
+            NicApi            = '2022-01-01'
+            DiskApi           = '2022-01-01'
+            LoadBalancerApi   = '2022-01-01'
+            PublicIpApi       = '2022-01-01'
+            VirtualNetworkApi = '2022-01-01'
+            BastionHostApi    = '2022-01-01'
+            NsgApi            = '2022-01-01'
+            VmApi             = '2022-03-01'
         }
     }
     
     #region Network Security Group
     Write-ScreenInfo -Type Verbose -Message 'Adding network security group to template, enabling traffic to ports 3389,5985,5986,22 for VMs behind load balancer'
-    [string[]]$allowedIps = (Get-LabVm).AzureProperties["LoadBalancerAllowedIp"] | Foreach-Object { $_ -split '\s*[,;]\s*' } | Where-Object { -not [string]::IsNullOrWhitespace($_) }
+    [string[]]$allowedIps = (Get-LabVm -IncludeLinux).AzureProperties["LoadBalancerAllowedIp"] | Foreach-Object { $_ -split '\s*[,;]\s*' } | Where-Object { -not [string]::IsNullOrWhitespace($_) }
     $nsg = @{
         type       = "Microsoft.Network/networkSecurityGroups"
         apiVersion = $apiVersions['NsgApi']
@@ -232,12 +228,6 @@
                     dnsServers = @()
                 }
             }
-        }
-
-        if ($network.DnsServers -and -not $lab.AzureSettings.IsAzureStack)
-        {
-            Write-ScreenInfo -Type Verbose -Message ('Adding DNS Servers to VNet template: {0}' -f $network.DnsServers)
-            $vNet.properties.dhcpOptions.dnsServers = [string[]]($network.DnsServers.AddressAsString)
         }
 
         if (-not $network.Subnets)
@@ -544,26 +534,6 @@
         $template.resources += $loadBalancer
         #endregion
 
-        #region AvailabilitySet
-        Write-ScreenInfo -Type Verbose -Message ('Adding availability set to template')
-        $template.resources += @{
-            type       = "Microsoft.Compute/availabilitySets"
-            tags       = @{ 
-                AutomatedLab = $Lab.Name
-                CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
-            }
-            apiVersion = $apiVersions['AvailabilitySetApi']
-            name       = "$($network.ResourceName)"
-            location   = "[resourceGroup().location]"
-            sku        = @{
-                name = "Aligned"
-            }
-            properties = @{
-                platformUpdateDomainCount = 2
-                platformFaultDomainCount  = 2
-            }
-        }
-        #endregion
         $vnetCount++
     }
 
@@ -725,17 +695,12 @@
                 AutomatedLab = $Lab.Name
                 CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
             }
-            dependsOn  = @(
-                "[resourceId('Microsoft.Compute/availabilitySets', '$($machNet.ResourceName)')]"
-            )
+            dependsOn  = @()
             properties = @{
-                availabilitySet = @{
-                    id = "[resourceId('Microsoft.Compute/availabilitySets', '$($machNet.ResourceName)')]"
-                }
                 storageProfile  = @{
                     osDisk         = @{
                         createOption = "FromImage"
-                        osType       = "Windows"
+                        osType       = $Machine.OperatingSystemType.ToString()
                         caching      = "ReadWrite"
                         managedDisk  = @{
                             storageAccountType = if ($Machine.AzureProperties.ContainsKey('StorageSku') -and $Machine.AzureProperties['StorageSku'] -notmatch 'ultra')
@@ -763,18 +728,7 @@
                     adminPassword            = $machine.GetLocalCredential($true).GetNetworkCredential().Password
                     computerName             = $machine.Name
                     allowExtensionOperations = $true
-                    adminUsername            = ($machine.GetLocalCredential($true).UserName -split '\\')[-1]
-                    windowsConfiguration     = @{
-                        enableAutomaticUpdates = $true
-                        provisionVMAgent       = $true
-                        winRM                  = @{
-                            listeners = @(
-                                @{
-                                    protocol = "Http"
-                                }
-                            )
-                        }
-                    }
+                    adminUsername            = if ($machine.OperatingSystemType -eq 'Linux') { 'automatedlab' } else { ($machine.GetLocalCredential($true).UserName -split '\\')[-1] }
                 }
                 hardwareProfile = @{
                     vmSize = $vmSize.Name
@@ -784,12 +738,56 @@
             apiVersion = $apiVersions['VmApi']
             location   = "[resourceGroup().location]"
         }
+
+        if ($machine.OperatingSystem.OperatingSystemName -like 'Kali*')
+        {
+            # This is a marketplace offer, so we have to do redundant stuff for no good reason
+            $machTemplate.plan = @{
+                name      = $imageRef.sku # Otherwise known as sku
+                product   = $imageRef.offer # Otherwise known as offer
+                publisher = $imageRef.publisher # publisher
+            }
+        }
+
+        if ($machine.OperatingSystemType -eq 'Windows')
+        {
+            $machTemplate.properties.osProfile.windowsConfiguration = @{
+                enableAutomaticUpdates = $true
+                provisionVMAgent       = $true
+                winRM                  = @{
+                    listeners = @(
+                        @{
+                            protocol = "Http"
+                        }
+                    )
+                }
+            }
+        }
+
+        if ($machine.OperatingSystemType -eq 'Linux')
+        {
+            if ($machine.SshPublicKey)
+            {
+                $machTemplate.properties.osProfile.linuxConfiguration = @{
+                    disablePasswordAuthentication = $true
+                    enableVMAgentPlatformUpdates  = $true
+                    provisionVMAgent              = $true
+                    ssh                           = @{
+                        publicKeys = [hashtable[]]@(@{
+                                keyData = $machine.SshPublicKey
+                                path    = "/home/automatedlab/.ssh/authorized_keys"
+                            }
+                        )
+                    }
+                }
+            }
+        }
         
         if ($machine.AzureProperties['EnableSecureBoot'] -and -not $lab.AzureSettings.IsAzureStack) # Available only in public regions
         {            
             $machTemplate.properties.securityProfile = @{
-                securityType     = 'TrustedLaunch'
-                uefiSettings     = @{
+                securityType = 'TrustedLaunch'
+                uefiSettings = @{
                     secureBootEnabled = $true
                     vTpmEnabled       = $Machine.AzureProperties['EnableTpm'] -match '1|true|yes'
                 }
@@ -1091,7 +1089,7 @@ function Get-LWAzureSku
         }
 
         $vmImage = $lab.AzureSettings.VmImages |
-        Where-Object Skus -eq $vmImageName  |
+        Where-Object { "$($_.Skus)_$($_.PublisherName)" -eq $vmImageName }  |
         Select-Object -First 1
 
         $offerName = $vmImageName = ($vmImage).Offer
@@ -1613,10 +1611,10 @@ Subsystem powershell c:/progra~1/powershell/7/pwsh.exe -sshs -NoLogo
         $time = $lab.AzureSettings.AutoShutdownTime
         $tz = if (-not $lab.AzureSettings.AutoShutdownTimeZone) { Get-TimeZone } else { Get-TimeZone -Id $lab.AzureSettings.AutoShutdownTimeZone }
         Write-ScreenInfo -Message "Configuring auto-shutdown of all VMs daily at $($time) in timezone $($tz.Id)"
-        Enable-LWAzureAutoShutdown -ComputerName (Get-LabVm | Where-Object Name -notin $machineSpecific.Name) -Time $time -TimeZone $tz.Id -Wait
+        Enable-LWAzureAutoShutdown -ComputerName (Get-LabVm -IncludeLinux | Where-Object Name -notin $machineSpecific.Name) -Time $time -TimeZone $tz.Id -Wait
     }
 
-    $machineSpecific = Get-LabVm -SkipConnectionInfo | Where-Object {
+    $machineSpecific = Get-LabVm -SkipConnectionInfo -IncludeLinux | Where-Object {
         $_.AzureProperties.ContainsKey('AutoShutdownTime')
     }
 
@@ -1630,7 +1628,8 @@ Subsystem powershell c:/progra~1/powershell/7/pwsh.exe -sshs -NoLogo
 
     Write-ScreenInfo -Message 'Configuring localization and additional disks' -TaskStart -NoNewLine
     if (-not $lab.AzureSettings.IsAzureStack) { $labsourcesStorage = Get-LabAzureLabSourcesStorage }
-    $jobs = foreach ($m in $Machine)
+    $jobs = [System.Collections.ArrayList]::new()
+    foreach ($m in ($Machine | Where-Object OperatingSystemType -eq 'Windows'))
     {
         [string[]]$DnsServers = ($m.NetworkAdapters | Where-Object { $_.VirtualSwitch.Name -eq $Lab.Name }).Ipv4DnsServers.AddressAsString
         $azVmDisks = (Get-AzVm -Name $m.ResourceName -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName).StorageProfile.DataDisks
@@ -1716,27 +1715,92 @@ Subsystem powershell c:/progra~1/powershell/7/pwsh.exe -sshs -NoLogo
         }
         else
         {
-            Invoke-AzVMRunCommand -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName -VMName $m.ResourceName -ScriptPath $initScriptFile -Parameter $scriptParam -CommandId 'RunPowerShellScript' -ErrorAction Stop -AsJob
+            $null = $jobs.Add((Invoke-AzVMRunCommand -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName -VMName $m.ResourceName -ScriptPath $initScriptFile -Parameter $scriptParam -CommandId 'RunPowerShellScript' -ErrorAction Stop -AsJob))
         }
     }
 
-    $initScriptFile | Remove-Item -ErrorAction SilentlyContinue
+
+    $initScriptLinux = @'
+sudo sed -i 's|[#]*GSSAPIAuthentication yes|GSSAPIAuthentication yes|g' /etc/ssh/sshd_config
+sudo sed -i 's|[#]*PasswordAuthentication yes|PasswordAuthentication no|g' /etc/ssh/sshd_config
+sudo sed -i 's|[#]*PubkeyAuthentication yes|PubkeyAuthentication yes|g' /etc/ssh/sshd_config
+if [ -n "$(sudo cat /etc/ssh/sshd_config | grep 'Subsystem powershell')" ]; then
+    echo "PowerShell subsystem configured"
+else
+    echo "Subsystem powershell /usr/bin/pwsh -sshs -NoLogo -NoProfile" | sudo tee --append /etc/ssh/sshd_config
+fi
+sudo mkdir -p /usr/local/share/powershell 2>/dev/null
+sudo chmod 777 -R /usr/local/share/powershell
+
+if [ -n "$(which apt 2>/dev/null)" ]; then
+    curl -sSL https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
+    curl -sSL https://packages.microsoft.com/keys/microsoft.asc | sudo tee /etc/apt/trusted.gpg.d/microsoft.asc
+    sudo apt update
+    sudo apt install -y wget apt-transport-https software-properties-common
+    wget -q "https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb"
+    sudo dpkg -i packages-microsoft-prod.deb
+    sudo apt update
+    sudo apt install -y powershell
+    sudo apt install -y openssl omi omi-psrp-server
+    sudo apt install -y oddjob oddjob-mkhomedir sssd adcli krb5-workstation realmd samba-common samba-common-tools authselect-compat openssh-server
+elif [ -n "$(which yum 2>/dev/null)" ]; then
+    sudo rpm -Uvh "https://packages.microsoft.com/config/rhel/$(sudo cat /etc/redhat-release | grep -oP "(\d)" | head -1)/packages-microsoft-prod.rpm"
+    sudo yum install -y powershell
+    sudo yum install -y openssl omi omi-psrp-server
+    sudo yum install -y oddjob oddjob-mkhomedir sssd adcli krb5-workstation realmd samba-common samba-common-tools authselect-compat openssh-server
+elif [ -n "$(which dnf 2>/dev/null)" ]; then
+    sudo rpm -Uvh https://packages.microsoft.com/config/rhel/$(sudo cat /etc/redhat-release | grep -oP "(\d)" | head -1)/packages-microsoft-prod.rpm
+    sudo dnf install -y powershell
+    sudo dnf install -y openssl omi omi-psrp-server
+    sudo dnf install -y oddjob oddjob-mkhomedir sssd adcli krb5-workstation realmd samba-common samba-common-tools authselect-compat openssh-server
+fi
+sudo systemctl restart sshd
+'@
+    $linuxInitFiles = foreach ($m in ($Machine | Where-Object OperatingSystemType -eq 'Linux'))
+    {
+        if ($Lab.AzureSettings.IsAzureStack)
+        {
+            Write-ScreenInfo -Type Warning -Message 'Linux VMs not yet implemented on Azure Stack, sorry.'
+            continue
+        }
+
+        $initScriptFileLinux = New-Item -ItemType File -Path (Join-Path -Path ([IO.Path]::GetTempPath()) -ChildPath "$($Lab.Name)$($m.Name)vminitlinux.bash") -Force
+        $initScriptLinux | Set-Content -Path $initScriptFileLinux -Force
+        $initScriptFileLinux
+
+        $null = $jobs.Add((Invoke-AzVMRunCommand -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName -VMName $m.ResourceName -ScriptPath $initScriptFileLinux.FullName -CommandId 'RunShellScript' -ErrorAction Stop -AsJob))
+    }
 
     if ($jobs)
     {
         Wait-LWLabJob -Job $jobs -ProgressIndicator 5 -Timeout 30 -NoDisplay
     }
 
+    $initScriptFile | Remove-Item -ErrorAction SilentlyContinue
+    $linuxInitFiles | Copy-Item -Destination $Lab.LabPath
+    $linuxInitFiles | Remove-Item -ErrorAction SilentlyContinue
+
+    # And once again for all the VMs that for some unknown reason did not *really* execute the RunCommand
+    if (Get-Command ssh -ErrorAction SilentlyContinue)
+    {
+        Install-LabSshKnownHost
+        foreach ($m in ($Machine | Where-Object {$_.OperatingSystemType -eq 'Linux' -and $_.SshPrivateKeyPath}))
+        {
+            $ci = $m.AzureConnectionInfo
+            $null = ssh -p $ci.SshPort "automatedlab@$($ci.DnsName)" -i $m.SshPrivateKeyPath $initScriptLinux 2>$null
+        }
+    }
+
     # Wait for VM extensions to be "done"
     if ($lab.AzureSettings.IsAzureStack)
     {
-        $extensionStatuus = Get-LabVm | Foreach-Object { Get-AzVMCustomScriptExtension -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName -VMName $_.ResourceName -Name initcustomizations -ErrorAction SilentlyContinue }
+        $extensionStatuus = Get-LabVm -IncludeLinux | Foreach-Object { Get-AzVMCustomScriptExtension -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName -VMName $_.ResourceName -Name initcustomizations -ErrorAction SilentlyContinue }
         $start = Get-Date
         $timeout = New-TimeSpan -Minutes 5
         while (($extensionStatuus.ProvisioningState -contains 'Updating' -or $extensionStatuus.ProvisioningState -contains 'Creating') -and ((Get-Date) - $start) -lt $timeout)
         {
             Start-Sleep -Seconds 5
-            $extensionStatuus = Get-LabVm | Foreach-Object { Get-AzVMCustomScriptExtension -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName -VMName $_.ResourceName -Name initcustomizations -ErrorAction SilentlyContinue }
+            $extensionStatuus = Get-LabVm -IncludeLinux | Foreach-Object { Get-AzVMCustomScriptExtension -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName -VMName $_.ResourceName -Name initcustomizations -ErrorAction SilentlyContinue }
         }
 
         foreach ($network in $Lab.VirtualNetworks)
@@ -1747,9 +1811,19 @@ Subsystem powershell c:/progra~1/powershell/7/pwsh.exe -sshs -NoLogo
             $null = $vnet | Set-AzVirtualNetwork
         }
     }
-    Install-LabSshKnownHost
-    Copy-LabFileItem -Path (Get-ChildItem -Path "$((Get-Module -Name AutomatedLab)[0].ModuleBase)\Tools\HyperV\*") -DestinationFolderPath /AL -ComputerName $Machine -UseAzureLabSourcesOnAzureVm $false
-    Send-ModuleToPSSession -Module (Get-Module -ListAvailable -Name AutomatedLab.Common | Select-Object -First 1) -Session (New-LabPSSession $Machine) -IncludeDependencies -Force
+
+    Copy-LabFileItem -Path (Get-ChildItem -Path "$((Get-Module -Name AutomatedLab)[0].ModuleBase)\Tools\HyperV\*") -DestinationFolderPath /AL -ComputerName ($Machine | Where OperatingSystemType -eq 'Windows') -UseAzureLabSourcesOnAzureVm $false
+    $sessions = if ($PSVersionTable.PSVersion -ge 7)
+    {
+        New-LabPSSession $Machine
+    }
+    else
+    {
+        Write-ScreenInfo -Type Warning -Message "Skipping copy of AutomatedLab.Common to Linux VMs as Windows PowerShell is used on the host."
+        New-LabPSSession ($Machine | Where OperatingSystemType -eq 'Windows')
+    }
+
+    Send-ModuleToPSSession -Module (Get-Module -ListAvailable -Name AutomatedLab.Common | Select-Object -First 1) -Session $sessions -IncludeDependencies -Force
     Write-ScreenInfo -Message 'Finished' -TaskEnd
 
     Write-ScreenInfo -Message 'Stopping all new machines except domain controllers'
@@ -1843,7 +1917,7 @@ function Start-LWAzureVM
     Write-LogFunctionEntry
 
     $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
-    $machines = Get-LabVm -ComputerName $ComputerName
+    $machines = Get-LabVm -ComputerName $ComputerName -IncludeLinux
 
     $azureVms = Get-LWAzureVm -ComputerName $ComputerName
 
@@ -2108,7 +2182,7 @@ function Get-LWAzureVMStatus
     $result = @{ }
     $azureVms = Get-LWAzureVm @PSBoundParameters
 
-    $resourceGroups = (Get-LabVM).AzureConnectionInfo.ResourceGroupName | Select-Object -Unique
+    $resourceGroups = (Get-LabVM -IncludeLinux).AzureConnectionInfo.ResourceGroupName | Select-Object -Unique
     $azureVms = $azureVms | Where-Object { $_.Name -in $ComputerName -and $_.ResourceGroupName -in $resourceGroups }
 
     $vmTable = @{ }
@@ -2230,11 +2304,11 @@ function Enable-LWAzureVMRemoting
 
     if ($ComputerName)
     {
-        $machines = Get-LabVM -All | Where-Object Name -in $ComputerName
+        $machines = Get-LabVM -All -IncludeLinux | Where-Object Name -in $ComputerName
     }
     else
     {
-        $machines = Get-LabVM -All
+        $machines = Get-LabVM -All -IncludeLinux
     }
 
     $script = {
@@ -2581,7 +2655,7 @@ function Checkpoint-LWAzureVM
 
     $lab = Get-Lab
     $resourceGroupName = $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName
-    $runningMachines = Get-LabVM -IsRunning -ComputerName $ComputerName
+    $runningMachines = Get-LabVM -IsRunning -ComputerName $ComputerName -IncludeLinux
     if ($runningMachines)
     {
         Stop-LWAzureVM -ComputerName $runningMachines -StayProvisioned $true
@@ -2652,7 +2726,7 @@ function Restore-LWAzureVmSnapshot
     $lab = Get-Lab
     $resourceGroupName = $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName
 
-    $runningMachines = Get-LabVM -IsRunning -ComputerName $ComputerName
+    $runningMachines = Get-LabVM -IsRunning -ComputerName $ComputerName -IncludeLinux
     if ($runningMachines)
     {
         Stop-LWAzureVM -ComputerName $runningMachines -StayProvisioned $true

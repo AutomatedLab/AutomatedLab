@@ -24,9 +24,10 @@ if (-not $IsLinux)
 else
 {
   # Ruby tool FPM can build packages for multiple distributions
-  sudo apt update
+  apt-get update --allow-releaseinfo-change
+  apt-get update
   #sudo apt upgrade -y
-  sudo apt install alien -y
+  sudo apt-get install alien -y
 }
 Install-Module PSFramework, powershell-yaml -Repo PSGallery -Force
 Import-Module powershell-yaml

@@ -6,6 +6,8 @@
 
 - Migrated AppInsights from Instrumentation Key to Connection String (#1483)
 - Enable using 32bit lab OSses as well (#1490)
+- Linux SKUs supported in Azure labs (yay, #1499)
+- Make Get-LabAvailableOperatingSystem aware of context (i.e. if Lab is on Azure)
 
 ### Bugs
 
