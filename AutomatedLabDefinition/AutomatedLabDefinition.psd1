@@ -23,11 +23,7 @@
 
     FileList               = @()
 
-    RequiredModules        = @(
-        'AutomatedLabUnattended'
-        'PSLog'
-        'PSFramework'
-    )
+    RequiredModules        = @( )
 
     CmdletsToExport        = @()
 

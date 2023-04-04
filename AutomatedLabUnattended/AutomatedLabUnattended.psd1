@@ -19,7 +19,7 @@
 
     DotNetFrameworkVersion = '4.0'
 
-    RequiredModules        = @('powershell-yaml')
+    RequiredModules        = @( )
 
     FunctionsToExport      = @(
         'Add-UnattendedNetworkAdapter',

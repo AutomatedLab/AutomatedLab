@@ -19,7 +19,7 @@
 
     DotNetFrameworkVersion = '3.5'
 
-    RequiredModules        = @('PSFramework')
+    RequiredModules        = @( )
 
     FunctionsToExport      = @(
         'Get-CallerPreference',

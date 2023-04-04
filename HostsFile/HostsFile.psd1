@@ -23,7 +23,7 @@
 
     FileList               = @()
 
-    RequiredModules        = @('PSFramework')
+    RequiredModules        = @( )
 
     PrivateData            = @{
 

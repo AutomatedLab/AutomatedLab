@@ -100,15 +100,7 @@
         'Wait-LWVMWareRestartVM'
     )
 
-    RequiredModules        = @(
-        'AutomatedLabUnattended',
-        'PSLog',
-        'PSFileTransfer',
-        @{
-            ModuleName    = "AutomatedLab.Common";
-            ModuleVersion = "2.3.17";
-        }
-    )
+    RequiredModules        = @( )
 
     NestedModules          = @( )
 

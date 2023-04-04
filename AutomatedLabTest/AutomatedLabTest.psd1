@@ -42,8 +42,5 @@
         }
     }
 
-    RequiredModules        = @(
-        @{ ModuleName = 'Pester'; ModuleVersion = '5.0.0'; }
-        @{ ModuleName = 'PSFramework'; ModuleVersion = '1.1.59' }
-    )
+    RequiredModules        = @( )
 }

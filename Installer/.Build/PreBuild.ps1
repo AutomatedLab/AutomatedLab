@@ -8,7 +8,7 @@
 
     [Parameter()]
     [string[]]
-    $InternalModules = @('AutomatedLab', 'AutomatedLab.Recipe', 'AutomatedLab.Ships', 'AutomatedLabDefinition', 'AutomatedLabNotifications', 'AutomatedLabTest', 'AutomatedLabUnattended', 'AutomatedLabWorker', 'HostsFile', 'PSFileTransfer', 'PSLog')
+    $InternalModules = @('AutomatedLab', 'AutomatedLabCore', 'AutomatedLab.Recipe', 'AutomatedLab.Ships', 'AutomatedLabDefinition', 'AutomatedLabNotifications', 'AutomatedLabTest', 'AutomatedLabUnattended', 'AutomatedLabWorker', 'HostsFile', 'PSFileTransfer', 'PSLog')
 )
 
 Write-Host "Init task - compiling help for Installer"
@@ -44,9 +44,9 @@ Generic help about the role system of AutomatedLab
 
 # LONG DESCRIPTION
 
-'@ | Set-Content -Path (Join-Path $SolutionDir -ChildPath Help/AutomatedLab/en-us/about_AutomatedLabRoles.md)
+'@ | Set-Content -Path (Join-Path $SolutionDir -ChildPath Help/AutomatedLabCore/en-us/about_AutomatedLabRoles.md)
 $roleContent = Get-Content -Path (Join-Path $SolutionDir -ChildPath Help/Wiki/Roles/roles.md) | ForEach-Object { if ($_.StartsWith('#')) { $_.Insert(0, '#') } else { $_ } }
-$roleContent | Add-Content -Path (Join-Path $SolutionDir -ChildPath Help/AutomatedLab/en-us/about_AutomatedLabRoles.md)
+$roleContent | Add-Content -Path (Join-Path $SolutionDir -ChildPath Help/AutomatedLabCore/en-us/about_AutomatedLabRoles.md)
 
 $helpFiles = Get-ChildItem -Path (Join-Path $SolutionDir -ChildPath Help/Wiki/Roles) -Exclude roles.md
 $roleContent = @'
@@ -63,14 +63,14 @@ foreach ($helpfile in $helpFiles)
 {
     $rolename = $helpFile.BaseName
 
-    $roleContent -f $rolename | Set-Content -Path (Join-Path $SolutionDir -ChildPath Help/AutomatedLab/en-us/about_AutomatedLab_$rolename.md)
+    $roleContent -f $rolename | Set-Content -Path (Join-Path $SolutionDir -ChildPath Help/AutomatedLabCore/en-us/about_AutomatedLab_$rolename.md)
     foreach ($line in ($helpFile | Get-Content))
     {
         if ($line.StartsWith('#'))
         {
             $line = $line.Insert(0, '#')
         }
-        $line | Add-Content -Path (Join-Path $SolutionDir -ChildPath Help/AutomatedLab/en-us/about_AutomatedLab_$rolename.md)
+        $line | Add-Content -Path (Join-Path $SolutionDir -ChildPath Help/AutomatedLabCore/en-us/about_AutomatedLab_$rolename.md)
     }
 }
 
@@ -83,7 +83,7 @@ Generic help about the basics of AutomatedLab
 
 # LONG DESCRIPTION
 
-'@ | Set-Content -Path (Join-Path $SolutionDir -ChildPath Help/AutomatedLab/en-us/about_AutomatedLabBasics.md)
+'@ | Set-Content -Path (Join-Path $SolutionDir -ChildPath Help/AutomatedLabCore/en-us/about_AutomatedLabBasics.md)
 [System.Collections.Generic.List[System.IO.FileInfo]]$helpFiles = Get-Item -Path (Join-Path $SolutionDir -ChildPath Help/Wiki/Basic/gettingstarted.md)
 $helpFiles.AddRange([IO.FileInfo[]](Get-ChildItem -Path (Join-Path $SolutionDir -ChildPath Help/Wiki/Basic)))
 foreach ($line in ($helpFiles | Get-Content))
@@ -92,7 +92,7 @@ foreach ($line in ($helpFiles | Get-Content))
     {
         $line = $line.Insert(0, '#')
     }
-    $line | Add-Content -Path (Join-Path $SolutionDir -ChildPath Help/AutomatedLab/en-us/about_AutomatedLabBasics.md)
+    $line | Add-Content -Path (Join-Path $SolutionDir -ChildPath Help/AutomatedLabCore/en-us/about_AutomatedLabBasics.md)
 }
 
 @'
@@ -104,7 +104,7 @@ Generic help about the advanced mechanics of AutomatedLab
 
 # LONG DESCRIPTION
 
-'@ | Set-Content -Path (Join-Path $SolutionDir -ChildPath Help/AutomatedLab/en-us/about_AutomatedLabAdvanced.md)
+'@ | Set-Content -Path (Join-Path $SolutionDir -ChildPath Help/AutomatedLabCore/en-us/about_AutomatedLabAdvanced.md)
 $advHelp = Get-ChildItem -Path (Join-Path $SolutionDir -ChildPath Help/Wiki/Advanced)
 foreach ($line in ($advHelp | Get-Content))
 {
@@ -112,7 +112,7 @@ foreach ($line in ($advHelp | Get-Content))
     {
         $line = $line.Insert(0, '#')
     }
-    $line | Add-Content -Path (Join-Path $SolutionDir -ChildPath Help/AutomatedLab/en-us/about_AutomatedLabAdvanced.md)
+    $line | Add-Content -Path (Join-Path $SolutionDir -ChildPath Help/AutomatedLabCore/en-us/about_AutomatedLabAdvanced.md)
 }
 
 foreach ($moduleName in (Get-ChildItem -Path $SolutionDir\Help -Directory))

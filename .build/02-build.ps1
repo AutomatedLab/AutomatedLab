@@ -81,20 +81,20 @@ if (-not $env:PSModulePath.Contains($modpath))
     $env:PSModulePath = '{0}{1}{2}' -f $modPath, $sep, $env:PSModulePath
 }
 
-$modules = 'AutomatedLabUnattended', 'PSLog', 'PSFileTransfer', 'AutomatedLabDefinition', 'AutomatedLabWorker', 'HostsFile', 'AutomatedLabNotifications', 'AutomatedLabTest', 'AutomatedLab', 'AutomatedLab.Ships', 'AutomatedLab.Recipe'
+$modules = 'AutomatedLabCore','AutomatedLabUnattended', 'PSLog', 'PSFileTransfer', 'AutomatedLabDefinition', 'AutomatedLabWorker', 'HostsFile', 'AutomatedLabNotifications', 'AutomatedLabTest', 'AutomatedLab', 'AutomatedLab.Ships', 'AutomatedLab.Recipe'
 foreach ($module in $modules)
 {
-    BuildModule -Name $module -SkipStringBuilder:$($module -eq 'AutomatedLab.Ships')
+    BuildModule -Name $module -SkipStringBuilder:$($module -in 'AutomatedLab','AutomatedLab.Ships')
 }
 
-$null = dotnet publish $projPath -f net6.0 -o (Join-Path -Path $buildFolder 'publish/AutomatedLab/lib/core')
+$null = dotnet publish $projPath -f net6.0 -o (Join-Path -Path $buildFolder 'publish/AutomatedLabCore/lib/core')
 if (-not $IsLinux)
 {
     $null = dotnet restore $projPath
-    $null = dotnet publish $projPath -f net462 -o (Join-Path -Path $buildFolder 'publish/AutomatedLab/lib/full') 
+    $null = dotnet publish $projPath -f net462 -o (Join-Path -Path $buildFolder 'publish/AutomatedLabCore/lib/full') 
 }
 
-Copy-Item -Path (Join-Path -Path $buildFolder 'Assets/ProductKeys.xml') -Destination (Join-Path -Path $buildFolder 'publish/AutomatedLab/ProductKeys.xml')
+Copy-Item -Path (Join-Path -Path $buildFolder 'Assets/ProductKeys.xml') -Destination (Join-Path -Path $buildFolder 'publish/AutomatedLabCore/ProductKeys.xml')
 
 # Build solution after AppVeyor patched it - local build needs to do that themselves
 # Solution builds installer (Windows only) and requires all modules to be packaged before producing proper artefact

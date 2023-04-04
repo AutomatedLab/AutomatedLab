@@ -646,7 +646,7 @@ late-commands:
   - 'echo "Subsystem powershell /usr/bin/pwsh -sshs -NoLogo" >> /etc/ssh/sshd_config'
 '@
 
-$moduleroot = (Get-Module -List AutomatedLab)[0].ModuleBAse
+$moduleroot = (Get-Module -List AutomatedLabCore)[0].ModuleBAse
 if ($PSEdition -eq 'Core')
 {
 	Add-Type -Path $moduleroot\lib\core\AutomatedLab.dll

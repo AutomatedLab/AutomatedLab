@@ -619,7 +619,7 @@
         Write-PSFMessage 'Copying AL tools to VHD...'
         $tempPath = "$([System.IO.Path]::GetTempPath())$([System.IO.Path]::GetRandomFileName())"
         New-Item -ItemType Directory -Path $tempPath | Out-Null
-        Copy-Item -Path "$((Get-Module -Name AutomatedLab)[0].ModuleBase)\Tools\HyperV\*" -Destination $tempPath -Recurse
+        Copy-Item -Path "$((Get-Module -Name AutomatedLabCore)[0].ModuleBase)\Tools\HyperV\*" -Destination $tempPath -Recurse
         foreach ($file in (Get-ChildItem -Path $tempPath -Recurse -File))
         {
             # Why???

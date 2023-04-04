@@ -463,7 +463,7 @@ sudo systemctl restart sshd
         }
     }
 
-    Copy-LabFileItem -Path (Get-ChildItem -Path "$((Get-Module -Name AutomatedLab)[0].ModuleBase)\Tools\HyperV\*") -DestinationFolderPath /AL -ComputerName ($Machine | Where OperatingSystemType -eq 'Windows') -UseAzureLabSourcesOnAzureVm $false
+    Copy-LabFileItem -Path (Get-ChildItem -Path "$((Get-Module -Name AutomatedLabCore)[0].ModuleBase)\Tools\HyperV\*") -DestinationFolderPath /AL -ComputerName ($Machine | Where OperatingSystemType -eq 'Windows') -UseAzureLabSourcesOnAzureVm $false
     $sessions = if ($PSVersionTable.PSVersion -ge 7)
     {
         New-LabPSSession $Machine

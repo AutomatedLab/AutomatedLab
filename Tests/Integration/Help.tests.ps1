@@ -48,7 +48,7 @@ BeforeDiscovery {
         'AutomatedLabWorker',
         'HostsFile',
         'AutomatedLabNotifications',
-        'AutomatedLab'
+        'AutomatedLabCore'
     )
     
     $oldPath = $env:PSModulePath
