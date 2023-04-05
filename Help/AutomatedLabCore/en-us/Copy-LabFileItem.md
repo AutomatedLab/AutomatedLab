@@ -1,7 +1,7 @@
 ---
-external help file: PSFileTransfer-help.xml
-Module Name: PSFileTransfer
-online version: https://automatedlab.org/en/latest/PSFileTransfer/en-us/Copy-LabFileItem
+external help file: AutomatedLabCore-help.xml
+Module Name: AutomatedLabCore
+online version: https://automatedlab.org/en/latest/AutomatedLabCore/en-us/Copy-LabFileItem
 schema: 2.0.0
 ---
 
