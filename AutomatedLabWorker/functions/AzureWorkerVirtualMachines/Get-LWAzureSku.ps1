@@ -131,7 +131,7 @@
         }
 
         $vmImage = $lab.AzureSettings.VmImages |
-        Where-Object Skus -eq $vmImageName  |
+        Where-Object { "$($_.Skus)_$($_.PublisherName)" -eq $vmImageName } |
         Select-Object -First 1
 
         $offerName = $vmImageName = ($vmImage).Offer

@@ -879,9 +879,36 @@ Register-PSFTeppScriptblock -Name AutomatedLab-NotificationProviders -ScriptBloc
 }
 
 Register-PSFTeppScriptblock -Name AutomatedLab-OperatingSystem -ScriptBlock {
+    $lab = if (Get-Lab -ErrorAction SilentlyContinue)
+    {
+        Get-Lab -ErrorAction SilentlyContinue
+    }
+    elseif (Get-LabDefinition -ErrorAction SilentlyContinue)
+    {
+        Get-LabDefinition -ErrorAction SilentlyContinue
+    }
+
+    $param = @{
+        UseOnlyCache = $true
+        NoDisplay    = $true
+    }
+
+    if (-not $lab -or $lab -and $lab.DefaultVirtualizationEngine -eq 'HyperV')
+    {        
+        $param['Path'] = "$labSources/ISOs"
+    }
+    if ($lab.DefaultVirtualizationEngine -eq 'Azure')
+    {
+        $param['Azure'] = $true
+    }
+    if ($lab.DefaultVirtualizationEngine -eq 'Azure' -and $lab.AzureSettings.DefaultLocation)
+    {
+        $param['Location'] = $lab.AzureSettings.DefaultLocation.DisplayName
+    }
+
     if (-not $global:AL_OperatingSystems)
     {
-        $global:AL_OperatingSystems = Get-LabAvailableOperatingSystem -Path $labSources/ISOs -UseOnlyCache -NoDisplay
+        $global:AL_OperatingSystems = Get-LabAvailableOperatingSystem @param
     }
 
     $global:AL_OperatingSystems.OperatingSystemName

@@ -646,14 +646,23 @@ late-commands:
   - 'echo "Subsystem powershell /usr/bin/pwsh -sshs -NoLogo" >> /etc/ssh/sshd_config'
 '@
 
-$moduleroot = (Get-Module -List AutomatedLabCore)[0].ModuleBAse
-if ($PSEdition -eq 'Core')
+Import-Module AutomatedLabCore
+
+try
 {
-	Add-Type -Path $moduleroot\lib\core\AutomatedLab.dll
+  $null = [AutomatedLab.Machine]
 }
-else
+catch
 {
-	Add-Type -Path $moduleroot\lib\full\AutomatedLab.dll
+  $moduleroot = (Get-Module -List AutomatedLabCore)[0].ModuleBAse
+  if ($PSEdition -eq 'Core')
+  {
+    Add-Type -Path $moduleroot\lib\core\AutomatedLab.dll
+  }
+  else
+  {
+    Add-Type -Path $moduleroot\lib\full\AutomatedLab.dll
+  }
 }
 
 if (-not (Test-Path "alias:Get-LabPostInstallationActivity")) { New-Alias -Name Get-LabPostInstallationActivity -Value Get-LabInstallationActivity -Description "Alias so that scripts keep working" }

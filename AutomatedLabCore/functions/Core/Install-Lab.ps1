@@ -212,6 +212,35 @@
     if (($Domains -or $performAll) -and (Get-LabVM -Role RootDC | Where-Object { -not $_.SkipDeployment }))
     {
         Write-ScreenInfo -Message 'Installing Root Domain Controllers' -TaskStart
+        foreach ($azVm in (Get-LabVM -IncludeLinux -Filter {$_.HostType -eq 'Azure'}))
+        {
+            $nicCount = 0
+            foreach ($azNic in $azVm.NetworkAdapters)
+            {
+                if ($azNic.Ipv4DnsServers.Count -eq 0) { continue }
+                # Set NIC configured DNS
+                $vmNicId = (Get-LWAzureVm -ComputerName $azVm.ResourceName).NetworkProfile.NetworkInterfaces.Id.Where({$_.EndsWith("nic$nicCount")})
+                $vmNic = Get-AzNetworkInterface -ResourceId $vmNicId
+                $vmNic.DnsSettings.DnsServers = [Collections.Generic.List[string]]$azNic.Ipv4DnsServers
+                $null = $vmNic | Set-AzNetworkInterface
+                $nicCount++
+            }
+        }
+
+        foreach ($azNet in ((Get-Lab).VirtualNetworks | Where HostType -eq 'Azure'))
+        {
+            # Set VNET DNS
+            if ($null -eq $aznet.DnsServers.AddressAsString) { continue }
+
+            $net = Get-AzVirtualNetwork -Name $aznet.ResourceName
+            if (-not $net.DhcpOptions)
+            {
+                $net.DhcpOptions = @{}
+            }
+
+            $net.DhcpOptions.DnsServers = [Collections.Generic.List[string]]$aznet.DnsServers.AddressAsString
+            $null = $net | Set-AzVirtualNetwork
+        }
 
         $jobs = Invoke-LabCommand -PreInstallationActivity -ActivityName 'Pre-installation' -ComputerName $(Get-LabVM -Role RootDC | Where-Object { -not $_.SkipDeployment }) -PassThru -NoDisplay
         $jobs | Where-Object { $_ -is [System.Management.Automation.Job] } | Wait-Job | Out-Null
