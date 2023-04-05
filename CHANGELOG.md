@@ -4,6 +4,12 @@
 
 ### Enhancements
 
+### Bugs
+
+## 5.48.0 (2023-04-05)
+
+### Enhancements
+
 - Migrated AppInsights from Instrumentation Key to Connection String (#1483)
 - Enable using 32bit lab OSses as well (#1490)
 - Linux SKUs supported in Azure labs (yay, #1499)
@@ -19,7 +25,7 @@
 - Fix minor issue with sending AL.Common to newly installed VMs
 - Ensure required resource providers and features are registered (#1510)
 
-## 5.47.0 (2022-11-24)
+## 5.47.0 (2023-02-20)
 
 ### Enhancements
 
