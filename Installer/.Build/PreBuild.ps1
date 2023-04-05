@@ -123,7 +123,8 @@ foreach ($moduleName in (Get-ChildItem -Path $SolutionDir\Help -Directory))
         $ci = try { [cultureinfo]$language.BaseName } catch { }
         if (-not $ci) { continue }
 
-        $opPath = Join-Path -Path $SolutionDir -ChildPath "publish\$($moduleName.BaseName)\$($language.BaseName)"
+        $mPath = Join-Path -Path $SolutionDir -ChildPath "publish\$($moduleName.BaseName)\*" -Resolve
+        $opPath = Join-Path -Path $mPath -ChildPath $language.BaseName
         Write-Host "Generating help XML in $opPath"
         $null = New-ExternalHelp -Path $language.FullName -OutputPath $opPath -Force
     }

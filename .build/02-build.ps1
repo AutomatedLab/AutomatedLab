@@ -19,21 +19,24 @@ function BuildModule
     #endregion Handle Working Directory Defaults
 
     # Prepare publish folder
-    Write-Host "Creating and populating $Name publishing directory"
-    Copy-Item -Path "$($WorkingDirectory)" -Destination (Join-Path $publishDir.FullName $Name) -Recurse -Force
+    $version = if ($env:APPVEYOR_BUILD_VERSION) { $env:APPVEYOR_BUILD_VERSION } else { (Import-PowerShellDataFile -Path (Join-Path $WorkingDirectory "$Name.psd1")).ModuleVersion }
+    Write-Host "Creating and populating $Name/$version publishing directory"
+    $intermediaryDir = Join-Path $publishDir.FullName $Name
+    $moduleDir = Join-Path $publishDir.FullName "$Name/$version"
+    Copy-Item -Recurse -Path $WorkingDirectory -Destination $intermediaryDir -Force
 
-    if ($env:APPVEYOR_BUILD_VERSION)
-    {
-        $para = @{
-            Path          = Join-Path $publishDir.FullName "$Name\$Name.psd1"
-            ModuleVersion = $env:APPVEYOR_BUILD_VERSION
-        }
-        if ($env:APPVEYOR_REPO_BRANCH -ne "master")
-        {
-            $para['Prerelease'] = 'preview'
-        }
-        Update-ModuleManifest @para
+    $para = @{
+        Path          = Join-Path $intermediaryDir "$Name.psd1"
+        ModuleVersion = $version
     }
+    if ($env:APPVEYOR_REPO_BRANCH -ne "master")
+    {
+        $para['Prerelease'] = 'preview'
+    }
+
+    Update-ModuleManifest @para
+    $null = New-Item -ItemType Directory -Path $moduleDir -Force
+    Get-ChildItem -Path "$intermediaryDir" -Exclude $version | Move-Item -Destination $moduleDir -Force
 
     if ($SkipStringBuilder) { return }
 
@@ -41,22 +44,22 @@ function BuildModule
     $text = @()
 
     # Gather commands
-    Get-ChildItem -Path "$($publishDir.FullName)\$Name\internal\functions\" -Recurse -File -Filter "*.ps1" | ForEach-Object {
+    Get-ChildItem -Path (Join-Path $moduleDir "internal\functions\") -Recurse -File -Filter "*.ps1" | ForEach-Object {
         $text += [System.IO.File]::ReadAllText($_.FullName)
     }
-    Get-ChildItem -Path "$($publishDir.FullName)\$Name\functions\" -Recurse -File -Filter "*.ps1" | ForEach-Object {
+    Get-ChildItem -Path (Join-Path $moduleDir "functions\") -Recurse -File -Filter "*.ps1" | ForEach-Object {
         $text += [System.IO.File]::ReadAllText($_.FullName)
     }
 
     # Gather scripts
-    Get-ChildItem -Path "$($publishDir.FullName)\$Name\internal\scripts\" -Recurse -File -Filter "*.ps1" | ForEach-Object {
+    Get-ChildItem -Path (Join-Path $moduleDir "internal\scripts\") -Recurse -File -Filter "*.ps1" | ForEach-Object {
         $text += [System.IO.File]::ReadAllText($_.FullName)
     }
 
     #region Update the psm1 file & Cleanup
-    [System.IO.File]::WriteAllText("$($publishDir.FullName)\$Name\$Name.psm1", ($text -join "`n`n"), [System.Text.Encoding]::UTF8)
-    Remove-Item -Path "$($publishDir.FullName)\$Name\internal" -Recurse -Force
-    Remove-Item -Path "$($publishDir.FullName)\$Name\functions" -Recurse -Force
+    [System.IO.File]::WriteAllText((Join-Path $moduleDir "\$Name.psm1"), ($text -join "`n`n"), [System.Text.Encoding]::UTF8)
+    Remove-Item -Path (Join-Path $moduleDir "internal") -Recurse -Force
+    Remove-Item -Path (Join-Path $moduleDir "functions\") -Recurse -Force
     #endregion Update the psm1 file & Cleanup
 }
 
@@ -81,20 +84,21 @@ if (-not $env:PSModulePath.Contains($modpath))
     $env:PSModulePath = '{0}{1}{2}' -f $modPath, $sep, $env:PSModulePath
 }
 
-$modules = 'AutomatedLabCore','AutomatedLabUnattended', 'PSLog', 'PSFileTransfer', 'AutomatedLabDefinition', 'AutomatedLabWorker', 'HostsFile', 'AutomatedLabNotifications', 'AutomatedLabTest', 'AutomatedLab.Ships', 'AutomatedLab.Recipe', 'AutomatedLab'
+$modules = 'AutomatedLabCore', 'AutomatedLabUnattended', 'PSLog', 'PSFileTransfer', 'AutomatedLabDefinition', 'AutomatedLabWorker', 'HostsFile', 'AutomatedLabNotifications', 'AutomatedLabTest', 'AutomatedLab.Ships', 'AutomatedLab.Recipe', 'AutomatedLab'
 foreach ($module in $modules)
 {
-    BuildModule -Name $module -SkipStringBuilder:$($module -in 'AutomatedLab','AutomatedLab.Ships')
+    BuildModule -Name $module -SkipStringBuilder:$($module -in 'AutomatedLab', 'AutomatedLab.Ships')
 }
 
-$null = dotnet publish $projPath -f net6.0 -o (Join-Path -Path $buildFolder 'publish/AutomatedLabCore/lib/core')
+$versionedDir = Get-ChildItem -Directory -Path (Join-Path -Path $buildFolder 'publish/AutomatedLabCore')
+$null = dotnet publish $projPath -f net6.0 -o (Join-Path -Path $versionedDir.FullName 'lib/core')
 if (-not $IsLinux)
 {
     $null = dotnet restore $projPath
-    $null = dotnet publish $projPath -f net462 -o (Join-Path -Path $buildFolder 'publish/AutomatedLabCore/lib/full') 
+    $null = dotnet publish $projPath -f net462 -o (Join-Path -Path $versionedDir.FullName 'lib/full') 
 }
 
-Copy-Item -Path (Join-Path -Path $buildFolder 'Assets/ProductKeys.xml') -Destination (Join-Path -Path $buildFolder 'publish/AutomatedLabCore/ProductKeys.xml')
+Copy-Item -Path (Join-Path -Path $buildFolder 'Assets/ProductKeys.xml') -Destination (Join-Path -Path $versionedDir.FullName 'ProductKeys.xml')
 
 # Build solution after AppVeyor patched it - local build needs to do that themselves
 # Solution builds installer (Windows only) and requires all modules to be packaged before producing proper artefact

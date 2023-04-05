@@ -993,3 +993,12 @@ Register-PSFTeppArgumentCompleter -Command Get-LabVMSnapshot, Checkpoint-LabVM, 
 $dynamicLabSources = New-Object AutomatedLab.DynamicVariable 'global:labSources', { Get-LabSourcesLocationInternal }, { $null }
 $executioncontext.SessionState.PSVariable.Set($dynamicLabSources)
 Set-Alias -Name ?? -Value Invoke-Ternary -Option AllScope -Description "Ternary Operator like '?' in C#"
+
+try
+{
+    [GPO.Helper]
+}
+catch
+{
+    Import-Module -Name AutomatedLab.Common
+}

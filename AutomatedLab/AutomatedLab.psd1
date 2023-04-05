@@ -28,15 +28,12 @@
     NestedModules          = @( )
 
     RequiredModules        = @(
-        'AutomatedLabDefinition',
-        'PSLog',
-        'PSFileTransfer',
-        'AutomatedLabWorker',
-        'HostsFile',
-        'AutomatedLabUnattended',
-        'AutomatedLabNotifications',
-        @{ModuleName='AutomatedLab.Common'; ModuleVersion='2.3.17'; }
-        'PSFramework'
+        'AutomatedLabCore'
+        @{ ModuleName = 'AutomatedLab.Common'; ModuleVersion = '2.3.17' }
+        'AutomatedLab.Recipe'
+        'AutomatedLab.Ships'
+        'AutomatedLabDefinition'
+        'AutomatedLabNotifications'
         'AutomatedLabTest'
         'AutomatedLabUnattended'
         'AutomatedLabWorker'
