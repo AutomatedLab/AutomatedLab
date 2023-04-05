@@ -2,26 +2,53 @@ $buildFolder = if ($env:APPVEYOR_BUILD_FOLDER) { $env:APPVEYOR_BUILD_FOLDER } el
 $modPath = Get-Item -Path (Join-Path $buildFolder requiredmodules)
 if (-not $env:PSModulePath.Contains($modpath.FullName))
 {
-  $sep = [io.path]::PathSeparator
-  $env:PSModulePath = '{0}{1}{2}' -f $modPath.FullName,$sep,$env:PSModulePath
+    $sep = [io.path]::PathSeparator
+    $env:PSModulePath = '{0}{1}{2}' -f $modPath.FullName, $sep, $env:PSModulePath
 }
 
 $modPath = Get-Item -Path (Join-Path $buildFolder publish)
 if (-not $env:PSModulePath.Contains($modpath.FullName))
 {
-  $sep = [io.path]::PathSeparator
-  $env:PSModulePath = '{0}{1}{2}' -f $modPath.FullName,$sep,$env:PSModulePath
+    $sep = [io.path]::PathSeparator
+    $env:PSModulePath = '{0}{1}{2}' -f $modPath.FullName, $sep, $env:PSModulePath
 }
 
 if (-not $IsLinux)
 {
-    $Params = @{
-        Path    = Join-Path $buildFolder -ChildPath '.build'
-        Force   = $true
-        Recurse = $false
+    Write-Host "Publishing Modules to AppVeyor"
+    $nugetpath = (Join-Path -Path $buildFolder -ChildPath nugets)
+    $null = mkdir -Force -Path $nugetpath
+    if (-not (Get-PSRepository -Name loc -ErrorAction SilentlyContinue))
+    {
+        Register-PSRepository -Name loc -SourceLocation $nugetpath -PublishLocation $nugetpath
+        Publish-Module -Path (Join-Path -Path $modPath -ChildPath PSFileTransfer) -Repository loc
+        foreach ($req in @('newtonsoft.json', 'Pester', 'Ships', 'powershell-yaml', 'PSFramework', 'AutomatedLab.Common'))
+        {
+            Publish-Module -Name $req -Repository loc -WarningAction SilentlyContinue
+        }
+        $modules = Find-Module -Repository loc
     }
-    Invoke-PSDeploy @Params # Create nuget package artifacts on Windows only, we only need one set
-    Add-AppveyorMessage "Locating installer to push as artifact" -Category Information
+
+    foreach ($module in (Get-ChildItem $modPath -Exclude PSFileTransfer | Sort-Object BaseName -Descending))
+    {
+        Publish-Module -Repository loc -Path $module.FullName -WarningAction SilentlyContinue
+    }
+
+    $surplus = @(
+        (Join-Path -Path $nugetpath -ChildPath *newtonsoft.json*)
+        (Join-Path -Path $nugetpath -ChildPath *AutomatedLab.Common*)
+    )
+    Remove-Item -Path $surplus
+    Write-Host "Pushing nuget artifacts"
+    foreach ($nougat in (Get-ChildItem -Path $nugetPath))
+    {
+        Push-AppVeyorArtifact $nougat.FullName -FileName $nougat.Name -DeploymentName ($nougat.BaseName -replace '-preview')
+    }
+
+    Unregister-PSRepository -Name loc
+    Remove-Item -Force -Recurse -Path $nugetpath
+
+    Write-Host "Pushing installer artifact"
     $msifile = Get-ChildItem -Path $buildFolder -Recurse -Filter AutomatedLab.msi | Select-Object -First 1
     Push-AppVeyorArtifact $msifile.FullName -FileName $msifile.Name -DeploymentName alinstaller
 }
@@ -56,11 +83,6 @@ if ($env:APPVEYOR_REPO_BRANCH -in 'master', 'develop' -and -not [string]::IsNull
 $publishFolder = Join-Path $buildFolder publish
 foreach ($m in (Get-ChildItem -Path $publishFolder -Directory))
 {
-    if (-not ($m | Get-ChildItem -Filter *.psm1))
-    {
-        continue
-    }
-
     $publishParams = @{
         Path        = $m.FullName
         NuGetApiKey = $env:NuGetApiKey
@@ -68,6 +90,6 @@ foreach ($m in (Get-ChildItem -Path $publishFolder -Directory))
         Force       = $true
         Confirm     = $false
     }
-    Write-Host "Publishing module '$($m.FullName)'"
+    Write-Host "Publishing module '$($m.FullName)' to public gallery"
     Publish-Module @publishParams
 }

@@ -47,7 +47,7 @@ if ($IsLinux)
 
 $modpath = New-Item -ItemType Directory -Force -Path (Join-Path $buildFolder requiredmodules)
 Write-Host "Downloading required modules"
-Save-Module -Name Psake, powershell-yaml, PSDeploy, Pester, BuildHelpers, AutomatedLab.Common, PSFramework, xPSDesiredStateConfiguration, xDscDiagnostics, xWebAdministration, PackageManagement, PowerShellGet, PlatyPS, Ships -Repository PSGallery -Path $modpath.FullName
+Save-Module -Name powershell-yaml, Pester, AutomatedLab.Common, PSFramework, xPSDesiredStateConfiguration, xDscDiagnostics, xWebAdministration, PackageManagement, PowerShellGet, PlatyPS, Ships -Repository PSGallery -Path $modpath.FullName
 if (-not $env:PSModulePath.Contains($modpath.FullName))
 {
   $sep = [io.path]::PathSeparator
