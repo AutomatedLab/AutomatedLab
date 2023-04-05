@@ -8,6 +8,7 @@
 - Enable using 32bit lab OSses as well (#1490)
 - Linux SKUs supported in Azure labs (yay, #1499)
 - Make Get-LabAvailableOperatingSystem aware of context (i.e. if Lab is on Azure)
+- Setting version of 'AutomatedLab.Common' to '2.3.17'
 
 ### Bugs
 
