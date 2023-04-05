@@ -23,14 +23,14 @@ if ($env:APPVEYOR_BUILD_VERSION)
 # Grab nuget bits, install modules, set build variables, start build.
 if (-not $IsLinux -and -not (Get-PackageProvider -Name Nuget))
 {
-  Install-PackageProvider -Name Nuget -Force -Scope CurrentUser
+  $null = Install-PackageProvider -Name Nuget -Force -Scope CurrentUser
 }
 elseif ($IsLinux)
 {
   # Ruby tool FPM can build packages for multiple distributions
-  sudo apt update
+  $null = sudo apt update
   #sudo apt upgrade -y
-  sudo apt install alien -y
+  $null = sudo apt install alien -y
 }
 
 # Resolve Module will fail since AL requests interactivity, importing module fails without LabSources folder

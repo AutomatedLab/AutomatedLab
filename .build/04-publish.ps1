@@ -19,7 +19,6 @@ if (-not $IsLinux)
         Path    = Join-Path $buildFolder -ChildPath '.build'
         Force   = $true
         Recurse = $false
-        Verbose = $true
     }
     Invoke-PSDeploy @Params # Create nuget package artifacts on Windows only, we only need one set
     Add-AppveyorMessage "Locating installer to push as artifact" -Category Information

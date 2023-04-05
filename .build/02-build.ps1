@@ -20,7 +20,7 @@ function BuildModule
 
     # Prepare publish folder
     $version = if ($env:APPVEYOR_BUILD_VERSION) { $env:APPVEYOR_BUILD_VERSION } else { (Import-PowerShellDataFile -Path (Join-Path $WorkingDirectory "$Name.psd1")).ModuleVersion }
-    Write-Host "Creating and populating $Name/$version publishing directory"
+
     $intermediaryDir = Join-Path $publishDir.FullName $Name
     $moduleDir = Join-Path $publishDir.FullName "$Name/$version"
     Copy-Item -Recurse -Path $WorkingDirectory -Destination $intermediaryDir -Force
@@ -85,6 +85,7 @@ if (-not $env:PSModulePath.Contains($modpath))
 }
 
 $modules = 'AutomatedLabCore', 'AutomatedLabUnattended', 'PSLog', 'PSFileTransfer', 'AutomatedLabDefinition', 'AutomatedLabWorker', 'HostsFile', 'AutomatedLabNotifications', 'AutomatedLabTest', 'AutomatedLab.Ships', 'AutomatedLab.Recipe', 'AutomatedLab'
+Write-Host "Building modules $($modules -join ',') to $modPath"
 foreach ($module in $modules)
 {
     BuildModule -Name $module -SkipStringBuilder:$($module -in 'AutomatedLab', 'AutomatedLab.Ships')
@@ -102,6 +103,7 @@ Copy-Item -Path (Join-Path -Path $buildFolder 'Assets/ProductKeys.xml') -Destina
 
 # Build solution after AppVeyor patched it - local build needs to do that themselves
 # Solution builds installer (Windows only) and requires all modules to be packaged before producing proper artefact
+Write-Host "Building solution (Windows) or project (Unix)"
 if ([System.Environment]::OSVersion.Platform -eq 'Win32NT')
 {
     if (-not (Get-Command msbuild -ErrorAction SilentlyContinue))
@@ -117,13 +119,21 @@ if ([System.Environment]::OSVersion.Platform -eq 'Win32NT')
         Set-Alias -Name nuget -Value $nuget.FullName
     }
 
-    nuget restore AutomatedLab.sln
-    msbuild AutomatedLab.sln
+    $null = nuget restore AutomatedLab.sln
+    $null = msbuild AutomatedLab.sln
+    if ($LASTEXITCODE -ne 0)
+    {
+        Add-AppVeyorMessage -Category Warning "Running msbuild of the solution may have failed, exit code $LASTEXITCODE"
+    }
 }
 
 if ([System.Environment]::OSVersion.Platform -eq 'Unix')
 {
-    dotnet build -f net6.0 LabXml/LabXml.csproj
+    $null = dotnet build -f net6.0 LabXml/LabXml.csproj
+    if ($LASTEXITCODE -ne 0)
+    {
+        Add-AppVeyorMessage -Category Warning "Running dotnet build of the csproj may have failed, exit code $LASTEXITCODE"
+    }
 }
 
 if (-not $IsLinux)
@@ -131,6 +141,7 @@ if (-not $IsLinux)
     return
 }
 
+Write-Host "Building deb and rpm package"
 # Build debian package structure
 $null = New-Item -ItemType Directory -Path ./deb/automatedlab/usr/local/share/powershell/Modules -Force
 $null = New-Item -ItemType Directory -Path ./deb/automatedlab/usr/share/AutomatedLab/Assets -Force

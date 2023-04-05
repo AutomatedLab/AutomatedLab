@@ -9,7 +9,7 @@
 
     foreach ($vm in $Computer)
     {
-        $iniConsole = $iniContentConsole.Clone()
+        $iniConsole = $iniContentConsoleScvmm.Clone()
         $role = $vm.Roles | Where-Object Name -in Scvmm2016, Scvmm2019, Scvmm2022
         if ($role.Properties -and [Convert]::ToBoolean($role.Properties['SkipServer']))
         {

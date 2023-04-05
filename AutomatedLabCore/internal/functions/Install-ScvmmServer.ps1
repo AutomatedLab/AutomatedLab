@@ -51,7 +51,7 @@
     # Server, includes console
     $jobs = foreach ($vm in $Computer)
     {
-        $iniServer = $iniContentServer.Clone()
+        $iniServer = $iniContentServerScvmm.Clone()
         $role = $vm.Roles | Where-Object Name -in Scvmm2016, Scvmm2019, Scvmm2022
 
         foreach ($property in $role.Properties.GetEnumerator())
@@ -104,7 +104,7 @@
 
         $scvmmIso = Mount-LabIsoImage -ComputerName $vm -IsoPath ($lab.Sources.ISOs | Where-Object { $_.Name -eq $role.Name }).Path -SupressOutput -PassThru
         $domainCredential = $vm.GetCredential((Get-Lab))
-        $commandLine = $setupCommandLineServer -f $vm.DomainName, $domainCredential.UserName.Replace("$($vm.DomainName)\", ''), $domainCredential.GetNetworkCredential().Password
+        $commandLine = $setupCommandLineServerScvmm -f $vm.DomainName, $domainCredential.UserName.Replace("$($vm.DomainName)\", ''), $domainCredential.GetNetworkCredential().Password
 
         Invoke-LabCommand -ComputerName $vm -Variable (Get-Variable iniServer, scvmmIso, commandLine) -ActivityName 'Extracting SCVMM Server' -ScriptBlock {
             $setup = Get-ChildItem -Path $scvmmIso.DriveLetter -Filter *.exe | Select-Object -First 1

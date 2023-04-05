@@ -43,7 +43,6 @@
 
     foreach ($mod in $reqdModules)
     {
-        Write-Host "Importing $mod"
         Import-Module -Name $mod -Force -ErrorAction SilentlyContinue
     }
 

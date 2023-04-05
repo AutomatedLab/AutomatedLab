@@ -50,7 +50,7 @@
     $VMCMBinariesDirectory = "C:\Install\CM"
     $VMCMPreReqsDirectory = "C:\Install\CM-Prereqs"
     $CMComputerAccount = '{0}\{1}$' -f $CMServer.DomainName.Substring(0, $CMServer.DomainName.IndexOf('.')), $CMServerName
-    $CMSetupConfig = $configurationContent.Clone()
+    $CMSetupConfig = $configurationManagerContent.Clone()
     $labCred = $CMServer.GetCredential((Get-Lab))
     if (-not $AdminUser)
     {
@@ -164,13 +164,13 @@
         '{0}:\RemoteInstall' -f $root
         '{0}:\WSUS' -f $root
     )
-    foreach ($p in $paths) { $AVExcludedPaths += $p }
+    foreach ($p in $paths) { $configurationManagerAVExcludedPaths += $p }
     Write-ScreenInfo -Message "Adding Windows Defender exclusions" -TaskStart
 
     try
     {
         $result = Invoke-LabCommand -ComputerName $CMServer -ActivityName "Adding Windows Defender exclusions" -Variable (Get-Variable "AVExcludedPaths", "AVExcludedProcesses") -ScriptBlock {
-            Add-MpPreference -ExclusionPath $AVExcludedPaths -ExclusionProcess $AVExcludedProcesses -ErrorAction "Stop"
+            Add-MpPreference -ExclusionPath $configurationManagerAVExcludedPaths -ExclusionProcess $configurationManagerAVExcludedProcesses -ErrorAction "Stop"
             Set-MpPreference -RealTimeScanDirection "Incoming" -ErrorAction "Stop"
         } -ErrorAction Stop
     }

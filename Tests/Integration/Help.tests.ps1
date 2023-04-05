@@ -70,7 +70,6 @@ BeforeDiscovery {
 
     $commands = foreach ($mod in $reqdModules)
     {
-        Write-Host "Importing $mod"
         Import-Module -Name $mod -Force -ErrorAction SilentlyContinue
         Get-Command -Module $mod | Where-Object Name -notin $skippedCommands
     }

@@ -154,7 +154,7 @@
     $jobs = foreach ($group in $versionGroups)
     {
         $productKey = Get-LabConfigurationItem -Name "$($group.Name)Key"
-        $configFile = $setupConfigFileContent -f $productKey
+        $configFile = $spsetupConfigFileContent -f $productKey
         Invoke-LabCommand -ComputerName $group.Group -ActivityName "Install SharePoint $($group.Name)" -ScriptBlock {
             Set-Content -Force -Path C:\SPInstall\files\al-config.xml -Value $configFile
             $null = Start-Process -Wait "C:\SPInstall\setup.exe" -ArgumentList "/config C:\SPInstall\files\al-config.xml"
