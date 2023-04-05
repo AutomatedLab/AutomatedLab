@@ -81,7 +81,7 @@ if (-not $env:PSModulePath.Contains($modpath))
     $env:PSModulePath = '{0}{1}{2}' -f $modPath, $sep, $env:PSModulePath
 }
 
-$modules = 'AutomatedLabCore','AutomatedLabUnattended', 'PSLog', 'PSFileTransfer', 'AutomatedLabDefinition', 'AutomatedLabWorker', 'HostsFile', 'AutomatedLabNotifications', 'AutomatedLabTest', 'AutomatedLab', 'AutomatedLab.Ships', 'AutomatedLab.Recipe'
+$modules = 'AutomatedLabCore','AutomatedLabUnattended', 'PSLog', 'PSFileTransfer', 'AutomatedLabDefinition', 'AutomatedLabWorker', 'HostsFile', 'AutomatedLabNotifications', 'AutomatedLabTest', 'AutomatedLab.Ships', 'AutomatedLab.Recipe', 'AutomatedLab'
 foreach ($module in $modules)
 {
     BuildModule -Name $module -SkipStringBuilder:$($module -in 'AutomatedLab','AutomatedLab.Ships')
