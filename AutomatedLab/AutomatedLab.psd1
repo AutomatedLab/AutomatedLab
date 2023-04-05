@@ -66,7 +66,7 @@
         'HostsFile',
         'AutomatedLabUnattended',
         'AutomatedLabNotifications',
-        @{ModuleName='AutomatedLab.Common'; ModuleVersion='2.3.5'; }
+        @{ModuleName='AutomatedLab.Common'; ModuleVersion='2.3.17'; }
         'PSFramework'
         'AutomatedLabTest'
     )
