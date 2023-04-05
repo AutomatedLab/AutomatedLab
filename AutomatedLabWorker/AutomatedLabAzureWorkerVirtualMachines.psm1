@@ -1813,13 +1813,13 @@ sudo systemctl restart sshd
     }
 
     Copy-LabFileItem -Path (Get-ChildItem -Path "$((Get-Module -Name AutomatedLab)[0].ModuleBase)\Tools\HyperV\*") -DestinationFolderPath /AL -ComputerName ($Machine | Where OperatingSystemType -eq 'Windows') -UseAzureLabSourcesOnAzureVm $false
-    $sessions = if ($PSVersionTable.PSVersion -ge 7)
+    $sessions = if ($PSVersionTable.PSVersion -ge [System.Version]'7.0')
     {
         New-LabPSSession $Machine
     }
     else
     {
-        Write-ScreenInfo -Type Warning -Message "Skipping copy of AutomatedLab.Common to Linux VMs as Windows PowerShell is used on the host."
+        Write-ScreenInfo -Type Warning -Message "Skipping copy of AutomatedLab.Common to Linux VMs as Windows PowerShell is used on the host and not PowerShell 7+."
         New-LabPSSession ($Machine | Where OperatingSystemType -eq 'Windows')
     }
 
