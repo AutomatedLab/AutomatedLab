@@ -6,6 +6,8 @@
 
 ### Bugs
 
+- Fixed a bug in 'Initialize-LWAzureVM' comparing the PowerShell version (#1517).
+
 ## 5.48.0 (2023-04-05)
 
 ### Enhancements
