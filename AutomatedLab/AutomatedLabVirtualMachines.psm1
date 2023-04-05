@@ -102,14 +102,15 @@ function New-LabVM
 
     Write-ScreenInfo -Message 'Done' -TaskEnd
 
-    $azureVms = Get-LabVM -ComputerName $machines | Where-Object { $_.HostType -eq 'Azure' -and -not $_.SkipDeployment }
+    $azureVms = Get-LabVM -ComputerName $machines -IncludeLinux | Where-Object { $_.HostType -eq 'Azure' -and -not $_.SkipDeployment }
+    $winAzVm, $linuxAzVm = $azureVms.Where({$_.OperatingSystemType -eq 'Windows'})
 
     if ($azureVMs)
     {
         Write-ScreenInfo -Message 'Initializing machines' -TaskStart
 
         Write-PSFMessage -Message 'Calling Enable-PSRemoting on machines'
-        Enable-LWAzureWinRm -Machine $azureVMs -Wait
+        Enable-LWAzureWinRm -Machine $winAzVm -Wait
 
         Write-PSFMessage -Message 'Executing initialization script on machines'
         Initialize-LWAzureVM -Machine $azureVMs
@@ -855,8 +856,6 @@ function Wait-LabVM
 
                     Set-LWHypervVMDescription -Hashtable $machineMetadata -ComputerName $(Get-LabVM -ComputerName $machine).ResourceName
                 }
-
-                Send-ModuleToPSSession -Module (Get-Module -ListAvailable -Name AutomatedLab.Common | Select-Object -First 1) -Session (New-LabPSSession $machine) -IncludeDependencies -Force
             }
 
             Write-LogFunctionExit
@@ -1438,8 +1437,52 @@ function Join-LabVMDomain
             [Parameter(Mandatory = $true)]
             [string]$Password,
 
-            [bool]$AlwaysReboot = $false
+            [bool]$AlwaysReboot = $false,
+
+            [string]$SshPublicKey
         )
+
+        if ($IsLinux)
+        {
+            if ((Get-Command -Name realm -ErrorAction SilentlyContinue) -and (sudo realm list --name-only | Where {$_ -eq $DomainName}))
+            {
+                return $true
+            }
+
+            if (-not (Get-Command -Name realm -ErrorAction SilentlyContinue) -and (Get-Command -Name apt -ErrorAction SilentlyContinue))
+            {
+                sudo apt install -y realmd libnss-sss libpam-sss sssd sssd-tools adcli samba-common-bin oddjob oddjob-mkhomedir packagekit *>$null
+            }
+            elseif (-not (Get-Command -Name realm -ErrorAction SilentlyContinue) -and (Get-Command -Name dnf -ErrorAction SilentlyContinue))
+            {
+                sudo dnf install -y oddjob oddjob-mkhomedir sssd adcli krb5-workstation realmd samba-common samba-common-tools authselect-compat *>$null
+            }
+            elseif (-not (Get-Command -Name realm -ErrorAction SilentlyContinue) -and (Get-Command -Name yum -ErrorAction SilentlyContinue))
+            {
+                sudo yum install -y oddjob oddjob-mkhomedir sssd adcli krb5-workstation realmd samba-common samba-common-tools authselect-compat *>$null
+            }
+
+            if (-not (Get-Command -Name realm -ErrorAction SilentlyContinue))
+            {
+                # realm package missing or no known package manager
+                return $false
+            }
+
+            $null = realm join --one-time-password "'$Password'" $DomainName
+            $null = sudo sed -i "/^%wheel.*/a %$($DomainName.ToUpper())\\\\domain\\ admins ALL=(ALL) NOPASSWD: ALL" /etc/sudoers
+            $null = sudo mkdir -p "/home/$($UserName)@$($DomainName)"
+            $null = sudo chown -R "$($UserName)@$($DomainName):$($UserName)@$($DomainName)" /home/$($UserName)@$($DomainName) 2>$null
+            if (-not [string]::IsNullOrWhiteSpace($SshPublicKey))
+            {
+                $null = sudo mkdir -p "/home/$($UserName)@$($DomainName)/.ssh"
+                $null = echo "$($SshPublicKey -replace '\s*$')" | sudo tee --append /home/$($UserName)@$($DomainName)/.ssh/authorized_keys
+                $null = sudo chmod 700 /home/$($UserName)@$($DomainName)/.ssh
+                $null = sudo chmod 600 /home/$($UserName)@$($DomainName)/.ssh/authorized_keys 2>$null                
+                $null = sudo restorecon -R /$($UserName)@$($DomainName)/.ssh 2>$null
+            }
+
+            return $true
+        }
 
         $Credential = New-Object -TypeName PSCredential -ArgumentList $UserName, ($Password | ConvertTo-SecureString -AsPlainText -Force)
 
@@ -1490,7 +1533,7 @@ function Join-LabVMDomain
     $jobs = @()
     $startTime = Get-Date
 
-    $machinesToJoin = $Machine | Where-OBject SkipDeployment -eq $false
+    $machinesToJoin = $Machine | Where-Object SkipDeployment -eq $false
     Write-PSFMessage "Starting joining $($machinesToJoin.Count) machines to domains"
     foreach ($m in $machinesToJoin)
     {
@@ -1512,6 +1555,14 @@ function Join-LabVMDomain
         if ($m.HostType -eq 'Azure')
         {
             $jobParameters.ArgumentList += $true
+        }
+        if ($m.SshPublicKey)
+        {
+            if ($jobParameters.ArgumentList.Count -eq 3)
+            {
+                $jobParameters.ArgumentList += $false
+            }
+            $jobParameters.ArgumentList += $m.SshPublicKey
         }
         $jobs += Invoke-LabCommand @jobParameters
     }

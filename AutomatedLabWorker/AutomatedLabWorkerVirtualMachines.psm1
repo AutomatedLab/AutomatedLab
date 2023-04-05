@@ -245,19 +245,19 @@ function New-LWHypervVM
     
     if ($Machine.OperatingSystemType -eq 'Linux' -and -not [string]::IsNullOrEmpty($Machine.SshPublicKey))
     {
-        Add-UnattendedSynchronousCommand "restorecon -R /root/.ssh/" -Description 'Restore SELinux context'
-        Add-UnattendedSynchronousCommand "restorecon -R /$($Machine.InstallationUser.UserName)/.ssh/" -Description 'Restore SELinux context'
-        Add-UnattendedSynchronousCommand "sed -i 's|[#]*PubkeyAuthentication yes|PubkeyAuthentication yes|g' /etc/ssh/sshd_config" -Description 'PowerShell is so much better.'
-        Add-UnattendedSynchronousCommand "sed -i 's|[#]*PasswordAuthentication yes|PasswordAuthentication no|g' /etc/ssh/sshd_config" -Description 'PowerShell is so much better.'
-        Add-UnattendedSynchronousCommand "sed -i 's|[#]*GSSAPIAuthentication yes|GSSAPIAuthentication yes|g' /etc/ssh/sshd_config" -Description 'PowerShell is so much better.'
-        Add-UnattendedSynchronousCommand "chmod 700 /home/$($Machine.InstallationUser.UserName)/.ssh && chmod 600 /home/$($Machine.InstallationUser.UserName)/.ssh/authorized_keys" -Description 'SSH'
-        Add-UnattendedSynchronousCommand "chmod 700 /root/.ssh && chmod 600 /root/.ssh/authorized_keys" -Description 'SSH'
-        Add-UnattendedSynchronousCommand "chown -R $($Machine.InstallationUser.UserName):$($Machine.InstallationUser.UserName) /home/$($Machine.InstallationUser.UserName)/.ssh" -Description 'SSH'
-        Add-UnattendedSynchronousCommand "chown -R root:root /root/.ssh" -Description 'SSH'        
-        Add-UnattendedSynchronousCommand "echo `"$($Machine.SshPublicKey)`" > /home/$($Machine.InstallationUser.UserName)/.ssh/authorized_keys" -Description 'SSH'
-        Add-UnattendedSynchronousCommand "echo `"$($Machine.SshPublicKey)`" > /root/.ssh/authorized_keys" -Description 'SSH'
-        Add-UnattendedSynchronousCommand "mkdir -p /home/$($Machine.InstallationUser.UserName)/.ssh" -Description 'SSH'
-        Add-UnattendedSynchronousCommand "mkdir -p /root/.ssh" -Description 'SSH'
+        Add-UnattendedSynchronousCommand -Command "restorecon -R /root/.ssh/" -Description 'Restore SELinux context'
+        Add-UnattendedSynchronousCommand -Command "restorecon -R /$($Machine.InstallationUser.UserName)/.ssh/" -Description 'Restore SELinux context'
+        Add-UnattendedSynchronousCommand -Command "sed -i 's|[#]*PubkeyAuthentication yes|PubkeyAuthentication yes|g' /etc/ssh/sshd_config" -Description 'PowerShell is so much better.'
+        Add-UnattendedSynchronousCommand -Command "sed -i 's|[#]*PasswordAuthentication yes|PasswordAuthentication no|g' /etc/ssh/sshd_config" -Description 'PowerShell is so much better.'
+        Add-UnattendedSynchronousCommand -Command "sed -i 's|[#]*GSSAPIAuthentication yes|GSSAPIAuthentication yes|g' /etc/ssh/sshd_config" -Description 'PowerShell is so much better.'
+        Add-UnattendedSynchronousCommand -Command "chmod 700 /home/$($Machine.InstallationUser.UserName)/.ssh && chmod 600 /home/$($Machine.InstallationUser.UserName)/.ssh/authorized_keys" -Description 'SSH'
+        Add-UnattendedSynchronousCommand -Command "chmod 700 /root/.ssh && chmod 600 /root/.ssh/authorized_keys" -Description 'SSH'
+        Add-UnattendedSynchronousCommand -Command "chown -R $($Machine.InstallationUser.UserName):$($Machine.InstallationUser.UserName) /home/$($Machine.InstallationUser.UserName)/.ssh" -Description 'SSH'
+        Add-UnattendedSynchronousCommand -Command "chown -R root:root /root/.ssh" -Description 'SSH'        
+        Add-UnattendedSynchronousCommand -Command "echo `"$($Machine.SshPublicKey)`" > /home/$($Machine.InstallationUser.UserName)/.ssh/authorized_keys" -Description 'SSH'
+        Add-UnattendedSynchronousCommand -Command "echo `"$($Machine.SshPublicKey)`" > /root/.ssh/authorized_keys" -Description 'SSH'
+        Add-UnattendedSynchronousCommand -Command "mkdir -p /home/$($Machine.InstallationUser.UserName)/.ssh" -Description 'SSH'
+        Add-UnattendedSynchronousCommand -Command "mkdir -p /root/.ssh" -Description 'SSH'
     }
 
     if ($Machine.Roles.Name -contains 'RootDC' -or
@@ -297,11 +297,11 @@ function New-LWHypervVM
 
                 if (-not [string]::IsNullOrEmpty($Machine.SshPublicKey))
                 {
-                    Add-UnattendedSynchronousCommand "restorecon -R /$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/" -Description 'Restore SELinux context'
-                    Add-UnattendedSynchronousCommand "echo `"$($Machine.SshPublicKey)`" > /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/authorized_keys" -Description 'SSH'
-                    Add-UnattendedSynchronousCommand "chmod 700 /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh && chmod 600 /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/authorized_keys" -Description 'SSH'
-                    Add-UnattendedSynchronousCommand "chown -R $($Machine.InstallationUser.UserName)@$($Machine.DomainName):$($Machine.InstallationUser.UserName)@$($Machine.DomainName) /home/$($Machine.InstallationUser.UserName)@$($Machine.DomainName)/.ssh" -Description 'SSH'
-                    Add-UnattendedSynchronousCommand "mkdir -p /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh" -Description 'SSH'
+                    Add-UnattendedSynchronousCommand -Command "restorecon -R /$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/" -Description 'Restore SELinux context'
+                    Add-UnattendedSynchronousCommand -Command "echo `"$($Machine.SshPublicKey)`" > /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/authorized_keys" -Description 'SSH'
+                    Add-UnattendedSynchronousCommand -Command "chmod 700 /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh && chmod 600 /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/authorized_keys" -Description 'SSH'
+                    Add-UnattendedSynchronousCommand -Command "chown -R $($Machine.InstallationUser.UserName)@$($Machine.DomainName):$($Machine.InstallationUser.UserName)@$($Machine.DomainName) /home/$($Machine.InstallationUser.UserName)@$($Machine.DomainName)/.ssh" -Description 'SSH'
+                    Add-UnattendedSynchronousCommand -Command "mkdir -p /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh" -Description 'SSH'
                 }
             }
         }
@@ -426,53 +426,58 @@ function New-LWHypervVM
         $systemDisk = New-VHD -Path $path -Differencing -ParentPath $referenceDiskPath -ErrorAction Stop
         Write-PSFMessage "`tcreated differencing disk '$($systemDisk.Path)' pointing to '$ReferenceVhdxPath'"
 
-        if ($Machine.InitialDscLcmConfigurationMofPath -or $Machine.InitialDscConfigurationMofPath)
+        $mountedOsDisk = Mount-VHD -Path $path -Passthru
+        try
         {
-            $mountedOsDisk = Mount-VHD -Path $path -Passthru
-            try
-            {
-                $drive = $mountedosdisk | get-disk | Get-Partition | Get-Volume  | Where {$_.DriveLetter -and $_.FileSystemLabel -eq 'System'}
+            $drive = $mountedosdisk | get-disk | Get-Partition | Get-Volume  | Where {$_.DriveLetter -and $_.FileSystemLabel -eq 'System'}
 
-                if ($Machine.InitialDscConfigurationMofPath)
+            $paths = [Collections.ArrayList]::new()
+            $alcommon = Get-Module -Name AutomatedLab.Common
+            $null = $paths.Add((Split-Path -Path $alcommon.ModuleBase -Parent))
+            $null = Get-Module -Name $alCommon.RequiredModules.Name | Foreach-Object {$paths.Add((Split-Path -Path $_.ModuleBase -Parent))}
+
+            Copy-Item -Path $paths -Destination "$($drive.DriveLetter):\Program Files\WindowsPowerShell\Modules" -Recurse
+
+
+            if ($Machine.InitialDscConfigurationMofPath)
+            {
+                $exportedModules = Get-RequiredModulesFromMOF -Path $Machine.InitialDscConfigurationMofPath
+                foreach ($exportedModule in $exportedModules.GetEnumerator())
                 {
-                    $exportedModules = Get-RequiredModulesFromMOF -Path $Machine.InitialDscConfigurationMofPath
-                    foreach ($exportedModule in $exportedModules.GetEnumerator())
+                    $moduleInfo = Get-Module -ListAvailable -Name $exportedModule.Key | Where-Object Version -eq $exportedModule.Value | Select-Object -First 1
+                    if (-not $moduleInfo)
                     {
-                        $moduleInfo = Get-Module -ListAvailable -Name $exportedModule.Key | Where-Object Version -eq $exportedModule.Value | Select-Object -First 1
-                        if (-not $moduleInfo)
-                        {
-                            Write-ScreenInfo -Type Warning -Message "Unable to find $($exportedModule.Key). Attempting to download from PSGallery"
-                            Save-Module -Path "$($drive.DriveLetter):\Program Files\WindowsPowerShell\Modules" -Name $exportedModule.Key -RequiredVersion $exportedModule.Value -Repository PSGallery -Force -AllowPrerelease
-                        }
-                        else
-                        {
-                            $source = Get-ModuleDependency -Module $moduleInfo | Sort-Object -Unique | ForEach-Object { 
-                                if ((Get-Item $_).BaseName -match '\d{1,4}\.\d{1,4}\.\d{1,4}' -and $Machine.OperatingSystem.Version -ge 10.0)
-                                {
-                                    #parent folder contains a specific version. In order to copy the module right, the parent of this parent is required
-                                    Split-Path -Path $_ -Parent
-                                }
-                                else
-                                {
-                                    $_
-                                }    
-                            }
-
-                            Copy-Item -Recurse -Path $source -Destination "$($drive.DriveLetter):\Program Files\WindowsPowerShell\Modules"
-                        }
+                        Write-ScreenInfo -Type Warning -Message "Unable to find $($exportedModule.Key). Attempting to download from PSGallery"
+                        Save-Module -Path "$($drive.DriveLetter):\Program Files\WindowsPowerShell\Modules" -Name $exportedModule.Key -RequiredVersion $exportedModule.Value -Repository PSGallery -Force -AllowPrerelease
                     }
-                    Copy-Item -Path $Machine.InitialDscConfigurationMofPath -Destination "$($drive.DriveLetter):\Windows\System32\configuration\pending.mof"
-                }
+                    else
+                    {
+                        $source = Get-ModuleDependency -Module $moduleInfo | Sort-Object -Unique | ForEach-Object { 
+                            if ((Get-Item $_).BaseName -match '\d{1,4}\.\d{1,4}\.\d{1,4}' -and $Machine.OperatingSystem.Version -ge 10.0)
+                            {
+                                #parent folder contains a specific version. In order to copy the module right, the parent of this parent is required
+                                Split-Path -Path $_ -Parent
+                            }
+                            else
+                            {
+                                $_
+                            }    
+                        }
 
-                if ($Machine.InitialDscLcmConfigurationMofPath)
-                {
-                    Copy-Item -Path $Machine.InitialDscLcmConfigurationMofPath -Destination "$($drive.DriveLetter):\Windows\System32\configuration\MetaConfig.mof"
+                        Copy-Item -Recurse -Path $source -Destination "$($drive.DriveLetter):\Program Files\WindowsPowerShell\Modules"
+                    }
                 }
+                Copy-Item -Path $Machine.InitialDscConfigurationMofPath -Destination "$($drive.DriveLetter):\Windows\System32\configuration\pending.mof"
             }
-            finally
+
+            if ($Machine.InitialDscLcmConfigurationMofPath)
             {
-                $mountedOsDisk | Dismount-VHD
-            }            
+                Copy-Item -Path $Machine.InitialDscLcmConfigurationMofPath -Destination "$($drive.DriveLetter):\Windows\System32\configuration\MetaConfig.mof"
+            }
+        }
+        finally
+        {
+            $mountedOsDisk | Dismount-VHD
         }
     }
 
@@ -1694,6 +1699,7 @@ function Mount-LWIsoImage
         return
     }
 
+    $IsoPath = (Resolve-Path -Path $IsoPath).Path
     $machines = Get-LabVM -ComputerName $ComputerName
 
     foreach ($machine in $machines)

@@ -14,17 +14,20 @@ Import a lab
 
 ### ByName (Default)
 ```
-Import-Lab [-Name] <String> [-PassThru] [-NoValidation] [-NoDisplay] [<CommonParameters>]
+Import-Lab [-Name] <String> [-DoNotRemoveExistingLabPSSessions] [-PassThru] [-NoValidation] [-NoDisplay]
+ [<CommonParameters>]
 ```
 
 ### ByPath
 ```
-Import-Lab -Path <String> [-PassThru] [-NoValidation] [-NoDisplay] [<CommonParameters>]
+Import-Lab -Path <String> [-DoNotRemoveExistingLabPSSessions] [-PassThru] [-NoValidation] [-NoDisplay]
+ [<CommonParameters>]
 ```
 
 ### ByValue
 ```
-Import-Lab [-LabBytes] <Byte[]> [-PassThru] [-NoValidation] [-NoDisplay] [<CommonParameters>]
+Import-Lab [-LabBytes] <Byte[]> [-DoNotRemoveExistingLabPSSessions] [-PassThru] [-NoValidation] [-NoDisplay]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -40,6 +43,22 @@ Import-Lab -Name MyLab -NoValidation
 Import the lab "MyLab" from XML, skipping the validation
 
 ## PARAMETERS
+
+### -DoNotRemoveExistingLabPSSessions
+Indicates that existing sessions should not be removed
+during lab import.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
 
 ### -LabBytes
 The raw byte content of a lab to import.

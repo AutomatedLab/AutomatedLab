@@ -21,29 +21,71 @@ namespace AutomatedLab
         private string installation;
         private int imageIndex;
         private Dictionary<string, string> azureToIsoName = new Dictionary<string, string>(){
-            {"2008-r2-sp1", "Windows Server 2008 R2 Datacenter (Full Installation)" },
-            {"2012-datacenter", "Windows Server 2012 Datacenter (Server with a GUI)" },
-            {"2012-r2-datacenter", "Windows Server 2012 R2 Datacenter (Server with a GUI)" },
-            {"2016-datacenter", "Windows Server 2016 Datacenter (Desktop Experience)" },
-            {"2016-datacenter-Server-core", "Windows Server 2016 Datacenter" },
-            {"2019-datacenter", "Windows Server 2019 Datacenter (Desktop Experience)" },
-            {"2019-datacenter-core", "Windows Server 2019 Datacenter" },
-            {"2022-datacenter", "Windows Server 2022 Datacenter (Desktop Experience)" },
-            {"2022-datacenter-core", "Windows Server 2022 Datacenter" },
-            {"datacenter-core-1803-with-Containers-smalldisk", "Windows Server Datacenter" },
-            {"win7-sp1-ent-n-x64", "Windows 7 Enterprise N" },
-            {"win81-ent-n-x64", "Windows 8.1 Enterprise N" },
-            {"windows-10-n-x64", "Windows 10 Enterprise N" },
-            {"20h2-ent", "Windows 10 Enterprise" },
-            {"20h2-pro", "Windows 10 Pro" },
-            {"win11-21h2-ent", "Windows 11 Enterprise" },
-            {"win11-21h2-pro", "Windows 11 Pro" }
+            {"2012-datacenter_microsoftwindowsserver", "Windows Server 2012 Datacenter (Server with a GUI)" },
+            {"2012-r2-datacenter_microsoftwindowsserver", "Windows Server 2012 R2 Datacenter (Server with a GUI)" },
+            {"2016-datacenter_microsoftwindowsserver", "Windows Server 2016 Datacenter (Desktop Experience)" },
+            {"2016-datacenter-Server-core_microsoftwindowsserver", "Windows Server 2016 Datacenter" },
+            {"2019-datacenter_microsoftwindowsserver", "Windows Server 2019 Datacenter (Desktop Experience)" },
+            {"2019-datacenter-core_microsoftwindowsserver", "Windows Server 2019 Datacenter" },
+            {"2022-datacenter_microsoftwindowsserver", "Windows Server 2022 Datacenter (Desktop Experience)" },
+            {"2022-datacenter-core_microsoftwindowsserver", "Windows Server 2022 Datacenter" },
+            {"datacenter-core-1803-with-Containers-smalldisk_microsoftwindowsserver", "Windows Server Datacenter" },
+            {"win7-sp1-ent-n-x64_microsoftvisualstudio", "Windows 7 Enterprise N" },
+            {"win81-ent-n-x64_microsoftvisualstudio", "Windows 8.1 Enterprise N" },
+            {"windows-10-n-x64_microsoftvisualstudio", "Windows 10 Enterprise N" },
+            {"20h2-ent_microsoftwindowsdesktop", "Windows 10 Enterprise" },
+            {"20h2-pro_microsoftwindowsdesktop", "Windows 10 Pro" },
+            {"win11-21h2-ent_microsoftwindowsdesktop", "Windows 11 Enterprise" },
+            {"6.10_openlogic", "CentOS 6.10"},
+            {"6.9_openlogic", "CentOS 6.9"},
+            {"7.2_openlogic", "CentOS 7.2"},
+            {"7.3_openlogic", "CentOS 7.3"},
+            {"7.4_openlogic", "CentOS 7.4"},
+            {"7.5_openlogic", "CentOS 7.5"},
+            {"7.6_openlogic", "CentOS 7.6"},
+            {"7.7_openlogic", "CentOS 7.7"},
+            {"7_8_openlogic", "CentOS 7.8"},
+            {"7_9_openlogic", "CentOS 7.9"},
+            {"8.0_openlogic", "CentOS 8.0"},
+            {"8_1_openlogic", "CentOS 8.1"},
+            {"8_2_openlogic", "CentOS 8.2"},
+            {"8_3_openlogic", "CentOS 8.3"},
+            {"8_4_openlogic", "CentOS 8.4"},
+            {"8_5_openlogic", "CentOS 8.5"},
+            {"19_10_canonical", "Ubuntu-Server 19.10 \"Eoan Ermine\"" },
+            {"20_04-lts_canonical", "Ubuntu-Server 20.04 LTS \"Focal Fossa\""},
+            {"20_10-gen2_canonical", "Ubuntu-Server 20.10 \"Groovy Gorilla\""},
+            {"21_10_canonical", "Ubuntu-Server 21.10 \"Impish Indri\""},
+            {"22_04-lts_canonical", "Ubuntu-Server 22.04 LTS \"Jammy Jellyfish\"" },
+            {"22_10_canonical", "Ubuntu-Server 22.10 \"Kinetic Kudu\""},
+            {"6.10_redhat", "Red Hat Enterprise Linux 6.1" },
+            {"7.2_redhat", "Red Hat Enterprise Linux 7.2" },
+            {"7.3_redhat", "Red Hat Enterprise Linux 7.3" },
+            {"7.4_redhat", "Red Hat Enterprise Linux 7.4" },
+            {"7.5_redhat", "Red Hat Enterprise Linux 7.5" },
+            {"7.6_redhat", "Red Hat Enterprise Linux 7.6" },
+            {"7.7_redhat", "Red Hat Enterprise Linux 7.7" },
+            {"7.8_redhat", "Red Hat Enterprise Linux 7.8" },
+            {"7_9_redhat", "Red Hat Enterprise Linux 7.9" },
+            {"8_redhat", "Red Hat Enterprise Linux 8" },
+            {"8.1_redhat", "Red Hat Enterprise Linux 8.1" },
+            {"8.2_redhat", "Red Hat Enterprise Linux 8.2" },
+            {"8_3_redhat", "Red Hat Enterprise Linux 8.3" },
+            {"8_4_redhat", "Red Hat Enterprise Linux 8.4" },
+            {"8_5_redhat", "Red Hat Enterprise Linux 8.5" },
+            {"8_6_redhat", "Red Hat Enterprise Linux 8.6" },
+            {"8_7_redhat", "Red Hat Enterprise Linux 8.7" },
+            {"9_0_redhat", "Red Hat Enterprise Linux 9" },
+            {"9_1_redhat", "Red Hat Enterprise Linux 9.1" },
+            {"kali_kali-linux", "Kali Linux 2022.3" },
+            {"kali-20224_kali-linux", "Kali Linux 2022.4" }
             };
         private Dictionary<string, string> isoNameToAzureSku;
 
         private static ListXmlStore<ProductKey> productKeys = null;
         private static ListXmlStore<ProductKey> productKeysCustom = null;
 
+        public Architecture Architecture { get; set; }
         public string OperatingSystemName
         {
             get { return operatingSystemName; }
@@ -219,12 +261,14 @@ namespace AutomatedLab
         public OperatingSystem()
         {
             LinuxPackageGroup = new List<String>();
+            Architecture = Architecture.Unknown;
             isoNameToAzureSku = azureToIsoName.ToDictionary(kp => kp.Value, kp => kp.Key);
         }
 
         public OperatingSystem(string azureSkuName, bool azure = true)
         {
             isoNameToAzureSku = azureToIsoName.ToDictionary(kp => kp.Value, kp => kp.Key);
+            Architecture = Architecture.Unknown;
 
             try
             {
@@ -293,6 +337,7 @@ namespace AutomatedLab
             isoNameToAzureSku = azureToIsoName.ToDictionary(kp => kp.Value, kp => kp.Key);
             this.operatingSystemName = operatingSystemName;
             LinuxPackageGroup = new List<String>();
+            Architecture = Architecture.Unknown;
             if (operatingSystemName.ToLower().Contains("windows server"))
             {
                 installation = "Server";
@@ -343,7 +388,11 @@ namespace AutomatedLab
         {
             get
             {
-                return (System.Text.RegularExpressions.Regex.IsMatch(OperatingSystemName, "CentOS|Red Hat|Fedora")) ? LinuxType.RedHat : LinuxType.SuSE;
+                if (System.Text.RegularExpressions.Regex.IsMatch(OperatingSystemName, "CentOS|Red Hat|Fedora")) return LinuxType.RedHat;
+                if (System.Text.RegularExpressions.Regex.IsMatch(OperatingSystemName, "Suse")) return LinuxType.SuSE;
+                if (System.Text.RegularExpressions.Regex.IsMatch(OperatingSystemName, "Ubuntu|Kali")) return LinuxType.Ubuntu;
+
+                return LinuxType.Unknown;
             }
         }
         public OperatingSystemType OperatingSystemType
@@ -392,6 +441,7 @@ namespace AutomatedLab
             return operatingSystemName == os.operatingSystemName &&
                 version == os.version &&
                 edition == os.edition &&
+                Architecture == os.Architecture &&
                 installation == os.installation;
         }
 

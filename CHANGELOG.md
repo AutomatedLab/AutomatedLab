@@ -2,7 +2,30 @@
 
 ## Unreleased (yyyy-MM-dd)
 
-## 5.47.0 (2022-11-24)
+### Enhancements
+
+### Bugs
+
+## 5.48.0 (2023-04-05)
+
+### Enhancements
+
+- Migrated AppInsights from Instrumentation Key to Connection String (#1483)
+- Enable using 32bit lab OSses as well (#1490)
+- Linux SKUs supported in Azure labs (yay, #1499)
+- Make Get-LabAvailableOperatingSystem aware of context (i.e. if Lab is on Azure)
+- Setting version of 'AutomatedLab.Common' to '2.3.17'
+
+### Bugs
+
+- Fix issue with relative ISO paths in Mount-LabIsoImage (#1491)
+- Fix wrong test for Scom Web Console (#1493)
+- Fixed an issue with the Exchange 2019 custom role that after the last update was only
+- able to deploy Exchange 2019 CU11 and CU12 because of a change in the command line parameters.
+- Fix minor issue with sending AL.Common to newly installed VMs
+- Ensure required resource providers and features are registered (#1510)
+
+## 5.47.0 (2023-02-20)
 
 ### Enhancements
 

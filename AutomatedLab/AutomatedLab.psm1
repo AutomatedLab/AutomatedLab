@@ -923,6 +923,35 @@ function Install-Lab
     if (($Domains -or $performAll) -and (Get-LabVM -Role RootDC | Where-Object { -not $_.SkipDeployment }))
     {
         Write-ScreenInfo -Message 'Installing Root Domain Controllers' -TaskStart
+        foreach ($azVm in (Get-LabVM -IncludeLinux -Filter {$_.HostType -eq 'Azure'}))
+        {
+            $nicCount = 0
+            foreach ($azNic in $azVm.NetworkAdapters)
+            {
+                if ($azNic.Ipv4DnsServers.Count -eq 0) { continue }
+                # Set NIC configured DNS
+                $vmNicId = (Get-LWAzureVm -ComputerName $azVm.ResourceName).NetworkProfile.NetworkInterfaces.Id.Where({$_.EndsWith("nic$nicCount")})
+                $vmNic = Get-AzNetworkInterface -ResourceId $vmNicId
+                $vmNic.DnsSettings.DnsServers = [Collections.Generic.List[string]]$azNic.Ipv4DnsServers
+                $null = $vmNic | Set-AzNetworkInterface
+                $nicCount++
+            }
+        }
+
+        foreach ($azNet in ((Get-Lab).VirtualNetworks | Where HostType -eq 'Azure'))
+        {
+            # Set VNET DNS
+            if ($null -eq $aznet.DnsServers.AddressAsString) { continue }
+
+            $net = Get-AzVirtualNetwork -Name $aznet.ResourceName
+            if (-not $net.DhcpOptions)
+            {
+                $net.DhcpOptions = @{}
+            }
+
+            $net.DhcpOptions.DnsServers = [Collections.Generic.List[string]]$aznet.DnsServers.AddressAsString
+            $null = $net | Set-AzVirtualNetwork
+        }
 
         $jobs = Invoke-LabCommand -PreInstallationActivity -ActivityName 'Pre-installation' -ComputerName $(Get-LabVM -Role RootDC | Where-Object { -not $_.SkipDeployment }) -PassThru -NoDisplay
         $jobs | Where-Object { $_ -is [System.Management.Automation.Job] } | Wait-Job | Out-Null
@@ -1675,6 +1704,8 @@ function Get-LabAvailableOperatingSystem
         $Path = "$(Get-LabSourcesLocationInternal -Local)/ISOs"
     }
 
+    $labData = if (Get-LabDefinition -ErrorAction SilentlyContinue) {Get-LabDefinition} elseif (Get-Lab -ErrorAction SilentlyContinue) {Get-Lab}
+    if ($labData -and $labData.DefaultVirtualizationEngine -eq 'Azure') { $Azure = $true }
     $storeLocationName = if ($Azure.IsPresent) { 'Azure' } else { 'Local' }
 
     if ($Azure)
@@ -1682,6 +1713,16 @@ function Get-LabAvailableOperatingSystem
         if (-not (Get-AzContext -ErrorAction SilentlyContinue).Subscription)
         {
             throw 'Please login to Azure before trying to list Azure image SKUs'
+        }
+
+        if (-not $Location -and $labData.AzureSettings.DefaultLocation.Location)
+        {
+            $Location = $labData.AzureSettings.DefaultLocation.DisplayName
+        }
+
+        if (-not $Location)
+        {
+            throw 'Please add your subscription using Add-LabAzureSubscription before viewing available operating systems, or use the parameters -Azure and -Location'
         }
 
         $type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.Azure.AzureOSImage
@@ -1699,7 +1740,9 @@ function Get-LabAvailableOperatingSystem
         foreach ($os in $cachedSkus)
         {
             # Converting ToLower() as Azure Stack Hub images seem to mix case
-            $cachedOs = [AutomatedLab.OperatingSystem]::new($os.Skus.ToLower(), $true)
+            # building longer SKU to take care of bad naming conventions with the linux images
+            $osname = '{0}_{1}' -f $os.Skus, $os.PublisherName
+            $cachedOs = [AutomatedLab.OperatingSystem]::new($osname.ToLower(), $true)
             if ($cachedOs.OperatingSystemName) {$cachedOsList.Add($cachedOs)}
         }
 
@@ -1715,7 +1758,8 @@ function Get-LabAvailableOperatingSystem
         foreach ($sku in $skus)
         {
             # Converting ToLower() as Azure Stack Hub images seem to mix case
-            $azureOs = ([AutomatedLab.OperatingSystem]::new($sku.Skus.ToLower(), $true))
+            $osname = '{0}_{1}' -f $sku.Skus, $sku.PublisherName
+            $azureOs = [AutomatedLab.OperatingSystem]::new($osname.ToLower(), $true)
             if (-not $azureOs.OperatingSystemName) { continue }
 
             $osList.Add($azureOs )

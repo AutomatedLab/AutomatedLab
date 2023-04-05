@@ -427,7 +427,19 @@ namespace AutomatedLab
             if (dcRole == null || Force)
             {
                 //machine is not a domain controller, creating a local username 
-                userName = OperatingSystemType == OperatingSystemType.Linux ? "root" : string.Format(@"{0}\{1}", name, installationUser.UserName);
+                if (OperatingSystemType == OperatingSystemType.Linux && HostType == VirtualizationHost.Azure)
+                {
+                    // root user is prohibited on Azure
+                    userName = "automatedlab";
+                }
+                if (OperatingSystemType == OperatingSystemType.Linux && HostType != VirtualizationHost.Azure)
+                {
+                    userName = "root";
+                }
+                if (OperatingSystemType != OperatingSystemType.Linux)
+                {
+                    userName = string.Format(@"{0}\{1}", name, installationUser.UserName);
+                }
             }
             else
             {

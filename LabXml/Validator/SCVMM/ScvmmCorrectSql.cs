@@ -50,6 +50,16 @@ namespace AutomatedLab
                             TargetObject = vm.ToString()
                         };
                     }
+
+                    if (vm.Roles.FirstOrDefault(r => r.Name == Roles.Scvmm2022) != null && sqlvms.Where(m => m.Roles.FirstOrDefault(r => r.Name == Roles.SQLServer2017 || r.Name == Roles.SQLServer2019 || r.Name == Roles.SQLServer2022) != null).Count() == 0)
+                    {
+                        yield return new ValidationMessage
+                        {
+                            Message = string.Format("SCVMM Server 2022 requires SQL 2017 or 2019 or 2022", vm.ToString()),
+                            Type = MessageType.Error,
+                            TargetObject = vm.ToString()
+                        };
+                    }
                 }
             }
         }

@@ -43,6 +43,14 @@
             $os.Edition = $imageInfo.EditionId
             $os.Installation = $imageInfo.InstallationType
             $os.ImageIndex = $imageInfo.ImageIndex
+            try 
+            {
+                $os.Architecture = $imageInfo.Architecture
+            }
+            catch
+            {
+                $os.Architecture = 'Unknown'
+            }
 
             $os
         }
@@ -94,9 +102,9 @@
         $os
     }
 
-    # RHEL, CentOS, Fedora et al
+    # RHEL, CentOS, Fedora, OpenSuse Tumbleweed et al
     $rhelPath = "$DriveLetter`:\.treeinfo" # TreeInfo Syntax https://release-engineering.github.io/productmd/treeinfo-1.0.html
-    $rhelPackageInfo = "$DriveLetter`:{0}\repodata"
+    $rhelPackageInfo = "$DriveLetter`:{0}\*\repodata"
     if (Test-Path -Path $rhelPath -PathType Leaf)
     {
         $contentMatch = (Get-Content -Path $rhelPath -Raw) -match '(?s)(?<=\[general\]).*?(?=\[)'
@@ -110,6 +118,7 @@
         $name = ([string]$generalInfo.Where({ $_.Name.Trim() -eq 'name' }).Value).Trim()
         $variant = ([string]$generalInfo.Where({ $_.Name.Trim() -eq 'variant' }).Value).Trim()
         $versionInfo = if (-not $version) { [Version]::new(1, 0, 0, 0) } elseif ($version.Contains('.')) { $version -as [Version] } else { [Version]::new($Version, 0) }
+        $arch = if (([string]$generalInfo.Where({ $_.Name.Trim() -eq 'arch' }).Value).Trim() -eq 'x86_64') { 'x64' } else { 'x86' }
 
         if ($variant -and $versionInfo -ge '8.0')
         {
@@ -123,12 +132,13 @@
         $os = New-Object -TypeName AutomatedLab.OperatingSystem($name, $IsoFile.FullName)
         $os.OperatingSystemImageName = $name
         $os.Size = $IsoFile.Length
+        $os.Architecture = $arch
 
         $packageXml = (Get-ChildItem -Path $rhelPackageInfo -Filter *comps*.xml -ErrorAction SilentlyContinue | Select-Object -First 1).FullName
         if (-not $packageXml)
         {
             # CentOS ISO for some reason contained only GUIDs
-            $packageXml = Get-ChildItem -Path $rhelPackageInfo -PipelineVariable file -File |
+            $packageXml = Get-ChildItem -Path $rhelPackageInfo -ErrorAction SilentlyContinue -PipelineVariable file -File |
             Get-Content -TotalCount 10 |
             Where-Object { $_ -like "*<comps>*" } |
             ForEach-Object { $file.FullName } |
@@ -159,22 +169,40 @@
         $os
     }
 
-    # Ubuntu 2004+
+    # Ubuntu 2004+, Kali
     $ubuntuPath = "$DriveLetter`:\.disk\info"
     $ubuntuPackageInfo = "$DriveLetter`:\pool\main"
     if (Test-Path -Path $ubuntuPath -PathType Leaf)
     {
         $infoContent = Get-Content -Path $ubuntuPath -TotalCount 1
-        $null = $infoContent -match '(?:Ubuntu)(?:-Server)?\s+(?<Version>\d\d\.\d\d).*\((?<ReleaseDate>\d{8})'
-        $osversion = $Matches.Version
-        if (([version]$osversion) -lt '20.4')
+        if ($infoContent -like 'Kali*')
         {
-            Write-ScreenInfo -Type Error -Message "Skipping $IsoFile, AutomatedLab was only tested with 20.04 and newer."
+            $null = $infoContent -match '(?:Kali GNU\/Linux)?\s+(?<Version>\d\d\d\d\.\d).*\s+"(?<Name>[\w-]+)".*Official\s(?<Arch>i386|amd64).*(?<ReleaseDate>\d{8})'
+            $osversion = $Matches.Version
+            $name = 'Kali Linux {0}' -f $osversion
         }
+        else
+        {
+            $null = $infoContent -match '(?:Ubuntu)(?:-Server)?\s+(?<Version>\d\d\.\d\d).*Release\s(?<Arch>i386|amd64)\s\((?<ReleaseDate>\d{8})'
+            $osversion = $Matches.Version
+            $name = ($infoContent -split '\s-\s')[0]
+            if (([version]$osversion) -lt '20.4')
+            {
+                Write-ScreenInfo -Type Error -Message "Skipping $IsoFile, AutomatedLab was only tested with 20.04 and newer."
+            }
+        }
+
         $osDate = $Matches.ReleaseDate
-        $name = ($infoContent -split '\s-\s')[0]
 
         $os = New-Object -TypeName AutomatedLab.OperatingSystem($name, $IsoFile.FullName)
+        if ($Matches.Arch -eq 'i386')
+        {
+            $os.Architecture = 'x86'
+        }
+        else
+        {
+            $os.Architecture = 'x64'
+        }
         $os.OperatingSystemImageName = $name
         $os.Size = $IsoFile.Length
         $os.Version = $osversion
