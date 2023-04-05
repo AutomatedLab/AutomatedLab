@@ -37,6 +37,10 @@ if (-not $IsLinux)
     $surplus = @(
         (Join-Path -Path $nugetpath -ChildPath *newtonsoft.json*)
         (Join-Path -Path $nugetpath -ChildPath *AutomatedLab.Common*)
+        (Join-Path -Path $nugetpath -ChildPath *Pester*)
+        (Join-Path -Path $nugetpath -ChildPath *Ships*)
+        (Join-Path -Path $nugetpath -ChildPath *powershell-yaml*)
+        (Join-Path -Path $nugetpath -ChildPath *PSFramework*)
     )
     Remove-Item -Path $surplus
     Write-Host "Pushing nuget artifacts"
