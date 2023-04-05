@@ -47,6 +47,7 @@
         'Connect-Lab',
         'Connect-LabVM',
         'Copy-LabALCommon',
+        'Copy-LabFileItem',
         'Disable-LabVMFirewallGroup',
         'Disconnect-Lab',
         'Dismount-LabIsoImage',
