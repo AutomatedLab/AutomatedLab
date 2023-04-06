@@ -650,6 +650,12 @@
                 )
             }
 
+            if (($Lab.VirtualNetworks | Where-Object ResourceName -eq $nic.VirtualSwitch).DnsServers)
+            {
+                $nicTemplate.properties.dnsSettings = @{
+                    dnsServers = [string[]](($Lab.VirtualNetworks | Where-Object ResourceName -eq $nic.VirtualSwitch).DnsServers.AddressAsString)
+                }
+            }
             if ($nic.Ipv4DnsServers)
             {
                 $nicTemplate.properties.dnsSettings = @{

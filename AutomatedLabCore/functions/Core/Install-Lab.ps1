@@ -217,11 +217,15 @@
             $nicCount = 0
             foreach ($azNic in $azVm.NetworkAdapters)
             {
-                if ($azNic.Ipv4DnsServers.Count -eq 0) { continue }
+                $dns = ($Lab.VirtualNetworks | Where-Object ResourceName -eq $azNic.VirtualSwitch).DnsServers.AddressAsString
+                if ($nic.Ipv4DnsServers.AddressAsString) {$dns = $nic.Ipv4DnsServers.AddressAsString}
+                if ($dns.Count -eq 0) { continue }
                 # Set NIC configured DNS
-                $vmNicId = (Get-LWAzureVm -ComputerName $azVm.ResourceName).NetworkProfile.NetworkInterfaces.Id.Where({$_.EndsWith("nic$nicCount")})
+                [string]$vmNicId = (Get-LWAzureVm -ComputerName $azVm.ResourceName).NetworkProfile.NetworkInterfaces.Id.Where({$_.EndsWith("nic$nicCount")})
                 $vmNic = Get-AzNetworkInterface -ResourceId $vmNicId
-                $vmNic.DnsSettings.DnsServers = [Collections.Generic.List[string]]$azNic.Ipv4DnsServers
+                if ($dns -and $vmNic.DnsSettings.DnsServers -and -not (Compare-Object -ReferenceObject $dns -DifferenceObject $vmNic.DnsSettings.DnsServers)) { continue }
+
+                $vmNic.DnsSettings.DnsServers = [Collections.Generic.List[string]]$dns
                 $null = $vmNic | Set-AzNetworkInterface
                 $nicCount++
             }
@@ -676,8 +680,8 @@
     # until a restart was done
     if ($lab.DefaultVirtualizationEngine -eq 'Azure')
     {
-        $vms = Get-LabVm | Where-Object SkipDeployment -eq $false
-        $disconnectedVms = Invoke-LabCommand -PassThru -NoDisplay -ComputerName $vms -ScriptBlock { $null -eq (Get-NetConnectionProfile -IPv4Connectivity Internet -ErrorAction SilentlyContinue) } | Where-Object { $_}
+        $azvms = Get-LabVm | Where-Object SkipDeployment -eq $false
+        $disconnectedVms = Invoke-LabCommand -PassThru -NoDisplay -ComputerName $azvms -ScriptBlock { $null -eq (Get-NetConnectionProfile -IPv4Connectivity Internet -ErrorAction SilentlyContinue) } | Where-Object { $_}
         if ($disconnectedVms) { Restart-LabVm $disconnectedVms.PSComputerName -Wait -NoDisplay -NoNewLine }
     }
 
