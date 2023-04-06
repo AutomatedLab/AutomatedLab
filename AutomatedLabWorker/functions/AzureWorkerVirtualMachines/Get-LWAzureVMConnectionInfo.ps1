@@ -25,7 +25,8 @@
     }
 
     $resourceGroupName = (Get-LabAzureDefaultResourceGroup).ResourceGroupName
-    $azureVMs = Get-AzVM | Where-Object ResourceGroupName -in (Get-LabAzureResourceGroup).ResourceGroupName | Where-Object Name -in $ComputerName.ResourceName
+    $azureVMs = Get-AzVM -ResourceGroupName $resourceGroupName | Where-Object Name -in $ComputerName.ResourceName
+    $ips = Get-AzPublicIpAddress -ResourceGroupName $resourceGroupName -ErrorAction SilentlyContinue
 
     foreach ($name in $ComputerName)
     {
@@ -35,11 +36,17 @@
         { continue }
 
         $net = $lab.VirtualNetworks.Where({ $_.Name -eq $name.Network[0] })
-        $ip = Get-AzPublicIpAddress -ResourceGroupName $resourceGroupName -ErrorAction SilentlyContinue | Where-Object { $_.Tag['Vnet'] -eq $net.ResourceName }
+        $ip = $ips | Where-Object { $_.Tag['Vnet'] -eq $net.ResourceName }
 
         if (-not $ip)
         {
-            $ip = Get-AzPublicIpAddress -Name "$($resourceGroupName)$($net.ResourceName)lbfrontendip" -ResourceGroupName $resourceGroupName -ErrorAction SilentlyContinue
+            $ip = $ips | Where-Object Name -eq "$($resourceGroupName)$($net.ResourceName)lbfrontendip"
+        }
+
+        if (-not $ip)
+        {
+            Write-ScreenInfo -Type Error -Message "No public IP address found for VM $($name.ResourceName) with tag $($net.ResourceName) or name $($resourceGroupName)$($net.ResourceName)lbfrontendip"
+            continue
         }
 
         $result = [AutomatedLab.Azure.AzureConnectionInfo] @{
