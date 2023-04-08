@@ -81,12 +81,6 @@ function Install-LabAdfs
         $certThumbprint = $cert.Thumbprint
         Write-PSFMessage "Certificate thumbprint is '$certThumbprint'"
 
-        foreach ($otherAdfsServer in $otherAdfsServers)
-        {
-            Write-PSFMessage "Adding the SSL certificate to machine '$otherAdfsServer'"
-            Get-LabCertificate -ComputerName $1stAdfsServer -Thumbprint $certThumbprint | Add-LabCertificate -ComputerName $otherAdfsServer
-        }
-
         Invoke-LabCommand -ActivityName 'Add ADFS Service User and DNS record' -ComputerName $adfsDc -ScriptBlock {
             Add-KdsRootKey -EffectiveTime (Get-Date).AddHours(-10) #not required if not used GMSA
             New-ADUser -Name $adfsServiceName -AccountPassword ($adfsServicePassword | ConvertTo-SecureString -AsPlainText -Force) -Enabled $true -PasswordNeverExpires $true
@@ -115,6 +109,18 @@ function Install-LabAdfs
 
         $result = if ($otherAdfsServers)
         {
+            # Copy Service-communication/SSL Certificate to all ADFS Servers
+            Write-PSFMessage "Copying SSL Certificate to secondary AD FS nodes"
+            Invoke-LabCommand -ActivityName 'Exporting SSL Cert' -ComputerName $1stAdfsServer -Variable (Get-Variable -Name certThumbprint) -ScriptBlock {
+                Get-Item "Cert:\LocalMachine\My\$certThumbprint" | Export-PfxCertificate -FilePath "C:\sslcert.pfx" -ProtectTo "Domain Users"
+            }
+            Invoke-LabCommand -ActivityName 'Importing SSL Cert' -ComputerName $otherAdfsServers -Variable (Get-Variable -Name certThumbprint,1stAdfsServer) -ScriptBlock {
+                Get-Item "\\$1stAdfsServer\C$\sslcert.pfx" | Import-PfxCertificate -CertStoreLocation Cert:\LocalMachine\My -Exportable
+            }
+            Invoke-LabCommand -ActivityName 'Removing PFX file' -ComputerName $1stAdfsServer -ScriptBlock {
+                Remove-Item -Path "C:\sslcert.pfx"
+            }
+
             Invoke-LabCommand -ActivityName 'Installing ADFS Farm' -ComputerName $otherAdfsServers -ScriptBlock {
                 $cred = New-Object pscredential("$($env:USERDNSDOMAIN)\$adfsServiceName", ($adfsServicePassword | ConvertTo-SecureString -AsPlainText -Force))
 
