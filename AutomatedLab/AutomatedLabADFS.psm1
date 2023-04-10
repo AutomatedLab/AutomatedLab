@@ -72,7 +72,7 @@ function Install-LabAdfs
 
         if (-not (Test-LabCATemplate -TemplateName AdfsSsl -ComputerName $ca))
         {
-            New-LabCATemplate -TemplateName AdfsSsl -DisplayName 'ADFS SSL' -SourceTemplateName WebServer -ApplicationPolicy ServerAuthentication `
+            New-LabCATemplate -TemplateName AdfsSsl -DisplayName 'ADFS SSL' -SourceTemplateName WebServer -ApplicationPolicy "Server Authentication" `
             -EnrollmentFlags Autoenrollment -PrivateKeyFlags AllowKeyExport -Version 2 -SamAccountName 'Domain Computers' -ComputerName $ca -ErrorAction Stop
         }
 

@@ -27,6 +27,7 @@
 - able to deploy Exchange 2019 CU11 and CU12 because of a change in the command line parameters.
 - Fix minor issue with sending AL.Common to newly installed VMs
 - Ensure required resource providers and features are registered (#1510)
+- Fix error creating AdfsSsl certificate template during AD FS role installation.
 
 ## 5.47.0 (2023-02-20)
 
