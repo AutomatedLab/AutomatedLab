@@ -8,6 +8,7 @@
 
 - Fixed a bug in 'Initialize-LWAzureVM' comparing the PowerShell version (#1517).
 - Fix issue exporting service-communication/SSL certificate to secondary AD FS nodes.
+- 'Clear-LabCache' did not remove global vriables used for caching.
 
 ## 5.48.0 (2023-04-05)
 
