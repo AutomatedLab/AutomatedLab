@@ -16,7 +16,7 @@ Start-PodeServer {
     Import-PodeModule -Name AutomatedLabWorker
     Import-PodeModule -Name AutomatedLabNotifications
     Import-PodeModule -Name AutomatedLabTest
-    Import-PodeModule -Name AutomatedLab
+    Import-PodeModule -Name AutomatedLabCore
     
     Enable-PodeSessionMiddleware -Duration 120 -Extend
     Add-PodeAuthIIS -Name 'IISAuth'

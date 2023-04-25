@@ -1,0 +1,1 @@
+$chunkSize = 1MB

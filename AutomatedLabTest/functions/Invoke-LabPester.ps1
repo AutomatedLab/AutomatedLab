@@ -30,7 +30,7 @@
 
         $global:pesterLab = $Lab # No parameters in Pester v5 yet
         $configuration = [PesterConfiguration]::Default
-        $configuration.Run.Path = Join-Path -Path $PSCmdlet.MyInvocation.MyCommand.Module.ModuleBase -ChildPath 'internal/tests'
+        $configuration.Run.Path = Join-Path -Path $PSCmdlet.MyInvocation.MyCommand.Module.ModuleBase -ChildPath 'tests'
         $configuration.Run.PassThru = $PassThru.IsPresent
         [string[]]$tags = 'General'
         
