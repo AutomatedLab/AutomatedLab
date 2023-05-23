@@ -50,6 +50,7 @@
 
     if ($DefaultVirtualizationEngine -eq 'Azure')
     {
+        Clear-Lab
         $null = Test-LabAzureModuleAvailability -ErrorAction SilentlyContinue
     }
 
