@@ -32,27 +32,28 @@
     }
 
     $weirdTimestampFormat = [System.Xml.XmlConvert]::ToString($MaximumAccessRequestDuration)
+    $pip = Get-PublicIpAddress
 
     $vmPolicies = foreach ($vm in $vms)
     {
         @{
             id    = $vm.Id
             ports = @{
-                number                     = 22;
-                protocol                   = "*";
-                allowedSourceAddressPrefix = @("*");
+                number                     = 22
+                protocol                   = "*"
+                allowedSourceAddressPrefix = @($pip)
                 maxRequestAccessDuration   = $weirdTimestampFormat
             },
             @{
-                number                     = 3389;
-                protocol                   = "*";
-                allowedSourceAddressPrefix = @("*");
+                number                     = 3389
+                protocol                   = "*"
+                allowedSourceAddressPrefix = @($pip)
                 maxRequestAccessDuration   = $weirdTimestampFormat
             },
             @{
-                number                     = 5985;
-                protocol                   = "*";
-                allowedSourceAddressPrefix = @("*");
+                number                     = 5985
+                protocol                   = "*"
+                allowedSourceAddressPrefix = @($pip)
                 maxRequestAccessDuration   = $weirdTimestampFormat
             }
         }

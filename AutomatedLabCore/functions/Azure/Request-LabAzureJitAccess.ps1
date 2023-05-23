@@ -31,23 +31,24 @@
     $vms = Get-LWAzureVm -ComputerName $nodes.ResourceName
     $end = (Get-Date).Add($Duration)
     $utcEnd = $end.ToUniversalTime().ToString('u')
+    $pip = Get-PublicIpAddress
 
     $jitRequests = foreach ($vm in $vms)
     {
         @{
             id    = $vm.Id
             ports = @{
-                number                     = 22;
+                number                     = 22
                 endTimeUtc                 = $utcEnd
-                allowedSourceAddressPrefix = @('*')
+                allowedSourceAddressPrefix = @($pip)
             }, @{
-                number                     = 3389;
+                number                     = 3389
                 endTimeUtc                 = $utcEnd
-                allowedSourceAddressPrefix = @('*')
+                allowedSourceAddressPrefix = @($pip)
             }, @{
-                number                     = 5985;
+                number                     = 5985
                 endTimeUtc                 = $utcEnd
-                allowedSourceAddressPrefix = @('*')
+                allowedSourceAddressPrefix = @($pip)
             }
         }
     }
