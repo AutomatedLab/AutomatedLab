@@ -37,12 +37,6 @@
         New-LWHypervNetworkSwitch -VirtualNetwork $hypervNetworks
     }
 
-    $azureNetworks = $data.VirtualNetworks | Where-Object HostType -eq Azure
-    if ($azureNetworks )
-    {
-        New-LWAzureNetworkSwitch -VirtualNetwork $azureNetworks
-    }
-
     Write-PSFMessage 'done'
 
     Write-LogFunctionExit
