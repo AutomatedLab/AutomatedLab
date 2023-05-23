@@ -670,7 +670,7 @@
         $vmSize = Get-LWAzureVmSize -Machine $Machine
         $imageRef = Get-LWAzureSku -Machine $machine
 
-        if ($vmSize.Gen2Supported -and -not $vmSize.Gen1Supported)
+        if (($Machine.VmGeneration -eq 2 -and $vmSize.Gen2Supported) -or ($vmSize.Gen2Supported -and -not $vmSize.Gen1Supported))
         {
             $pattern = '{0}(-g2$|gen2|-gensecond$)' -f $imageRef.sku # Yes, why should the image names be consistent? Also of course we don't need a damn VMGeneration property...
             $newImage = $lab.AzureSettings.VMImages | Where-Object { $_.PublisherName -eq $imageref.Publisher -and $_.Offer -eq $imageref.Offer -and $_.Skus -match $pattern }

@@ -126,7 +126,11 @@
 
         [string]$InitialDscConfigurationMofPath,
 
-        [string]$InitialDscLcmConfigurationMofPath
+        [string]$InitialDscLcmConfigurationMofPath,
+
+        [ValidateSet(1, 2)]
+        [int]
+        $VmGeneration
     )
 
     begin

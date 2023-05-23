@@ -68,6 +68,7 @@ namespace AutomatedLab
         }
 
         public string FriendlyName { get; set; }
+        public int VmGeneration { get; set; }
 
         public bool Gen2VmSupported
         {
@@ -94,9 +95,9 @@ namespace AutomatedLab
         public string SshPublicKeyPath { get; set; }
         public string SshPrivateKeyPath { get; set; }
         public string OrganizationalUnit { get; set; }
-        public string ReferenceDiskPath {get; set;}
-        public string InitialDscConfigurationMofPath {get; set;}
-        public string InitialDscLcmConfigurationMofPath {get; set;}
+        public string ReferenceDiskPath { get; set; }
+        public string InitialDscConfigurationMofPath { get; set; }
+        public string InitialDscLcmConfigurationMofPath { get; set; }
 
         public OperatingSystemType OperatingSystemType
         {
@@ -404,6 +405,7 @@ namespace AutomatedLab
             networkAdapters = new List<NetworkAdapter>();
             internalNotes = new SerializableDictionary<string, string>();
             notes = new SerializableDictionary<string, string>();
+            VmGeneration = 2;
         }
 
         public override string ToString()
