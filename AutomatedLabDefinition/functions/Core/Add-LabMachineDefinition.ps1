@@ -283,6 +283,11 @@
             Write-ScreenInfo -Type Warning -Message "Sorry, no custom reference disk allowed on $($script:lab.DefaultVirtualizationEngine). This parameter will be ignored."
         }
 
+        if ($VmGeneration)
+        {
+            $machine.VmGeneration = $VmGeneration
+        }
+
         $machine.Name = $Name
         $machine.FriendlyName = $ResourceName
         $machine.OrganizationalUnit = $OrganizationalUnit
