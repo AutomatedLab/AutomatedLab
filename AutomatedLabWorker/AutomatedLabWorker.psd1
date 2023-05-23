@@ -62,7 +62,6 @@
         'New-LabAzureResourceGroupDeployment',
         'New-LWAzureLoadBalancer',
         'New-LWAzureNetworkSwitch',
-        'New-LWAzureVM',
         'New-LWHypervNetworkSwitch',
         'New-LWHypervVM',
         'New-LWReferenceVHDX',

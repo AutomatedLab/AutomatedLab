@@ -126,7 +126,11 @@
 
         [string]$InitialDscConfigurationMofPath,
 
-        [string]$InitialDscLcmConfigurationMofPath
+        [string]$InitialDscLcmConfigurationMofPath,
+
+        [ValidateSet(1, 2)]
+        [int]
+        $VmGeneration
     )
 
     begin
@@ -277,6 +281,11 @@
         if ($ReferenceDisk -and $script:lab.DefaultVirtualizationEngine -ne 'HyperV')
         {
             Write-ScreenInfo -Type Warning -Message "Sorry, no custom reference disk allowed on $($script:lab.DefaultVirtualizationEngine). This parameter will be ignored."
+        }
+
+        if ($VmGeneration)
+        {
+            $machine.VmGeneration = $VmGeneration
         }
 
         $machine.Name = $Name

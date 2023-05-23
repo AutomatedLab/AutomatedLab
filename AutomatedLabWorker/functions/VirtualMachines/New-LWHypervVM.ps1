@@ -295,7 +295,7 @@
 
     $generation = if (Get-LabConfigurationItem -Name SupportGen2VMs)
     {
-        if ($hostOsVersion -ge [System.Version]6.3 -and $Machine.Gen2VmSupported)
+        if ($Machine.VmGeneration -ne 1 -and $hostOsVersion -ge [System.Version]6.3 -and $Machine.Gen2VmSupported)
         {
             2
         }
