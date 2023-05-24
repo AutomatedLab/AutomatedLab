@@ -95,7 +95,7 @@
         if (-not $deployment)
         {
             $labFolder = Split-Path -Path $lab.LabFilePath -Parent
-            Write-Host "The deployment failed. To get more information about the  following error, please run the following command:" -ForegroundColor Magenta
+            Write-ScreenInfo "The deployment failed. To get more information about the  following error, please run the following command:"
             Write-Host "'New-AzResourceGroupDeployment -ResourceGroupName $($lab.AzureSettings.DefaultResourceGroup.ResourceGroupName) -TemplateFile $labFolder\armtemplate.json'" -ForegroundColor Magenta
             Write-LogFunctionExitWithError -Message "Deployment of resource group '$lab' failed with '$($rgDeploymentFail.Exception.Message)'" -ErrorAction Stop
         }
