@@ -15,6 +15,19 @@
     {
         Remove-Item -Path Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Software\AutomatedLab\Cache -Force -ErrorAction SilentlyContinue
     }
+
+    Remove-Variable -Name AL_*,
+        cacheAzureRoleSizes,
+        cacheVmImages,
+        cacheVMs,
+        taskStart,
+        PSLog_*,
+        labDeploymentNoNewLine,
+        labExported,
+        indent,
+        firstAzureVMCreated,
+        existingAzureNetworks -ErrorAction SilentlyContinue
+
     Write-PSFMessage 'AutomatedLab cache removed'
 
     Write-LogFunctionExit

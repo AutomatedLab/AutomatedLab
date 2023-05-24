@@ -13,9 +13,10 @@
 
 - Fixed a bug in 'Initialize-LWAzureVM' comparing the PowerShell version (#1517).
 - Fix issue exporting service-communication/SSL certificate to secondary AD FS nodes.
-- Fix issue with DNS settings on individual Azure VMs
 - Calling 'Clear-Lab' otherwise when trying to change the subscription 'Get-LWAzureVMConnectionInfo'
   may have the previous lab information and changing the subscription does not work.
+- Fix issue with DNS settings on individual Azure VMs.
+- 'Clear-LabCache' did not remove global variables used for caching.
 
 ## 5.48.0 (2023-04-05)
 
