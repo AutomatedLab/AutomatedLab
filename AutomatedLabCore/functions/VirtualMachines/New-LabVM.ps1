@@ -94,8 +94,10 @@
         $deployment = New-LabAzureResourceGroupDeployment -Lab $lab -PassThru -Wait -ErrorAction SilentlyContinue -ErrorVariable rgDeploymentFail
         if (-not $deployment)
         {
-            Write-LogFunctionExitWithError -Message "Deployment of resource group '$lab' failed with '$($rgDeploymentFail.Exception.Message)'"
-            return
+            $labFolder = Split-Path -Path $lab.LabFilePath -Parent
+            Write-ScreenInfo "The deployment failed. To get more information about the  following error, please run the following command:"
+            Write-ScreenInfo "'New-AzResourceGroupDeployment -ResourceGroupName $($lab.AzureSettings.DefaultResourceGroup.ResourceGroupName) -TemplateFile $labFolder\armtemplate.json'"
+            Write-LogFunctionExitWithError -Message "Deployment of resource group '$lab' failed with '$($rgDeploymentFail.Exception.Message)'" -ErrorAction Stop
         }
     }
 

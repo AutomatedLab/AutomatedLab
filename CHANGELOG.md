@@ -7,11 +7,14 @@
 - Restructure project and harmonize build
 - Include client IP in JIT rules
 - Enable individual Gen1/Gen2 VMs (#1528)
+- Added some help to discover the error cause when `New-LabAzureResourceGroupDeployment` failed 
 
 ### Bugs
 
 - Fixed a bug in 'Initialize-LWAzureVM' comparing the PowerShell version (#1517).
 - Fix issue exporting service-communication/SSL certificate to secondary AD FS nodes.
+- Calling 'Clear-Lab' otherwise when trying to change the subscription 'Get-LWAzureVMConnectionInfo'
+  may have the previous lab information and changing the subscription does not work.
 - Fix issue with DNS settings on individual Azure VMs.
 - 'Clear-LabCache' did not remove global variables used for caching.
 
