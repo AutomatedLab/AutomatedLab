@@ -18,6 +18,7 @@
   may have the previous lab information and changing the subscription does not work.
 - Fix issue with DNS settings on individual Azure VMs.
 - 'Clear-LabCache' did not remove global variables used for caching.
+- AutomatedLab.Common was not copied properly to HyperV
 
 ## 5.48.0 (2023-04-05)
 

@@ -417,7 +417,10 @@
             $paths = [Collections.ArrayList]::new()
             $alcommon = Get-Module -Name AutomatedLab.Common
             $null = $paths.Add((Split-Path -Path $alcommon.ModuleBase -Parent))
-            $null = Get-Module -Name $alCommon.RequiredModules.Name | Foreach-Object {$paths.Add((Split-Path -Path $_.ModuleBase -Parent))}
+            $null = foreach ($req in $alCommon.RequiredModules.Name)
+            {
+                $paths.Add((Split-Path -Path (Get-Module -Name $req -ListAvailable)[0].ModuleBase -Parent))
+            }
 
             Copy-Item -Path $paths -Destination "$($drive.DriveLetter):\Program Files\WindowsPowerShell\Modules" -Recurse
 
