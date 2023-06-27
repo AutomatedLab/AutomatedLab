@@ -88,11 +88,12 @@ $publishFolder = Join-Path $buildFolder publish
 foreach ($m in (Get-ChildItem -Path $publishFolder -Directory))
 {
     $publishParams = @{
-        Path        = $m.FullName
-        NuGetApiKey = $env:NuGetApiKey
-        Repository  = 'PSGallery'
-        Force       = $true
-        Confirm     = $false
+        Path            = $m.FullName
+        NuGetApiKey     = $env:NuGetApiKey
+        Repository      = 'PSGallery'
+        Force           = $true
+        Confirm         = $false
+        AllowPreRelease = $true
     }
     Write-Host "Publishing module '$($m.FullName)' to public gallery"
     Publish-Module @publishParams
