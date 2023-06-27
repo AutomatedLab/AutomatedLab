@@ -93,7 +93,6 @@ foreach ($m in (Get-ChildItem -Path $publishFolder -Directory))
         Repository      = 'PSGallery'
         Force           = $true
         Confirm         = $false
-        AllowPreRelease = $true
     }
     Write-Host "Publishing module '$($m.FullName)' to public gallery"
     Publish-Module @publishParams
