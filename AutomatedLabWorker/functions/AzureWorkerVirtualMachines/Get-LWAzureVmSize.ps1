@@ -35,31 +35,31 @@
     {
         $pattern = switch ($lab.AzureSettings.DefaultRoleSize)
         {
-            'A' { '^(Standard_A\d{1,2}|Basic_A\d{1,2})' }
-            'AS' { '^Standard_AS\d{1,2}' }
-            'AC' { '^Standard_AC\d{1,2}' }
-            'D' { '^Standard_D\d{1,2}' }
-            'DS' { '^Standard_DS\d{1,2}' }
-            'DC' { '^Standard_DC\d{1,2}' }
-            "E" { '^Standard_E\d{1,2}' }
-            "ES" { '^Standard_ES\d{1,2}' }
-            "EC" { '^Standard_EC\d{1,2}' }
-            'F' { '^Standard_F\d{1,2}' }
-            'FS' { '^Standard_FS\d{1,2}' }
-            'FC' { '^Standard_FC\d{1,2}' }
-            'G' { '^Standard_G\d{1,2}' }
-            'GS' { '^Standard_GS\d{1,2}' }
-            'GC' { '^Standard_GC\d{1,2}' }
-            'H' { '^Standard_H\d{1,2}' }
-            'HS' { '^Standard_HS\d{1,2}' }
-            'HC' { '^Standard_HC\d{1,2}' }
-            'L' { '^Standard_L\d{1,2}' }
-            'LS' { '^Standard_LS\d{1,2}' }
-            'LC' { '^Standard_LC\d{1,2}' }
-            'N' { '^Standard_N\d{1,2}' }
-            'NS' { '^Standard_NS\d{1,2}' }
-            'NC' { '^Standard_NC\d{1,2}' }
-            default { '^(Standard_A\d{1,2}|Basic_A\d{1,2})' }
+            'A' { '^Standard_A\d{1,2}(_v\d{1,3})|Basic_A\d{1,2})' }
+            'AS' { '^Standard_AS\d{1,2}(_v\d{1,3})' }
+            'AC' { '^Standard_AC\d{1,2}(_v\d{1,3})' }
+            'D' { '^Standard_D\d{1,2}(_v\d{1,3})' }
+            'DS' { '^Standard_DS\d{1,2}(_v\d{1,3})' }
+            'DC' { '^Standard_DC\d{1,2}(_v\d{1,3})' }
+            "E" { '^Standard_E\d{1,2}(_v\d{1,3})' }
+            "ES" { '^Standard_ES\d{1,2}(_v\d{1,3})' }
+            "EC" { '^Standard_EC\d{1,2}(_v\d{1,3})' }
+            'F' { '^Standard_F\d{1,2}(_v\d{1,3})' }
+            'FS' { '^Standard_FS\d{1,2}(_v\d{1,3})' }
+            'FC' { '^Standard_FC\d{1,2}(_v\d{1,3})' }
+            'G' { '^Standard_G\d{1,2}(_v\d{1,3})' }
+            'GS' { '^Standard_GS\d{1,2}(_v\d{1,3})' }
+            'GC' { '^Standard_GC\d{1,2}(_v\d{1,3})' }
+            'H' { '^Standard_H\d{1,2}(_v\d{1,3})' }
+            'HS' { '^Standard_HS\d{1,2}(_v\d{1,3})' }
+            'HC' { '^Standard_HC\d{1,2}(_v\d{1,3})' }
+            'L' { '^Standard_L\d{1,2}(_v\d{1,3})' }
+            'LS' { '^Standard_LS\d{1,2}(_v\d{1,3})' }
+            'LC' { '^Standard_LC\d{1,2}(_v\d{1,3})' }
+            'N' { '^Standard_N\d{1,2}(_v\d{1,3})' }
+            'NS' { '^Standard_NS\d{1,2}(_v\d{1,3})' }
+            'NC' { '^Standard_NC\d{1,2}(_v\d{1,3})' }
+            default { '^(Standard_A\d{1,2}(_v\d{1,3})|Basic_A\d{1,2})' }
         }
 
         $roleSize = $lab.AzureSettings.RoleSizes |
