@@ -35,6 +35,7 @@
     if (-not $azLocation)
     {
         Write-ScreenInfo -Type Error -Message "No location found matching DisplayName '$DisplayName' or Name '$LocationName'"
+        return
     }
 
     $availableRoleSizes = if ((Get-Command Get-AzComputeResourceSku).Parameters.ContainsKey('Location'))
