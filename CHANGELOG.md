@@ -9,6 +9,7 @@
 - Enable individual Gen1/Gen2 VMs (#1528)
 - Added some help to discover the error cause when `New-LabAzureResourceGroupDeployment` failed
 - Added stored procedures for DSC database cleanup
+- Improved the discovery of Azure role sizes
 
 ### Bugs
 
