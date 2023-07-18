@@ -689,7 +689,7 @@
 
         if (-not $vmSize)
         {
-            throw "No valid VM size found for $Machine!"
+            throw "No valid VM size found for '$Machine'. For a list of available role sizes, use the command 'Get-LabAzureAvailableRoleSize -LocationName $($lab.AzureSettings.DefaultLocation.Location)'"
         }
 
         Write-ScreenInfo -Type Verbose -Message "Adding $Machine with size $vmSize, publisher $($imageRef.publisher), offer $($imageRef.offer), sku $($imageRef.sku)!"
