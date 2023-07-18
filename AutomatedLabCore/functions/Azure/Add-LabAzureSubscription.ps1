@@ -231,7 +231,7 @@
 
     Write-PSFMessage "Added $($script:lab.AzureSettings.StorageAccounts.Count) storage accounts"
 
-    if ($global:cacheAzureRoleSizes)
+    if ($global:cacheAzureRoleSizes -and $global:al_PreviousDefaultLocationName -eq $DefaultLocationName)
     {
         Write-ScreenInfo -Message "Querying available vm sizes for Azure location '$DefaultLocationName' (using cache)" -Type Info
         $defaultSizes = (Get-LabAzureDefaultLocation).VirtualMachineRoleSizes
@@ -242,7 +242,10 @@
         Write-ScreenInfo -Message "Querying available vm sizes for Azure location '$DefaultLocationName'" -Type Info
         $roleSizes = Get-LabAzureAvailableRoleSize -Location $DefaultLocationName
         $global:cacheAzureRoleSizes = $roleSizes
+
     }
+
+    $global:al_PreviousDefaultLocationName = $DefaultLocationName
 
     if ($roleSizes.Count -eq 0)
     {
