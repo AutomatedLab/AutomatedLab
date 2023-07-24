@@ -13,7 +13,7 @@
 
     $ifName = 'en0'
 
-    $script:un.network.network.ethernets[$ifName] = @{
+    $script:un.network.ethernets[$ifName] = @{
         match      = @{
             macAddress = $macAddress
         }
@@ -24,19 +24,19 @@
 
     if (-not $adapterAddress)
     {
-        $script:un.network.network.ethernets[$ifName].dhcp4 = 'yes'
-        $script:un.network.network.ethernets[$ifName].dhcp6 = 'yes'
+        $script:un.network.ethernets[$ifName].dhcp4 = 'yes'
+        $script:un.network.ethernets[$ifName].dhcp6 = 'yes'
     }
     else
     {
-        $script:un.network.network.ethernets[$ifName].addresses = @(
+        $script:un.network.ethernets[$ifName].addresses = @(
             $IpAddress
         )
     }
 
-    if ($Gateway -and -not $script:un.network.network.ethernets[$ifName].ContainsKey('routes')) 
+    if ($Gateway -and -not $script:un.network.ethernets[$ifName].ContainsKey('routes')) 
     {
-        $script:un.network.network.ethernets[$ifName].routes = @(
+        $script:un.network.ethernets[$ifName].routes = @(
             @{
                 to  = 'default'
                 via = $Gateway
@@ -45,6 +45,6 @@
 
     if ($DnsServers)
     {
-        $script:un.network.network.ethernets[$ifName].nameservers = @{ addresses = $DnsServers }
+        $script:un.network.ethernets[$ifName].nameservers = @{ addresses = $DnsServers }
     }
 }
