@@ -630,10 +630,15 @@ packages:
   - authselect-compat
   - sshd
   - powershell
-identity:
-  username: {}
-  hostname: {}
-  password: {}
+ssh_pwauth: true
+users:
+  - default
+system_info:
+  default_user: {}
+hostname: {}
+password: {}
+chpasswd:
+    expire: false
 late-commands:
   - 'echo "Subsystem powershell /usr/bin/pwsh -sshs -NoLogo" >> /etc/ssh/sshd_config'
 '@
