@@ -24,6 +24,7 @@
     FunctionsToExport      = @(
         'Add-UnattendedNetworkAdapter',
         'Add-UnattendedRenameNetworkAdapters',
+        'Add-UnattendedSshPublicKey',
         'Add-UnattendedSynchronousCommand',
         'Export-UnattendedFile',
         'Get-UnattendedContent',
