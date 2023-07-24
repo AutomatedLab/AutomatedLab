@@ -9,7 +9,7 @@
 
     # Cloud-init -> User Data cannot contain networking information
     # 
-    $null = New-Item -Path $drive.RootDirectory -Name meta-data -Force -Value "#cloud-config`ninstance-id: iid-local01`nlocal-hostname: $($Machine.Name)"
+    $null = New-Item -Path $Path -Name meta-data -Force -Value "#cloud-config`ninstance-id: iid-local01`nlocal-hostname: $($Machine.Name)"
     $metadataDictionary = @{
         'instance-id'    = 'iid-local01'
         'local-hostname' = $Script:un.identity.hostname
