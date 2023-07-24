@@ -50,8 +50,13 @@
 
     } -ArgumentList $labSourcesStorageAccount.Path, $labSourcesStorageAccount.StorageAccountName, $labSourcesStorageAccount.StorageAccountKey
 
-    $Session | Add-Member -Name ALLabSourcesMappingResult -Value $result -MemberType NoteProperty
-    $Session | Add-Member -Name ALLabSourcesMapped -Value $result.ALLabSourcesMapped -MemberType NoteProperty
+    $Session | Add-Member -Name ALLabSourcesMappingResult -Value $result -MemberType NoteProperty -Force
+    $Session | Add-Member -Name ALLabSourcesMapped -Value $result.ALLabSourcesMapped -MemberType NoteProperty -Force
+
+    if ($result.ReturnCode -ne 0)
+    {
+        Write-LogFunctionExitWithError -Message "Connecting session '$($s.Name)' to LabSources folder failed" -Details $result.NetConnectResult
+    }
 
     Write-LogFunctionExit
 }
