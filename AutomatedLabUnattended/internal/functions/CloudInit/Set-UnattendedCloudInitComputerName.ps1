@@ -7,5 +7,5 @@
         $ComputerName
     )
 
-    $Script:un.identity.hostname = $ComputerName
+    $Script:un.hostname = $ComputerName
 }

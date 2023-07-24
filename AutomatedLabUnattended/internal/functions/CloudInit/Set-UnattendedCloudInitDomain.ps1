@@ -15,6 +15,8 @@
 		[string]$OrganizationalUnit
 	)
 
+	$script:un.fqdn = '{0}.{1}' -f $script:un.hostname, $DomainName
+
 	if ($OrganizationalUnit)
 	{
 		$script:un['late-commands'] += "realm join --computer-ou='{2}' --one-time-password='{0}' {1}" -f $Password, $DomainName, $OrganizationalUnit

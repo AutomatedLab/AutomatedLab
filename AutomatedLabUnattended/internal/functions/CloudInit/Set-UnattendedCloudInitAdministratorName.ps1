@@ -7,5 +7,8 @@
         $Name
     )
 
-    $Script:un.identity.username = $Name
+    $Script:un.system_info.default_user = @{
+        name = $Name
+        home = "/home/$Name"
+    }
 }
