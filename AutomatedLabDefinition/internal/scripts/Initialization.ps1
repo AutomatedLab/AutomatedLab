@@ -605,8 +605,7 @@ $autoyastContent = @"
 $cloudInitContent = @'
 version: v1
 network:
-  network:
-    version: 2
+  version: 2
 storage:
   layout:
     name: lvm

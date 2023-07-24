@@ -11,23 +11,23 @@
     )
 
     $macAddress = ($Interfacename -replace '-', ':').ToLower()
-    if (-not $script:un.network.network.ContainsKey('ethernets`'))
+    if (-not $script:un.network.ContainsKey('ethernets`'))
     {
-        $script:un.network.network.ethernets = @{ }
+        $script:un.network.ethernets = @{ }
     }
 
-    if ($script:un.network.network.ethernets.Keys.Count -eq 0)
+    if ($script:un.network.ethernets.Keys.Count -eq 0)
     {
         $ifName = 'en0'
     }
     else
     {
-        [int]$lastIfIndex = ($script:un.network.network.ethernets.Keys.GetEnumerator() | Sort-Object | Select-Object -Last 1) -replace 'en'
+        [int]$lastIfIndex = ($script:un.network.ethernets.Keys.GetEnumerator() | Sort-Object | Select-Object -Last 1) -replace 'en'
         $lastIfIndex++
         $ifName = 'en{0}' -f $lastIfIndex
     }
 
-    $script:un.network.network.ethernets[$ifName] = @{
+    $script:un.network.ethernets[$ifName] = @{
         match      = @{
             macAddress = $macAddress
         }
@@ -38,22 +38,22 @@
 
     if (-not $adapterAddress)
     {
-        $script:un.network.network.ethernets[$ifName].dhcp4 = 'yes'
-        $script:un.network.network.ethernets[$ifName].dhcp6 = 'yes'
+        $script:un.network.ethernets[$ifName].dhcp4 = 'yes'
+        $script:un.network.ethernets[$ifName].dhcp6 = 'yes'
     }
     else
     {
-        $script:un.network.network.ethernets[$ifName].addresses = @()
+        $script:un.network.ethernets[$ifName].addresses = @()
         foreach ($ip in $IpAddresses)
         {
-            $script:un.network.network.ethernets[$ifName].addresses += '{0}/{1}' -f $ip.IPAddress.AddressAsString, $ip.Netmask
+            $script:un.network.ethernets[$ifName].addresses += '{0}/{1}' -f $ip.IPAddress.AddressAsString, $ip.Netmask
         }
     }
 
-    if ($Gateways -and -not $script:un.network.network.ethernets[$ifName].ContainsKey('routes')) { $script:un.network.network.ethernets[$ifName].routes = @() }
+    if ($Gateways -and -not $script:un.network.ethernets[$ifName].ContainsKey('routes')) { $script:un.network.ethernets[$ifName].routes = @() }
     foreach ($gw in $Gateways)
     {
-        $script:un.network.network.ethernets[$ifName].routes += @{
+        $script:un.network.ethernets[$ifName].routes += @{
             to  = 'default'
             via = $gw.AddressAsString
         }
@@ -61,6 +61,6 @@
 
     if ($DnsServers)
     {
-        $script:un.network.network.ethernets[$ifName].nameservers = @{ addresses = $DnsServers.AddressAsString }
+        $script:un.network.ethernets[$ifName].nameservers = @{ addresses = $DnsServers.AddressAsString }
     }
 }
