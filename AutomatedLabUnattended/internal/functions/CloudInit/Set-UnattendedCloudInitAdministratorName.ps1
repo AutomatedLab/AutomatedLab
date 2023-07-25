@@ -11,12 +11,12 @@
         name   = $Name
         groups = @('wheel')
     }
-    $Script:un['user-data']['system_info']['default_user'] = $usr
+    $Script:un['autoinstall']['user-data']['system_info']['default_user'] = $usr
 
-    if (-not $script:un['user-data'].ContainsKey('users')) { $script:un['user-data']['users'] = @() }
+    if (-not $script:un['autoinstall']['user-data'].ContainsKey('users')) { $script:un['autoinstall']['user-data']['users'] = @() }
 
-    if ($script:un['user-data']['users']['name'] -notcontains $Name)
+    if ($script:un['autoinstall']['user-data']['users']['name'] -notcontains $Name)
     {
-        $script:un['user-data']['users'] += $usr
+        $script:un['autoinstall']['user-data']['users'] += $usr
     }
 }

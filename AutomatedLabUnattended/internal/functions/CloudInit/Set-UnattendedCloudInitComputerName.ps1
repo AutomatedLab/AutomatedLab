@@ -7,5 +7,5 @@
         $ComputerName
     )
 
-    $Script:un['user-data']['hostname'] = $ComputerName
+    $Script:un['autoinstall']['user-data']['hostname'] = $ComputerName
 }
