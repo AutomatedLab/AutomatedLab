@@ -1,4 +1,4 @@
-function Add-UnattendedCloudInitSshPublicKey
+﻿function Add-UnattendedCloudInitSshPublicKey
 {
     [CmdletBinding()]
     param

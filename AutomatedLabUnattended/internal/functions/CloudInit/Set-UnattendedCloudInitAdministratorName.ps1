@@ -11,6 +11,7 @@
         name   = $Name
         groups = @('wheel')
     }
+    
     $Script:un['autoinstall']['user-data']['system_info']['default_user'] = $usr
 
     if (-not $script:un['autoinstall']['user-data'].ContainsKey('users')) { $script:un['autoinstall']['user-data']['users'] = @() }
