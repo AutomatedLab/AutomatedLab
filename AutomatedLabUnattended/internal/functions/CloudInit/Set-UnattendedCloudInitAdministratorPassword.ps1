@@ -8,4 +8,9 @@
     )
 
     $Script:un.password = $Password
+
+    foreach ($user in $script:un.users)
+    {
+        $user.plaintext_passwd = $Password
+    }
 }
