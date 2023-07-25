@@ -638,8 +638,6 @@ packages:
   - sshd
   - powershell
 ssh_pwauth: true
-users:
-  - default
 system_info:
   default_user: {}
 hostname: {}
