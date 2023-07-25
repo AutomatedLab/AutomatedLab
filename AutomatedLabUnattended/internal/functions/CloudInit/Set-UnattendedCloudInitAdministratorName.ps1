@@ -8,7 +8,7 @@
     )
 
     $usr = @{
-        name = $Name
+        name   = $Name
         groups = @('wheel')
     }
     $Script:un.system_info.default_user = $usr
