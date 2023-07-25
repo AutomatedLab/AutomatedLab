@@ -7,7 +7,7 @@
         $Password
     )
 
-    $Script:un['password'] = $Password
+    $Script:un['autoinstall']['user-data']['password'] = $Password
 
     foreach ($user in $script:un['autoinstall']['user-data']['users'])
     {
