@@ -14,6 +14,6 @@
         'local-hostname' = $Script:un['autoinstall']['user-data']['hostname']
     }
 
-    ("#cloud-config`n{0}" -f ($script:un | ConvertTo-Yaml)) | Set-Content -Path (Join-Path -Path $Path -ChildPath user-data) -Force
-    ("#cloud-config`n{0}" -f ($metadataDictionary | ConvertTo-Yaml)) | Set-Content -Path (Join-Path -Path $Path -ChildPath meta-data) -Force
+    ("#cloud-config`n{0}" -f ($script:un | ConvertTo-Yaml -Options DisableAliases)) | Set-Content -Path (Join-Path -Path $Path -ChildPath user-data) -Force
+    ("#cloud-config`n{0}" -f ($metadataDictionary | ConvertTo-Yaml -Options DisableAliases)) | Set-Content -Path (Join-Path -Path $Path -ChildPath meta-data) -Force
 }
