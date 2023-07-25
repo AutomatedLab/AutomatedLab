@@ -8,13 +8,13 @@ function Add-UnattendedCloudInitSshPublicKey
         $PublicKey
     )
 
-    foreach ($user in $script:un.users)
+    foreach ($user in $script:un['users'])
     {
         if (-not $user.ContainsKey('ssh_authorized_keys'))
         {
             $user.Add('ssh_authorized_keys', @())
         }
 
-        $user.ssh_authorized_keys += $PublicKey
+        $user['ssh_authorized_keys'] += $PublicKey
     }
 }

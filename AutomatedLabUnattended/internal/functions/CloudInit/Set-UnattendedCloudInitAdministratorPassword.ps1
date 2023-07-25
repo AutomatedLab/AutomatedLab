@@ -7,10 +7,10 @@
         $Password
     )
 
-    $Script:un.password = $Password
+    $Script:un['password'] = $Password
 
-    foreach ($user in $script:un.users)
+    foreach ($user in $script:un['users'])
     {
-        $user.plaintext_passwd = $Password
+        $user['plaintext_passwd'] = $Password
     }
 }

@@ -603,49 +603,54 @@ $autoyastContent = @"
 "@
 
 $cloudInitContent = @'
-version: v1
-network:
-  version: 2
-storage:
-  layout:
-    name: lvm
-apt:
-  primary:
-    - arches: [amd64]
-      uri: http://us.archive.ubuntu.com/ubuntu
-  security:
-    - arches: [amd64]
-      uri: http://us.archive.ubuntu.com/ubuntu
-  sources_list: |
-    deb [arch=amd64] $PRIMARY $RELEASE main universe restricted multiverse
-    deb [arch=amd64] $PRIMARY $RELEASE-updates main universe restricted multiverse
-    deb [arch=amd64] $SECURITY $RELEASE-security main universe restricted multiverse
-    deb [arch=amd64] $PRIMARY $RELEASE-backports main universe restricted multiverse
-  sources:
-    microsoft-powershell.list:
-      source: 'deb [arch=amd64,armhf,arm64 signed-by=BC528686B50D79E339D3721CEB3E94ADBE1229CF] https://packages.microsoft.com/ubuntu/REPLACERELEASE/prod $RELEASE main'
-      keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF # https://packages.microsoft.com/keys/microsoft.asc
-packages:
-  - oddjob
-  - oddjob-mkhomedir
-  - sssd
-  - adcli
-  - krb5-workstation
-  - realmd
-  - samba-common
-  - samba-common-tools
-  - authselect-compat
-  - sshd
-  - powershell
-ssh_pwauth: true
-system_info:
-  default_user: {}
-hostname: {}
-password: {}
-chpasswd:
-    expire: false
-late-commands:
-  - 'echo "Subsystem powershell /usr/bin/pwsh -sshs -NoLogo" >> /etc/ssh/sshd_config'
+autoinstall:
+  version: v1
+  network:
+    version: 2
+  storage:
+    layout:
+      name: lvm
+  ssh:
+    install-server: yes
+    allow-pw: yes
+  apt:
+    primary:
+      - arches: [amd64]
+        uri: http://us.archive.ubuntu.com/ubuntu
+    security:
+      - arches: [amd64]
+        uri: http://us.archive.ubuntu.com/ubuntu
+    sources_list: |
+      deb [arch=amd64] $PRIMARY $RELEASE main universe restricted multiverse
+      deb [arch=amd64] $PRIMARY $RELEASE-updates main universe restricted multiverse
+      deb [arch=amd64] $SECURITY $RELEASE-security main universe restricted multiverse
+      deb [arch=amd64] $PRIMARY $RELEASE-backports main universe restricted multiverse
+    sources:
+      microsoft-powershell.list:
+        source: 'deb [arch=amd64,armhf,arm64 signed-by=BC528686B50D79E339D3721CEB3E94ADBE1229CF] https://packages.microsoft.com/ubuntu/REPLACERELEASE/prod $RELEASE main'
+        keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF # https://packages.microsoft.com/keys/microsoft.asc
+  packages:
+    - oddjob
+    - oddjob-mkhomedir
+    - sssd
+    - adcli
+    - krb5-workstation
+    - realmd
+    - samba-common
+    - samba-common-tools
+    - authselect-compat
+    - sshd
+    - powershell
+  user-data:
+    system_info:
+      default_user: {}
+    ssh_pwauth: true
+    hostname: {}
+    password: {}
+    chpasswd:
+      expire: false
+  late-commands:
+    - 'echo "Subsystem powershell /usr/bin/pwsh -sshs -NoLogo" >> /etc/ssh/sshd_config'
 '@
 
 Import-Module AutomatedLabCore

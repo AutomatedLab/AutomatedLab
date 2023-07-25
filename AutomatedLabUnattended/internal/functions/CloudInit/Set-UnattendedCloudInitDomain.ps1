@@ -15,7 +15,7 @@
 		[string]$OrganizationalUnit
 	)
 
-	$script:un.fqdn = '{0}.{1}' -f $script:un.hostname, $DomainName
+	$script:un['fqdn'] = '{0}.{1}' -f $script:un.hostname, $DomainName
 
 	if ($OrganizationalUnit)
 	{

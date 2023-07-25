@@ -8,7 +8,7 @@
 
     foreach ($pack in $Package)
     {
-        if ($pack -in $script:un.packages) { continue }
-        $script:un.packages += $pack
+        if ($pack -in $script:un['packages']) { continue }
+        $script:un['packages'] += $pack
     }
 }
