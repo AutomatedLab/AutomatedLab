@@ -7,5 +7,5 @@
         $ComputerName
     )
 
-    $Script:un['hostname'] = $ComputerName
+    $Script:un['user-data']['hostname'] = $ComputerName
 }
