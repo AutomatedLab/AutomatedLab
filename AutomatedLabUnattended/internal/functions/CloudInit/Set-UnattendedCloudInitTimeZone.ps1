@@ -25,5 +25,5 @@
         'Etc/GMT{0}' -f $tzInfo.BaseUtcOffset.TotalHours
     }
 
-    $script:un['timezone'] = $tzname
+    $script:un['autoinstall']['timezone'] = $tzname
 }

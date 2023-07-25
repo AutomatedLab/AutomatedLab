@@ -6,6 +6,6 @@
 		[boolean]$State
 	)
 
-    $script:un['late-commands'] += 'ufw enable'
-    $script:un['late-commands'] += 'ufw allow 22'
+    $script:un['autoinstall']['late-commands'] += 'ufw enable'
+    $script:un['autoinstall']['late-commands'] += 'ufw allow 22'
 }

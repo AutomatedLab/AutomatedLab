@@ -9,5 +9,5 @@
         [string]$Description
     )
 
-    $script:un['late-commands'] += $Command
+    $script:un['autoinstall']['late-commands'] += $Command
 }
