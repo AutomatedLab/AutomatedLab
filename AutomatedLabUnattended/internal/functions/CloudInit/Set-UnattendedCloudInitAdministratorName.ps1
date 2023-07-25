@@ -12,6 +12,8 @@
         home = "/home/$Name"
     }
 
+    if (-not $script:un.ContainsKey('users')) { $script:un.users = @() }
+
     if ($script:un.users.name -notcontains $Name)
     {
         $script:un.users += @{
