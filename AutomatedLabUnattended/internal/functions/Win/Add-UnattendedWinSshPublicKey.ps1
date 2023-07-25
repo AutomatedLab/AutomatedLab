@@ -8,5 +8,5 @@ function Add-UnattendedWinSshPublicKey
         $PublicKey
     )
 
-    Write-PSFMessage -Message "No unattended ssh key import on Windows yet"
+    Write-PSFMessage -Message "No unattended ssh key import on Windows yet, we're using synchronous command"
 }

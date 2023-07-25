@@ -8,5 +8,5 @@ function Add-UnattendedKickstartSshPublicKey
         $PublicKey
     )
 
-    Write-PSFMessage -Message "No unattended ssh key import on kickstart yet"
+    Write-PSFMessage -Message "No unattended ssh key import on kickstart yet, we're using %post%"
 }
