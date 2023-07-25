@@ -11,4 +11,12 @@
         name = $Name
         home = "/home/$Name"
     }
+
+    if ($script:un.users.name -notcontains $Name)
+    {
+        $script:un.users += @{
+            name   = $Name
+            groups = @('wheel')
+        }
+    }
 }
