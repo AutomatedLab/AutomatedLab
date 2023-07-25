@@ -10,8 +10,8 @@
     # Cloud-init -> User Data cannot contain networking information
     # 
     $metadataDictionary = @{
-        'instance-id'    = $Script:un['user-data']['hostname']
-        'local-hostname' = $Script:un['user-data']['hostname']
+        'instance-id'    = $Script:un['autoinstall']['user-data']['hostname']
+        'local-hostname' = $Script:un['autoinstall']['user-data']['hostname']
     }
 
     $userdataDictionary = $script:un.Clone()
