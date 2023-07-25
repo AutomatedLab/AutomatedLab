@@ -9,7 +9,7 @@
 
     $Script:un['password'] = $Password
 
-    foreach ($user in $script:un['user-data']['users'])
+    foreach ($user in $script:un['autoinstall']['user-data']['users'])
     {
         $user['plaintext_passwd'] = $Password
     }
