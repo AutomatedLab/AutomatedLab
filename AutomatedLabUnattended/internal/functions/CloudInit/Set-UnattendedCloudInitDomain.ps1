@@ -15,7 +15,10 @@
 		[string]$OrganizationalUnit
 	)
 
-	$script:un['autoinstall']['user-data']['fqdn'] = '{0}.{1}' -f $script:un['autoinstall']['user-data']['hostname'], $DomainName
+	if ($script:un['autoinstall']['user-data']['hostname'])
+	{
+		$script:un['autoinstall']['user-data']['fqdn'] = '{0}.{1}' -f $script:un['autoinstall']['user-data']['hostname'].ToLower(), $DomainName
+	}
 
 	if ($OrganizationalUnit)
 	{
