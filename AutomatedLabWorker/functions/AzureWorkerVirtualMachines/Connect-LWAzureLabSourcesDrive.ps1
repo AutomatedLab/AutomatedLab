@@ -18,6 +18,15 @@
     }
 
     $result = Invoke-Command -Session $Session -ScriptBlock {
+        #Add *.windows.net to Local Intranet Zone
+        $path = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\Domains\windows.net'
+        if (-not (Test-Path -Path $path)) {
+            New-Item -Path $path -Force
+
+            New-ItemProperty $path -Name http -Value 1 -Type DWORD
+            New-ItemProperty $path -Name file -Value 1 -Type DWORD
+        }
+        
         $pattern = '^(OK|Unavailable) +(?<DriveLetter>\w): +\\\\automatedlab'
 
         #remove all drive connected to an Azure LabSources share that are no longer available

@@ -250,6 +250,13 @@ Subsystem powershell c:/progra~1/powershell/7/pwsh.exe -sshs -NoLogo
             $party | Format-Volume -Force -UseLargeFRS:$diskObject.UseLargeFRS -AllocationUnitSize $diskObject.AllocationUnitSize -NewFileSystemLabel $diskObject.Label
         }
 
+        #Add *.windows.net to Local Intranet Zone
+        $path = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\Domains\windows.net'
+        New-Item -Path $path -Force
+
+        New-ItemProperty $path -Name http -Value 1 -Type DWORD
+        New-ItemProperty $path -Name file -Value 1 -Type DWORD
+
         $null = try { Stop-Transcript -ErrorAction Stop } catch { }
     }
 

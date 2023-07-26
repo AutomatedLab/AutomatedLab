@@ -20,6 +20,7 @@
 - Fix issue with DNS settings on individual Azure VMs.
 - 'Clear-LabCache' did not remove global variables used for caching.
 - AutomatedLab.Common was not copied properly to HyperV
+- Added '*.windows.net' to the local intranet zone for fixing installation issues on Azure machines
 
 ## 5.48.0 (2023-04-05)
 
