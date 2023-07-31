@@ -38,7 +38,8 @@
         if (-not $LASTEXITCODE)
         {
             $ALLabSourcesMapped = $true
-            Get-ChildItem -Path z:\ | Out-Null #required, otherwise sometimes accessing the UNC path did not work
+            $alDriveLetter = (Get-PSDrive | Where-Object DisplayRoot -like \\automatedlabsources*).Name
+            Get-ChildItem -Path "$($alDriveLetter):" | Out-Null #required, otherwise sometimes accessing the UNC path did not work
         }
 
         New-Object PSObject -Property @{
