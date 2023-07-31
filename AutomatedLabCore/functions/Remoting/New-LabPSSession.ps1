@@ -265,7 +265,7 @@
 
                         if ((Get-LabVM -ComputerName $internalSession.LabMachineName).HostType -eq 'Azure')
                         {
-                            Connect-LWAzureLabSourcesDrive -Session $internalSession
+                            Connect-LWAzureLabSourcesDrive -Session $internalSession -SuppressErrors
                         }
 
                     }
