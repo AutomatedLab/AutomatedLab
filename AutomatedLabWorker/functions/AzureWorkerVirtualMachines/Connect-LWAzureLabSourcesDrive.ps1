@@ -2,7 +2,9 @@
 {
     param(
         [Parameter(Mandatory, Position = 0)]
-        [System.Management.Automation.Runspaces.PSSession]$Session
+        [System.Management.Automation.Runspaces.PSSession]$Session,
+
+        [switch]$SuppressErrors
     )
 
     Test-LabHostConnected -Throw -Quiet
@@ -38,7 +40,8 @@
         if (-not $LASTEXITCODE)
         {
             $ALLabSourcesMapped = $true
-            Get-ChildItem -Path z:\ | Out-Null #required, otherwise sometimes accessing the UNC path did not work
+            $alDriveLetter = (Get-PSDrive | Where-Object DisplayRoot -like \\automatedlabsources*).Name
+            Get-ChildItem -Path "$($alDriveLetter):" | Out-Null #required, otherwise sometimes accessing the UNC path did not work
         }
 
         New-Object PSObject -Property @{
@@ -53,9 +56,10 @@
     $Session | Add-Member -Name ALLabSourcesMappingResult -Value $result -MemberType NoteProperty -Force
     $Session | Add-Member -Name ALLabSourcesMapped -Value $result.ALLabSourcesMapped -MemberType NoteProperty -Force
 
-    if ($result.ReturnCode -ne 0)
+    if ($result.ReturnCode -ne 0 -and -not $SuppressErrors)
     {
-        Write-LogFunctionExitWithError -Message "Connecting session '$($s.Name)' to LabSources folder failed" -Details $result.NetConnectResult
+        $netResult = $result | Where-Object { $_.ReturnCode -gt 0 }
+        Write-LogFunctionExitWithError -Message "Connecting session '$($s.Name)' to LabSources folder failed" -Details $netResult.NetConnectResult
     }
 
     Write-LogFunctionExit
