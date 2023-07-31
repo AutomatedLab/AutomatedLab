@@ -26,7 +26,21 @@
             New-ItemProperty $path -Name http -Value 1 -Type DWORD
             New-ItemProperty $path -Name file -Value 1 -Type DWORD
         }
-        
+
+        $hostName = ([uri]$args[0]).Host
+	    $dnsRecord = Resolve-DnsName -Name $hostname | Where-Object { $_ -is [Microsoft.DnsClient.Commands.DnsRecord_A] }
+        $ipAddress = $dnsRecord.IPAddress
+        $rangeName = $ipAddress.Replace('.', '')
+
+        $path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\Ranges\$rangeName"
+        if (-not (Test-Path -Path $path)) {
+            New-Item -Path $path -Force
+
+            New-ItemProperty $path -Name :Range -Value $ipAddress -Type String
+            New-ItemProperty $path -Name http -Value 1 -Type DWORD
+            New-ItemProperty $path -Name file -Value 1 -Type DWORD
+        }
+
         $pattern = '^(OK|Unavailable) +(?<DriveLetter>\w): +\\\\automatedlab'
 
         #remove all drive connected to an Azure LabSources share that are no longer available
@@ -59,8 +73,13 @@
 
     } -ArgumentList $labSourcesStorageAccount.Path, $labSourcesStorageAccount.StorageAccountName, $labSourcesStorageAccount.StorageAccountKey
 
-    $Session | Add-Member -Name ALLabSourcesMappingResult -Value $result -MemberType NoteProperty
-    $Session | Add-Member -Name ALLabSourcesMapped -Value $result.ALLabSourcesMapped -MemberType NoteProperty
+    $Session | Add-Member -Name ALLabSourcesMappingResult -Value $result -MemberType NoteProperty -Force
+    $Session | Add-Member -Name ALLabSourcesMapped -Value $result.ALLabSourcesMapped -MemberType NoteProperty -Force
+
+    if ($result.ReturnCode -ne 0)
+    {
+        Write-LogFunctionExitWithError -Message "Connecting session '$($s.Name)' to LabSources folder failed" -Details $result.NetConnectResult
+    }
 
     Write-LogFunctionExit
 }
