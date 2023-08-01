@@ -158,6 +158,66 @@ BEGIN
 END -- End Function
 GO
 
+--Adding Stored Procedures
+CREATE PROCEDURE [dbo].[SetNodeEndTime]
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	DECLARE @NodeName VARCHAR(255), @EndTime DATE
+  
+	DECLARE c CURSOR FOR
+	SELECT NodeName, MAX(EndTime) AS EndTime FROM StatusReport GROUP BY NodeName
+  
+	OPEN c
+  
+	FETCH NEXT FROM c
+	INTO @NodeName, @EndTime
+  
+	WHILE @@FETCH_STATUS = 0  
+	BEGIN  
+  
+	   PRINT @NodeName
+
+	   UPDATE RegistrationData
+		SET LastUpdated = @EndTime
+		WHERE NodeName = @NodeName
+  
+	   FETCH NEXT FROM c
+	   INTO @NodeName, @EndTime
+	END  
+  
+	CLOSE c
+	DEALLOCATE c
+
+END
+GO
+
+-- ----------------------------------------------
+
+CREATE PROCEDURE [dbo].[CleanupDscData]
+	@Date Date = NULL
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	DECLARE @oldDate AS DATE
+	DECLARE @before1900 AS DATE
+	SET @oldDate = COALESCE(@Date, CONVERT(DATE, DATEADD(DAY, -180, GETDATE())))
+	SET @before1900 = '1900-01-01'
+
+    DELETE FROM DSC].[dbo].[StatusReport] WHERE CONVERT(DATE, [StartTime]) < @oldDate OR CONVERT(DATE, [EndTime]) < @oldDate
+
+	DELETE FROM DSC].[dbo].[StatusReport] WHERE CONVERT(DATE, [StartTime]) < @before1900 OR CONVERT(DATE, [EndTime]) < @before1900
+
+	DELETE FROM DSC].[dbo].[StatusReportMetaData] WHERE CONVERT(DATE, [CreationTime]) < @oldDate
+
+END
+GO
+
+
+--End Stored Procedures
+
 /****** Object:  Table [dbo].[RegistrationData]    Script Date: 07.04.2021 16:59:54 ******/
 CREATE TABLE [dbo].[RegistrationData](
 	[AgentId] [nvarchar](255) NOT NULL,
@@ -165,6 +225,7 @@ CREATE TABLE [dbo].[RegistrationData](
 	[NodeName] [nvarchar](255) NULL,
 	[IPAddress] [nvarchar](255) NULL,
 	[ConfigurationNames] [nvarchar](max) NULL,
+    [LastUpdated] [date] NULL,
  CONSTRAINT [PK_RegistrationData] PRIMARY KEY CLUSTERED 
 (
     [AgentId] ASC

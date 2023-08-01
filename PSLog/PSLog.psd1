@@ -19,13 +19,22 @@
 
     DotNetFrameworkVersion = '3.5'
 
-    ModuleList             = @('PSLog')
+    RequiredModules        = @( )
 
-    RequiredModules        = @('PSFramework')
+    FunctionsToExport      = @(
+        'Get-CallerPreference',
+        'Write-LogError',
+        'Write-LogFunctionEntry',
+        'Write-LogFunctionExit',
+        'Write-LogFunctionExitWithError',
+        'Write-ProgressIndicator',
+        'Write-ProgressIndicatorEnd',
+        'Write-ScreenInfo'
+    )
 
     PrivateData            = @{
         AutoStart      = $true
-        DefaultFolder  = $null
+        DefaultFolder  = ''
         DefaultName    = 'PSLog'
         Level          = 'All'
         Silent         = $false

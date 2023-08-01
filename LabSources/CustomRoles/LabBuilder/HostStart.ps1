@@ -98,7 +98,7 @@ Copy-LabFileItem -Path $downloadPath -ComputerName $vm -DestinationFolderPath (J
 $session = New-LabPSSession -Machine $vm
 
 Write-ScreenInfo -Message 'Copying AutomatedLab to build machine' -Type Verbose
-$module = Get-Module -ListAvailable -Name AutomatedLab | Sort-Object Version | Select-Object -Last 1
+$module = Get-Module -ListAvailable -Name AutomatedLabCore | Sort-Object Version | Select-Object -Last 1
 Send-ModuleToPSSession -Module $module -Session $session -WarningAction SilentlyContinue -IncludeDependencies
 
 Write-ScreenInfo -Message ('Mirroring LabSources to {0} - this could take a while. You have {1:N2}GB of data.' -f $vm, ((Get-ChildItem $labsources -File -Recurse | Measure-Object -Property Length -Sum).Sum / 1GB))

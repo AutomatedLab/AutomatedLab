@@ -91,3 +91,24 @@ This solution supports setting up virtual machines with the following products
 - Creating a [virtual environment that is connected to the internet](/LabSources/SampleScripts/Introduction/05%20Single%20domain-joined%20server%20(internet%20facing).ps1) was never easier. The only requirements are defining an external facing virtual switch and a machine with two network cards that acts as the router. AL takes care about all the configuration details like setting the gateway on all machines and also the DNS settings (see introduction script [05 Single domain-joined server (internet facing).ps1](/LabSources/SampleScripts/Introduction/05%20Single%20domain-joined%20server%20(internet%20facing).ps1)).
 - AL offers offline patching with a single command. As all machines a based on one disk per OS, it is much more efficient to patch the ISO files that are used to create the base images (Update-LabIsoImage). See script [11 ISO Offline Patching.ps1](/LabSources/SampleScripts/Introduction/11%20ISO%20Offline%20Patching.ps1) for more details.
 - If a lab is no longer required, one command is enough to remove everything to be ready to start from scratch (Remove-Lab)
+
+### Local build
+
+While we frequently release prereleases to the PowerShell Gallery, you might be interested
+to build the entire module locally yourself.
+
+While the steps remain the same, the prerequisites are slightly different on Windows and Linux
+
+Windows:
+  - WiX 3 targets installed properly (!)
+  - .NET SDKs 4.6.2 and 6.0
+Linux:
+  - .NET 6.0
+
+After the prerequisites are satisfied, you can:
+- `./.build/01-prerequisites.ps1`
+- `./.build/02-build.ps1`
+- `./.build/03-validate.ps1` - Optionally validate the built module
+
+The fourth step, publishing, relies on AppVeyor. The built module will be stores in `./publish`,
+the installer can be found in `./Install/bin

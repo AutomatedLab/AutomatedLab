@@ -30,6 +30,21 @@ Mount the Azure file share inside DC01
 
 ## PARAMETERS
 
+### -SuppressErrors
+Do not show errors.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -Session
 The session to mount the drive in
 

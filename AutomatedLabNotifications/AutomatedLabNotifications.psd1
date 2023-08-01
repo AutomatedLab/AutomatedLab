@@ -9,7 +9,7 @@
 
     Copyright              = '2022'
 
-    Description            = 'The module creates a Hyper-V visual lab automatically as defined in the XML files.'
+    Description            = 'This module uses pluggable providers to send various kinds of notifications for AutomatedLab'
 
     PowerShellVersion      = '5.1'
 
@@ -28,10 +28,6 @@
     VariablesToExport      = @()
 
     AliasesToExport        = @()
-
-    FileList               = @(
-        "Public\Send-ALNotification.ps1"
-    )
 
     PrivateData            = @{
 

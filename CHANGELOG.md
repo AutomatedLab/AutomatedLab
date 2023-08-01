@@ -6,6 +6,28 @@
 
 ### Bugs
 
+## 5.49.0 (2023-08-01)
+
+### Enhancements
+
+- Restructure project and harmonize build
+- Include client IP in JIT rules
+- Enable individual Gen1/Gen2 VMs (#1528)
+- Added some help to discover the error cause when `New-LabAzureResourceGroupDeployment` failed
+- Added stored procedures for DSC database cleanup
+- Improved the discovery of Azure role sizes
+- Added error handling to 'Connect-LWAzureLabSourcesDrive'
+
+### Bugs
+
+- Fixed a bug in 'Initialize-LWAzureVM' comparing the PowerShell version (#1517).
+- Fix issue exporting service-communication/SSL certificate to secondary AD FS nodes.
+- Calling 'Clear-Lab' otherwise when trying to change the subscription 'Get-LWAzureVMConnectionInfo'
+  may have the previous lab information and changing the subscription does not work.
+- Fix issue with DNS settings on individual Azure VMs.
+- 'Clear-LabCache' did not remove global variables used for caching.
+- AutomatedLab.Common was not copied properly to HyperV
+
 ## 5.48.0 (2023-04-05)
 
 ### Enhancements
@@ -24,6 +46,7 @@
 - able to deploy Exchange 2019 CU11 and CU12 because of a change in the command line parameters.
 - Fix minor issue with sending AL.Common to newly installed VMs
 - Ensure required resource providers and features are registered (#1510)
+- Fix error creating AdfsSsl certificate template during AD FS role installation.
 
 ## 5.47.0 (2023-02-20)
 

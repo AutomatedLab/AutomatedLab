@@ -19,11 +19,11 @@
 
     DotNetFrameworkVersion = '2.0'
 
-    ModuleList             = @('PSFileTransfer')
+    FunctionsToExport      = 'Send-Directory', 'Send-File', 'Receive-Directory', 'Receive-File'
 
-    FunctionsToExport      = 'Copy-LabFileItem', 'Send-Directory', 'Send-File', 'Receive-Directory', 'Receive-File'
+    AliasesToExport        = '??'
 
-    FileList               = @('PSFileTransfer.psm1', 'PSFileTransfer.psd1')
+    FileList               = @()
 
     RequiredModules        = @()
 
