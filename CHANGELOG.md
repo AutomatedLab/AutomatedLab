@@ -4,6 +4,12 @@
 
 ### Enhancements
 
+### Bugs
+
+## 5.49.0 (2023-08-01)
+
+### Enhancements
+
 - Restructure project and harmonize build
 - Include client IP in JIT rules
 - Enable individual Gen1/Gen2 VMs (#1528)
