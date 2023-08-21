@@ -604,7 +604,7 @@ $autoyastContent = @"
 
 $cloudInitContent = @'
 autoinstall:
-  version: v1
+  version: 1
   network:
     version: 2
   storage:
@@ -614,21 +614,16 @@ autoinstall:
     install-server: yes
     allow-pw: yes
   apt:
-    primary:
-      - arches: [amd64]
-        uri: http://us.archive.ubuntu.com/ubuntu
-    security:
-      - arches: [amd64]
-        uri: http://us.archive.ubuntu.com/ubuntu
-    sources_list: |
-      deb [arch=amd64] $PRIMARY $RELEASE main universe restricted multiverse
-      deb [arch=amd64] $PRIMARY $RELEASE-updates main universe restricted multiverse
-      deb [arch=amd64] $SECURITY $RELEASE-security main universe restricted multiverse
-      deb [arch=amd64] $PRIMARY $RELEASE-backports main universe restricted multiverse
+    fallback: offline-install
+    geoip: true
+    mirror-selection:
+      primary:
+        - country-mirror
     sources:
       microsoft-powershell.list:
-        source: 'deb [arch=amd64,armhf,arm64 signed-by=BC528686B50D79E339D3721CEB3E94ADBE1229CF] https://packages.microsoft.com/ubuntu/REPLACERELEASE/prod $RELEASE main'
         keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF # https://packages.microsoft.com/keys/microsoft.asc
+        source: deb [arch=amd64,armhf,arm64 signed-by=BC528686B50D79E339D3721CEB3E94ADBE1229CF] https://packages.microsoft.com/ubuntu/22.04/prod $RELEASE main
+
   packages:
     - oddjob
     - oddjob-mkhomedir

@@ -29,7 +29,7 @@
 
     $script:un['autoinstall']['network']['ethernets'][$ifName] = @{
         match      = @{
-            macAddress = $macAddress
+            macaddress = $macAddress
         }
         'set-name' = $ifName
     }
@@ -46,7 +46,7 @@
         $script:un['autoinstall']['network']['ethernets'][$ifName]['addresses'] = @()
         foreach ($ip in $IpAddresses)
         {
-            $script:un['autoinstall']['network']['ethernets'][$ifName]['addresses'] += '{0}/{1}' -f $ip.IPAddress.AddressAsString, $ip.Netmask
+            $script:un['autoinstall']['network']['ethernets'][$ifName]['addresses'] += '{0}/{1}' -f $ip.IPAddress.AddressAsString, $ip.SerializationCidr
         }
     }
 
@@ -61,6 +61,6 @@
 
     if ($DnsServers)
     {
-        $script:un['autoinstall']['network']['ethernets'][$ifName]['nameservers'] = @{ addresses = $DnsServers.AddressAsString }
+        $script:un['autoinstall']['network']['ethernets'][$ifName]['nameservers'] = @{ addresses = [string[]]($DnsServers.AddressAsString) }
     }
 }
