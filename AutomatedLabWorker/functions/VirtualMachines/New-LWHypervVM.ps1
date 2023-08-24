@@ -346,7 +346,7 @@
         $mountedOsDisk = $systemDisk | Mount-VHD -Passthru
         $mountedOsDisk | Initialize-Disk -PartitionStyle GPT
         $size = 6GB
-        if ($Machine.LinuxType -in 'RedHat', 'Ubuntu')
+        if ($Machine.LinuxType -eq 'RedHat')
         {
             $size = 100MB
         }
@@ -408,6 +408,20 @@
             Export-UnattendedFile -Path $drive.RootDirectory
             $ubuLease = '{0:d2}.{1:d2}' -f $machine.OperatingSystem.Version.Major,$machine.OperatingSystem.Version.Minor # Microsoft Repo does not use $RELEASE but version number instead.
             (Get-Content -Path (Join-Path -Path $drive.RootDirectory -ChildPath user-data)) -replace 'REPLACERELEASE', $ubuLease | Set-Content (Join-Path -Path $drive.RootDirectory -ChildPath user-data)
+            $mountedIso = Mount-DiskImage -ImagePath $Machine.OperatingSystem.IsoPath -PassThru | Get-Volume
+            $isoDrive = [System.IO.DriveInfo][string]$mountedIso.DriveLetter
+            Copy-Item -Path "$($isoDrive.RootDirectory.FullName)*" -Destination $drive.RootDirectory.FullName -Recurse -Force -PassThru |
+            Where-Object IsReadOnly | Set-ItemProperty -name IsReadOnly -Value $false
+            [void] (Dismount-DiskImage -ImagePath $Machine.OperatingSystem.IsoPath)
+
+            # To automatically continue configuration, Linux wants more configuration instead of just seeing the file...
+            # Change grub configuration
+            $grubFile = Get-ChildItem -Recurse -Path $drive.RootDirectory.FullName -Filter 'grub.cfg'
+            $loopbackcnf = Get-ChildItem -Recurse -Path $drive.RootDirectory.FullName -Filter 'loopback.cfg'
+
+            ($grubFile | Get-Content -Raw) -replace '---', 'autoinstall  ---' | Set-Content -Path $grubFile.FullName
+            ($loopbackcnf | Get-Content -Raw) -replace '---', 'autoinstall  ---' | Set-Content -Path $loopbackcnf.FullName
+
             Copy-Item -Path (Join-Path -Path $drive.RootDirectory -ChildPath user-data) -Destination (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath "cloudinit_user_$($Machine.Name).yml")
             Copy-Item -Path (Join-Path -Path $drive.RootDirectory -ChildPath meta-data) -Destination (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath "cloudinit_meta_$($Machine.Name).yml")
         }
@@ -588,7 +602,7 @@
 
     Write-ProgressIndicator
 
-    if ( $Machine.OperatingSystemType -eq 'Linux' -and $Machine.LinuxType -in 'RedHat','Ubuntu')
+    if ( $Machine.OperatingSystemType -eq 'Linux' -and $Machine.LinuxType -eq 'RedHat')
     {
         $dvd = $vm | Add-VMDvdDrive -Path $Machine.OperatingSystem.IsoPath -Passthru
         $vm | Set-VMFirmware -FirstBootDevice $dvd
