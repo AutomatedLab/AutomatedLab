@@ -113,7 +113,7 @@
                     {
                         $Path = Join-Path -Path (Get-Lab).Sources.UnattendedXml.Value -ChildPath autoinst_default.xml
                     }
-                    if ($this.OperatingSystemType -eq 'Linux' -and $this.LinuxType -eq 'Suse')
+                    if ($this.OperatingSystemType -eq 'Linux' -and $this.LinuxType -eq 'Ubuntu')
                     {
                         $Path = Join-Path -Path (Get-Lab).Sources.UnattendedXml.Value -ChildPath cloudinit_default.yml
                     }
