@@ -134,12 +134,12 @@
 
             if ($Script:data.Machines)
             {
-                $Script:data.Machines | Add-Member -MemberType ScriptProperty -Name UnattendedXmlContent -Value {
-                    if ($this.OperatingSystem.Version -lt '6.2')
+                $Script:data.Machines | Add-Member -MemberType ScriptProperty -Name UnattendedXmlContent -Force -Value {
+                    if ($this.OperatingSystemType -eq 'Windows' -and $this.OperatingSystem.Version -lt '6.2')
                     {
                         $Path = Join-Path -Path (Get-Lab).Sources.UnattendedXml.Value -ChildPath 'Unattended2008.xml'
                     }
-                    else
+                    elseif ($this.OperatingSystemType -eq 'Windows')
                     {
                         $Path = Join-Path -Path (Get-Lab).Sources.UnattendedXml.Value -ChildPath 'Unattended2012.xml'
                     }

@@ -92,30 +92,31 @@
 
             if ($Script:lab.Machines)
             {
-                $Script:lab.Machines | Add-Member -MemberType ScriptProperty -Name UnattendedXmlContent -Value {
+                $Script:lab.Machines | Add-Member -MemberType ScriptProperty -Name UnattendedXmlContent -Force -Value {
+                    $def = if (Get-Lab) { Get-Lab } else { Get-LabDefinition }
                     if ($this.OperatingSystem.Version -lt '6.2')
                     {
-                        $Path = Join-Path -Path (Get-Lab).Sources.UnattendedXml.Value -ChildPath 'Unattended2008.xml'
+                        $Path = Join-Path -Path $def.Sources.UnattendedXml.Value -ChildPath 'Unattended2008.xml'
                     }
-                    else
+                    elseif ($this.OperatingSystemType -eq 'Windows')
                     {
                         $Path = Join-Path -Path (Get-Lab).Sources.UnattendedXml.Value -ChildPath 'Unattended2012.xml'
                     }
                     if ($this.OperatingSystemType -eq 'Linux' -and $this.LinuxType -eq 'RedHat' -and $this.OperatingSystem.Version -lt 8.0)
                     {
-                        $Path = Join-Path -Path (Get-Lab).Sources.UnattendedXml.Value -ChildPath ks_defaultLegacy.cfg
+                        $Path = Join-Path -Path $def.Sources.UnattendedXml.Value -ChildPath ks_defaultLegacy.cfg
                     }
                     if ($this.OperatingSystemType -eq 'Linux' -and $this.LinuxType -eq 'RedHat' -and $this.OperatingSystem.Version -ge 8.0)
                     {
-                        $Path = Join-Path -Path (Get-Lab).Sources.UnattendedXml.Value -ChildPath ks_default.cfg
+                        $Path = Join-Path -Path $def.Sources.UnattendedXml.Value -ChildPath ks_default.cfg
                     }
                     if ($this.OperatingSystemType -eq 'Linux' -and $this.LinuxType -eq 'Suse')
                     {
-                        $Path = Join-Path -Path (Get-Lab).Sources.UnattendedXml.Value -ChildPath autoinst_default.xml
+                        $Path = Join-Path -Path $def.Sources.UnattendedXml.Value -ChildPath autoinst_default.xml
                     }
                     if ($this.OperatingSystemType -eq 'Linux' -and $this.LinuxType -eq 'Ubuntu')
                     {
-                        $Path = Join-Path -Path (Get-Lab).Sources.UnattendedXml.Value -ChildPath cloudinit_default.yml
+                        $Path = Join-Path -Path $def.Sources.UnattendedXml.Value -ChildPath cloudinit_default.yml
                     }
                     return (Get-Content -Path $Path)
                 }
