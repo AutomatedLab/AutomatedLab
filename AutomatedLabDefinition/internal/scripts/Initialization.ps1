@@ -608,8 +608,23 @@ autoinstall:
   network:
     version: 2
   storage:
-    layout:
-      name: lvm
+    config:
+      - id: disk0
+        ptable: gpt
+        wipe: superblock-recursive
+        type: disk
+        path: /dev/sda
+      - id: partition-1
+        device: disk0
+        type: partition
+      - id: partition-1-format
+        type: format
+        fstype: ext4
+        volume: partition-1
+      - id: partition-1-mount
+        type: mount
+        path: /
+        device: partition-1-format
   ssh:
     install-server: yes
     allow-pw: yes
