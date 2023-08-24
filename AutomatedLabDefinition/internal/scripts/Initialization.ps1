@@ -623,7 +623,6 @@ autoinstall:
       microsoft-powershell.list:
         keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF # https://packages.microsoft.com/keys/microsoft.asc
         source: deb [arch=amd64,armhf,arm64 signed-by=BC528686B50D79E339D3721CEB3E94ADBE1229CF] https://packages.microsoft.com/ubuntu/22.04/prod $RELEASE main
-
   packages:
     - oddjob
     - oddjob-mkhomedir
