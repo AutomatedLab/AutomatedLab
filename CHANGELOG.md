@@ -16,6 +16,9 @@
 - Added some help to discover the error cause when `New-LabAzureResourceGroupDeployment` failed
 - Added stored procedures for DSC database cleanup
 - Improved the discovery of Azure role sizes
+- Added '*.windows.net' to the local intranet zone for fixing installation issues on Azure machines as well as the IP address of the Azure LabSources host
+- The script 'AzureLabSources.ps1' maps the share via IP address if mapping via names fails. It
+  sometimes files mapping by name with the error 'A specified logon session does not exist'
 - Added error handling to 'Connect-LWAzureLabSourcesDrive'
 
 ### Bugs
