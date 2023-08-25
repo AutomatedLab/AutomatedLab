@@ -20,7 +20,7 @@
 		$script:un['autoinstall']['user-data']['fqdn'] = '{0}.{1}' -f $script:un['autoinstall']['user-data']['hostname'].ToLower(), $DomainName
 	}
 
-	$script:un['autoinstall']['late-commands'] += 'apt install -yq realmd sssd-tools sssd libnss-sss libpam-sss adcli'
+	$script:un['autoinstall']['late-commands'] += 'DEBIAN_FRONTEND=noninteractive apt install -yq realmd sssd-tools sssd libnss-sss libpam-sss adcli policycoreutils'
 
 	if ($OrganizationalUnit)
 	{
