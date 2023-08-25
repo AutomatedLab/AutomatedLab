@@ -299,14 +299,23 @@
                 }
 
                 Add-UnattendedSynchronousCommand @sudoParam
+                [System.Collections.Generic.List[string]] $commands = @(
+                    "mkdir -p /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh"
+                    "chown -R $($Machine.InstallationUser.UserName)@$($Machine.DomainName):$($Machine.InstallationUser.UserName)@$($Machine.DomainName) /home/$($Machine.InstallationUser.UserName)@$($Machine.DomainName)/.ssh" 
+                    "chmod 700 /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh && chmod 600 /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/authorized_keys"
+                    "echo `"$($Machine.SshPublicKey)`" > /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/authorized_keys"
+                    "restorecon -R /$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/"
+                )
 
                 if (-not [string]::IsNullOrEmpty($Machine.SshPublicKey))
                 {
-                    Add-UnattendedSynchronousCommand -Command "restorecon -R /$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/" -Description 'Restore SELinux context'
-                    Add-UnattendedSynchronousCommand -Command "echo `"$($Machine.SshPublicKey)`" > /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/authorized_keys" -Description 'SSH'
-                    Add-UnattendedSynchronousCommand -Command "chmod 700 /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh && chmod 600 /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/authorized_keys" -Description 'SSH'
-                    Add-UnattendedSynchronousCommand -Command "chown -R $($Machine.InstallationUser.UserName)@$($Machine.DomainName):$($Machine.InstallationUser.UserName)@$($Machine.DomainName) /home/$($Machine.InstallationUser.UserName)@$($Machine.DomainName)/.ssh" -Description 'SSH'
-                    Add-UnattendedSynchronousCommand -Command "mkdir -p /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh" -Description 'SSH'
+                    if ($Machine.LinuxType -eq 'RedHad') { $commands.Reverse()}
+
+                    foreach ($command in $commands)
+                    {
+                        if ($Machine.LinuxType -eq 'Ubuntu') {$command = $command.Replace('/home','/target/home')}
+                        Add-UnattendedSynchronousCommand -Command $command -Description 'SSH'
+                    }
                 }
             }
         }
