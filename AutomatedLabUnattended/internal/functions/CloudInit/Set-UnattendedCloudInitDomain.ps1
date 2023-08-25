@@ -20,12 +20,14 @@
 		$script:un['autoinstall']['user-data']['fqdn'] = '{0}.{1}' -f $script:un['autoinstall']['user-data']['hostname'].ToLower(), $DomainName
 	}
 
+	$script:un['autoinstall']['late-commands'] += 'apt install -yq realmd sssd-tools sssd libnss-sss libpam-sss adcli'
+
 	if ($OrganizationalUnit)
 	{
-		$script:un['autoinstall']['late-commands'] += "realm join --computer-ou='{2}' --one-time-password='{0}' {1}" -f $Password, $DomainName, $OrganizationalUnit
+		$script:un['autoinstall']['late-commands'] += "echo '{0}' | realm join --computer-ou='{2}' -U {3} {1}" -f $Password, $DomainName, $OrganizationalUnit, $UserName
 	}
 	else
 	{
-		$script:un['autoinstall']['late-commands'] += "realm join --one-time-password='{0}' {1}" -f $Password, $DomainName
+		$script:un['autoinstall']['late-commands'] += "echo '{0}' | realm join -U {2} {1}" -f $Password, $DomainName, $UserName
 	}
 }
