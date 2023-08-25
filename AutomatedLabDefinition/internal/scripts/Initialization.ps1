@@ -609,22 +609,62 @@ autoinstall:
     version: 2
   storage:
     config:
-      - id: disk0
+      - type: disk
+        match: {}
+        id: os-drive
         ptable: gpt
         wipe: superblock-recursive
-        type: disk
-        path: /dev/sda
-      - id: partition-1
-        device: disk0
-        type: partition
-      - id: partition-1-format
-        type: format
-        fstype: ext4
-        volume: partition-1
-      - id: partition-1-mount
+        preserve: false
+        grub_device: false
+      - type: partition
+        number: 1
+        id: efi-partition
+        device: os-drive
+        size: 256M
+        flag: boot
+        grub_device: true
+      - type: format
+        id: efi-format
+        volume: efi-partition
+        fstype: fat32
+        label: ESP
+      - path: /boot/efi
+        device: efi-format
         type: mount
-        path: /
-        device: partition-1-format
+        id: mount-efi
+      - type: partition
+        number: 2
+        id: boot-partition
+        device: os-drive
+        size: 1G
+        grub_device: false
+      - type: format
+        id: boot-format
+        volume: boot-partition
+        fstype: ext4
+        label: BOOT
+      - path: /boot
+        device: boot-format
+        type: mount
+        id: mount-boot
+      - type: partition
+        number: 3
+        id: root-partition
+        device: os-drive
+        size: -1
+        grub_device: false
+      - type: format
+        id: root-format
+        volume: root-partition
+        fstype: ext4
+        label: ROOT
+      - path: /
+        device: root-format
+        type: mount
+        id: mount-root
+    swap:
+      swap: 0
+    version: 1
   ssh:
     install-server: yes
     allow-pw: yes
@@ -643,7 +683,6 @@ autoinstall:
     - oddjob-mkhomedir
     - sssd
     - adcli
-    - krb5-workstation
     - realmd
     - samba-common
     - samba-common-tools
@@ -660,6 +699,7 @@ autoinstall:
       expire: false
   late-commands:
     - 'echo "Subsystem powershell /usr/bin/pwsh -sshs -NoLogo" >> /etc/ssh/sshd_config'
+    - DEBIAN_FRONTEND=noninteractive apt-get -yq install
 '@
 
 Import-Module AutomatedLabCore
