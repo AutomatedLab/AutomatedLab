@@ -11,6 +11,6 @@
 
     foreach ($user in $script:un['autoinstall']['user-data']['users'])
     {
-        $user['plaintext_passwd'] = $Password
+        $user['plain_text_passwd'] = $Password
     }
 }

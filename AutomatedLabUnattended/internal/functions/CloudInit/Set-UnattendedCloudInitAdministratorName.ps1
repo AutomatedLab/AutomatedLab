@@ -8,11 +8,12 @@
     )
 
     $usr = @{
-        name   = $Name
-        groups = @('wheel')
+        name        = $Name
+        groups      = @('wheel')
+        shell       = '/bin/bash'
+        lock_passwd = $false
+        sudo        = 'ALL=(ALL) NOPASSWD:ALL'
     }
-    
-    $Script:un['autoinstall']['user-data']['system_info']['default_user'] = $usr
 
     if (-not $script:un['autoinstall']['user-data'].ContainsKey('users')) { $script:un['autoinstall']['user-data']['users'] = @() }
 
