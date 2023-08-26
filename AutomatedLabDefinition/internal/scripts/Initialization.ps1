@@ -680,8 +680,6 @@ autoinstall:
     - apt-transport-https
     - software-properties-common
   user-data:
-    system_info:
-      default_user: {}
     ssh_pwauth: true
     hostname: {}
     password: {}
