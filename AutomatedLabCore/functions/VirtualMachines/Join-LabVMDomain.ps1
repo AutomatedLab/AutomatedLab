@@ -37,7 +37,8 @@
 
             if (-not (Get-Command -Name realm -ErrorAction SilentlyContinue) -and (Get-Command -Name apt -ErrorAction SilentlyContinue))
             {
-                sudo apt install -y realmd libnss-sss libpam-sss sssd sssd-tools adcli samba-common-bin oddjob oddjob-mkhomedir packagekit *>$null
+                $env:DEBIAN_FRONTEND = 'noninteractive'
+                apt install -yq realmd sssd-tools sssd libnss-sss libpam-sss adcli policycoreutils oddjob oddjob-mkhomedir packagekit *>$null
             }
             elseif (-not (Get-Command -Name realm -ErrorAction SilentlyContinue) -and (Get-Command -Name dnf -ErrorAction SilentlyContinue))
             {
