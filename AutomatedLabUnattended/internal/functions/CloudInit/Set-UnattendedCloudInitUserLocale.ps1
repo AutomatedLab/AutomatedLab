@@ -19,8 +19,9 @@
         return
     }
 
+    $weirdLinuxCultureName = if ($ci.IsNeutralCulture) { $ci.TwoLetterISOLanguageName } else {$ci.Name -split '-' | Select-Object -Last 1}
     $script:un['autoinstall']['locale'] = "$($ci.IetfLanguageTag -replace '-','_').UTF-8"
     $script:un['autoinstall']['keyboard'] = @{
-        layout = $ci.IetfLanguageTag -replace '-', '_'
+        layout = $weirdLinuxCultureName.ToLower()
     }
 }
