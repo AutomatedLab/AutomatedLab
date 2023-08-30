@@ -25,11 +25,11 @@
 		path    = '/etc/cron.d/realmjoin'
 		content = if ($OrganizationalUnit)
 		{
-			"@reboot root echo '{0}' | realm join --computer-ou='{2}' -U {3} {1}`"" -f $Password, $DomainName, $OrganizationalUnit, $UserName
+			"@reboot root echo '{0}' | realm join --computer-ou='{2}' -U {3} {1}`n" -f $Password, $DomainName, $OrganizationalUnit, $UserName
 		}
 		else
 		{
-			"@reboot root echo '{0}' | realm join -U {2} {1}`"" -f $Password, $DomainName, $UserName
+			"@reboot root echo '{0}' | realm join -U {2} {1}`n" -f $Password, $DomainName, $UserName
 		}
 	}
 }
