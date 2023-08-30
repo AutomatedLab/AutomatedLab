@@ -608,6 +608,13 @@ autoinstall:
   network:
     version: 2
   storage:
+    grub:
+      install_devices:
+        - /dev/sda1
+      replace_linux_default: False
+      update_nvram: True
+      terminal: console
+      remove_duplicate_entries: True
     config:
       - type: disk
         match: {}
@@ -693,12 +700,12 @@ autoinstall:
     chpasswd:
       expire: false
   late-commands:
-    - wget -q "https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb"
-    - dpkg -i packages-microsoft-prod.deb
-    - apt update
-    - apt install -y powershell
-    - 'echo "Subsystem powershell /usr/bin/pwsh -sshs -NoLogo" >> /etc/ssh/sshd_config'
-    - DEBIAN_FRONTEND=noninteractive apt-get -yq install krb5-user
+    - curtin in-target --target=/target -- wget -q "https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb"
+    - curtin in-target --target=/target -- dpkg -i packages-microsoft-prod.deb
+    - curtin in-target --target=/target -- apt update
+    - curtin in-target --target=/target -- apt install -y powershell
+    - curtin in-target --target=/target -- echo "Subsystem powershell /usr/bin/pwsh -sshs -NoLogo" >> /etc/ssh/sshd_config
+    - curtin in-target --target=/target -- DEBIAN_FRONTEND=noninteractive apt-get -yq install krb5-user
 '@
 
 Import-Module AutomatedLabCore
