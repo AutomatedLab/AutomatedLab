@@ -693,6 +693,10 @@ autoinstall:
     - wget
     - apt-transport-https
     - software-properties-common
+    - sssd-tools
+    - libnss-sss
+    - libpam-sss
+    - policycoreutils
   user-data:
     ssh_pwauth: true
     hostname: {}
