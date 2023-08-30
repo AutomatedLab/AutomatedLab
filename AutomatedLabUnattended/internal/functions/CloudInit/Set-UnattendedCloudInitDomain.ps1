@@ -20,7 +20,7 @@
 		$script:un['autoinstall']['user-data']['fqdn'] = '{0}.{1}' -f $script:un['autoinstall']['user-data']['hostname'].ToLower(), $DomainName
 	}
 
-	$script:un['autoinstall']['late-commands'] += 'curtin in-target --target=/target -- DEBIAN_FRONTEND=noninteractive apt install -yq realmd sssd-tools sssd libnss-sss libpam-sss adcli policycoreutils'
+	$script:un['autoinstall']['late-commands'] += 'curtin in-target --target=/target -- apt install -yq realmd sssd-tools sssd libnss-sss libpam-sss adcli policycoreutils'
 
 	if ($OrganizationalUnit)
 	{
