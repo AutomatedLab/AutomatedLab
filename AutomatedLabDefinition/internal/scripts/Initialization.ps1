@@ -694,6 +694,8 @@ autoinstall:
     ssh_pwauth: true
     hostname: {}
     password: {}
+    users:
+      - default
     chpasswd:
       expire: false
     write_files:

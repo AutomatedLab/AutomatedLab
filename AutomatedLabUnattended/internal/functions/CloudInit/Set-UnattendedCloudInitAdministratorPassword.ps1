@@ -13,4 +13,6 @@
     {
         $user['plain_text_passwd'] = $Password
     }
+    
+    $script:un['autoinstall']['user-data']['system_info']['default_user']['plain_text_passwd'] = $Password
 }
