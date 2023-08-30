@@ -699,16 +699,19 @@ autoinstall:
     password: {}
     chpasswd:
       expire: false
+    write_files:
+      - path: /etc/environment
+        content: |
+          DEBIAN_FRONTEND="noninteractive"
+        append: true
   late-commands:
     - curtin in-target --target=/target -- wget -q "https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb"
     - curtin in-target --target=/target -- dpkg -i packages-microsoft-prod.deb
     - curtin in-target --target=/target -- apt update
     - curtin in-target --target=/target -- apt install -y powershell
     - curtin in-target --target=/target -- echo "Subsystem powershell /usr/bin/pwsh -sshs -NoLogo" >> /etc/ssh/sshd_config
-    - curtin in-target --target=/target -- DEBIAN_FRONTEND=noninteractive apt-get -yq install krb5-user
+    - curtin in-target --target=/target -- apt -yq install krb5-user
 '@
-
-Import-Module AutomatedLabCore
 
 try
 {
