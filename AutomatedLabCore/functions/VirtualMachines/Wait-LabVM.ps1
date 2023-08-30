@@ -109,8 +109,8 @@
                     Import-Lab -LabBytes $LabBytes -NoValidation -NoDisplay
                     foreach ($vm in (Get-LabVm -IncludeLinux | Where {$_.OperatingSystemType -eq 'Linux' -and $_.LinuxType -eq 'Ubuntu'}))
                     {
-                        Write-PSFMessage "Reordering boot order for Ubuntu VM '$($vm.Name)'"
-                        $linvm = Get-LWHypervVM -Name $linuxHost.ResourceName
+                        Write-Verbose "Reordering boot order for Ubuntu VM '$($vm.Name)'"
+                        $linvm = Get-LWHypervVM -Name $vm.ResourceName
                         $order = ($linvm | Get-VMFirmware).BootOrder
                         if ($order[0].BootType -eq 'Drive' -and $order[0].Device.Path -like "*_INSTALL*")
                         {
