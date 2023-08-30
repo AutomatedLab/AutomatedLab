@@ -11,6 +11,7 @@
 
     foreach ($user in $script:un['autoinstall']['user-data']['users'])
     {
+        if ($user -eq 'default') { continue }
         $user['plain_text_passwd'] = $Password
     }
     
