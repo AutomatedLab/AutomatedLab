@@ -20,7 +20,7 @@
 		$script:un['autoinstall']['user-data']['fqdn'] = '{0}.{1}' -f $script:un['autoinstall']['user-data']['hostname'].ToLower(), $DomainName
 	}
 	
-	$script:un['autoinstall']['user-data']['write-files'] += @{
+	$script:un['autoinstall']['user-data']['write_files'] += @{
 		append  = $false
 		path    = '/etc/cron.d/realmjoin'
 		content = if ($OrganizationalUnit)
