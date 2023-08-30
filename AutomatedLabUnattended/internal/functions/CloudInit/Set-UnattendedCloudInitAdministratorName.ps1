@@ -9,7 +9,6 @@
 
     $usr = @{
         name        = $Name
-        groups      = @('wheel')
         shell       = '/bin/bash'
         lock_passwd = $false
         sudo        = 'ALL=(ALL) NOPASSWD:ALL'
@@ -20,5 +19,9 @@
     if ($script:un['autoinstall']['user-data']['users']['name'] -notcontains $Name)
     {
         $script:un['autoinstall']['user-data']['users'] += $usr
+    }
+
+    $script:un['autoinstall']['user-data']['system_info'] = @{
+        'default_user' = $usr
     }
 }
