@@ -43,7 +43,8 @@
         'Set-UnattendedProductKey',
         'Set-UnattendedTimeZone',
         'Set-UnattendedUserLocale',
-        'Set-UnattendedWorkgroup'
+        'Set-UnattendedWorkgroup',
+        'Write-UnattendedFile'
     )
 
     PrivateData            = @{
