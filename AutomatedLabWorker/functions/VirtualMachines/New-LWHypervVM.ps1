@@ -291,7 +291,7 @@
 
             Set-UnattendedDomain @parameters
 
-            if ($Machine.OperatingSystemType -eq 'Linux')
+            if ($Machine.OperatingSystemType -eq 'Linux' -and $Machine.LinuxType -ne 'Ubuntu')
             {
                 $sudoParam = @{
                     Command     = "sed -i '/^%wheel.*/a %$($Machine.DomainName.ToUpper())\\\\domain\\ admins ALL=(ALL) NOPASSWD: ALL' /etc/sudoers"
@@ -309,14 +309,27 @@
 
                 if (-not [string]::IsNullOrEmpty($Machine.SshPublicKey))
                 {
-                    if ($Machine.LinuxType -eq 'RedHad') { $commands.Reverse()}
+                    if ($Machine.LinuxType -eq 'RedHat') { $commands.Reverse()}
 
                     foreach ($command in $commands)
                     {
-                        if ($Machine.LinuxType -eq 'Ubuntu') {$command = $command.Replace('/home','/target/home')}
                         Add-UnattendedSynchronousCommand -Command $command -Description 'SSH'
                     }
                 }
+            }
+            elseif ($Machine.OperatingSystemType -eq 'Linux' -and $Machine.LinuxType -eq 'Ubuntu')
+            {
+                Write-UnattendedFile -Content @"
+#!/bin/bash
+mkdir -p /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh
+chown -R $($domain.Administrator.UserName)@$($Machine.DomainName):$($domain.Administrator.UserName)@$($Machine.DomainName) /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh"
+chmod 700 /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh && chmod 600 /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/authorized_keys
+echo `"$($Machine.SshPublicKey)`" > /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/authorized_keys
+restorecon -R /$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/
+rm -rf /postconf.sh
+rm -rf /etc/cron.d/postconf
+"@ -DestinationPath '/postconf.sh'
+                Write-UnattendedFile -Content '@reboot root bash /postconf.sh' -DestinationPath '/etc/cron.d/postconf'
             }
         }
     }
