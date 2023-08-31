@@ -564,15 +564,20 @@
                 $Name
             )
 
+            $end = $(Get-Date).AddMinutes(20)
             # Boot order of Ubuntu system changes during installation. We need to ensure the OS
             # is booted, lest it is stuck in an installation loop.
-            Write-Verbose "Reordering boot order for Ubuntu VM '$Name'"
-            $linvm = Get-LWHypervVM -Name $m.ResourceName
-            $order = ($linvm | Get-VMFirmware).BootOrder
-            if ($order[0].BootType -eq 'Drive' -and $order[0].Device.Path -like "*_INSTALL*")
+            while ((Get-Date) -le $end)
             {
-                $newOrder = $order[1..$order.Count] + $order[0]
-                $linvm | Set-VMFirmware -BootOrder $newOrder
+                Write-Verbose "Reordering boot order for Ubuntu VM '$Name'"
+                $linvm = Get-LWHypervVM -Name $m.ResourceName
+                $order = ($linvm | Get-VMFirmware).BootOrder
+                if ($order[0].BootType -eq 'Drive' -and $order[0].Device.Path -like "*_INSTALL*")
+                {
+                    $newOrder = $order[1..$order.Count] + $order[0]
+                    $linvm | Set-VMFirmware -BootOrder $newOrder
+                }
+                Start-Sleep -Seconds 1
             }
         } -ArgumentList $Machine.ResourceName
     }
