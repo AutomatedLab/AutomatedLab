@@ -22,7 +22,7 @@
 	
 	$script:un['autoinstall']['user-data']['write_files'] += @{
 		append  = $false
-		path    = '/etc/cron.d/realmjoin'
+		path    = '/etc/cron.d/00realmjoin'
 		content = if ($OrganizationalUnit)
 		{
 			"@reboot root echo '{0}' | realm join --computer-ou='{2}' -U {3} {1}`n" -f $Password, $DomainName, $OrganizationalUnit, $UserName
@@ -40,5 +40,10 @@
 %Domain\ Admins@$($DomainName.ToUpper()) ALL=(ALL:ALL) NOPASSWD:ALL
 
 "@
+	}
+	$script:un['autoinstall']['user-data']['write_files'] += @{
+		append  = $false
+		path    = '/etc/cron.d/zrealmjoin'
+		content = '@reboot root rm -rf /etc/cron.d/99realmjoin'
 	}
 }
