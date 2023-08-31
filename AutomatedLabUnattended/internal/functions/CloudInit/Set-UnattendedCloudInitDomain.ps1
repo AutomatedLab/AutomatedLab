@@ -32,4 +32,9 @@
 			"@reboot root echo '{0}' | realm join -U {2} {1}`n" -f $Password, $DomainName, $UserName
 		}
 	}
+	$script:un['autoinstall']['user-data']['write_files'] += @{
+		append  = $true
+		path    = '/etc/sudoers'
+		content = '%Domain\ Admins ALL=(ALL:ALL) NOPASSWD:ALL'
+	}
 }
