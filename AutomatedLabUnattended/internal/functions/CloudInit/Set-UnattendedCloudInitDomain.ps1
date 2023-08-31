@@ -33,8 +33,12 @@
 		}
 	}
 	$script:un['autoinstall']['user-data']['write_files'] += @{
-		append  = $true
-		path    = '/etc/sudoers'
-		content = "%Domain\ Admins ALL=(ALL:ALL) NOPASSWD:ALL`n"
+		append  = $false
+		path    = '/etc/sudoers.d/domainadmins'
+		content = @"
+# Allow Domain Admins
+%Domain\ Admins@$($DomainName.ToUpper()) ALL=(ALL:ALL) NOPASSWD:ALL
+
+"@
 	}
 }
