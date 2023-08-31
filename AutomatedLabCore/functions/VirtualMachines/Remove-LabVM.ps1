@@ -79,6 +79,8 @@
                 Remove-LWVMWareVM -Name $machine.ResourceName
             }
 
+            UnInstall-LabSshKnownHost -ComputerName $machine
+
             if ((Get-HostEntry -Section (Get-Lab).Name.ToLower() -HostName $machine))
             {
                 Remove-HostEntry -Section (Get-Lab).Name.ToLower() -HostName $machine

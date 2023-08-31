@@ -1,14 +1,26 @@
 ﻿function UnInstall-LabSshKnownHost
 {
     [CmdletBinding()]
-    param ( )
+    param
+    (
+        [string[]]
+        $ComputerName
+    )
 
     if (-not (Test-Path -Path $home/.ssh/known_hosts)) { return }
 
     $lab = Get-Lab
     if (-not $lab) { return }
 
-    $machines = Get-LabVM -All -IncludeLinux | Where-Object -FilterScript { -not $_.SkipDeployment }
+    if (-not $ComputerName)
+    {
+        $machines = Get-LabVM -All -IncludeLinux | Where-Object -FilterScript { -not $_.SkipDeployment }
+    }
+    else
+    {
+        $machines = Get-LabVM -ComputerName $ComputerName -IncludeLinux | Where-Object -FilterScript { -not $_.SkipDeployment }
+    }
+
     if (-not $machines) { return }
 
     $content = Get-Content -Path $home/.ssh/known_hosts
