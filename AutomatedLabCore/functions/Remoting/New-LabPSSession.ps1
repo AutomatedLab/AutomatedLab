@@ -182,6 +182,7 @@
                 $param['KeyFilePath'] = $m.SshPrivateKeyPath
                 $param['Port'] = if ($m.HostType -eq 'Azure') {$m.AzureConnectionInfo.SshPort} else { 22 }
                 $param['UserName'] = $cred.UserName.Replace("$($m.Name)\", '')
+                $param['Options'] = @{StrictHostKeyChecking = 'no'}
             }
             elseif ($m.OperatingSystemType -eq 'Linux')
             {

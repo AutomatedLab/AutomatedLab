@@ -35,6 +35,6 @@
 	$script:un['autoinstall']['user-data']['write_files'] += @{
 		append  = $true
 		path    = '/etc/sudoers'
-		content = '%Domain\ Admins ALL=(ALL:ALL) NOPASSWD:ALL'
+		content = "%Domain\ Admins ALL=(ALL:ALL) NOPASSWD:ALL`n"
 	}
 }
