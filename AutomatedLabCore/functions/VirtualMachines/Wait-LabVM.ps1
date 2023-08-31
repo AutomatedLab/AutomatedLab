@@ -107,17 +107,6 @@
                     Import-Module -Name AutomatedLab.Common -ErrorAction Stop
                     Write-Verbose "Importing Lab from $($LabBytes.Count) bytes"
                     Import-Lab -LabBytes $LabBytes -NoValidation -NoDisplay
-                    foreach ($vm in (Get-LabVm -IncludeLinux | Where {$_.OperatingSystemType -eq 'Linux' -and $_.LinuxType -eq 'Ubuntu'}))
-                    {
-                        Write-Verbose "Reordering boot order for Ubuntu VM '$($vm.Name)'"
-                        $linvm = Get-LWHypervVM -Name $vm.ResourceName
-                        $order = ($linvm | Get-VMFirmware).BootOrder
-                        if ($order[0].BootType -eq 'Drive' -and $order[0].Device.Path -like "*_INSTALL*")
-                        {
-                            $newOrder = $order[1..$order.Count] + $order[0]
-                            $linvm | Set-VMFirmware -BootOrder $newOrder
-                        }                    
-                    }
 
                     #do 5000 retries. This job is cancelled anyway if the timeout is reached
                     Write-Verbose "Trying to create session to '$ComputerName'"
