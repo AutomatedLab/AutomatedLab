@@ -25,11 +25,11 @@
 		path    = '/etc/cron.d/00realmjoin'
 		content = if ($OrganizationalUnit)
 		{
-			"@reboot root echo '{0}' | realm join --computer-ou='{2}' -U {3} {1}`n" -f $Password, $DomainName, $OrganizationalUnit, $UserName
+			"@reboot root echo '{0}' | realm join --computer-ou='{2}' -U {3} {1}`n@reboot root pam-auth-update --enable mkhomedir`n" -f $Password, $DomainName, $OrganizationalUnit, $UserName
 		}
 		else
 		{
-			"@reboot root echo '{0}' | realm join -U {2} {1}`n" -f $Password, $DomainName, $UserName
+			"@reboot root echo '{0}' | realm join -U {2} {1}`n@reboot root pam-auth-update --enable mkhomedir`n" -f $Password, $DomainName, $UserName
 		}
 	}
 	$script:un['autoinstall']['user-data']['write_files'] += @{
@@ -43,7 +43,7 @@
 	}
 	$script:un['autoinstall']['user-data']['write_files'] += @{
 		append  = $false
-		path    = '/etc/cron.d/zrealmjoin'
-		content = '@reboot root rm -rf /etc/cron.d/99realmjoin'
+		path    = '/etc/cron.d/99realmjoin'
+		content = '@reboot root rm -rf /etc/cron.d/00realmjoin'
 	}
 }

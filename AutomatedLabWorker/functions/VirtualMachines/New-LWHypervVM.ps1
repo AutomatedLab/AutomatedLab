@@ -301,7 +301,7 @@
                 Add-UnattendedSynchronousCommand @sudoParam
                 [System.Collections.Generic.List[string]] $commands = @(
                     "mkdir -p /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh"
-                    "chown -R $($domain.Administrator.UserName)@$($Machine.DomainName):$($domain.Administrator.UserName)@$($Machine.DomainName) /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh" 
+                    "chown -R $($domain.Administrator.UserName)@$($Machine.DomainName):domain\ users@$($Machine.DomainName) /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh" 
                     "chmod 700 /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh && chmod 600 /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/authorized_keys"
                     "echo `"$($Machine.SshPublicKey)`" > /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/authorized_keys"
                     "restorecon -R /$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/"
@@ -319,13 +319,13 @@
             }
             elseif ($Machine.OperatingSystemType -eq 'Linux' -and $Machine.LinuxType -eq 'Ubuntu')
             {
+                Write-UnattendedFile -Content $Machine.SshPublicKey -DestinationPath "/home/$($domain.Administrator.UserName.ToLower())@$($Machine.DomainName)/.ssh/authorized_keys"
                 Write-UnattendedFile -Content @"
 #!/bin/bash
-mkdir -p /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh
-chown -R $($domain.Administrator.UserName)@$($Machine.DomainName):$($domain.Administrator.UserName)@$($Machine.DomainName) /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh"
-chmod 700 /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh && chmod 600 /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/authorized_keys
-echo `"$($Machine.SshPublicKey)`" > /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/authorized_keys
-restorecon -R /$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/
+mkdir -p /home/$($domain.Administrator.UserName.ToLower())@$($Machine.DomainName)/.ssh
+chown -R $($domain.Administrator.UserName.ToLower())@$($Machine.DomainName):domain\ users@$($Machine.DomainName) /home/$($domain.Administrator.UserName.ToLower())@$($Machine.DomainName)/.ssh
+chmod 700 /home/$($domain.Administrator.UserName.ToLower())@$($Machine.DomainName)/.ssh && chmod 600 /home/$($domain.Administrator.UserName.ToLower())@$($Machine.DomainName)/.ssh/authorized_keys
+restorecon -R /$($domain.Administrator.UserName.ToLower())@$($Machine.DomainName)/.ssh/
 rm -rf /postconf.sh
 rm -rf /etc/cron.d/postconf
 "@ -DestinationPath '/postconf.sh'
