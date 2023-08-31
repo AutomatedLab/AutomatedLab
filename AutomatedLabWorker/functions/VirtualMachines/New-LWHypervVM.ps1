@@ -659,7 +659,7 @@ restorecon -R /$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/
             while ((Get-Date) -le $end)
             {
                 Write-Verbose "Reordering boot order for Ubuntu VM '$Name'"
-                $linvm = Get-LWHypervVM -Name $m.ResourceName
+                $linvm = Get-LWHypervVM -Name $Name
                 $order = ($linvm | Get-VMFirmware).BootOrder
                 if ($order[0].BootType -eq 'Drive' -and $order[0].Device.Path -like "*_INSTALL*")
                 {
