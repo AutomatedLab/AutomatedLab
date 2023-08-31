@@ -732,6 +732,8 @@
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
+    Get-Job -Name 'Ensure Ubuntu Boot Order*' -ErrorAction SilentlyContinue | Stop-Job -PassThru | Remove-Job -Force
+
     try
     {
         [AutomatedLab.LabTelemetry]::Instance.LabFinished((Get-Lab).Export())
