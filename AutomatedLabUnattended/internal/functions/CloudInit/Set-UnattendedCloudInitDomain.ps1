@@ -44,6 +44,6 @@
 	$script:un['autoinstall']['user-data']['write_files'] += @{
 		append  = $false
 		path    = '/etc/cron.d/99realmjoin'
-		content = '@reboot root rm -rf /etc/cron.d/00realmjoin'
+		content = "@reboot root rm -rf /etc/cron.d/00realmjoin`n"
 	}
 }
