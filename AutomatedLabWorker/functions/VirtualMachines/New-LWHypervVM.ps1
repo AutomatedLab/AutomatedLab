@@ -304,7 +304,7 @@
                     "chown -R $($domain.Administrator.UserName)@$($Machine.DomainName):domain\ users@$($Machine.DomainName) /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh" 
                     "chmod 700 /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh && chmod 600 /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/authorized_keys"
                     "echo `"$($Machine.SshPublicKey)`" > /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/authorized_keys"
-                    "restorecon -R /$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/"
+                    "restorecon -R /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/"
                 )
 
                 if (-not [string]::IsNullOrEmpty($Machine.SshPublicKey))
@@ -325,11 +325,11 @@
 mkdir -p /home/$($domain.Administrator.UserName.ToLower())@$($Machine.DomainName)/.ssh
 chown -R $($domain.Administrator.UserName.ToLower())@$($Machine.DomainName):domain\ users@$($Machine.DomainName) /home/$($domain.Administrator.UserName.ToLower())@$($Machine.DomainName)/.ssh
 chmod 700 /home/$($domain.Administrator.UserName.ToLower())@$($Machine.DomainName)/.ssh && chmod 600 /home/$($domain.Administrator.UserName.ToLower())@$($Machine.DomainName)/.ssh/authorized_keys
-restorecon -R /$($domain.Administrator.UserName.ToLower())@$($Machine.DomainName)/.ssh/
+restorecon -R /home/$($domain.Administrator.UserName.ToLower())@$($Machine.DomainName)/.ssh/
 rm -rf /postconf.sh
 rm -rf /etc/cron.d/postconf
 "@ -DestinationPath '/postconf.sh'
-                Write-UnattendedFile -Content '@reboot root bash /postconf.sh' -DestinationPath '/etc/cron.d/postconf'
+                Write-UnattendedFile -Content '@reboot root bash /postconf.sh' -DestinationPath '/etc/cron.d/10postconf'
             }
         }
     }
@@ -577,10 +577,10 @@ rm -rf /etc/cron.d/postconf
                 $Name
             )
 
-            $end = $(Get-Date).AddMinutes(20)
             # Boot order of Ubuntu system changes during installation. We need to ensure the OS
             # is booted, lest it is stuck in an installation loop.
-            while ((Get-Date) -le $end)
+            # No cancellation token, we'll remove the job if the lab installation has finished.
+            while ($true)
             {
                 Write-Verbose "Reordering boot order for Ubuntu VM '$Name'"
                 $linvm = Get-LWHypervVM -Name $Name
