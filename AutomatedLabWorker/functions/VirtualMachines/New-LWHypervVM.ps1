@@ -326,7 +326,6 @@ mkdir -p /home/$($domain.Administrator.UserName.ToLower())@$($Machine.DomainName
 chown -R $($domain.Administrator.UserName.ToLower())@$($Machine.DomainName):domain\ users@$($Machine.DomainName) /home/$($domain.Administrator.UserName.ToLower())@$($Machine.DomainName)/.ssh
 chmod 700 /home/$($domain.Administrator.UserName.ToLower())@$($Machine.DomainName)/.ssh && chmod 600 /home/$($domain.Administrator.UserName.ToLower())@$($Machine.DomainName)/.ssh/authorized_keys
 restorecon -R /home/$($domain.Administrator.UserName.ToLower())@$($Machine.DomainName)/.ssh/
-rm -rf /postconf.sh
 rm -rf /etc/cron.d/postconf
 "@ -DestinationPath '/postconf.sh'
                 Write-UnattendedFile -Content '@reboot root bash /postconf.sh' -DestinationPath '/etc/cron.d/10postconf'
