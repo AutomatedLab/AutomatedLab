@@ -103,7 +103,7 @@
 
                     $VerbosePreference = $using:VerbosePreference
 
-                    Import-Module -Name Az* -ErrorAction SilentlyContinue
+                    Import-Module -Name (Get-LabConfigurationItem -Name RequiredAzModules).Name -ErrorAction SilentlyContinue -Force -WarningAction SilentlyContinue
                     Import-Module -Name AutomatedLab.Common -ErrorAction Stop
                     Write-Verbose "Importing Lab from $($LabBytes.Count) bytes"
                     Import-Lab -LabBytes $LabBytes -NoValidation -NoDisplay
