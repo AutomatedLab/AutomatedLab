@@ -328,7 +328,7 @@ chmod 700 /home/$($domain.Administrator.UserName.ToLower())@$($Machine.DomainNam
 restorecon -R /home/$($domain.Administrator.UserName.ToLower())@$($Machine.DomainName)/.ssh/
 rm -rf /etc/cron.d/postconf
 "@ -DestinationPath '/postconf.sh'
-                Write-UnattendedFile -Content '@reboot root bash /postconf.sh' -DestinationPath '/etc/cron.d/10postconf'
+                Write-UnattendedFile -Content '@reboot root sleep 30; bash /postconf.sh' -DestinationPath '/etc/cron.d/10postconf'
             }
         }
     }
