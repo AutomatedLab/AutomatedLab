@@ -24,7 +24,7 @@ Waits for a lab machine to accept incoming sessions, indicating that it is ready
 
 ### Example 1
 ```powershell
-PS C:\> Wait-LabVM -COmputerName DC01; Invoke-LabCommand DC01 {42}
+PS C:\> Wait-LabVM -ComputerName DC01; Invoke-LabCommand DC01 {42}
 ```
 
 Wait for DC01 to be accessible before continuing with the lab
