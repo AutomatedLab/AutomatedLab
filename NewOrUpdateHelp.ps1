@@ -22,7 +22,7 @@ $outPath = foreach ($moduleName in $Module)
 {
     $outputFolder = Join-Path $buildFolder -ChildPath "Help/$moduleName/en-us"
     $outputFolder
-    Import-Module ./$moduleName -Force
+    Import-Module (Join-Path $buildFolder "publish/$moduleName") -Force
     if ($Create.IsPresent)
     {
         $null = New-MarkdownHelp -Module $moduleName -WithModulePage -OutputFolder $outputFolder -Force -AlphabeticParamsOrder
@@ -91,7 +91,7 @@ $commands = Get-Command -Module $Module | Sort-Object Name
 foreach ($command in $commands)
 {
     $null = ($mkdocsContent.nav | Where-Object {$_.Keys -contains 'Module help'})['Module help'].Add(@{
-        $command.Name = "$moduleName/en-us/$($command.Name).md"
+        $command.Name = "$($command.Module.Name)/en-us/$($command.Name).md"
     })
 }
 
