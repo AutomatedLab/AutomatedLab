@@ -13,8 +13,8 @@ Add lab disk definition
 ## SYNTAX
 
 ```
-Add-LabDiskDefinition [-Name] <String> [-DiskSizeInGb] <Int32> [-Label <String>] [-DriveLetter <Char>]
- [-UseLargeFRS] [-AllocationUnitSize <Int64>] [-PartitionStyle <String>] [-SkipInitialize] [-PassThru]
+Add-LabDiskDefinition [-Name] <String> [-DiskSizeInGb] <Int32> [[-Label] <String>] [[-DriveLetter] <Char>]
+ [-UseLargeFRS] [[-AllocationUnitSize] <Int64>] [[-PartitionStyle] <String>] [-SkipInitialize] [-PassThru]
  [<CommonParameters>]
 ```
 
@@ -44,7 +44,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: Named
+Position: 4
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -74,7 +74,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: Named
+Position: 3
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -89,7 +89,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: Named
+Position: 2
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -117,9 +117,10 @@ MBR, GPT
 Type: String
 Parameter Sets: (All)
 Aliases:
+Accepted values: MBR, GPT
 
 Required: False
-Position: Named
+Position: 5
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

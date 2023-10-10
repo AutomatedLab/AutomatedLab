@@ -14,26 +14,26 @@ Set the default network configuration
 
 ### Windows (Default)
 ```
-Set-UnattendedIpSettings [[-IpAddress] <String>] [[-Gateway] <String>] [[-DnsServers] <String[]>]
- [[-DnsDomain] <String>] [<CommonParameters>]
+Set-UnattendedIpSettings [-IpAddress <String>] [-Gateway <String>] [-DnsServers <String[]>]
+ [-DnsDomain <String>] [<CommonParameters>]
 ```
 
 ### CloudInit
 ```
-Set-UnattendedIpSettings [[-IpAddress] <String>] [[-Gateway] <String>] [[-DnsServers] <String[]>]
- [[-DnsDomain] <String>] [-IsCloudInit] [<CommonParameters>]
+Set-UnattendedIpSettings [-IpAddress <String>] [-Gateway <String>] [-DnsServers <String[]>]
+ [-DnsDomain <String>] [-IsCloudInit] [<CommonParameters>]
 ```
 
 ### Yast
 ```
-Set-UnattendedIpSettings [[-IpAddress] <String>] [[-Gateway] <String>] [[-DnsServers] <String[]>]
- [[-DnsDomain] <String>] [-IsAutoYast] [<CommonParameters>]
+Set-UnattendedIpSettings [-IpAddress <String>] [-Gateway <String>] [-DnsServers <String[]>]
+ [-DnsDomain <String>] [-IsAutoYast] [<CommonParameters>]
 ```
 
 ### Kickstart
 ```
-Set-UnattendedIpSettings [[-IpAddress] <String>] [[-Gateway] <String>] [[-DnsServers] <String[]>]
- [[-DnsDomain] <String>] [-IsKickstart] [<CommonParameters>]
+Set-UnattendedIpSettings [-IpAddress <String>] [-Gateway <String>] [-DnsServers <String[]>]
+ [-DnsDomain <String>] [-IsKickstart] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -59,7 +59,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 3
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -74,7 +74,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 2
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -89,7 +89,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 1
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -104,7 +104,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 0
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

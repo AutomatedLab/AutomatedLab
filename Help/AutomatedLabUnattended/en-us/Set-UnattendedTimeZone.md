@@ -14,22 +14,22 @@ Configure the time zone
 
 ### Windows (Default)
 ```
-Set-UnattendedTimeZone [-TimeZone] <String> [<CommonParameters>]
+Set-UnattendedTimeZone -TimeZone <String> [<CommonParameters>]
 ```
 
 ### CloudInit
 ```
-Set-UnattendedTimeZone [-TimeZone] <String> [-IsCloudInit] [<CommonParameters>]
+Set-UnattendedTimeZone -TimeZone <String> [-IsCloudInit] [<CommonParameters>]
 ```
 
 ### Yast
 ```
-Set-UnattendedTimeZone [-TimeZone] <String> [-IsAutoYast] [<CommonParameters>]
+Set-UnattendedTimeZone -TimeZone <String> [-IsAutoYast] [<CommonParameters>]
 ```
 
 ### Kickstart
 ```
-Set-UnattendedTimeZone [-TimeZone] <String> [-IsKickstart] [<CommonParameters>]
+Set-UnattendedTimeZone -TimeZone <String> [-IsKickstart] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -101,7 +101,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: 0
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

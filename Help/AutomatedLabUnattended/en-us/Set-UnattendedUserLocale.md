@@ -14,22 +14,22 @@ The locale to configure
 
 ### Windows (Default)
 ```
-Set-UnattendedUserLocale [-UserLocale] <String> [<CommonParameters>]
+Set-UnattendedUserLocale -UserLocale <String> [<CommonParameters>]
 ```
 
 ### CloudInit
 ```
-Set-UnattendedUserLocale [-UserLocale] <String> [-IsCloudInit] [<CommonParameters>]
+Set-UnattendedUserLocale -UserLocale <String> [-IsCloudInit] [<CommonParameters>]
 ```
 
 ### Yast
 ```
-Set-UnattendedUserLocale [-UserLocale] <String> [-IsAutoYast] [<CommonParameters>]
+Set-UnattendedUserLocale -UserLocale <String> [-IsAutoYast] [<CommonParameters>]
 ```
 
 ### Kickstart
 ```
-Set-UnattendedUserLocale [-UserLocale] <String> [-IsKickstart] [<CommonParameters>]
+Set-UnattendedUserLocale -UserLocale <String> [-IsKickstart] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -101,7 +101,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: 0
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

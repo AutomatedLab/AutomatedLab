@@ -14,22 +14,22 @@ Set the admin user's password
 
 ### Windows (Default)
 ```
-Set-UnattendedAdministratorPassword [-Password] <String> [<CommonParameters>]
+Set-UnattendedAdministratorPassword -Password <String> [<CommonParameters>]
 ```
 
 ### CloudInit
 ```
-Set-UnattendedAdministratorPassword [-Password] <String> [-IsCloudInit] [<CommonParameters>]
+Set-UnattendedAdministratorPassword -Password <String> [-IsCloudInit] [<CommonParameters>]
 ```
 
 ### Yast
 ```
-Set-UnattendedAdministratorPassword [-Password] <String> [-IsAutoYast] [<CommonParameters>]
+Set-UnattendedAdministratorPassword -Password <String> [-IsAutoYast] [<CommonParameters>]
 ```
 
 ### Kickstart
 ```
-Set-UnattendedAdministratorPassword [-Password] <String> [-IsKickstart] [<CommonParameters>]
+Set-UnattendedAdministratorPassword -Password <String> [-IsKickstart] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -101,7 +101,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: 0
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

@@ -14,22 +14,22 @@ Import the XML or config content of the various unattend files
 
 ### Windows (Default)
 ```
-Import-UnattendedContent [-Content] <String[]> [<CommonParameters>]
+Import-UnattendedContent -Content <String[]> [<CommonParameters>]
 ```
 
 ### CloudInit
 ```
-Import-UnattendedContent [-Content] <String[]> [-IsCloudInit] [<CommonParameters>]
+Import-UnattendedContent -Content <String[]> [-IsCloudInit] [<CommonParameters>]
 ```
 
 ### Yast
 ```
-Import-UnattendedContent [-Content] <String[]> [-IsAutoYast] [<CommonParameters>]
+Import-UnattendedContent -Content <String[]> [-IsAutoYast] [<CommonParameters>]
 ```
 
 ### Kickstart
 ```
-Import-UnattendedContent [-Content] <String[]> [-IsKickstart] [<CommonParameters>]
+Import-UnattendedContent -Content <String[]> [-IsKickstart] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -56,7 +56,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: 0
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

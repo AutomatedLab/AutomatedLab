@@ -14,38 +14,38 @@ Add a network adapter to the unattend file
 
 ### Windows (Default)
 ```
-Add-UnattendedNetworkAdapter [[-Interfacename] <String>] [[-IpAddresses] <IPNetwork[]>]
- [[-Gateways] <IPAddress[]>] [[-DnsServers] <IPAddress[]>] [[-ConnectionSpecificDNSSuffix] <String>]
- [[-DnsDomain] <String>] [[-UseDomainNameDevolution] <String>] [[-DNSSuffixSearchOrder] <String>]
- [[-EnableAdapterDomainNameRegistration] <String>] [[-DisableDynamicUpdate] <String>]
- [[-NetbiosOptions] <String>] [<CommonParameters>]
+Add-UnattendedNetworkAdapter [-Interfacename <String>] [-IpAddresses <IPNetwork[]>] [-Gateways <IPAddress[]>]
+ [-DnsServers <IPAddress[]>] [-ConnectionSpecificDNSSuffix <String>] [-DnsDomain <String>]
+ [-UseDomainNameDevolution <String>] [-DNSSuffixSearchOrder <String>]
+ [-EnableAdapterDomainNameRegistration <String>] [-DisableDynamicUpdate <String>] [-NetbiosOptions <String>]
+ [<CommonParameters>]
 ```
 
 ### CloudInit
 ```
-Add-UnattendedNetworkAdapter [[-Interfacename] <String>] [[-IpAddresses] <IPNetwork[]>]
- [[-Gateways] <IPAddress[]>] [[-DnsServers] <IPAddress[]>] [[-ConnectionSpecificDNSSuffix] <String>]
- [[-DnsDomain] <String>] [[-UseDomainNameDevolution] <String>] [[-DNSSuffixSearchOrder] <String>]
- [[-EnableAdapterDomainNameRegistration] <String>] [[-DisableDynamicUpdate] <String>]
- [[-NetbiosOptions] <String>] [-IsCloudInit] [<CommonParameters>]
+Add-UnattendedNetworkAdapter [-Interfacename <String>] [-IpAddresses <IPNetwork[]>] [-Gateways <IPAddress[]>]
+ [-DnsServers <IPAddress[]>] [-ConnectionSpecificDNSSuffix <String>] [-DnsDomain <String>]
+ [-UseDomainNameDevolution <String>] [-DNSSuffixSearchOrder <String>]
+ [-EnableAdapterDomainNameRegistration <String>] [-DisableDynamicUpdate <String>] [-NetbiosOptions <String>]
+ [-IsCloudInit] [<CommonParameters>]
 ```
 
 ### Yast
 ```
-Add-UnattendedNetworkAdapter [[-Interfacename] <String>] [[-IpAddresses] <IPNetwork[]>]
- [[-Gateways] <IPAddress[]>] [[-DnsServers] <IPAddress[]>] [[-ConnectionSpecificDNSSuffix] <String>]
- [[-DnsDomain] <String>] [[-UseDomainNameDevolution] <String>] [[-DNSSuffixSearchOrder] <String>]
- [[-EnableAdapterDomainNameRegistration] <String>] [[-DisableDynamicUpdate] <String>]
- [[-NetbiosOptions] <String>] [-IsAutoYast] [<CommonParameters>]
+Add-UnattendedNetworkAdapter [-Interfacename <String>] [-IpAddresses <IPNetwork[]>] [-Gateways <IPAddress[]>]
+ [-DnsServers <IPAddress[]>] [-ConnectionSpecificDNSSuffix <String>] [-DnsDomain <String>]
+ [-UseDomainNameDevolution <String>] [-DNSSuffixSearchOrder <String>]
+ [-EnableAdapterDomainNameRegistration <String>] [-DisableDynamicUpdate <String>] [-NetbiosOptions <String>]
+ [-IsAutoYast] [<CommonParameters>]
 ```
 
 ### Kickstart
 ```
-Add-UnattendedNetworkAdapter [[-Interfacename] <String>] [[-IpAddresses] <IPNetwork[]>]
- [[-Gateways] <IPAddress[]>] [[-DnsServers] <IPAddress[]>] [[-ConnectionSpecificDNSSuffix] <String>]
- [[-DnsDomain] <String>] [[-UseDomainNameDevolution] <String>] [[-DNSSuffixSearchOrder] <String>]
- [[-EnableAdapterDomainNameRegistration] <String>] [[-DisableDynamicUpdate] <String>]
- [[-NetbiosOptions] <String>] [-IsKickstart] [<CommonParameters>]
+Add-UnattendedNetworkAdapter [-Interfacename <String>] [-IpAddresses <IPNetwork[]>] [-Gateways <IPAddress[]>]
+ [-DnsServers <IPAddress[]>] [-ConnectionSpecificDNSSuffix <String>] [-DnsDomain <String>]
+ [-UseDomainNameDevolution <String>] [-DNSSuffixSearchOrder <String>]
+ [-EnableAdapterDomainNameRegistration <String>] [-DisableDynamicUpdate <String>] [-NetbiosOptions <String>]
+ [-IsKickstart] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -74,7 +74,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 4
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -90,7 +90,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 9
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -105,7 +105,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 5
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -120,7 +120,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 3
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -136,7 +136,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 7
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -152,7 +152,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 8
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -167,7 +167,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 2
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -182,7 +182,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 0
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -197,7 +197,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 1
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -258,7 +258,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 10
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -274,7 +274,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 6
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

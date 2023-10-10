@@ -14,22 +14,22 @@ Set the Windows product key.
 
 ### Windows (Default)
 ```
-Set-UnattendedProductKey [-ProductKey] <String> [<CommonParameters>]
+Set-UnattendedProductKey -ProductKey <String> [<CommonParameters>]
 ```
 
 ### CloudInit
 ```
-Set-UnattendedProductKey [-ProductKey] <String> [-IsCloudInit] [<CommonParameters>]
+Set-UnattendedProductKey -ProductKey <String> [-IsCloudInit] [<CommonParameters>]
 ```
 
 ### Yast
 ```
-Set-UnattendedProductKey [-ProductKey] <String> [-IsAutoYast] [<CommonParameters>]
+Set-UnattendedProductKey -ProductKey <String> [-IsAutoYast] [<CommonParameters>]
 ```
 
 ### Kickstart
 ```
-Set-UnattendedProductKey [-ProductKey] <String> [-IsKickstart] [<CommonParameters>]
+Set-UnattendedProductKey -ProductKey <String> [-IsKickstart] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -101,7 +101,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: 0
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

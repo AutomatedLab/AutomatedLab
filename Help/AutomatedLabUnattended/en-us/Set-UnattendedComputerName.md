@@ -14,22 +14,22 @@ Set the host name
 
 ### Windows (Default)
 ```
-Set-UnattendedComputerName [-ComputerName] <String> [<CommonParameters>]
+Set-UnattendedComputerName -ComputerName <String> [<CommonParameters>]
 ```
 
 ### CloudInit
 ```
-Set-UnattendedComputerName [-ComputerName] <String> [-IsCloudInit] [<CommonParameters>]
+Set-UnattendedComputerName -ComputerName <String> [-IsCloudInit] [<CommonParameters>]
 ```
 
 ### Yast
 ```
-Set-UnattendedComputerName [-ComputerName] <String> [-IsAutoYast] [<CommonParameters>]
+Set-UnattendedComputerName -ComputerName <String> [-IsAutoYast] [<CommonParameters>]
 ```
 
 ### Kickstart
 ```
-Set-UnattendedComputerName [-ComputerName] <String> [-IsKickstart] [<CommonParameters>]
+Set-UnattendedComputerName -ComputerName <String> [-IsKickstart] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -55,7 +55,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: 0
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

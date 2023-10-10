@@ -14,22 +14,22 @@ Set the admin name
 
 ### Windows (Default)
 ```
-Set-UnattendedAdministratorName [-Name] <String> [<CommonParameters>]
+Set-UnattendedAdministratorName -Name <String> [<CommonParameters>]
 ```
 
 ### CloudInit
 ```
-Set-UnattendedAdministratorName [-Name] <String> [-IsCloudInit] [<CommonParameters>]
+Set-UnattendedAdministratorName -Name <String> [-IsCloudInit] [<CommonParameters>]
 ```
 
 ### Yast
 ```
-Set-UnattendedAdministratorName [-Name] <String> [-IsAutoYast] [<CommonParameters>]
+Set-UnattendedAdministratorName -Name <String> [-IsAutoYast] [<CommonParameters>]
 ```
 
 ### Kickstart
 ```
-Set-UnattendedAdministratorName [-Name] <String> [-IsKickstart] [<CommonParameters>]
+Set-UnattendedAdministratorName -Name <String> [-IsKickstart] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -101,7 +101,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: 0
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

@@ -12,7 +12,7 @@
         'AutomatedLabWorker',
         'HostsFile',
         'AutomatedLabNotifications',
-        'AutomatedLab',
+        'AutomatedLabCore',
         'AutomatedLab.Recipe')
 )
 
@@ -52,7 +52,6 @@ $mkdocsContent = Get-Content -Raw -Path $mkdocs | ConvertFrom-Yaml
 $null = ($mkdocsContent.nav | Where-Object {$_.Keys -contains 'Sample scripts'})['Sample scripts'] = New-Object System.Collections.ArrayList
 foreach ($folder in (Get-ChildItem -Path (Join-Path -Path $location -ChildPath 'LabSources\SampleScripts') -Directory))
 {
-
     $folderObject = @{ $folder.Name = New-Object System.Collections.ArrayList}
     foreach ($sample in $folder.GetFiles('*.ps1'))
     {
@@ -87,18 +86,13 @@ $(Get-Content -Raw -Path $sample.FullName)
 # Update mkdocs.yml as part of a new help commit
 $null = ($mkdocsContent.nav | Where-Object {$_.Keys -contains 'Module help'})['Module help'] = New-Object System.Collections.ArrayList
 
-foreach ($moduleName in ($Module | Sort-Object))
-{
-    $moduleObject = @{$moduleName = New-Object System.Collections.ArrayList}
-    foreach ($command in (Get-Command -Module $moduleName))
-    {
-        $commandObject = @{
-            $command.Name = "$moduleName/en-us/$($command.Name).md"
-        }
-        $null = $moduleObject.$moduleName.Add($commandObject)
-    }
+$commands = Get-Command -Module $Module | Sort-Object Name
 
-    $null = ($mkdocsContent.nav | Where-Object {$_.Keys -contains 'Module help'})['Module help'].Add($moduleObject)
+foreach ($command in $commands)
+{
+    $null = ($mkdocsContent.nav | Where-Object {$_.Keys -contains 'Module help'})['Module help'].Add(@{
+        $command.Name = "$moduleName/en-us/$($command.Name).md"
+    })
 }
 
 $mkdocsContent | ConvertTo-Yaml -OutFile $mkdocs -Force
