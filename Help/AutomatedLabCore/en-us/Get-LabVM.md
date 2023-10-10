@@ -141,7 +141,8 @@ Accept wildcard characters: False
 ```
 
 ### -Role
-The role for which machines should be returned
+The role for which machines should be returned. See `[enum]::GetValues([AutomatedLab.Roles])`
+or <https://automatedlab.org/en/latest/Wiki/Roles/roles/> for more information.
 
 ```yaml
 Type: Roles

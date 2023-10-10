@@ -13,7 +13,7 @@ Connect the Azure File Share 'LabSources' in a session
 ## SYNTAX
 
 ```
-Connect-LWAzureLabSourcesDrive [-Session] <PSSession> [<CommonParameters>]
+Connect-LWAzureLabSourcesDrive [-Session] <PSSession> [-SuppressErrors] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -30,21 +30,6 @@ Mount the Azure file share inside DC01
 
 ## PARAMETERS
 
-### -SuppressErrors
-Do not show errors.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -Session
 The session to mount the drive in
 
@@ -55,6 +40,21 @@ Aliases:
 
 Required: True
 Position: 0
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -SuppressErrors
+Do not show errors.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

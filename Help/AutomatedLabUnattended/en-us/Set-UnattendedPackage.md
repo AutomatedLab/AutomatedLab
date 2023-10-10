@@ -14,22 +14,22 @@ Adds additional packages on Linux.
 
 ### Windows (Default)
 ```
-Set-UnattendedPackage [-Package] <String[]> [<CommonParameters>]
+Set-UnattendedPackage -Package <String[]> [<CommonParameters>]
 ```
 
 ### CloudInit
 ```
-Set-UnattendedPackage [-Package] <String[]> [-IsCloudInit] [<CommonParameters>]
+Set-UnattendedPackage -Package <String[]> [-IsCloudInit] [<CommonParameters>]
 ```
 
 ### Yast
 ```
-Set-UnattendedPackage [-Package] <String[]> [-IsAutoYast] [<CommonParameters>]
+Set-UnattendedPackage -Package <String[]> [-IsAutoYast] [<CommonParameters>]
 ```
 
 ### Kickstart
 ```
-Set-UnattendedPackage [-Package] <String[]> [-IsKickstart] [<CommonParameters>]
+Set-UnattendedPackage -Package <String[]> [-IsKickstart] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -100,7 +100,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: 0
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

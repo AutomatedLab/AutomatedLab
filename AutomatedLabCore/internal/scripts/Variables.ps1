@@ -874,7 +874,7 @@ $SharePoint2013InstallScript = {
         [string]
         $Mode = '/unattended'
     )
-    $exitCode = (Start-Process -PassThru -Wait "C:\SPInstall\PrerequisiteInstaller.exe" –ArgumentList "$Mode /SQLNCli:C:\SPInstall\PrerequisiteInstallerFiles\sqlncli.msi `
+    $exitCode = (Start-Process -PassThru -Wait "C:\SPInstall\PrerequisiteInstaller.exe" -ArgumentList "$Mode /SQLNCli:C:\SPInstall\PrerequisiteInstallerFiles\sqlncli.msi `
                /IDFX:C:\SPInstall\PrerequisiteInstallerFiles\Windows6.1-KB974405-x64.msu  `
                /IDFX11:C:\SPInstall\PrerequisiteInstallerFiles\MicrosoftIdentityExtensions-64.msi `
                /Sync:C:\SPInstall\PrerequisiteInstallerFiles\Synchronization.msi  `
@@ -895,7 +895,7 @@ $SharePoint2016InstallScript = {
         [string]
         $Mode = '/unattended'
     )
-    $exitCode = (Start-Process -PassThru -Wait "C:\SPInstall\PrerequisiteInstaller.exe" –ArgumentList "$Mode /SQLNCli:C:\SPInstall\PrerequisiteInstallerFiles\sqlncli.msi `
+    $exitCode = (Start-Process -PassThru -Wait "C:\SPInstall\PrerequisiteInstaller.exe" -ArgumentList "$Mode /SQLNCli:C:\SPInstall\PrerequisiteInstallerFiles\sqlncli.msi `
     /IDFX11:C:\SPInstall\PrerequisiteInstallerFiles\MicrosoftIdentityExtensions-64.msi `
     /Sync:C:\SPInstall\PrerequisiteInstallerFiles\Synchronization.msi  `
     /AppFabric:C:\SPInstall\PrerequisiteInstallerFiles\WindowsServerAppFabricSetup_x64.exe  `
@@ -918,7 +918,7 @@ $SharePoint2019InstallScript = {
         [string]
         $Mode = '/unattended'
     )
-    $exitCode = (Start-Process -Wait -PassThru "C:\SPInstall\PrerequisiteInstaller.exe" –ArgumentList "$Mode /SQLNCli:C:\SPInstall\PrerequisiteInstallerFiles\sqlncli.msi `
+    $exitCode = (Start-Process -Wait -PassThru "C:\SPInstall\PrerequisiteInstaller.exe" -ArgumentList "$Mode /SQLNCli:C:\SPInstall\PrerequisiteInstallerFiles\sqlncli.msi `
     /IDFX11:C:\SPInstall\PrerequisiteInstallerFiles\MicrosoftIdentityExtensions-64.msi `
     /Sync:C:\SPInstall\PrerequisiteInstallerFiles\Synchronization.msi  `
     /AppFabric:C:\SPInstall\PrerequisiteInstallerFiles\WindowsServerAppFabricSetup_x64.exe  `

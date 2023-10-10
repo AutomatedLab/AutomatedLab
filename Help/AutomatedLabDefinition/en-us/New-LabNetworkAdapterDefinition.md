@@ -297,6 +297,7 @@ The NetBIOS options to set (Default, Enabled, Disabled)
 Type: String
 Parameter Sets: (All)
 Aliases:
+Accepted values: Default, Enabled, Disabled
 
 Required: False
 Position: Named

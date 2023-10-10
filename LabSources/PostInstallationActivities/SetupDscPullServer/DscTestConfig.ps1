@@ -1,6 +1,6 @@
 ﻿Configuration "TestConfig$($env:COMPUTERNAME)"
 {
-    Import-DscResource –ModuleName 'PSDesiredStateConfiguration'
+    Import-DscResource -ModuleName 'PSDesiredStateConfiguration'
 
     Node localhost
     {

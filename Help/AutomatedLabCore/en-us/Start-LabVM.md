@@ -187,7 +187,8 @@ Accept wildcard characters: False
 ```
 
 ### -RoleName
-The roles to start
+The roles to start. See `[enum]::GetValues([AutomatedLab.Roles])`
+or <https://automatedlab.org/en/latest/Wiki/Roles/roles/> for more information.
 
 ```yaml
 Type: Roles

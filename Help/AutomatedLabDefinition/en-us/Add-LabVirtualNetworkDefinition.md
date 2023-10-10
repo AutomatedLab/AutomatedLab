@@ -15,8 +15,8 @@ Adds a definition of a virtual network
 ```
 Add-LabVirtualNetworkDefinition [[-Name] <String>] [[-AddressSpace] <IPNetwork>]
  [[-VirtualizationEngine] <VirtualizationHost>] [[-HyperVProperties] <Hashtable[]>]
- [[-AzureProperties] <Hashtable[]>] [-ManagementAdapter <NetworkAdapter>] [-ResourceName <String>] [-PassThru]
- [<CommonParameters>]
+ [[-AzureProperties] <Hashtable[]>] [[-ManagementAdapter] <NetworkAdapter>] [[-ResourceName] <String>]
+ [-PassThru] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -134,7 +134,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: Named
+Position: 5
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -179,7 +179,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: Named
+Position: 6
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

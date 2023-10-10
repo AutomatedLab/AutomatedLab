@@ -72,13 +72,14 @@ Accept wildcard characters: False
 ```
 
 ### -Role
-The roles to filter the machine definitions on
+The roles to filter the machine definitions on. See `[enum]::GetValues([AutomatedLab.Roles])`
+or <https://automatedlab.org/en/latest/Wiki/Roles/roles/> for more information.
 
 ```yaml
 Type: Roles
 Parameter Sets: ByRole
 Aliases:
-Accepted values: RootDC, FirstChildDC, DC, ADDS, FileServer, WebServer, DHCP, Routing, CaRoot, CaSubordinate, SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016, VisualStudio2013, VisualStudio2015, SharePoint2013, SharePoint2016, Orchestrator2012, SQLServer2017, SQLServer, DSCPullServer, Office2013, Office2016, ADFS, ADFSWAP, ADFSProxy, FailoverStorage, FailoverNode, Tfs2015, Tfs2017, TfsBuildWorker, Tfs2018, HyperV, AzDevOps
+Accepted values: RootDC, FirstChildDC, DC, ADDS, FileServer, WebServer, DHCP, Routing, CaRoot, CaSubordinate, SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016, VisualStudio2013, VisualStudio2015, SharePoint2013, SharePoint2016, Orchestrator2012, SQLServer2017, DSCPullServer, Office2013, Office2016, ADFS, ADFSWAP, ADFSProxy, SQLServer2019, FailoverStorage, FailoverNode, Tfs2015, Tfs2017, TfsBuildWorker, Tfs2018, HyperV, AzDevOps, SharePoint2019, SharePoint, WindowsAdminCenter, Scvmm2016, Scvmm2019, ScomManagement, ScomConsole, ScomWebConsole, ScomReporting, ScomGateway, SCOM, DynamicsFull, DynamicsFrontend, DynamicsBackend, DynamicsAdmin, Dynamics, RemoteDesktopGateway, RemoteDesktopWebAccess, RemoteDesktopSessionHost, RemoteDesktopConnectionBroker, RemoteDesktopLicensing, RemoteDesktopVirtualizationHost, RDS, ConfigurationManager, Scvmm2022, SCVMM, SQLServer2022, SQLServer
 
 Required: True
 Position: Named

@@ -30,6 +30,9 @@ Return the current unattend content that has been created
 ### [Import-UnattendedContent](Import-UnattendedContent.md)
 Import the XML or config content of the various unattend files
 
+### [Import-UnattendedFile](Import-UnattendedFile.md)
+Import a lab unattended file
+
 ### [Set-UnattendedAdministratorName](Set-UnattendedAdministratorName.md)
 Set the admin name
 

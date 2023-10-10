@@ -14,22 +14,22 @@ Save the unattend file
 
 ### Windows (Default)
 ```
-Export-UnattendedFile [-Path] <String> [<CommonParameters>]
+Export-UnattendedFile -Path <String> [<CommonParameters>]
 ```
 
 ### CloudInit
 ```
-Export-UnattendedFile [-Path] <String> [-IsCloudInit] [<CommonParameters>]
+Export-UnattendedFile -Path <String> [-IsCloudInit] [<CommonParameters>]
 ```
 
 ### Yast
 ```
-Export-UnattendedFile [-Path] <String> [-IsAutoYast] [<CommonParameters>]
+Export-UnattendedFile -Path <String> [-IsAutoYast] [<CommonParameters>]
 ```
 
 ### Kickstart
 ```
-Export-UnattendedFile [-Path] <String> [-IsKickstart] [<CommonParameters>]
+Export-UnattendedFile -Path <String> [-IsKickstart] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -101,7 +101,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: 0
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

@@ -131,12 +131,6 @@ Mounts an ISO image on a Hyper-V VM
 ### [New-LabAzureResourceGroupDeployment](New-LabAzureResourceGroupDeployment.md)
 Deploy the lab definition as an Azure resource group
 
-### [New-LWAzureNetworkSwitch](New-LWAzureNetworkSwitch.md)
-Creates a new Azure virtual network
-
-### [New-LWAzureVM](New-LWAzureVM.md)
-Create a new Azure VM
-
 ### [New-LWHypervNetworkSwitch](New-LWHypervNetworkSwitch.md)
 Create a new Hyper-V switch
 

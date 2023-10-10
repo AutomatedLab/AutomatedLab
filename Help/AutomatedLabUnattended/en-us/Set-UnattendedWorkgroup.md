@@ -14,22 +14,22 @@ Configures the workgroup of a non domain-joined system
 
 ### Windows (Default)
 ```
-Set-UnattendedWorkgroup [-WorkgroupName] <String> [<CommonParameters>]
+Set-UnattendedWorkgroup -WorkgroupName <String> [<CommonParameters>]
 ```
 
 ### CloudInit
 ```
-Set-UnattendedWorkgroup [-WorkgroupName] <String> [-IsCloudInit] [<CommonParameters>]
+Set-UnattendedWorkgroup -WorkgroupName <String> [-IsCloudInit] [<CommonParameters>]
 ```
 
 ### Yast
 ```
-Set-UnattendedWorkgroup [-WorkgroupName] <String> [-IsAutoYast] [<CommonParameters>]
+Set-UnattendedWorkgroup -WorkgroupName <String> [-IsAutoYast] [<CommonParameters>]
 ```
 
 ### Kickstart
 ```
-Set-UnattendedWorkgroup [-WorkgroupName] <String> [-IsKickstart] [<CommonParameters>]
+Set-UnattendedWorkgroup -WorkgroupName <String> [-IsKickstart] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -100,7 +100,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: 0
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

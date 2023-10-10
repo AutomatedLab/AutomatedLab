@@ -14,26 +14,26 @@ Set the domain membership
 
 ### Windows (Default)
 ```
-Set-UnattendedDomain [-DomainName] <String> [-Username] <String> [-Password] <String>
- [-OrganizationalUnit <String>] [<CommonParameters>]
+Set-UnattendedDomain -DomainName <String> -Username <String> -Password <String> [-OrganizationalUnit <String>]
+ [<CommonParameters>]
 ```
 
 ### CloudInit
 ```
-Set-UnattendedDomain [-DomainName] <String> [-Username] <String> [-Password] <String>
- [-OrganizationalUnit <String>] [-IsCloudInit] [<CommonParameters>]
+Set-UnattendedDomain -DomainName <String> -Username <String> -Password <String> [-OrganizationalUnit <String>]
+ [-IsCloudInit] [<CommonParameters>]
 ```
 
 ### Yast
 ```
-Set-UnattendedDomain [-DomainName] <String> [-Username] <String> [-Password] <String>
- [-OrganizationalUnit <String>] [-IsAutoYast] [<CommonParameters>]
+Set-UnattendedDomain -DomainName <String> -Username <String> -Password <String> [-OrganizationalUnit <String>]
+ [-IsAutoYast] [<CommonParameters>]
 ```
 
 ### Kickstart
 ```
-Set-UnattendedDomain [-DomainName] <String> [-Username] <String> [-Password] <String>
- [-OrganizationalUnit <String>] [-IsKickstart] [<CommonParameters>]
+Set-UnattendedDomain -DomainName <String> -Username <String> -Password <String> [-OrganizationalUnit <String>]
+ [-IsKickstart] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -61,7 +61,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: 0
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -136,7 +136,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: 2
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -151,7 +151,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: 1
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
