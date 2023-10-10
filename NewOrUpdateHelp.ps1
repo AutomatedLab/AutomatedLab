@@ -86,7 +86,7 @@ $(Get-Content -Raw -Path $sample.FullName)
 # Update mkdocs.yml as part of a new help commit
 $null = ($mkdocsContent.nav | Where-Object {$_.Keys -contains 'Module help'})['Module help'] = New-Object System.Collections.ArrayList
 
-$commands = Get-Command -Module $Module | Sort-Object Name
+$commands = Get-Command -Module $Module | Sort-Object Name -Unique
 
 foreach ($command in $commands)
 {
