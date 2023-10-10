@@ -700,7 +700,8 @@ Accept wildcard characters: False
 ```
 
 ### -Roles
-The machine's role definitions
+The machine's role definitions. See `[enum]::GetValues([AutomatedLab.Roles])`
+or <https://automatedlab.org/en/latest/Wiki/Roles/roles/> for more information.
 
 ```yaml
 Type: Role[]

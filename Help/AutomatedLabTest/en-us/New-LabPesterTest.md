@@ -61,7 +61,8 @@ Accept wildcard characters: False
 ```
 
 ### -Role
-Role to define test for
+Role to define test for. See `[enum]::GetValues([AutomatedLab.Roles])`
+or <https://automatedlab.org/en/latest/Wiki/Roles/roles/> for more information.
 
 ```yaml
 Type: String[]

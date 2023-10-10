@@ -72,7 +72,8 @@ Accept wildcard characters: False
 ```
 
 ### -RoleName
-The roles of the machines to be saved
+The roles of the machines to be saved. See `[enum]::GetValues([AutomatedLab.Roles])`
+or <https://automatedlab.org/en/latest/Wiki/Roles/roles/> for more information.
 
 ```yaml
 Type: Roles

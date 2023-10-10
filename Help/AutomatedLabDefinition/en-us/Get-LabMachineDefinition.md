@@ -72,7 +72,8 @@ Accept wildcard characters: False
 ```
 
 ### -Role
-The roles to filter the machine definitions on
+The roles to filter the machine definitions on. See `[enum]::GetValues([AutomatedLab.Roles])`
+or <https://automatedlab.org/en/latest/Wiki/Roles/roles/> for more information.
 
 ```yaml
 Type: Roles

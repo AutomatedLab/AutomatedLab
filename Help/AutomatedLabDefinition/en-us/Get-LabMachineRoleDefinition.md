@@ -55,7 +55,8 @@ Accept wildcard characters: False
 ```
 
 ### -Role
-The role names
+The role names. See `[enum]::GetValues([AutomatedLab.Roles])`
+or <https://automatedlab.org/en/latest/Wiki/Roles/roles/> for more information.
 
 ```yaml
 Type: Roles
