@@ -16,7 +16,7 @@
         'AutomatedLab.Recipe')
 )
 
-$location = $PSScriptRoot
+$location = Join-Path $PSScriptRoot publish -Resolve -ErrorAction Stop
 
 $outPath = foreach ($moduleName in $Module)
 {
