@@ -35,7 +35,7 @@
         return $vm
     }
 
-    if (-not $script:clusterDetected -and (Get-Command -Name Get-Cluster -ErrorAction SilentlyContinue)) { $script:clusterDetected = Get-Cluster -ErrorAction SilentlyContinue -WarningAction SilentlyContinue}
+    if (-not $script:clusterDetected -and (Get-Command -Name Get-Cluster -Module FailoverClusters -CommandType Cmdlet -ErrorAction SilentlyContinue)) { $script:clusterDetected = Get-Cluster -ErrorAction SilentlyContinue -WarningAction SilentlyContinue}
 
     if (-not $DisableClusterCheck -and $script:clusterDetected)
     {

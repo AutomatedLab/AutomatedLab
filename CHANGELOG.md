@@ -30,6 +30,7 @@
 - Fix issue with DNS settings on individual Azure VMs.
 - 'Clear-LabCache' did not remove global variables used for caching.
 - AutomatedLab.Common was not copied properly to HyperV
+- Skip cluster checks on PS7
 
 ## 5.48.0 (2023-04-05)
 

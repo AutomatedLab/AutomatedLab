@@ -27,7 +27,7 @@
 
     Write-PSFMessage "Removing VM '$($Name)'"
     $doNotAddToCluster = Get-LabConfigurationItem -Name DoNotAddVmsToCluster -Default $false
-    if (-not $doNotAddToCluster -and (Get-Command -Name Get-Cluster -ErrorAction SilentlyContinue) -and (Get-Cluster -ErrorAction SilentlyContinue -WarningAction SilentlyContinue))
+    if (-not $doNotAddToCluster -and (Get-Command -Name Get-Cluster -Module FailoverClusters -CommandType Cmdlet -ErrorAction SilentlyContinue) -and (Get-Cluster -ErrorAction SilentlyContinue -WarningAction SilentlyContinue))
     {
         Write-PSFMessage "Removing Clustered Resource: $Name"
         $null = Get-ClusterGroup -Name $Name | Remove-ClusterGroup -RemoveResources -Force
