@@ -55,7 +55,7 @@ Accept wildcard characters: False
 No description available.
 
 ```yaml
-Type: Boolean
+Type: String
 Parameter Sets: (All)
 Aliases:
 
@@ -199,7 +199,7 @@ Accept wildcard characters: False
 This parameter should not be used.
 
 ```yaml
-Type: String
+Type: Boolean
 Parameter Sets: (All)
 Aliases:
 
@@ -215,7 +215,7 @@ Accept wildcard characters: False
 This parameter should not be used.
 
 ```yaml
-Type: String
+Type: Boolean
 Parameter Sets: (All)
 Aliases:
 
@@ -231,7 +231,7 @@ Accept wildcard characters: False
 Specifies wether smart cards are redirection to the remote session.
 
 ```yaml
-Type: String
+Type: Boolean
 Parameter Sets: (All)
 Aliases:
 

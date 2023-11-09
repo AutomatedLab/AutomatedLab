@@ -21,7 +21,7 @@ function New-LWHypervVmConnectSettingsFile
         [string]$RedirectedPnpDevices,
         
         [Parameter(HelpMessageResourceId = 'System.String')]
-        [string]$ClipboardRedirection = $true,
+        [bool]$ClipboardRedirection = $true,
         
         [Parameter(HelpMessageResourceId = 'System.Drawing.Size')]
         [string]$DesktopSize = (Get-LabConfigurationItem -Name VMConnectDesktopSize -Default '1366, 768'),
