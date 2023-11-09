@@ -859,6 +859,8 @@ Stop-Transcript
 
     Write-ProgressIndicatorEnd
 
+    New-LabHypervVmConnectSettingsFile -VmName $vm.Name
+
     Write-LogFunctionExit
 
     return $true

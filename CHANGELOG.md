@@ -20,6 +20,7 @@
 - The script 'AzureLabSources.ps1' maps the share via IP address if mapping via names fails. It
   sometimes files mapping by name with the error 'A specified logon session does not exist'
 - Added error handling to 'Connect-LWAzureLabSourcesDrive'
+- AL creates VMConnect config files for each new Hyper-V VM (#1579).
 
 ### Bugs
 
