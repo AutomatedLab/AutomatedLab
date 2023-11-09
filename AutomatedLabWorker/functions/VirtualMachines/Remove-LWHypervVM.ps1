@@ -43,7 +43,7 @@
         Remove-Item -Path $vmDescription
     }
 
-    Remove-LabHypervVmConnectSettingsFile -ComputerName $Name
+    Remove-LWHypervVmConnectSettingsFile -ComputerName $Name
 
     Write-LogFunctionExit
 }
