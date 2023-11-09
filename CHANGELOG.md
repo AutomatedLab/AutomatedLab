@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased (yyyy-MM-dd)
+- Fix If-Condition in Start-LWHypervVM. Used wrong variables; PreDelaySeconds & PostDelaySeconds (#1582).
 
 ### Enhancements
 

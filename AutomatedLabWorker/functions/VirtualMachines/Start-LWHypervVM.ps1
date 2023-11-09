@@ -16,7 +16,7 @@
         [switch]$NoNewLine
     )
 
-    if ($PreDelay) {
+    if ($PreDelaySeconds) {
         $job = Start-Job -Name 'Start-LWHypervVM - Pre Delay' -ScriptBlock { Start-Sleep -Seconds $Using:PreDelaySeconds }
         Wait-LWLabJob -Job $job -NoNewLine -ProgressIndicator $ProgressIndicator -Timeout 15 -NoDisplay
     }
@@ -48,7 +48,7 @@
         }
     }
 
-    if ($PostDelay)
+    if ($PostDelaySeconds)
     {
         $job = Start-Job -Name 'Start-LWHypervVM - Post Delay' -ScriptBlock { Start-Sleep -Seconds $Using:PostDelaySeconds }
         Wait-LWLabJob -Job $job -NoNewLine:$NoNewLine -ProgressIndicator $ProgressIndicator -Timeout 15 -NoDisplay
