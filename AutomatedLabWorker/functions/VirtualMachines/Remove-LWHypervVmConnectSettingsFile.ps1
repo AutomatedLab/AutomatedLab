@@ -9,11 +9,11 @@ function Remove-LWHypervVmConnectSettingsFile
     
     Write-LogFunctionEntry
     
-    $vm = Get-VM -Name $VmName
+    $vm = Get-VM -Name $ComputerName
     
+    $configFilePath = '{0}\Microsoft\Windows\Hyper-V\Client\1.0\vmconnect.rdp.{1}.config' -f $env:APPDATA, $vm.Id
     if (Test-Path -Path $configFilePath)
     {
-        $configFilePath = '{0}\Microsoft\Windows\Hyper-V\Client\1.0\vmconnect.rdp.{1}.config' -f $env:APPDATA, $vm.Id
         Remove-Item -Path $configFilePath -ErrorAction SilentlyContinue
     }
     
