@@ -45,7 +45,7 @@ function New-LWHypervVmConnectSettingsFile
         [bool]$PrinterRedirection,
         
         [Parameter(HelpMessageResourceId = 'System.String')]
-        [string]$RedirectedDrives = (Get-LabConfigurationItem -Name RedirectedDrives -Default ''),
+        [string]$RedirectedDrives = (Get-LabConfigurationItem -Name VMConnectRedirectedDrives -Default ''),
         
         [Parameter(Mandatory, HelpMessageResourceId = 'System.String')]
         [Alias('ComputerName')]
