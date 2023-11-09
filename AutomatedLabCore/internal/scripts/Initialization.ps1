@@ -153,6 +153,7 @@ Set-PSFConfig -Module 'AutomatedLab' -Name DoNotAddVmsToCluster -Value $false -I
 
 
 #Hyper-V VMConnect Settings
+Set-PSFConfig -Module 'AutomatedLab' -Name VMConnectWriteConfigFile -Value $true -Initialize -Validation string -Description "Enable the writing of VMConnect config files by default"
 Set-PSFConfig -Module 'AutomatedLab' -Name VMConnectDesktopSize -Value '1366, 768' -Initialize -Validation string -Description "The default resolution for Hyper-V's VMConnect.exe"
 Set-PSFConfig -Module 'AutomatedLab' -Name VMConnectFullScreen -Value $false -Initialize -Validation string -Description "Enable full screen mode for VMConnect.exe"
 Set-PSFConfig -Module 'AutomatedLab' -Name VMConnectUseAllMonitors -Value $false -Initialize -Validation string -Description "Use all monitors for VMConnect.exe"

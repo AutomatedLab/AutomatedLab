@@ -859,7 +859,11 @@ Stop-Transcript
 
     Write-ProgressIndicatorEnd
 
-    New-LabHypervVmConnectSettingsFile -VmName $vm.Name
+    $writeVmConnectConfigFile = Get-LabConfigurationItem -Name VMConnectWriteConfigFile
+    if ($writeVmConnectConfigFile)
+    {
+        New-LabHypervVmConnectSettingsFile -VmName $vm.Name
+    }
 
     Write-LogFunctionExit
 
