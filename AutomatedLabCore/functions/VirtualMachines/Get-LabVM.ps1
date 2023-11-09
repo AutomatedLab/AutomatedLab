@@ -124,6 +124,12 @@
             {
                 $machine.Disks = Get-LabVHDX -Name $machine.Disks.Name -ErrorAction SilentlyContinue
             }
+
+            $writeVmConnectConfigFile = Get-LabConfigurationItem -Name VMConnectWriteConfigFile
+            if ($writeVmConnectConfigFile)
+            {
+                New-LabHypervVmConnectSettingsFile -VmName $vm.Name
+            }
         }
 
         if ($Filter)
