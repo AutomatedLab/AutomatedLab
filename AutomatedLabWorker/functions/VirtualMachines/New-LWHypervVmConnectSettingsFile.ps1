@@ -2,6 +2,8 @@ function New-LWHypervVmConnectSettingsFile
 {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     [Cmdletbinding()]
+    #In the parameter block, 'HelpMessageResourceId' is misused to store the type that is stored in the config file.
+    #'HelpMessageResourceId' does not have any effect on the parameter itself.
     param (
         [Parameter(HelpMessageResourceId = 'System.Boolean')]
         [bool]$AudioCaptureRedirectionMode = $false,
@@ -54,6 +56,12 @@ function New-LWHypervVmConnectSettingsFile
     )
     
     Write-LogFunctionEntry
+
+    #AutomatedLab does not allow empty strings in the configuration, hence the detour.
+    if ($RedirectedDrives -eq 'none')
+    {
+        $RedirectedDrives = ''
+    }
     
     $machineVmConnectConfig = [AutomatedLab.Machines.MachineVmConnectConfig]::new()
     $parameters = $MyInvocation.MyCommand.Parameters
@@ -76,6 +84,7 @@ function New-LWHypervVmConnectSettingsFile
         
         $machineVmConnectConfig.Settings.Add($setting)
         
+        #Files will be stored in path 'C:\Users\randr\AppData\Roaming\Microsoft\Windows\Hyper-V\Client\1.0'
         $configFilePath = '{0}\Microsoft\Windows\Hyper-V\Client\1.0\vmconnect.rdp.{1}.config' -f $env:APPDATA, $vm.Id
         $machineVmConnectConfig.Export($configFilePath)
     }
