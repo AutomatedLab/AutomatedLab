@@ -1,7 +1,7 @@
 function New-LWHypervVmConnectSettingsFile
 {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
-    [Cmdletbinding()]
+    [Cmdletbinding(PositionalBinding = $false)]
     #In the parameter block, 'HelpMessageResourceId' is misused to store the type that is stored in the config file.
     #'HelpMessageResourceId' does not have any effect on the parameter itself.
     param (
