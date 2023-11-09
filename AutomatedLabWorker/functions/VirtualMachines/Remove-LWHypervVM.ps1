@@ -33,6 +33,8 @@
         $null = Get-ClusterGroup -Name $Name | Remove-ClusterGroup -RemoveResources -Force
     }
 
+    Remove-LWHypervVmConnectSettingsFile -ComputerName $Name
+
     $vm | Remove-VM -Force
 
     Write-PSFMessage "Removing VM files for '$($Name)'"
@@ -42,8 +44,6 @@
     if (Test-Path $vmDescription) {
         Remove-Item -Path $vmDescription
     }
-
-    Remove-LWHypervVmConnectSettingsFile -ComputerName $Name
 
     Write-LogFunctionExit
 }
