@@ -478,7 +478,7 @@
         ErrorAction = 'Stop'
     }
 
-    $vm = New-VM @vmParameter
+    $vm = Hyper-V\New-VM @vmParameter
 
     Set-LWHypervVMDescription -ComputerName $Machine.ResourceName -Hashtable @{
         CreatedBy = '{0} ({1})' -f $PSCmdlet.MyInvocation.MyCommand.Module.Name, $PSCmdlet.MyInvocation.MyCommand.Module.Version
@@ -569,7 +569,7 @@
     if ($Machine.HypervProperties.AutomaticStartAction) { $automaticStartAction = $Machine.HypervProperties.AutomaticStartAction }
     if ($Machine.HypervProperties.AutomaticStartDelay)  { $automaticStartDelay  = $Machine.HypervProperties.AutomaticStartDelay  }
     if ($Machine.HypervProperties.AutomaticStopAction)  { $automaticStopAction  = $Machine.HypervProperties.AutomaticStopAction  }
-    $vm | Set-VM -AutomaticStartAction $automaticStartAction -AutomaticStartDelay $automaticStartDelay -AutomaticStopAction $automaticStopAction
+    $vm | Hyper-V\Set-VM -AutomaticStartAction $automaticStartAction -AutomaticStartDelay $automaticStartDelay -AutomaticStopAction $automaticStopAction
 
     Write-ProgressIndicator
 
@@ -828,9 +828,9 @@ Stop-Transcript
 
     $param = Sync-Parameter -Command (Get-Command Set-Vm) -Parameters $param
 
-    Set-VM -Name $Machine.ResourceName @param
+    Hyper-V\Set-VM -Name $Machine.ResourceName @param
 
-    Set-VM -Name $Machine.ResourceName -ProcessorCount $Machine.Processors
+    Hyper-V\Set-VM -Name $Machine.ResourceName -ProcessorCount $Machine.Processors
 
     if ($DisableIntegrationServices)
     {
@@ -845,7 +845,7 @@ Stop-Transcript
     Write-PSFMessage "Creating snapshot named '$($Machine.ResourceName) - post OS Installation'"
     if ($CreateCheckPoints)
     {
-        Checkpoint-VM -VM (Get-VM -Name $Machine.ResourceName) -SnapshotName 'Post OS Installation'
+        Hyper-V\Checkpoint-VM -VM (Hyper-V\Get-VM -Name $Machine.ResourceName) -SnapshotName 'Post OS Installation'
     }
 
     if ($Machine.Disks.Name)

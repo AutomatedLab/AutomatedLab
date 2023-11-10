@@ -25,7 +25,7 @@
 
     $d.WriteXml($xmlWriter)
 
-    Get-LWHypervVm -Name $ComputerName -ErrorAction SilentlyContinue | Set-VM -Notes $sb.ToString()
+    Get-LWHypervVm -Name $ComputerName -ErrorAction SilentlyContinue | Hyper-V\Set-VM -Notes $sb.ToString()
 
     Write-LogFunctionExit
 }
