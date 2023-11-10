@@ -86,8 +86,8 @@ List installed Windows features on an Azure VM
 ### [Get-LWHypervVM](Get-LWHypervVM.md)
 Get all VMs running on a Hyper-V
 
-### [Get-LWHypervVMDescription](Get-LWHypervVMDescription.md)
-Return the serialized notes field of a Hyper-V VM
+### [Get-LWHypervNetworkSwitchDescription](Get-LWHypervNetworkSwitchDescription.md)
+Return the serialized notes field of a Hyper-V Virtual Network
 
 ### [Get-LWHypervVMSnapshot](Get-LWHypervVMSnapshot.md)
 Find snapshots of Hyper-V VMs
@@ -193,6 +193,9 @@ Save the state of a VMWare VM
 
 ### [Set-LWAzureDnsServer](Set-LWAzureDnsServer.md)
 Set the DNS servers of an Azure virtual network
+
+### [Set-LWHypervNetworkSwitchDescription](Set-LWHypervNetworkSwitchDescription.md)
+Set the Notes field of a Hyper-V Virtual Network
 
 ### [Set-LWHypervVMDescription](Set-LWHypervVMDescription.md)
 Set the Notes field of a Hyper-V VM

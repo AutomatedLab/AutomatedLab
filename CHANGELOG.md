@@ -2,11 +2,23 @@
 
 ## Unreleased (yyyy-MM-dd)
 
+## 5.51.0 (2024-03-18)
+
 ### Enhancements
+
+- Removing a lab only removes Hyper-V virtual network switches created by AL previously (#1590).
 
 ### Bugs
 
-## 5.550.0 (2023-11-10)
+- Fix missing Site Name and Site Code when custom values provided (#1555).
+- Fix Windows Defender variables mismatch (#1555).
+- Fix for using ResourceName in LabMachineDefinition (#1592).
+- Fixed issues deploying CM-2103 custom role (#1594).
+- Fixed an issue which prevented the promotion process of additional Active Directory Domain
+  Controllers from being restartable (#1608).
+- Fixed a syntax issue in 'CreateDscSqlDatabase.ps1'.
+
+## 5.50.0 (2023-11-10)
 
 ### Enhancements
 

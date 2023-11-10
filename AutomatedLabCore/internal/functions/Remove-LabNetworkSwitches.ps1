@@ -22,6 +22,7 @@
     }
 
     $virtualNetworks = $Script:data.VirtualNetworks | Where-Object { $_.HostType -eq 'HyperV' -and $_.Name -ne 'Default Switch' }
+    $virtualNetworks = Get-LabVirtualNetwork -Name $virtualNetworks.Name
     foreach ($virtualNetwork in $virtualNetworks)
     {
         Write-PSFMessage "Removing Hyper-V network switch '$($virtualNetwork.ResourceName)'..."
@@ -33,7 +34,18 @@
         }
         else
         {
-            Remove-LWNetworkSwitch -Name $virtualNetwork.ResourceName
+            if (-not $virtualNetwork.Notes)
+            {
+                Write-Error -Message "Cannot remove virtual network '$virtualNetwork' because lab meta data for this object could not be retrieved"
+            }
+            elseif ($virtualNetwork.Notes.LabName -ne $labName)
+            {
+                Write-Error -Message "Cannot remove virtual network '$virtualNetwork' because it does not belong to this lab"
+            }
+            else
+            {
+                Remove-LWNetworkSwitch -Name $virtualNetwork.ResourceName
+            }
         }
         Write-PSFMessage '...done'
     }

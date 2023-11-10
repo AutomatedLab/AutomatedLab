@@ -873,7 +873,7 @@ Stop-Transcript
     $writeVmConnectConfigFile = Get-LabConfigurationItem -Name VMConnectWriteConfigFile
     if ($writeVmConnectConfigFile)
     {
-        New-LWHypervVmConnectSettingsFile -VmName $Machine.Name
+        New-LWHypervVmConnectSettingsFile -VmName $Machine.ResourceName
     }
 
     Write-LogFunctionExit

@@ -71,6 +71,8 @@
     }
 
     $CMSetupConfig['[Options]'].SDKServer = $CMServer.FQDN
+    $CMSetupConfig['[Options]'].SiteCode = $CMSiteCode
+    $CMSetupConfig['[Options]'].SiteName = $CMSiteName
     $CMSetupConfig['[CloudConnectorOptions]'].CloudConnectorServer = $CMServer.FQDN
     $CMSetupConfig['[SQLConfigOptions]'].SQLServerName = $SqlServerName
     $CMSetupConfig['[SQLConfigOptions]'].DatabaseName = $DatabaseName
@@ -169,7 +171,7 @@
 
     try
     {
-        $result = Invoke-LabCommand -ComputerName $CMServer -ActivityName "Adding Windows Defender exclusions" -Variable (Get-Variable "AVExcludedPaths", "AVExcludedProcesses") -ScriptBlock {
+        $result = Invoke-LabCommand -ComputerName $CMServer -ActivityName "Adding Windows Defender exclusions" -Variable (Get-Variable "configurationManagerAVExcludedPaths", "configurationManagerAVExcludedProcesses") -ScriptBlock {
             Add-MpPreference -ExclusionPath $configurationManagerAVExcludedPaths -ExclusionProcess $configurationManagerAVExcludedProcesses -ErrorAction "Stop"
             Set-MpPreference -RealTimeScanDirection "Incoming" -ErrorAction "Stop"
         } -ErrorAction Stop

@@ -12,12 +12,18 @@ Returns all existing virtual networks (switches) on a Hyper-V host
 
 ## SYNTAX
 
+### ByName
 ```
-Get-LabVirtualNetwork [<CommonParameters>]
+Get-LabVirtualNetwork [-Name <String>] [<CommonParameters>]
+```
+
+### All
+```
+Get-LabVirtualNetwork [-All] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-Returns all existing virtual networks (switches) on a Hyper-V host
+Returns all existing virtual networks (switches) within the imported lab. If the `-All` switch is used, all virtual networks (switches) on the Hyper-V host are returned.
 
 ## EXAMPLES
 
@@ -34,6 +40,36 @@ Default Switch 172.18.29.64/28
 
 ## PARAMETERS
 
+### -Name
+The name of the virtual network.
+
+```yaml
+Type: String
+Parameter Sets: ByName
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -All
+Indicates that all switches on the Hyper-V host should be returned.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: All
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### CommonParameters
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
@@ -44,4 +80,3 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
-
