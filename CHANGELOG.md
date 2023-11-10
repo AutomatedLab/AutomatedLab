@@ -2,6 +2,8 @@
 
 ## Unreleased (yyyy-MM-dd)
 - Fix If-Condition in Start-LWHypervVM. Used wrong variables; PreDelaySeconds & PostDelaySeconds (#1582).
+- Reduces ssh-keyscan timeout from 5.5 to 1.5 seconds in function Install-LabSshKnownHost. Improve speed in larger Labs significant. (#1580).
+
 
 ### Enhancements
 
