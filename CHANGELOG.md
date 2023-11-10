@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased (yyyy-MM-dd)
+-Reduces ssh-keyscan timeout from 5.5 to 1.5 seconds in function Install-LabSshKnownHost. Improve speed in larger Labs significant. (#1580).
 
 ### Enhancements
 
