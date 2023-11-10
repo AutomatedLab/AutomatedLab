@@ -29,11 +29,11 @@
     {
         $PSDefaultParameterValues['*:IsKickstart'] = $true
     }
-    if($Machine.OperatingSystemType -eq 'Linux' -and $Machine.LinuxType -eq 'Suse')
+    if ($Machine.OperatingSystemType -eq 'Linux' -and $Machine.LinuxType -eq 'Suse')
     {
         $PSDefaultParameterValues['*:IsAutoYast'] = $true
     }
-    if($Machine.OperatingSystemType -eq 'Linux' -and $Machine.LinuxType -eq 'Ubuntu')
+    if ($Machine.OperatingSystemType -eq 'Linux' -and $Machine.LinuxType -eq 'Ubuntu')
     {
         $PSDefaultParameterValues['*:IsCloudInit'] = $true
     }
@@ -124,9 +124,15 @@
             $ipSettings.Add('DnsDomain', $rootDomainName)
         }
 
-        if ($adapter.ConnectionSpecificDNSSuffix) { $ipSettings.Add('DnsDomain', $adapter.ConnectionSpecificDNSSuffix) }
+        if ($adapter.ConnectionSpecificDNSSuffix)
+        {
+            $ipSettings.Add('DnsDomain', $adapter.ConnectionSpecificDNSSuffix)
+        }
         $ipSettings.Add('UseDomainNameDevolution', (([string]($adapter.AppendParentSuffixes)) = 'true'))
-        if ($adapter.AppendDNSSuffixes)           { $ipSettings.Add('DNSSuffixSearchOrder', $adapter.AppendDNSSuffixes -join ',') }
+        if ($adapter.AppendDNSSuffixes)
+        {
+            $ipSettings.Add('DNSSuffixSearchOrder', $adapter.AppendDNSSuffixes -join ',')
+        }
         $ipSettings.Add('EnableAdapterDomainNameRegistration', ([string]($adapter.DnsSuffixInDnsRegistration)).ToLower())
         $ipSettings.Add('DisableDynamicUpdate', ([string](-not $adapter.RegisterInDNS)).ToLower())
 
@@ -155,7 +161,10 @@
 
     $Machine.NetworkAdapters = $adapters
 
-    if ($Machine.OperatingSystemType -eq 'Windows') {Add-UnattendedRenameNetworkAdapters}
+    if ($Machine.OperatingSystemType -eq 'Windows')
+    {
+        Add-UnattendedRenameNetworkAdapters
+    }
     #endregion network adapter settings
 
     Set-UnattendedComputerName -ComputerName $Machine.Name
@@ -245,7 +254,7 @@
 
     if ($Machine.Roles.Name -contains 'RootDC' -or
         $Machine.Roles.Name -contains 'FirstChildDC' -or
-    $Machine.Roles.Name -contains 'DC')
+        $Machine.Roles.Name -contains 'DC')
     {
         #machine will not be added to domain or workgroup
     }
@@ -265,7 +274,9 @@
                 Username = $domain.Administrator.UserName
                 Password = $domain.Administrator.Password
             }
-            if ($Machine.OrganizationalUnit) {$parameters['OrganizationalUnit'] = $machine.OrganizationalUnit}
+            if ($Machine.OrganizationalUnit) {
+                $parameters['OrganizationalUnit'] = $machine.OrganizationalUnit
+            }
 
             Set-UnattendedDomain @parameters
 
@@ -581,7 +592,7 @@
 
     if ( $Machine.OperatingSystemType -eq 'Windows')
     {
-        [void] (Mount-DiskImage -ImagePath $path)
+        [void](Mount-DiskImage -ImagePath $path)
         $VhdDisk = Get-DiskImage -ImagePath $path | Get-Disk
         $VhdPartition = Get-Partition -DiskNumber $VhdDisk.Number
 
@@ -802,7 +813,7 @@ Stop-Transcript
         $unattendXmlContent.Save("$VhdVolume\Unattend.xml")
         Write-PSFMessage "`tUnattended file copied to VM Disk '$vhdVolume\unattend.xml'"
         
-        [void] (Dismount-DiskImage -ImagePath $path)
+        [void](Dismount-DiskImage -ImagePath $path)
         Write-PSFMessage "`tdisk image dismounted"
     }    
 
@@ -858,6 +869,12 @@ Stop-Transcript
     }
 
     Write-ProgressIndicatorEnd
+
+    $writeVmConnectConfigFile = Get-LabConfigurationItem -Name VMConnectWriteConfigFile
+    if ($writeVmConnectConfigFile)
+    {
+        New-LWHypervVmConnectSettingsFile -VmName $Machine.Name
+    }
 
     Write-LogFunctionExit
 

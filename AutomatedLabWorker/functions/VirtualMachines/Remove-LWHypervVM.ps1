@@ -33,13 +33,17 @@
         $null = Get-ClusterGroup -Name $Name | Remove-ClusterGroup -RemoveResources -Force
     }
 
+    Remove-LWHypervVmConnectSettingsFile -ComputerName $Name
+
     $vm | Hyper-V\Remove-VM -Force
 
     Write-PSFMessage "Removing VM files for '$($Name)'"
     Remove-Item -Path $vmPath -Force -Confirm:$false -Recurse
     
     $vmDescription = Join-Path -Path (Get-Lab).LabPath -ChildPath "$Name.xml"
-    if (Test-Path $vmDescription) {Remove-Item -Path $vmDescription}
+    if (Test-Path $vmDescription) {
+        Remove-Item -Path $vmDescription
+    }
 
     Write-LogFunctionExit
 }

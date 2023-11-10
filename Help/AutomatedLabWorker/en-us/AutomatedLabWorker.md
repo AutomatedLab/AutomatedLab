@@ -137,6 +137,9 @@ Create a new Hyper-V switch
 ### [New-LWHypervVM](New-LWHypervVM.md)
 Create a new Hyper-V VM
 
+### [New-LWHypervVmConnectSettingsFile](New-LWHypervVmConnectSettingsFile.md)
+Creates a VMConnect config file for the given Hyper-V machine.
+
 ### [New-LWReferenceVHDX](New-LWReferenceVHDX.md)
 Create a reference disk from an OS image
 
@@ -157,6 +160,9 @@ Remove an Azure VM snapshot
 
 ### [Remove-LWHypervVM](Remove-LWHypervVM.md)
 Remove a Hyper-V VM
+
+### [Remove-LWHypervVmConnectSettingsFile](Remove-LWHypervVmConnectSettingsFile.md)
+Removes the VMConnect config file to the given Hyper-V VM.
 
 ### [Remove-LWHypervVMSnapshot](Remove-LWHypervVMSnapshot.md)
 Remove Hyper-V checkpoints
