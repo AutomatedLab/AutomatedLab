@@ -32,7 +32,7 @@
 
     #TODO: add logic to determine if machine already exists
     <#
-            if (Get-VM -Name $Machine.Name -ErrorAction SilentlyContinue)
+            if (VMware.VimAutomation.Core\Get-VM -Name $Machine.Name -ErrorAction SilentlyContinue)
             {
             Write-ProgressIndicatorEnd
             Write-ScreenInfo -Message "The machine '$Machine' does already exist" -Type Warning
@@ -114,7 +114,7 @@
 
         #TODO: logic to switch to full clone for AD recovery scenario's etc.
         <# Create full clone
-                $result = New-VM `
+                $result = VMware.VimAutomation.Core\New-VM `
                 -Name $parameters.Name `
                 -ResourcePool $lab.VMWareSettings.ResourcePool `
                 -Datastore $lab.VMWareSettings.DataStore `
