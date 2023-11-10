@@ -4,6 +4,12 @@
 
 ### Enhancements
 
+### Bugs
+
+## 5.550.0 (2023-11-10)
+
+### Enhancements
+
 - AL creates VMConnect config files for each new Hyper-V VM (#1579).
 - Skip cluster checks on PS7
 - Added the module name to '*-VM' cmdlet calls to prevent collisions (#1573).
