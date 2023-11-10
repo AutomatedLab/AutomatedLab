@@ -2,6 +2,8 @@
 
 ## Unreleased (yyyy-MM-dd)
 -Reduces ssh-keyscan timeout from 5.5 to 1.5 seconds in function Install-LabSshKnownHost. Improve speed in larger Labs significant. (#1580).
+- Fix If-Condition in Start-LWHypervVM. Used wrong variables; PreDelaySeconds & PostDelaySeconds (#1582).
+
 
 ### Enhancements
 
@@ -32,6 +34,7 @@
 - 'Clear-LabCache' did not remove global variables used for caching.
 - AutomatedLab.Common was not copied properly to HyperV
 - Skip cluster checks on PS7
+- Added the module name to '*-VM' cmdlet calls to prevent collisions (#1573).
 
 ## 5.48.0 (2023-04-05)
 

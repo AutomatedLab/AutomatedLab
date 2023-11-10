@@ -27,7 +27,7 @@
         $param['Name'] = $Name
     }
 
-    [object[]]$vm = Get-VM @param
+    [object[]]$vm = Hyper-V\Get-VM @param
     $vm = $vm | Sort-Object -Unique -Property Name
 
     if ($Name.Count -gt 0 -and $vm.Count -eq $Name.Count)

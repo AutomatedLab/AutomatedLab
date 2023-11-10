@@ -26,7 +26,7 @@ if (-not $vm.Roles.Name -contains 'HyperV')
 {
     Write-ScreenInfo -Message "Exposing virtualization extensions on $vm" -Type Verbose
     Stop-LabVm -ComputerName $vm -Wait
-    $hyperVvm = Get-Vm -Name $vm.ResourceName
+    $hyperVvm = Hyper-V\Get-VM -Name $vm.ResourceName
     $hyperVvm | Set-VMProcessor -ExposeVirtualizationExtensions $true
     Start-LabVM $vm -Wait
     Install-LabWindowsFeature -FeatureName Hyper-V -ComputerName $vm -IncludeAllSubFeature

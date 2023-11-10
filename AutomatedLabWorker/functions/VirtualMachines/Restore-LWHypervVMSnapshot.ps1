@@ -35,8 +35,8 @@
         Start-RunspaceJob -RunspacePool $pool -Argument $n -ScriptBlock {
             param ($n)
             $vm = Get-LWHypervVM -Name $n
-            $vm | Suspend-VM -ErrorAction SilentlyContinue
-            $vm | Save-VM -ErrorAction SilentlyContinue
+            $vm | Hyper-V\Suspend-VM -ErrorAction SilentlyContinue
+            $vm | Hyper-V\Save-VM -ErrorAction SilentlyContinue
             Start-Sleep -Seconds 5
         }
     }
@@ -60,7 +60,7 @@
             else
             {
                 $snapshot | Restore-VMSnapshot -Confirm:$false
-                $vm | Set-VM -Notes $snapshot.Notes
+                $vm | Hyper-V\Set-VM -Notes $snapshot.Notes
 
                 Start-Sleep -Seconds 5
             }
@@ -85,7 +85,7 @@
             if ($n -in $runningMachines)
             {
                 Write-Verbose -Message "Machine '$n' was running, starting it."
-                Start-VM -Name $n -ErrorAction SilentlyContinue
+                Hyper-V\Start-VM -Name $n -ErrorAction SilentlyContinue
             }
             else
             {
