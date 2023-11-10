@@ -27,7 +27,7 @@
             {
                 if ($vm.PowerState -eq "PoweredOn")
                 {
-                    VMware.VimAutomation.Core\Stop-vm -VM $vm -Confirm:$false
+                    VMware.VimAutomation.Core\Stop-VM -VM $vm -Confirm:$false
                 }
                 VMware.VimAutomation.Core\Remove-VM -DeletePermanently -VM $ComputerName -Confirm:$false
             }
@@ -46,7 +46,7 @@
         {
             if ($vm.PowerState -eq "PoweredOn")
             {
-                VMware.VimAutomation.Core\Stop-vm -VM $vm -Confirm:$false
+                VMware.VimAutomation.Core\Stop-VM -VM $vm -Confirm:$false
             }
             VMware.VimAutomation.Core\Remove-VM -DeletePermanently -VM $ComputerName -Confirm:$false
         }

@@ -13,7 +13,7 @@
             [bool]$DisableClusterCheck
         )
         Write-LogFunctionEntry
-        Get-LWHypervVm -Name $Name -DisableClusterCheck $DisableClusterCheck | Save-VM
+        Get-LWHypervVM -Name $Name -DisableClusterCheck $DisableClusterCheck | Hyper-V\Save-VM
         Write-LogFunctionExit
     }
 

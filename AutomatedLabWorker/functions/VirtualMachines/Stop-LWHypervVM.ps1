@@ -50,7 +50,7 @@
 
         $stopFailures = foreach ($failedJob in $failedJobs)
         {
-            if (Get-LabVm -ComputerName $failedJob.Location -IncludeLinux)
+            if (Get-LabVM -ComputerName $failedJob.Location -IncludeLinux)
             {
                 $failedJob.Location
             }
@@ -59,15 +59,15 @@
         if ($stopFailures)
         {
             Write-ScreenInfo -Message "Force-stopping VMs: $($stopFailures -join ',')"
-            Get-LWHypervVm -Name $stopFailures | Stop-VM -Force
+            Get-LWHypervVM -Name $stopFailures | Hyper-V\Stop-VM -Force
         }
     }
     else
     {
         $jobs = @()
-        foreach ($name in (Get-LabVm -ComputerName $ComputerName -IncludeLinux | Where-Object SkipDeployment -eq $false).ResourceName)
+        foreach ($name in (Get-LabVM -ComputerName $ComputerName -IncludeLinux | Where-Object SkipDeployment -eq $false).ResourceName)
         {
-            $job = Get-LWHypervVm -Name $name -ErrorAction SilentlyContinue | Stop-VM -AsJob -Force -ErrorAction Stop
+            $job = Get-LWHypervVM -Name $name -ErrorAction SilentlyContinue | Hyper-V\Stop-VM -AsJob -Force -ErrorAction Stop
             $job | Add-Member -Name ComputerName -MemberType NoteProperty -Value $name
             $jobs += $job
         }

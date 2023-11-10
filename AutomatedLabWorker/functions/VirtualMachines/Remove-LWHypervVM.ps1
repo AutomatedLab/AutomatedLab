@@ -22,7 +22,7 @@
     else
     {
         Write-PSFMessage "Stopping VM '$($Name)'"
-        $vm | Stop-VM -TurnOff -Force -WarningAction SilentlyContinue
+        $vm | Hyper-V\Stop-VM -TurnOff -Force -WarningAction SilentlyContinue
     }
 
     Write-PSFMessage "Removing VM '$($Name)'"
@@ -35,7 +35,7 @@
 
     Remove-LWHypervVmConnectSettingsFile -ComputerName $Name
 
-    $vm | Remove-VM -Force
+    $vm | Hyper-V\Remove-VM -Force
 
     Write-PSFMessage "Removing VM files for '$($Name)'"
     Remove-Item -Path $vmPath -Force -Confirm:$false -Recurse
