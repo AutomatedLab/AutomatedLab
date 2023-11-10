@@ -27,7 +27,7 @@
         $param['Name'] = $Name
     }
 
-    [object[]]$vm = Get-VM @param
+    [object[]]$vm = Hyper-V\Get-VM @param
     $vm = $vm | Sort-Object -Unique -Property Name
 
     if ($Name.Count -gt 0 -and $vm.Count -eq $Name.Count)
@@ -35,7 +35,7 @@
         return $vm
     }
 
-    if (-not $script:clusterDetected -and (Get-Command -Name Get-Cluster -ErrorAction SilentlyContinue)) { $script:clusterDetected = Get-Cluster -ErrorAction SilentlyContinue -WarningAction SilentlyContinue}
+    if (-not $script:clusterDetected -and (Get-Command -Name Get-Cluster -Module FailoverClusters -CommandType Cmdlet -ErrorAction SilentlyContinue)) { $script:clusterDetected = Get-Cluster -ErrorAction SilentlyContinue -WarningAction SilentlyContinue}
 
     if (-not $DisableClusterCheck -and $script:clusterDetected)
     {

@@ -22,24 +22,28 @@
     else
     {
         Write-PSFMessage "Stopping VM '$($Name)'"
-        $vm | Stop-VM -TurnOff -Force -WarningAction SilentlyContinue
+        $vm | Hyper-V\Stop-VM -TurnOff -Force -WarningAction SilentlyContinue
     }
 
     Write-PSFMessage "Removing VM '$($Name)'"
     $doNotAddToCluster = Get-LabConfigurationItem -Name DoNotAddVmsToCluster -Default $false
-    if (-not $doNotAddToCluster -and (Get-Command -Name Get-Cluster -ErrorAction SilentlyContinue) -and (Get-Cluster -ErrorAction SilentlyContinue -WarningAction SilentlyContinue))
+    if (-not $doNotAddToCluster -and (Get-Command -Name Get-Cluster -Module FailoverClusters -CommandType Cmdlet -ErrorAction SilentlyContinue) -and (Get-Cluster -ErrorAction SilentlyContinue -WarningAction SilentlyContinue))
     {
         Write-PSFMessage "Removing Clustered Resource: $Name"
         $null = Get-ClusterGroup -Name $Name | Remove-ClusterGroup -RemoveResources -Force
     }
 
-    $vm | Remove-VM -Force
+    Remove-LWHypervVmConnectSettingsFile -ComputerName $Name
+
+    $vm | Hyper-V\Remove-VM -Force
 
     Write-PSFMessage "Removing VM files for '$($Name)'"
     Remove-Item -Path $vmPath -Force -Confirm:$false -Recurse
     
     $vmDescription = Join-Path -Path (Get-Lab).LabPath -ChildPath "$Name.xml"
-    if (Test-Path $vmDescription) {Remove-Item -Path $vmDescription}
+    if (Test-Path $vmDescription) {
+        Remove-Item -Path $vmDescription
+    }
 
     Write-LogFunctionExit
 }

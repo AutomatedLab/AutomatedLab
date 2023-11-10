@@ -14,22 +14,22 @@ Enable or disable the OS firewall
 
 ### Windows (Default)
 ```
-Set-UnattendedFirewallState [-State] <Boolean> [<CommonParameters>]
+Set-UnattendedFirewallState -State <Boolean> [<CommonParameters>]
 ```
 
 ### CloudInit
 ```
-Set-UnattendedFirewallState [-State] <Boolean> [-IsCloudInit] [<CommonParameters>]
+Set-UnattendedFirewallState -State <Boolean> [-IsCloudInit] [<CommonParameters>]
 ```
 
 ### Yast
 ```
-Set-UnattendedFirewallState [-State] <Boolean> [-IsAutoYast] [<CommonParameters>]
+Set-UnattendedFirewallState -State <Boolean> [-IsAutoYast] [<CommonParameters>]
 ```
 
 ### Kickstart
 ```
-Set-UnattendedFirewallState [-State] <Boolean> [-IsKickstart] [<CommonParameters>]
+Set-UnattendedFirewallState -State <Boolean> [-IsKickstart] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -100,7 +100,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: 0
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

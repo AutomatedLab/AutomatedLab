@@ -17,8 +17,8 @@
         $vm = Get-LWHypervVM -Name $Name -DisableClusterCheck $DisableClusterCheck -ErrorAction SilentlyContinue
         if ($vm.State -eq 'Running' -and -not ($vm | Get-VMSnapshot -Name $SnapshotName -ErrorAction SilentlyContinue))
         {
-            $vm | Suspend-VM -ErrorAction SilentlyContinue
-            $vm | Save-VM -ErrorAction SilentlyContinue
+            $vm | Hyper-V\Suspend-VM -ErrorAction SilentlyContinue
+            $vm | Hyper-V\Save-VM -ErrorAction SilentlyContinue
 
             Write-Verbose -Message "'$Name' was running"
             $Name
@@ -29,7 +29,7 @@
         $vm = Get-LWHypervVM -Name $Name -DisableClusterCheck $DisableClusterCheck -ErrorAction SilentlyContinue
         if (-not ($vm | Get-VMSnapshot -Name $SnapshotName -ErrorAction SilentlyContinue))
         {
-            $vm | Checkpoint-VM -SnapshotName $SnapshotName
+            $vm | Hyper-V\Checkpoint-VM -SnapshotName $SnapshotName
         }
         else
         {
@@ -41,7 +41,7 @@
         if ($Name -in $RunningMachines)
         {
             Write-Verbose -Message "Machine '$Name' was running, starting it."
-            Get-LWHypervVM -Name $Name -DisableClusterCheck $DisableClusterCheck -ErrorAction SilentlyContinue | Start-VM -ErrorAction SilentlyContinue
+            Get-LWHypervVM -Name $Name -DisableClusterCheck $DisableClusterCheck -ErrorAction SilentlyContinue | Hyper-V\Start-VM -ErrorAction SilentlyContinue
         }
         else
         {

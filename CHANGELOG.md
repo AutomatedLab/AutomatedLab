@@ -6,6 +6,19 @@
 
 ### Bugs
 
+## 5.550.0 (2023-11-10)
+
+### Enhancements
+
+- AL creates VMConnect config files for each new Hyper-V VM (#1579).
+- Skip cluster checks on PS7
+- Added the module name to '*-VM' cmdlet calls to prevent collisions (#1573).
+- Reduces 'ssh-keyscan' timeout from 5.5 to 1.5 seconds in function 'Install-LabSshKnownHost'. Improve speed in larger Labs significant. (#1580).
+
+### Bugs
+
+- Fix If-Condition in 'Start-LWHypervVM'. Used wrong variables; PreDelaySeconds & PostDelaySeconds (#1582).
+
 ## 5.49.0 (2023-08-01)
 
 ### Enhancements
@@ -16,6 +29,9 @@
 - Added some help to discover the error cause when `New-LabAzureResourceGroupDeployment` failed
 - Added stored procedures for DSC database cleanup
 - Improved the discovery of Azure role sizes
+- Added '*.windows.net' to the local intranet zone for fixing installation issues on Azure machines as well as the IP address of the Azure LabSources host
+- The script 'AzureLabSources.ps1' maps the share via IP address if mapping via names fails. It
+  sometimes files mapping by name with the error 'A specified logon session does not exist'
 - Added error handling to 'Connect-LWAzureLabSourcesDrive'
 
 ### Bugs

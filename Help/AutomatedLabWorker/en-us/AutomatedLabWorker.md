@@ -131,17 +131,14 @@ Mounts an ISO image on a Hyper-V VM
 ### [New-LabAzureResourceGroupDeployment](New-LabAzureResourceGroupDeployment.md)
 Deploy the lab definition as an Azure resource group
 
-### [New-LWAzureNetworkSwitch](New-LWAzureNetworkSwitch.md)
-Creates a new Azure virtual network
-
-### [New-LWAzureVM](New-LWAzureVM.md)
-Create a new Azure VM
-
 ### [New-LWHypervNetworkSwitch](New-LWHypervNetworkSwitch.md)
 Create a new Hyper-V switch
 
 ### [New-LWHypervVM](New-LWHypervVM.md)
 Create a new Hyper-V VM
+
+### [New-LWHypervVmConnectSettingsFile](New-LWHypervVmConnectSettingsFile.md)
+Creates a VMConnect config file for the given Hyper-V machine.
 
 ### [New-LWReferenceVHDX](New-LWReferenceVHDX.md)
 Create a reference disk from an OS image
@@ -163,6 +160,9 @@ Remove an Azure VM snapshot
 
 ### [Remove-LWHypervVM](Remove-LWHypervVM.md)
 Remove a Hyper-V VM
+
+### [Remove-LWHypervVmConnectSettingsFile](Remove-LWHypervVmConnectSettingsFile.md)
+Removes the VMConnect config file to the given Hyper-V VM.
 
 ### [Remove-LWHypervVMSnapshot](Remove-LWHypervVMSnapshot.md)
 Remove Hyper-V checkpoints

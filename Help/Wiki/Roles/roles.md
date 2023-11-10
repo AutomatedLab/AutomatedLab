@@ -23,39 +23,60 @@ Add-LabMachineDefinition -Name T3AEX1 -Memory 4GB -IpAddress 192.168.50.52 -Doma
 ```
 
 ## Available Roles
-The list of available roles in AutomatedLab is below. Of course, there are many products missing. AutomatedLab offers a lot of features that makes it a good basis for adding roles to it or implementing new roles in separate projects that are based on AutomatedLab. A good example for this is SfBAutomatedLab. Skype for Business role model is too complex to be added to AL. But AL was used for deploying the VMs, OS, AD, SQL, PKI, etc. The Skype for Business roles are installed using the cmdlet Inovke-LabCommand, Install-LabSoftwarePackage and Mount- / Dismount-LabIsoImage. You may want to check out the [project on GitHub](https://github.com/AutomatedLab/SfBAutomatedLab).
+The list of available roles in AutomatedLab is below. Of course, there are many products missing. AutomatedLab offers a lot of features that makes it a good basis for adding roles to it or implementing new roles in separate projects that are based on AutomatedLab. A good example for this is SfBAutomatedLab. Skype for Business role model is too complex to be added to AL. But AL was used for deploying the VMs, OS, AD, SQL, PKI, etc. The Skype for Business roles are installed using the cmdlet Invoke-LabCommand, Install-LabSoftwarePackage and Mount- / Dismount-LabIsoImage. You may want to check out the [project on GitHub](https://github.com/AutomatedLab/SfBAutomatedLab).
 
 ### List of Roles
-- RootDC
-- FirstChildDC
-- DC
-- ADDS
-- FileServer
-- WebServer
-- DHCP
-- Routing
+- ADFS
+- ADFSProxy
+- ADFSWAP
+- [AzDevOps](cicd.md)
 - CaRoot
 - CaSubordinate
-- SQL Server2008
-- SQL Server2008 R2
-- SQL Server2012
-- SQL Server2014
-- SQL Server2016
-- SQL Server 2019
+- [ConfigurationManager](configurationmanager.md)
+- [DC](activedirectory.md)
+- DHCP
+- [DSCPullServer](dscpull.md)
+- [DynamicsAdmin](dynamics365.md)
+- [DynamicsBackend](dynamics365.md)
+- [DynamicsFrontend](dynamics365.md)
+- [DynamicsFull](dynamics365.md)
+- [FailoverNode](failoverclustering.md)
+- [FailoverStorage](failoverclustering.md)
+- FileServer
+- [FirstChildDC](activedirectory.md)
+- [HyperV](hyperv.md)
+- RemoteDesktopConnectionBroker
+- RemoteDesktopGateway
+- RemoteDesktopLicensing
+- RemoteDesktopSessionHost
+- RemoteDesktopVirtualizationHost
+- RemoteDesktopWebAccess
+- [RootDC](activedirectory.md)
+- Routing
+- ScomConsole
+- ScomGateway
+- ScomManagement
+- ScomReporting
+- ScomWebConsole
+- [Scvmm2016](scvmm.md)
+- [Scvmm2019](scvmm.md)
+- [Scvmm2022](scvmm.md)
+- [SharePoint2013](sharepoint.md)
+- [SharePoint2016](sharepoint.md)
+- [SharePoint2019](sharepoint.md)
+- [SQLServer2008](sql.md)
+- [SQLServer2008R2](sql.md)
+- [SQLServer2012](sql.md)
+- [SQLServer2014](sql.md)
+- [SQLServer2016](sql.md)
+- [SQLServer2017](sql.md)
+- [SQLServer2019](sql.md)
+- [SQLServer2022](sql.md)
+- [Tfs2015](cicd.md)
+- [Tfs2017](cicd.md)
+- [Tfs2018](cicd.md)
+- [TfsBuildWorker](cicd.md)
 - VisualStudio2013
 - VisualStudio2015
-- SharePoint2013
-- SharePoint2016
-- SharePoint2019
-- Orchestrator2012
-- Exchange2013
-- Exchange2016
-- Office2013
-- Office2016
-- ADFS
-- ADFSWAP
-- ADFSProxy
-- DSCPullServer
-- HyperV
-- TFS2015, 2017, 2018, Azure DevOps (Server as well as cloud service)
-- SCVMM
+- WebServer
+- WindowsAdminCenter

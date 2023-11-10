@@ -172,25 +172,46 @@ Subsystem powershell c:/progra~1/powershell/7/pwsh.exe -sshs -NoLogo
         if (-not [string]::IsNullOrWhiteSpace($LabSourcesPath))
         {
             $script = @'
-    $labSourcesPath = '{0}'
+$output = ''
+$labSourcesPath = '{0}'
 
-    $pattern = '^(OK|Unavailable) +(?<DriveLetter>\w): +\\\\automatedlab'
+$pattern = '^(OK|Unavailable) +(?<DriveLetter>\w): +\\\\automatedlab'
 
-    #remove all drive connected to an Azure LabSources share that are no longer available
-    $drives = net.exe use
-    foreach ($line in $drives)
+#remove all drive connected to an Azure LabSources share that are no longer available
+$drives = net.exe use
+foreach ($line in $drives)
+{{
+    if ($line -match $pattern)
     {{
-        if ($line -match $pattern)
-        {{
-            net.exe use "$($Matches.DriveLetter):" /d
-        }}
+        $output += net.exe use "$($Matches.DriveLetter):" /d
     }}
+}}
 
-    cmdkey.exe /add:{1} /user:{2} /pass:{3}
+$output += cmdkey.exe /add:{1} /user:{2} /pass:{3}
 
-    Start-Sleep -Seconds 1
+Start-Sleep -Seconds 1
 
-    net.exe use * {0} /u:{2} {3}
+net.exe use * {0} /u:{2} {3}
+
+$initialErrorCode = $LASTEXITCODE
+    
+if ($LASTEXITCODE -eq 2) {{
+    $hostName = ([uri]$labSourcesPath).Host
+	$dnsRecord = Resolve-DnsName -Name $hostname | Where-Object {{ $_ -is [Microsoft.DnsClient.Commands.DnsRecord_A] }}
+    $ipAddress = $dnsRecord.IPAddress
+    $alternativeLabSourcesPath = $labSourcesPath.Replace($hostName, $ipAddress)
+    $output += net.exe use * $alternativeLabSourcesPath /u:{2} {3}
+}}
+
+$finalErrorCode = $LASTEXITCODE
+
+[pscustomobject]@{{
+    Output = $output
+    InitialErrorCode = $initialErrorCode
+    FinalErrorCode = $finalErrorCode
+    LabSourcesPath = $labSourcesPath
+    AlternativeLabSourcesPath  = $alternativeLabSourcesPath 
+}}
 '@
 
             $cmdkeyTarget = ($LabSourcesPath -split '\\')[2]
@@ -226,6 +247,13 @@ Subsystem powershell c:/progra~1/powershell/7/pwsh.exe -sshs -NoLogo
             $idx = (Get-NetIPInterface | Where-object { $_.AddressFamily -eq "IPv4" -and $_.InterfaceAlias -like "*Ethernet*" }).ifIndex
             Set-DnsClientServerAddress -InterfaceIndex $idx -ServerAddresses $DnsServers
         }
+
+        #Add *.windows.net to Local Intranet Zone
+        $path = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\Domains\windows.net'
+        New-Item -Path $path -Force
+
+        New-ItemProperty $path -Name http -Value 1 -Type DWORD
+        New-ItemProperty $path -Name file -Value 1 -Type DWORD
 
         if (-not $Disks) { $null = try { Stop-Transcript -ErrorAction Stop } catch { }; return }
         

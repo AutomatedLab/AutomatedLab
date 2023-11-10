@@ -14,24 +14,24 @@ Set the auto logon account in the unattend file
 
 ### Windows (Default)
 ```
-Set-UnattendedAutoLogon [-DomainName] <String> [-Username] <String> [-Password] <String> [<CommonParameters>]
+Set-UnattendedAutoLogon -DomainName <String> -Username <String> -Password <String> [<CommonParameters>]
 ```
 
 ### CloudInit
 ```
-Set-UnattendedAutoLogon [-DomainName] <String> [-Username] <String> [-Password] <String> [-IsCloudInit]
+Set-UnattendedAutoLogon -DomainName <String> -Username <String> -Password <String> [-IsCloudInit]
  [<CommonParameters>]
 ```
 
 ### Yast
 ```
-Set-UnattendedAutoLogon [-DomainName] <String> [-Username] <String> [-Password] <String> [-IsAutoYast]
+Set-UnattendedAutoLogon -DomainName <String> -Username <String> -Password <String> [-IsAutoYast]
  [<CommonParameters>]
 ```
 
 ### Kickstart
 ```
-Set-UnattendedAutoLogon [-DomainName] <String> [-Username] <String> [-Password] <String> [-IsKickstart]
+Set-UnattendedAutoLogon -DomainName <String> -Username <String> -Password <String> [-IsKickstart]
  [<CommonParameters>]
 ```
 
@@ -58,7 +58,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: 0
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -118,7 +118,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: 2
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -133,7 +133,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: 1
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

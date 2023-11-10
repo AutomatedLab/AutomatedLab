@@ -14,24 +14,22 @@ Add commands to the post deployment.
 
 ### Windows (Default)
 ```
-Add-UnattendedSynchronousCommand [-Command] <String> [-Description] <String> [<CommonParameters>]
+Add-UnattendedSynchronousCommand -Command <String> -Description <String> [<CommonParameters>]
 ```
 
 ### CloudInit
 ```
-Add-UnattendedSynchronousCommand [-Command] <String> [-Description] <String> [-IsCloudInit]
- [<CommonParameters>]
+Add-UnattendedSynchronousCommand -Command <String> -Description <String> [-IsCloudInit] [<CommonParameters>]
 ```
 
 ### Yast
 ```
-Add-UnattendedSynchronousCommand [-Command] <String> [-Description] <String> [-IsAutoYast] [<CommonParameters>]
+Add-UnattendedSynchronousCommand -Command <String> -Description <String> [-IsAutoYast] [<CommonParameters>]
 ```
 
 ### Kickstart
 ```
-Add-UnattendedSynchronousCommand [-Command] <String> [-Description] <String> [-IsKickstart]
- [<CommonParameters>]
+Add-UnattendedSynchronousCommand -Command <String> -Description <String> [-IsKickstart] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -58,7 +56,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: 0
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -73,7 +71,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: 1
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

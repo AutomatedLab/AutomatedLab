@@ -20,6 +20,29 @@
     }
 
     $result = Invoke-Command -Session $Session -ScriptBlock {
+        #Add *.windows.net to Local Intranet Zone
+        $path = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\Domains\windows.net'
+        if (-not (Test-Path -Path $path)) {
+            New-Item -Path $path -Force
+
+            New-ItemProperty $path -Name http -Value 1 -Type DWORD
+            New-ItemProperty $path -Name file -Value 1 -Type DWORD
+        }
+
+        $hostName = ([uri]$args[0]).Host
+	    $dnsRecord = Resolve-DnsName -Name $hostname | Where-Object { $_ -is [Microsoft.DnsClient.Commands.DnsRecord_A] }
+        $ipAddress = $dnsRecord.IPAddress
+        $rangeName = $ipAddress.Replace('.', '')
+
+        $path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\Ranges\$rangeName"
+        if (-not (Test-Path -Path $path)) {
+            New-Item -Path $path -Force
+
+            New-ItemProperty $path -Name :Range -Value $ipAddress -Type String
+            New-ItemProperty $path -Name http -Value 1 -Type DWORD
+            New-ItemProperty $path -Name file -Value 1 -Type DWORD
+        }
+
         $pattern = '^(OK|Unavailable) +(?<DriveLetter>\w): +\\\\automatedlab'
 
         #remove all drive connected to an Azure LabSources share that are no longer available

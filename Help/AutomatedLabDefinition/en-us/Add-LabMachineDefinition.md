@@ -28,7 +28,7 @@ Add-LabMachineDefinition -Name <String> [-Memory <Double>] [-MinMemory <Double>]
  [-SshPublicKeyPath <String>] [-SshPrivateKeyPath <String>] [-OrganizationalUnit <String>]
  [-ReferenceDisk <String>] [-KmsServerName <String>] [-KmsPort <UInt16>] [-KmsLookupDomain <String>]
  [-ActivateWindows] [-InitialDscConfigurationMofPath <String>] [-InitialDscLcmConfigurationMofPath <String>]
- [<CommonParameters>]
+ [-VmGeneration <Int32>] [<CommonParameters>]
 ```
 
 ### NetworkAdapter
@@ -46,7 +46,7 @@ Add-LabMachineDefinition -Name <String> [-Memory <Double>] [-MinMemory <Double>]
  [-SshPublicKeyPath <String>] [-SshPrivateKeyPath <String>] [-OrganizationalUnit <String>]
  [-ReferenceDisk <String>] [-KmsServerName <String>] [-KmsPort <UInt16>] [-KmsLookupDomain <String>]
  [-ActivateWindows] [-InitialDscConfigurationMofPath <String>] [-InitialDscLcmConfigurationMofPath <String>]
- [<CommonParameters>]
+ [-VmGeneration <Int32>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -700,7 +700,8 @@ Accept wildcard characters: False
 ```
 
 ### -Roles
-The machine's role definitions
+The machine's role definitions. See `[enum]::GetValues([AutomatedLab.Roles])`
+or <https://automatedlab.org/en/latest/Wiki/Roles/roles/> for more information.
 
 ```yaml
 Type: Role[]
@@ -858,6 +859,7 @@ It is recommended to define the default virtualization host when creating a new 
 Type: VirtualizationHost
 Parameter Sets: (All)
 Aliases:
+Accepted values: HyperV, Azure, VMWare
 
 Required: False
 Position: Named
@@ -875,6 +877,7 @@ possible values are 1 and 2
 Type: Int32
 Parameter Sets: (All)
 Aliases:
+Accepted values: 1, 2
 
 Required: False
 Position: Named

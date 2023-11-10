@@ -11,9 +11,6 @@ Locale: en-US
 This module facilitates file transfer to and from hosts.
 
 ## PSFileTransfer Cmdlets
-### [Copy-LabFileItem](Copy-LabFileItem.md)
-Copy files to lab machines
-
 ### [Receive-Directory](Receive-Directory.md)
 Receive a directory from a remote session
 

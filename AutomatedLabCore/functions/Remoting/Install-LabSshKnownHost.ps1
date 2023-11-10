@@ -64,7 +64,7 @@
         }
         else
         {
-            $keyScanHosts = ssh-keyscan $machine.Name 2>$null | ConvertFrom-String -Delimiter ' ' -PropertyNames ComputerName,Cipher,Fingerprint -ErrorAction SilentlyContinue
+            $keyScanHosts = ssh-keyscan -T 1 $machine.Name 2>$null | ConvertFrom-String -Delimiter ' ' -PropertyNames ComputerName,Cipher,Fingerprint -ErrorAction SilentlyContinue
             foreach ($keyScanHost in $keyScanHosts)
             {
                 $sshHostEntry = $knownHostContent | Where-Object {$_.ComputerName -eq $machine.Name -and $_.Cipher -eq $keyScanHost.Cipher}
@@ -84,7 +84,7 @@
             }
             if ($machine.IpV4Address)
             {
-                $keyScanIps = ssh-keyscan $machine.IpV4Address 2>$null | ConvertFrom-String -Delimiter ' ' -PropertyNames ComputerName,Cipher,Fingerprint -ErrorAction SilentlyContinue
+                $keyScanIps = ssh-keyscan -T 1 $machine.IpV4Address 2>$null | ConvertFrom-String -Delimiter ' ' -PropertyNames ComputerName,Cipher,Fingerprint -ErrorAction SilentlyContinue
                 foreach ($keyScanIp in $keyScanIps)
                 {
                     $sshHostEntryIp = $knownHostContent | Where-Object {$_.ComputerName -eq $machine.IpV4Address -and $_.Cipher -eq $keyScanIp.Cipher}

@@ -15,22 +15,22 @@ Windows only.
 
 ### Windows (Default)
 ```
-Set-UnattendedLocalIntranetSites [-Values] <String[]> [<CommonParameters>]
+Set-UnattendedLocalIntranetSites -Values <String[]> [<CommonParameters>]
 ```
 
 ### CloudInit
 ```
-Set-UnattendedLocalIntranetSites [-Values] <String[]> [-IsCloudInit] [<CommonParameters>]
+Set-UnattendedLocalIntranetSites -Values <String[]> [-IsCloudInit] [<CommonParameters>]
 ```
 
 ### Yast
 ```
-Set-UnattendedLocalIntranetSites [-Values] <String[]> [-IsAutoYast] [<CommonParameters>]
+Set-UnattendedLocalIntranetSites -Values <String[]> [-IsAutoYast] [<CommonParameters>]
 ```
 
 ### Kickstart
 ```
-Set-UnattendedLocalIntranetSites [-Values] <String[]> [-IsKickstart] [<CommonParameters>]
+Set-UnattendedLocalIntranetSites -Values <String[]> [-IsKickstart] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -101,7 +101,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: 0
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

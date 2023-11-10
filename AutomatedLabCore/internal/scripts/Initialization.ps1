@@ -151,6 +151,14 @@ Set-PSFConfig -Module 'AutomatedLab' -Name SetLocalIntranetSites -Value 'All'  -
 Set-PSFConfig -Module 'AutomatedLab' -Name DisableClusterCheck -Value $false -Initialize -Validation bool -Description 'Set to true to disable checking cluster with Get-LWHyperVVM in case you are suffering from performance issues. Caution: While this speeds up deployment, the likelihood for errors increases when machines are migrated away from the host!'
 Set-PSFConfig -Module 'AutomatedLab' -Name DoNotAddVmsToCluster -Value $false -Initialize -Validation bool -Description 'Set to true to skip adding VMs to a cluster if AutomatedLab is being run on a cluster node'
 
+
+#Hyper-V VMConnect Settings
+Set-PSFConfig -Module 'AutomatedLab' -Name VMConnectWriteConfigFile -Value $true -Initialize -Validation string -Description "Enable the writing of VMConnect config files by default"
+Set-PSFConfig -Module 'AutomatedLab' -Name VMConnectDesktopSize -Value '1366, 768' -Initialize -Validation string -Description "The default resolution for Hyper-V's VMConnect.exe"
+Set-PSFConfig -Module 'AutomatedLab' -Name VMConnectFullScreen -Value $false -Initialize -Validation string -Description "Enable full screen mode for VMConnect.exe"
+Set-PSFConfig -Module 'AutomatedLab' -Name VMConnectUseAllMonitors -Value $false -Initialize -Validation string -Description "Use all monitors for VMConnect.exe"
+Set-PSFConfig -Module 'AutomatedLab' -Name VMConnectRedirectedDrives -Value 'none' -Initialize -Validation string -Description "Drives to mount in a VMConnect session. Use '*' for all drives or a semicolon seperated list."
+
 #Hyper-V Network settings
 Set-PSFConfig -Module 'AutomatedLab' -Name MacAddressPrefix -Value '0017FB' -Initialize -Validation string -Description 'The MAC address prefix for Hyper-V labs' -Handler { if ($args[0].Length -eq 0 -or $args[0].Length -gt 11) { Write-PSFMessage -Level Error -Message "Invalid prefix length for MacAddressPrefix! $($args[0]) needs to be at least one character and at most 11 characters"; throw "Invalid prefix length for MacAddressPrefix! $($args[0]) needs to be at least one character and at most 11 characters" } }
 Set-PSFConfig -Module 'AutomatedLab' -Name DisableDeviceNaming -Value $false -Validation bool -Initialize -Description 'Disables Device Naming for VM NICs. Enabled by default for Hosts > 2016 and Gen 2 Guests > 2016'
