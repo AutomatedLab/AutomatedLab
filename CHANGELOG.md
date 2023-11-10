@@ -1,13 +1,17 @@
 # Changelog
 
 ## Unreleased (yyyy-MM-dd)
-- Fix If-Condition in Start-LWHypervVM. Used wrong variables; PreDelaySeconds & PostDelaySeconds (#1582).
-- Reduces ssh-keyscan timeout from 5.5 to 1.5 seconds in function Install-LabSshKnownHost. Improve speed in larger Labs significant. (#1580).
-
 
 ### Enhancements
 
+- AL creates VMConnect config files for each new Hyper-V VM (#1579).
+- Skip cluster checks on PS7
+- Added the module name to '*-VM' cmdlet calls to prevent collisions (#1573).
+- Reduces 'ssh-keyscan' timeout from 5.5 to 1.5 seconds in function 'Install-LabSshKnownHost'. Improve speed in larger Labs significant. (#1580).
+
 ### Bugs
+
+- Fix If-Condition in 'Start-LWHypervVM'. Used wrong variables; PreDelaySeconds & PostDelaySeconds (#1582).
 
 ## 5.49.0 (2023-08-01)
 
@@ -23,7 +27,6 @@
 - The script 'AzureLabSources.ps1' maps the share via IP address if mapping via names fails. It
   sometimes files mapping by name with the error 'A specified logon session does not exist'
 - Added error handling to 'Connect-LWAzureLabSourcesDrive'
-- AL creates VMConnect config files for each new Hyper-V VM (#1579).
 
 ### Bugs
 
@@ -34,8 +37,6 @@
 - Fix issue with DNS settings on individual Azure VMs.
 - 'Clear-LabCache' did not remove global variables used for caching.
 - AutomatedLab.Common was not copied properly to HyperV
-- Skip cluster checks on PS7
-- Added the module name to '*-VM' cmdlet calls to prevent collisions (#1573).
 
 ## 5.48.0 (2023-04-05)
 
