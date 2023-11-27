@@ -160,14 +160,10 @@
 
     $Machine.NetworkAdapters = $adapters
 
-<<<<<<< HEAD
     if ($Machine.OperatingSystemType -eq 'Windows')
     {
         Add-UnattendedRenameNetworkAdapters
     }
-=======
-    if ($Machine.OperatingSystemType -eq 'Windows') { Add-UnattendedRenameNetworkAdapters }
->>>>>>> 4bf5d6cb (Special VHD just for Ubuntu)
     #endregion network adapter settings
 
     Set-UnattendedComputerName -ComputerName $Machine.Name
@@ -281,13 +277,9 @@
                 Username   = $domain.Administrator.UserName
                 Password   = $domain.Administrator.Password
             }
-<<<<<<< HEAD
             if ($Machine.OrganizationalUnit) {
                 $parameters['OrganizationalUnit'] = $machine.OrganizationalUnit
             }
-=======
-            if ($Machine.OrganizationalUnit) { $parameters['OrganizationalUnit'] = $machine.OrganizationalUnit }
->>>>>>> 4bf5d6cb (Special VHD just for Ubuntu)
 
             Set-UnattendedDomain @parameters
 
@@ -682,15 +674,9 @@ rm -rf /etc/cron.d/postconf
     $automaticStopAction = 'ShutDown'
 
     if ($Machine.HypervProperties.AutomaticStartAction) { $automaticStartAction = $Machine.HypervProperties.AutomaticStartAction }
-<<<<<<< HEAD
     if ($Machine.HypervProperties.AutomaticStartDelay)  { $automaticStartDelay  = $Machine.HypervProperties.AutomaticStartDelay  }
     if ($Machine.HypervProperties.AutomaticStopAction)  { $automaticStopAction  = $Machine.HypervProperties.AutomaticStopAction  }
     $vm | Hyper-V\Set-VM -AutomaticStartAction $automaticStartAction -AutomaticStartDelay $automaticStartDelay -AutomaticStopAction $automaticStopAction
-=======
-    if ($Machine.HypervProperties.AutomaticStartDelay) { $automaticStartDelay = $Machine.HypervProperties.AutomaticStartDelay }
-    if ($Machine.HypervProperties.AutomaticStopAction) { $automaticStopAction = $Machine.HypervProperties.AutomaticStopAction }
-    $vm | Set-VM -AutomaticStartAction $automaticStartAction -AutomaticStartDelay $automaticStartDelay -AutomaticStopAction $automaticStopAction
->>>>>>> 4bf5d6cb (Special VHD just for Ubuntu)
 
     Write-ProgressIndicator
 
