@@ -892,6 +892,7 @@ $gpoType = @'
                         }
                         catch (COMException e)
                         {
+                            var ignore = e;
                             RegCloseKey(gphSubKey);
                             RegCloseKey(gphKey);
                             return ResultCode.SaveFailed;
