@@ -666,8 +666,8 @@ autoinstall:
       swap: 0
     version: 1
   ssh:
-    install-server: yes
-    allow-pw: yes
+    install-server: true
+    allow-pw: true
   apt:
     fallback: offline-install
     geoip: true
