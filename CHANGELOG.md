@@ -6,7 +6,9 @@
 
 ### Bugs
 
-## 5.550.0 (2023-11-10)
+- Fix for using ResourceName in LabMachineDefinition (#1592).
+
+## 5.50.0 (2023-11-10)
 
 ### Enhancements
 
