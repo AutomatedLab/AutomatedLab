@@ -4,6 +4,8 @@
 
 ### Enhancements
 
+- Removing a lab only removes Hyper-V virtual network switches created by AL rreviously (#1590).
+
 ### Bugs
 
 - Fix for using ResourceName in LabMachineDefinition (#1592).
