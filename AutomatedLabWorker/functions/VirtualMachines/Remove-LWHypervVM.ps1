@@ -41,7 +41,7 @@
     Remove-Item -Path $vmPath -Force -Confirm:$false -Recurse
     
     $vmDescription = Join-Path -Path (Get-Lab).LabPath -ChildPath "$Name.xml"
-    if (Test-Path $vmDescription) {
+    if (Test-Path -Path $vmDescription) {
         Remove-Item -Path $vmDescription
     }
 
