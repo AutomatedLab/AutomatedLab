@@ -38,7 +38,7 @@
             {
                 Write-Error -Message "Cannot remove virtual network '$virtualNetwork' because lab meta data for this object could not be retrieved"
             }
-            elseif ($machineMetadata.LabName -ne $labName -and $vm)
+            elseif ($virtualNetwork.Notes.LabName -ne $labName)
             {
                 Write-Error -Message "Cannot remove virtual network '$virtualNetwork' because it does not belong to this lab"
             }
