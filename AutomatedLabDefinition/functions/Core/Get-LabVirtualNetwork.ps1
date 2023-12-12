@@ -1,15 +1,38 @@
 ﻿function Get-LabVirtualNetwork
 {
-    [cmdletBinding()]
+    [cmdletBinding(DefaultParameterSetName = 'ByName')]
+    param (
+        [Parameter(ParameterSetName = 'ByName')]
+        [string]$Name,
+
+        [Parameter(ParameterSetName = 'All')]
+        [switch]$All
+    )
 
     $virtualnetworks = @()
+    $lab = Get-Lab -ErrorAction SilentlyContinue
+
+    if (-not $lab)
+    {
+        return
+    }
 
     $switches = if ($IsLinux)
-    {  
+    {
+        return
+    }
+
+    $switches = if ($Name)
+    {
+        $Name | foreach { Get-VMSwitch -Name $_ }
+    }
+    elseif ($All)
+    {
+        Get-VMSwitch
     }
     else
     {
-        Get-VMSwitch 
+        Get-VMSwitch | Where-Object Name -in $lab.VirtualNetworks.Name
     }
 
     foreach ($switch in $switches)
@@ -25,6 +48,8 @@
         {
             $network.AddressSpace = "$($ipAddress.IPAddress)/$($ipAddress.PrefixLength)"
         }
+
+        $network.Notes = Get-LWHypervNetworkSwitchDescription -NetworkSwitchName $switch.Name
 
         $virtualnetworks += $network
     }
