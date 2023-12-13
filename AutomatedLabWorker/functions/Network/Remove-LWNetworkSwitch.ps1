@@ -24,6 +24,11 @@
         {
             Start-Sleep -Seconds 2
             Remove-VMSwitch -Name $Name -Force
+
+            $networkDescription = Join-Path -Path (Get-Lab).LabPath -ChildPath "Network_$Name.xml"
+            if (Test-Path -Path $networkDescription) {
+                Remove-Item -Path $networkDescription
+            }
         }
 
         Write-PSFMessage "Network switch '$Name' removed"
