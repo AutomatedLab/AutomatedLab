@@ -4,11 +4,12 @@
 
 ### Enhancements
 
-- Removing a lab only removes Hyper-V virtual network switches created by AL rreviously (#1590).
+- Removing a lab only removes Hyper-V virtual network switches created by AL previously (#1590).
 
 ### Bugs
 
 - Fix for using ResourceName in LabMachineDefinition (#1592).
+- Fixed issues deploying CM-2103 custom role (#1594).
 
 ## 5.50.0 (2023-11-10)
 

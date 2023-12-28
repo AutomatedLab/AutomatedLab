@@ -63,32 +63,32 @@ Param (
 #region Define functions
 function New-LoopAction {
     <#
-    .SYNOPSIS
-        Function to loop a specified scriptblock until certain conditions are met
-    .DESCRIPTION
-        This function is a wrapper for a ForLoop or a DoUntil loop. This allows you to specify if you want to exit based on a timeout, or a number of iterations.
-        Additionally, you can specify an optional delay between loops, and the type of dealy (Minutes, Seconds). If needed, you can also perform an action based on
-        whether the 'Exit Condition' was met or not. This is the IfTimeoutScript and IfSucceedScript. 
-    .PARAMETER LoopTimeout
-        A time interval integer which the loop should timeout after. This is for a DoUntil loop.
-    .PARAMETER LoopTimeoutType
-         Provides the time increment type for the LoopTimeout, defaulting to Seconds. ('Seconds', 'Minutes', 'Hours', 'Days')
-    .PARAMETER LoopDelay
-        An optional delay that will occur between each loop.
-    .PARAMETER LoopDelayType
-        Provides the time increment type for the LoopDelay between loops, defaulting to Seconds. ('Milliseconds', 'Seconds', 'Minutes')
-    .PARAMETER Iterations
-        Implies that a ForLoop is wanted. This will provide the maximum number of Iterations for the loop. [i.e. "for ($i = 0; $i -lt $Iterations; $i++)..."]
-    .PARAMETER ScriptBlock
-        A script block that will run inside the loop. Recommend encapsulating inside { } or providing a [scriptblock]
-    .PARAMETER ExitCondition
-        A script block that will act as the exit condition for the do-until loop. Will be evaluated each loop. Recommend encapsulating inside { } or providing a [scriptblock]
-    .PARAMETER IfTimeoutScript
-        A script block that will act as the script to run if the timeout occurs. Recommend encapsulating inside { } or providing a [scriptblock]
-    .PARAMETER IfSucceedScript
-        A script block that will act as the script to run if the exit condition is met. Recommend encapsulating inside { } or providing a [scriptblock]
-    .EXAMPLE
-        C:\PS> $newLoopActionSplat = @{
+            .SYNOPSIS
+            Function to loop a specified scriptblock until certain conditions are met
+            .DESCRIPTION
+            This function is a wrapper for a ForLoop or a DoUntil loop. This allows you to specify if you want to exit based on a timeout, or a number of iterations.
+            Additionally, you can specify an optional delay between loops, and the type of dealy (Minutes, Seconds). If needed, you can also perform an action based on
+            whether the 'Exit Condition' was met or not. This is the IfTimeoutScript and IfSucceedScript. 
+            .PARAMETER LoopTimeout
+            A time interval integer which the loop should timeout after. This is for a DoUntil loop.
+            .PARAMETER LoopTimeoutType
+            Provides the time increment type for the LoopTimeout, defaulting to Seconds. ('Seconds', 'Minutes', 'Hours', 'Days')
+            .PARAMETER LoopDelay
+            An optional delay that will occur between each loop.
+            .PARAMETER LoopDelayType
+            Provides the time increment type for the LoopDelay between loops, defaulting to Seconds. ('Milliseconds', 'Seconds', 'Minutes')
+            .PARAMETER Iterations
+            Implies that a ForLoop is wanted. This will provide the maximum number of Iterations for the loop. [i.e. "for ($i = 0; $i -lt $Iterations; $i++)..."]
+            .PARAMETER ScriptBlock
+            A script block that will run inside the loop. Recommend encapsulating inside { } or providing a [scriptblock]
+            .PARAMETER ExitCondition
+            A script block that will act as the exit condition for the do-until loop. Will be evaluated each loop. Recommend encapsulating inside { } or providing a [scriptblock]
+            .PARAMETER IfTimeoutScript
+            A script block that will act as the script to run if the timeout occurs. Recommend encapsulating inside { } or providing a [scriptblock]
+            .PARAMETER IfSucceedScript
+            A script block that will act as the script to run if the exit condition is met. Recommend encapsulating inside { } or providing a [scriptblock]
+            .EXAMPLE
+            C:\PS> $newLoopActionSplat = @{
                     LoopTimeoutType = 'Seconds'
                     ScriptBlock = { 'Bacon' }
                     ExitCondition = { 'Bacon' -Eq 'eggs' }
@@ -110,8 +110,8 @@ function New-LoopAction {
                 Bacon
                 Bacon
                 Breakfast
-    .EXAMPLE
-        C:\PS> $newLoopActionSplat = @{
+            .EXAMPLE
+            C:\PS> $newLoopActionSplat = @{
                     ScriptBlock = { if($Test -eq $null){$Test = 0};$TEST++ }
                     ExitCondition = { $Test -eq 4 }
                     IfTimeoutScript = { 'Breakfast' }
@@ -121,7 +121,7 @@ function New-LoopAction {
                 }
                 New-LoopAction @newLoopActionSplat
                 Dinner
-        C:\PS> $newLoopActionSplat = @{
+            C:\PS> $newLoopActionSplat = @{
                     ScriptBlock = { if($Test -eq $null){$Test = 0};$TEST++ }
                     ExitCondition = { $Test -eq 6 }
                     IfTimeoutScript = { 'Breakfast' }
@@ -131,8 +131,8 @@ function New-LoopAction {
                 }
                 New-LoopAction @newLoopActionSplat
                 Breakfast
-    .NOTES
-        Play with the conditions a bit. I've tried to provide some examples that demonstrate how the loops, timeouts, and scripts work!
+            .NOTES
+            Play with the conditions a bit. I've tried to provide some examples that demonstrate how the loops, timeouts, and scripts work!
     #>
     param
     (
@@ -316,6 +316,8 @@ function ConvertTo-Ini {
     }
 }
 #endregion
+
+Import-Lab -Name $data.Name -NoValidation -NoDisplay
 
 $script = Get-Command -Name $PSScriptRoot\Invoke-DownloadMisc.ps1
 $param = Sync-Parameter -Command $script -Parameters $PSBoundParameters

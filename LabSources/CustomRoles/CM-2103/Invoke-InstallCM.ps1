@@ -1,4 +1,4 @@
-Param (
+param (
 
     [Parameter(Mandatory)]
     [String]$ComputerName,
@@ -76,6 +76,8 @@ function Install-CMSite {
     )
 
     #region Initialise
+    Import-Lab -Name $LabName -NoValidation -NoDisplay
+    
     $CMServer = Get-LabVM -ComputerName $CMServerName
     $CMServerFqdn = $CMServer.FQDN
     $DCServerName = Get-LabVM -Role RootDC | Where-Object { $_.DomainName -eq  $CMServer.DomainName } | Select-Object -ExpandProperty Name
@@ -175,8 +177,8 @@ function Install-CMSite {
             "RoleCommunicationProtocol"   = "HTTPorHTTPS"
             "ClientsUsePKICertificate"    = "0"
             "PrerequisiteComp"            = switch ($Branch) {
-               "TP" { "0" }
-               "CB" { "1" }
+                "TP" { "0" }
+                "CB" { "1" }
             }
             "PrerequisitePath"            = $VMCMPreReqsDirectory
             "AdminConsole"                = "1"
