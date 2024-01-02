@@ -26,6 +26,7 @@ function Update-CMSite {
     )
 
     #region Initialise
+    Import-Lab -Name $LabName -NoValidation -NoDisplay
     $CMServer = Get-LabVM -ComputerName $CMServerName
     $CMServerFqdn = $CMServer.FQDN
 

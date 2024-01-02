@@ -42,31 +42,31 @@ function New-Shortcut {
 
 function Add-FileAssociation {
     <#
-    .SYNOPSIS
-    Set user file associations
-    .DESCRIPTION
-    Define a program to open a file extension
-    .PARAMETER Extension
-    The file extension to modify
-    .PARAMETER TargetExecutable
-    The program to use to open the file extension
-    .PARAMETER ftypeName
-    Non mandatory parameter used to override the created file type handler value
-    .EXAMPLE
-    $HT = @{
-        Extension = '.txt'
-        TargetExecutable = "C:\Program Files\Notepad++\notepad++.exe"
-    }
-    Add-FileAssociation @HT
-    .EXAMPLE
-    $HT = @{
-        Extension = '.xml'
-        TargetExecutable = "C:\Program Files\Microsoft VS Code\Code.exe"
-        FtypeName = 'vscode'
-    }
-    Add-FileAssociation @HT
-    .NOTES
-    Found here: https://gist.github.com/p0w3rsh3ll/c64d365d15f6f39116dba1a26981dc68#file-add-fileassociation-ps1 https://p0w3rsh3ll.wordpress.com/2018/11/08/about-file-associations/
+            .SYNOPSIS
+            Set user file associations
+            .DESCRIPTION
+            Define a program to open a file extension
+            .PARAMETER Extension
+            The file extension to modify
+            .PARAMETER TargetExecutable
+            The program to use to open the file extension
+            .PARAMETER ftypeName
+            Non mandatory parameter used to override the created file type handler value
+            .EXAMPLE
+            $HT = @{
+            Extension = '.txt'
+            TargetExecutable = "C:\Program Files\Notepad++\notepad++.exe"
+            }
+            Add-FileAssociation @HT
+            .EXAMPLE
+            $HT = @{
+            Extension = '.xml'
+            TargetExecutable = "C:\Program Files\Microsoft VS Code\Code.exe"
+            FtypeName = 'vscode'
+            }
+            Add-FileAssociation @HT
+            .NOTES
+            Found here: https://gist.github.com/p0w3rsh3ll/c64d365d15f6f39116dba1a26981dc68#file-add-fileassociation-ps1 https://p0w3rsh3ll.wordpress.com/2018/11/08/about-file-associations/
     #>
     [CmdletBinding()]
     Param (
@@ -77,7 +77,7 @@ function Add-FileAssociation {
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
         [ValidateScript({
-            Test-Path -Path $_ -PathType Leaf
+                    Test-Path -Path $_ -PathType Leaf
         })]
         [String]$TargetExecutable,
         [String]$ftypeName
@@ -216,5 +216,6 @@ function Set-CMCustomisations {
 #endregion
 
 Write-ScreenInfo -Message "Applying customisations" -TaskStart
+Import-Lab -Name $LabName -NoValidation -NoDisplay
 Set-CMCustomisations -CMServerName $ComputerName -LogViewer $LogViewer
 Write-ScreenInfo -Message "Finished applying customisations" -TaskEnd
