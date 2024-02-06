@@ -71,6 +71,8 @@
     }
 
     $CMSetupConfig['[Options]'].SDKServer = $CMServer.FQDN
+    $CMSetupConfig['[Options]'].SiteCode = $CMSiteCode
+    $CMSetupConfig['[Options]'].SiteName = $CMSiteName
     $CMSetupConfig['[CloudConnectorOptions]'].CloudConnectorServer = $CMServer.FQDN
     $CMSetupConfig['[SQLConfigOptions]'].SQLServerName = $SqlServerName
     $CMSetupConfig['[SQLConfigOptions]'].DatabaseName = $DatabaseName
