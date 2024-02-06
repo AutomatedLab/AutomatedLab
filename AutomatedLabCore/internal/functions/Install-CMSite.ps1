@@ -169,7 +169,7 @@
 
     try
     {
-        $result = Invoke-LabCommand -ComputerName $CMServer -ActivityName "Adding Windows Defender exclusions" -Variable (Get-Variable "AVExcludedPaths", "AVExcludedProcesses") -ScriptBlock {
+        $result = Invoke-LabCommand -ComputerName $CMServer -ActivityName "Adding Windows Defender exclusions" -Variable (Get-Variable "configurationManagerAVExcludedPaths", "configurationManagerAVExcludedProcesses") -ScriptBlock {
             Add-MpPreference -ExclusionPath $configurationManagerAVExcludedPaths -ExclusionProcess $configurationManagerAVExcludedProcesses -ErrorAction "Stop"
             Set-MpPreference -RealTimeScanDirection "Incoming" -ErrorAction "Stop"
         } -ErrorAction Stop
