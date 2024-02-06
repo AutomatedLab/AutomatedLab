@@ -8,6 +8,7 @@
 
 ### Bugs
 
+- Fix Windows Defender variables mismatch (#1555).
 - Fix for using ResourceName in LabMachineDefinition (#1592).
 - Fixed issues deploying CM-2103 custom role (#1594).
 
