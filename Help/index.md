@@ -14,8 +14,9 @@ AutomatedLab (AL) enables you to
 - .NET Core 2+ (PowerShell 6+)
 
 **Require one**:
-Hyper-V Host
-Azure Subscription
+
+- Hyper-V Host
+- Azure Subscription
 
 **Finally**:
 
