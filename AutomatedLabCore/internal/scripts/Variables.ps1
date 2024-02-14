@@ -238,6 +238,7 @@ $adInstallFirstChildDc2012 = {
             -CreateDnsDelegation:$createDNSDelegation `
             -SafeModeAdministratorPassword $safeDsrmPassword `
             -Force `
+            -AllowDomainReinstall `
             -Credential $RootDomainCredential `
             -DomainType $domainType `
             -DomainMode $DomainMode `
@@ -373,6 +374,7 @@ $adInstallFirstChildDcPre2012 = {
       SiteName=$($SiteName)
       InstallDNS=Yes
       ConfirmGc=Yes
+      AllowDomainReinstall=Yes
       UserDomain=$($RootDomainCredential.UserName.Split('\')[0])
       UserName=$($RootDomainCredential.UserName.Split('\')[1])
       Password=$($RootDomainCredential.GetNetworkCredential().Password)
@@ -517,6 +519,7 @@ $adInstallDc2012 = {
         SiteName = $SiteName
         SafeModeAdministratorPassword = $safeDsrmPassword
         Force = $true
+        AllowDomainControllerReinstall = $true
         Credential = $RootDomainCredential
         SysvolPath = $SysvolPath
         DatabasePath = $DatabasePath
@@ -638,6 +641,7 @@ $adInstallDcPre2012 = {
       SiteName=$SiteName
       InstallDNS=Yes
       ConfirmGc=Yes
+      AllowDomainControllerReinstall=Yes
       UserDomain=$($RootDomainCredential.UserName.Split('\')[0])
       UserName=$($RootDomainCredential.UserName.Split('\')[1])
       Password=$($RootDomainCredential.GetNetworkCredential().Password)
