@@ -206,11 +206,11 @@ BEGIN
 	SET @oldDate = COALESCE(@Date, CONVERT(DATE, DATEADD(DAY, -180, GETDATE())))
 	SET @before1900 = '1900-01-01'
 
-    DELETE FROM DSC].[dbo].[StatusReport] WHERE CONVERT(DATE, [StartTime]) < @oldDate OR CONVERT(DATE, [EndTime]) < @oldDate
+    DELETE FROM [DSC].[dbo].[StatusReport] WHERE CONVERT(DATE, [StartTime]) < @oldDate OR CONVERT(DATE, [EndTime]) < @oldDate
 
-	DELETE FROM DSC].[dbo].[StatusReport] WHERE CONVERT(DATE, [StartTime]) < @before1900 OR CONVERT(DATE, [EndTime]) < @before1900
+	DELETE FROM [DSC].[dbo].[StatusReport] WHERE CONVERT(DATE, [StartTime]) < @before1900 OR CONVERT(DATE, [EndTime]) < @before1900
 
-	DELETE FROM DSC].[dbo].[StatusReportMetaData] WHERE CONVERT(DATE, [CreationTime]) < @oldDate
+	DELETE FROM [DSC].[dbo].[StatusReportMetaData] WHERE CONVERT(DATE, [CreationTime]) < @oldDate
 
 END
 GO
