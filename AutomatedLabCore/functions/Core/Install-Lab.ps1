@@ -650,7 +650,7 @@
             minutes."
         }
 
-        foreach ($linuxVm in $linuxHosts | Where-Object { $_.LinuxType -eq 'Ubuntu' -and $_.HostType -eq 'HyperV' })
+        $null = foreach ($linuxVm in $linuxHosts | Where-Object { $_.LinuxType -eq 'Ubuntu' -and $_.HostType -eq 'HyperV' })
         {
             Start-Job -Name "Removing INSTALL.vhdx on '$linuxVm'" -ScriptBlock {
                 param(
@@ -677,12 +677,14 @@
                     if ($hvMachine.State -ne 'Running' -and ((Get-Item -Path $hvMachine.GuestStatePath).LastWriteTime - $hvMachine.CreationTime) -gt '00:01:00')
                     {
                         Write-ScreenInfo -Type Verbose "Removing installation disk '$Name'"
-                        $disk = $hvMachine | Get-VMHardDiskDrive | Where-Object Path -like "*_INSTALL*"
+                        $disk = $hvMachine | Hyper-V\Get-VMHardDiskDrive | Where-Object Path -like "*_INSTALL*"
                         $diskPath = $disk.Path # Otherwise $disk will be update after remove-vmharddiskdrive was called
-                        $disk | Remove-VMHardDiskDrive
+                        $disk | Hyper-V\Remove-VMHardDiskDrive
                         Remove-Item -Path $diskPath -Force
+                        $hvMachine | Hyper-V\Start-VM
+                        return
                     }
-                    $hvMachine = Get-LWHypervVM -Name $resoureName
+                    $hvMachine = Get-LWHypervVM -Name $resourceName
                 }
             } -ArgumentList $(Get-Lab).Export(), $linuxVm.Name
         }
