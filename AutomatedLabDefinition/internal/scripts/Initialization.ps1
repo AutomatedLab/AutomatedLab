@@ -600,6 +600,7 @@ autoinstall:
   version: 1
   network:
     version: 2
+  shutdown: poweroff
   storage:
     grub:
       install_devices:
