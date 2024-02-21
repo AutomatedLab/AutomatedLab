@@ -261,7 +261,7 @@
                     if ($m.LinuxType -eq 'Ubuntu' -and $sessionError -and $sessionError.Exception.Message -like '*SSH*')
                     {
                         # Issue: During installation, SSH host key changes and we need to reinsert the updated key.
-                        UnInstall-LabSshKnownHost -ComputerName $connectionName
+                        UnInstall-LabSshKnownHost -ComputerName $m.Name
                         Install-LabSshKnownHost
                     }
 
