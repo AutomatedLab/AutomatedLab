@@ -275,7 +275,6 @@
                         {
                             Connect-LWAzureLabSourcesDrive -Session $internalSession -SuppressErrors
                         }
-
                     }
                     else
                     {
