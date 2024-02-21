@@ -561,29 +561,6 @@ rm -rf /etc/cron.d/postconf
         $systemDisk = $vm | Get-VMHardDiskDrive
         $ubuntuSpecialDisk = $vm | Add-VMHardDiskDrive -Path "$vmPath\$($Machine.ResourceName)_INSTALL.vhdx" -Passthru
         $vm | Set-VMFirmware -BootOrder $systemDisk, $ubuntuSpecialDisk
-
-        Start-Job -Name "Ensure Ubuntu Boot Order $($Machine.ResourceName)" -ScriptBlock {
-            param
-            (
-                $Name
-            )
-
-            # Boot order of Ubuntu system changes during installation. We need to ensure the OS
-            # is booted, lest it is stuck in an installation loop.
-            # No cancellation token, we'll remove the job if the lab installation has finished.
-            while ($true)
-            {
-                Write-Verbose "Reordering boot order for Ubuntu VM '$Name'"
-                $linvm = Get-LWHypervVM -Name $Name
-                $order = ($linvm | Get-VMFirmware).BootOrder
-                if ($order[0].BootType -eq 'Drive' -and $order[0].Device.Path -like "*_INSTALL*")
-                {
-                    $newOrder = $order[1..$order.Count] + $order[0]
-                    $linvm | Set-VMFirmware -BootOrder $newOrder
-                }
-                Start-Sleep -Seconds 1
-            }
-        } -ArgumentList $Machine.ResourceName
     }
 
     Set-LWHypervVMDescription -ComputerName $Machine.ResourceName -Hashtable @{
