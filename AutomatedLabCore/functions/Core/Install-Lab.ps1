@@ -650,7 +650,7 @@
             minutes."
         }
 
-        foreach ($linuxVm in $linuxHosts | Where-Object { $_.LinuxType -eq 'Ubuntu' -and $_.VirtualizationEngine -eq 'HyperV' })
+        foreach ($linuxVm in $linuxHosts | Where-Object { $_.LinuxType -eq 'Ubuntu' -and $_.HostType -eq 'HyperV' })
         {
             Start-Job -Name "Removing INSTALL.vhdx on '$linuxVm'" -ScriptBlock {
                 param(
@@ -687,7 +687,7 @@
                     }
                     $hvMachine = Get-LWHypervVM -Name $resoureName
                 }
-            } -ArgumentList $lab.Export(), $linuxVm.Name, $DoNotUseCredSsp
+            } -ArgumentList $(Get-Lab).Export(), $linuxVm.Name, $DoNotUseCredSsp
         }
     
         if ($null -eq $DelayBetweenComputers)
