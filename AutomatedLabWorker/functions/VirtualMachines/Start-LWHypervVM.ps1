@@ -27,7 +27,7 @@
 
         try
         {
-            $hvMachine | Hyper-V\Start-VM -ErrorAction Stop
+            Get-LWHypervVM -Name $machine.ResourceName | Hyper-V\Start-VM -ErrorAction Stop
         }
         catch
         {
