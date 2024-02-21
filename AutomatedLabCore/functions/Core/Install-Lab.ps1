@@ -656,10 +656,7 @@
                     [byte[]]$LabBytes,
 
                     [Parameter(Mandatory)]
-                    [string]$ComputerName,
-
-                    [Parameter(Mandatory)]
-                    [bool]$DoNotUseCredSsp
+                    [string]$ComputerName
                 )
                 Import-Lab -LabBytes $LabBytes
                 $resourceName = $(Get-LabVM -IncludeLinux -ComputerName $ComputerName).ResourceName
@@ -685,7 +682,7 @@
                     }
                     $hvMachine = Get-LWHypervVM -Name $resoureName
                 }
-            } -ArgumentList $(Get-Lab).Export(), $linuxVm.Name, $DoNotUseCredSsp
+            } -ArgumentList $(Get-Lab).Export(), $linuxVm.Name
         }
     
         if ($null -eq $DelayBetweenComputers)
