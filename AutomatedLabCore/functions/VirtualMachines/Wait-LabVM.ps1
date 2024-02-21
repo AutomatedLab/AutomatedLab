@@ -104,27 +104,6 @@
                     Import-Module -Name AutomatedLab.Common -ErrorAction Stop
                     Write-Verbose "Importing Lab from $($LabBytes.Count) bytes"
                     Import-Lab -LabBytes $LabBytes -NoValidation -NoDisplay
-                    
-                    if ((Get-Lab).DefaultVirtualizationEngine -eq 'HyperV')
-                    {
-                        $hvMachine = Get-LWHypervVM -Name $(Get-LabVM -IncludeLinux -ComputerName $ComputerName).ResourceName
-
-                        <#
-                        Remove _INSTALL.vhdx on Ubuntu if the VM has been shut down once - indicating that the
-                        cloudinit/subiquity phase was successfully finished.
-                        We compare GuestStatePath LastWriteTime as a simple and quick way to check if
-                        the VM's status has changed i.e. when it was stopped.
-                        One minute seems like a sane interval, we might need to increase it in the future.
-                    #>
-                        if ($hvMachine.State -ne 'Running' -and ((Get-Item -Path $hvMachine.GuestStatePath).LastWriteTime - $hvMachine.CreationTime) -gt '00:01:00')
-                        {
-                            Write-ScreenInfo -Type Verbose "Removing installation disk '$Name'"
-                            $disk = $hvMachine | Get-VMHardDiskDrive | Where-Object Path -like "*_INSTALL*"
-                            $diskPath = $disk.Path # Otherwise $disk will be update after remove-vmharddiskdrive was called
-                            $disk | Remove-VMHardDiskDrive
-                            Remove-Item -Path $diskPath -Force
-                        }
-                    }
 
                     #do 5000 retries. This job is cancelled anyway if the timeout is reached
                     Write-Verbose "Trying to create session to '$ComputerName'"

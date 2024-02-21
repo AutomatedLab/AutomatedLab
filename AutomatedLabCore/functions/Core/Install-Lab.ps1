@@ -48,7 +48,7 @@
     $labDiskDeploymentInProgressPath = Get-LabConfigurationItem -Name DiskDeploymentInProgressPath
 
     #perform full install if no role specific installation is requested
-    $performAll = -not ($PSBoundParameters.Keys | Where-Object { $_ -notin ('NoValidation', 'DelayBetweenComputers' + [System.Management.Automation.Internal.CommonParameters].GetProperties().Name)}).Count
+    $performAll = -not ($PSBoundParameters.Keys | Where-Object { $_ -notin ('NoValidation', 'DelayBetweenComputers' + [System.Management.Automation.Internal.CommonParameters].GetProperties().Name) }).Count
 
     if (-not $Global:labExported -and -not (Get-Lab -ErrorAction SilentlyContinue))
     {
@@ -224,16 +224,16 @@
     if (($Domains -or $performAll) -and (Get-LabVM -Role RootDC | Where-Object { -not $_.SkipDeployment }))
     {
         Write-ScreenInfo -Message 'Installing Root Domain Controllers' -TaskStart
-        foreach ($azVm in (Get-LabVM -IncludeLinux -Filter {$_.HostType -eq 'Azure'}))
+        foreach ($azVm in (Get-LabVM -IncludeLinux -Filter { $_.HostType -eq 'Azure' }))
         {
             $nicCount = 0
             foreach ($azNic in $azVm.NetworkAdapters)
             {
                 $dns = ($Lab.VirtualNetworks | Where-Object ResourceName -eq $azNic.VirtualSwitch).DnsServers.AddressAsString
-                if ($nic.Ipv4DnsServers.AddressAsString) {$dns = $nic.Ipv4DnsServers.AddressAsString}
+                if ($nic.Ipv4DnsServers.AddressAsString) { $dns = $nic.Ipv4DnsServers.AddressAsString }
                 if ($dns.Count -eq 0) { continue }
                 # Set NIC configured DNS
-                [string]$vmNicId = (Get-LWAzureVm -ComputerName $azVm.ResourceName).NetworkProfile.NetworkInterfaces.Id.Where({$_.EndsWith("nic$nicCount")})
+                [string]$vmNicId = (Get-LWAzureVm -ComputerName $azVm.ResourceName).NetworkProfile.NetworkInterfaces.Id.Where({ $_.EndsWith("nic$nicCount") })
                 $vmNic = Get-AzNetworkInterface -ResourceId $vmNicId
                 if ($dns -and $vmNic.DnsSettings.DnsServers -and -not (Compare-Object -ReferenceObject $dns -DifferenceObject $vmNic.DnsSettings.DnsServers)) { continue }
 
@@ -355,9 +355,9 @@
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
-    if ((Get-LabVm -Filter {-not $_.SkipDeployment -and $_.Roles.Count -eq 0}))
+    if ((Get-LabVm -Filter { -not $_.SkipDeployment -and $_.Roles.Count -eq 0 }))
     {
-        $jobs = Invoke-LabCommand -PreInstallationActivity -ActivityName 'Pre-installation' -ComputerName (Get-LabVm -Filter {-not $_.SkipDeployment -and $_.Roles.Count -eq 0}) -PassThru -NoDisplay
+        $jobs = Invoke-LabCommand -PreInstallationActivity -ActivityName 'Pre-installation' -ComputerName (Get-LabVm -Filter { -not $_.SkipDeployment -and $_.Roles.Count -eq 0 }) -PassThru -NoDisplay
         $jobs | Where-Object { $_ -is [System.Management.Automation.Job] } | Wait-Job | Out-Null
     }
     
@@ -374,14 +374,14 @@
     if (($CA -or $performAll) -and (Get-LabVM -Role CaRoot, CaSubordinate))
     {
         Write-ScreenInfo -Message 'Installing Certificate Servers' -TaskStart
-        $jobs = Invoke-LabCommand -PreInstallationActivity -ActivityName 'Pre-installation' -ComputerName $(Get-LabVM -Role CaRoot,CaSubordinate | Where-Object { -not $_.SkipDeployment }) -PassThru -NoDisplay
+        $jobs = Invoke-LabCommand -PreInstallationActivity -ActivityName 'Pre-installation' -ComputerName $(Get-LabVM -Role CaRoot, CaSubordinate | Where-Object { -not $_.SkipDeployment }) -PassThru -NoDisplay
         $jobs | Where-Object { $_ -is [System.Management.Automation.Job] } | Wait-Job | Out-Null
         Install-LabCA -CreateCheckPoints:$CreateCheckPoints
 
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
-    if(($HyperV -or $performAll) -and (Get-LabVm -Role HyperV | Where-Object {-not $_.SkipDeployment}))
+    if (($HyperV -or $performAll) -and (Get-LabVm -Role HyperV | Where-Object { -not $_.SkipDeployment }))
     {
         Write-ScreenInfo -Message 'Installing HyperV servers' -TaskStart
         $jobs = Invoke-LabCommand -PreInstallationActivity -ActivityName 'Pre-installation' -ComputerName $(Get-LabVM -Role HyperV | Where-Object { -not $_.SkipDeployment }) -PassThru -NoDisplay
@@ -410,7 +410,7 @@
         $jobs = Invoke-LabCommand -PreInstallationActivity -ActivityName 'Pre-installation' -ComputerName $(Get-LabVM -Role FailoverNode, FailoverStorage | Where-Object { -not $_.SkipDeployment }) -PassThru -NoDisplay
         $jobs | Where-Object { $_ -is [System.Management.Automation.Job] } | Wait-Job | Out-Null
 
-        Start-LabVM -RoleName FailoverNode,FailoverStorage -ProgressIndicator 15 -PostDelaySeconds 5 -Wait
+        Start-LabVM -RoleName FailoverNode, FailoverStorage -ProgressIndicator 15 -PostDelaySeconds 5 -Wait
         Install-LabFailoverCluster
 
         Write-ScreenInfo -Message 'Done' -TaskEnd
@@ -421,20 +421,20 @@
         Write-ScreenInfo -Message 'Installing SQL Servers' -TaskStart
         $jobs = Invoke-LabCommand -PreInstallationActivity -ActivityName 'Pre-installation' -ComputerName $(Get-LabVM -Role SQLServer | Where-Object { -not $_.SkipDeployment }) -PassThru -NoDisplay
         $jobs | Where-Object { $_ -is [System.Management.Automation.Job] } | Wait-Job | Out-Null
-        if (Get-LabVM -Role SQLServer2008)   { Write-ScreenInfo -Message "Machines to have SQL Server 2008 installed: '$((Get-LabVM -Role SQLServer2008).Name -join ', ')'" }
+        if (Get-LabVM -Role SQLServer2008) { Write-ScreenInfo -Message "Machines to have SQL Server 2008 installed: '$((Get-LabVM -Role SQLServer2008).Name -join ', ')'" }
         if (Get-LabVM -Role SQLServer2008R2) { Write-ScreenInfo -Message "Machines to have SQL Server 2008 R2 installed: '$((Get-LabVM -Role SQLServer2008R2).Name -join ', ')'" }
-        if (Get-LabVM -Role SQLServer2012)   { Write-ScreenInfo -Message "Machines to have SQL Server 2012 installed: '$((Get-LabVM -Role SQLServer2012).Name -join ', ')'" }
-        if (Get-LabVM -Role SQLServer2014)   { Write-ScreenInfo -Message "Machines to have SQL Server 2014 installed: '$((Get-LabVM -Role SQLServer2014).Name -join ', ')'" }
-        if (Get-LabVM -Role SQLServer2016)   { Write-ScreenInfo -Message "Machines to have SQL Server 2016 installed: '$((Get-LabVM -Role SQLServer2016).Name -join ', ')'" }
-        if (Get-LabVM -Role SQLServer2017)   { Write-ScreenInfo -Message "Machines to have SQL Server 2017 installed: '$((Get-LabVM -Role SQLServer2017).Name -join ', ')'" }
-        if (Get-LabVM -Role SQLServer2019)   { Write-ScreenInfo -Message "Machines to have SQL Server 2019 installed: '$((Get-LabVM -Role SQLServer2019).Name -join ', ')'" }
-        if (Get-LabVM -Role SQLServer2022)   { Write-ScreenInfo -Message "Machines to have SQL Server 2022 installed: '$((Get-LabVM -Role SQLServer2022).Name -join ', ')'" }
+        if (Get-LabVM -Role SQLServer2012) { Write-ScreenInfo -Message "Machines to have SQL Server 2012 installed: '$((Get-LabVM -Role SQLServer2012).Name -join ', ')'" }
+        if (Get-LabVM -Role SQLServer2014) { Write-ScreenInfo -Message "Machines to have SQL Server 2014 installed: '$((Get-LabVM -Role SQLServer2014).Name -join ', ')'" }
+        if (Get-LabVM -Role SQLServer2016) { Write-ScreenInfo -Message "Machines to have SQL Server 2016 installed: '$((Get-LabVM -Role SQLServer2016).Name -join ', ')'" }
+        if (Get-LabVM -Role SQLServer2017) { Write-ScreenInfo -Message "Machines to have SQL Server 2017 installed: '$((Get-LabVM -Role SQLServer2017).Name -join ', ')'" }
+        if (Get-LabVM -Role SQLServer2019) { Write-ScreenInfo -Message "Machines to have SQL Server 2019 installed: '$((Get-LabVM -Role SQLServer2019).Name -join ', ')'" }
+        if (Get-LabVM -Role SQLServer2022) { Write-ScreenInfo -Message "Machines to have SQL Server 2022 installed: '$((Get-LabVM -Role SQLServer2022).Name -join ', ')'" }
         Install-LabSqlServers -CreateCheckPoints:$CreateCheckPoints
 
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
-    if (($ConfigurationManager -or $performAll) -and (Get-LabVm -Role ConfigurationManager -Filter {-not $_.SkipDeployment}))
+    if (($ConfigurationManager -or $performAll) -and (Get-LabVm -Role ConfigurationManager -Filter { -not $_.SkipDeployment }))
     {
         Write-ScreenInfo -Message 'Deploying System Center Configuration Manager' -TaskStart
         $jobs = Invoke-LabCommand -PreInstallationActivity -ActivityName 'Pre-installation' -ComputerName $(Get-LabVM -Role ConfigurationManager | Where-Object { -not $_.SkipDeployment }) -PassThru -NoDisplay
@@ -443,7 +443,7 @@
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
-    if (($RemoteDesktop -or $performAll) -and (Get-LabVm -Role RDS -Filter {-not $_.SkipDeployment}))
+    if (($RemoteDesktop -or $performAll) -and (Get-LabVm -Role RDS -Filter { -not $_.SkipDeployment }))
     {
         Write-ScreenInfo -Message 'Deploying Remote Desktop Services' -TaskStart
         $jobs = Invoke-LabCommand -PreInstallationActivity -ActivityName 'Pre-installation' -ComputerName $(Get-LabVM -Role RDS | Where-Object { -not $_.SkipDeployment }) -PassThru -NoDisplay
@@ -581,14 +581,14 @@
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
-    if (($TeamFoundation -or $performAll) -and (Get-LabVM -Role Tfs2015,Tfs2017,Tfs2018,TfsBuildWorker,AzDevOps))
+    if (($TeamFoundation -or $performAll) -and (Get-LabVM -Role Tfs2015, Tfs2017, Tfs2018, TfsBuildWorker, AzDevOps))
     {
         Write-ScreenInfo -Message 'Installing Team Foundation Server environment'
-        $jobs = Invoke-LabCommand -PreInstallationActivity -ActivityName 'Pre-installation' -ComputerName $(Get-LabVM -Role Tfs2015,Tfs2017,Tfs2018,TfsBuildWorker,AzDevOps | Where-Object { -not $_.SkipDeployment }) -PassThru -NoDisplay
+        $jobs = Invoke-LabCommand -PreInstallationActivity -ActivityName 'Pre-installation' -ComputerName $(Get-LabVM -Role Tfs2015, Tfs2017, Tfs2018, TfsBuildWorker, AzDevOps | Where-Object { -not $_.SkipDeployment }) -PassThru -NoDisplay
         $jobs | Where-Object { $_ -is [System.Management.Automation.Job] } | Wait-Job | Out-Null
         Write-ScreenInfo -Message "Machines to have TFS or the build agent installed: '$((Get-LabVM -Role Tfs2015,Tfs2017,Tfs2018,TfsBuildWorker,AzDevOps).Name -join ', ')'"
 
-        $machinesToStart = Get-LabVM -Role Tfs2015,Tfs2017,Tfs2018,TfsBuildWorker,AzDevOps | Where-Object -Property SkipDeployment -eq $false
+        $machinesToStart = Get-LabVM -Role Tfs2015, Tfs2017, Tfs2018, TfsBuildWorker, AzDevOps | Where-Object -Property SkipDeployment -eq $false
         if ($machinesToStart)
         {
             Start-LabVm -ComputerName $machinesToStart -ProgressIndicator 15 -PostDelaySeconds 5 -Wait
@@ -650,6 +650,46 @@
             minutes."
         }
 
+        foreach ($linuxVm in $linuxHosts | Where-Object { $_.LinuxType -eq 'Ubuntu' -and $_.VirtualizationEngine -eq 'HyperV' })
+        {
+            Start-Job -Name "Removing INSTALL.vhdx on '$linuxVm'" -ScriptBlock {
+                param(
+                    [Parameter(Mandatory)]
+                    [byte[]]$LabBytes,
+
+                    [Parameter(Mandatory)]
+                    [string]$ComputerName,
+
+                    [Parameter(Mandatory)]
+                    [bool]$DoNotUseCredSsp
+                )
+                Import-Lab -LabBytes $LabBytes
+                $resourceName = $(Get-LabVM -IncludeLinux -ComputerName $ComputerName).ResourceName
+                
+                $hvMachine = Get-LWHypervVM -Name $resourceName
+    
+                <#
+                    Remove _INSTALL.vhdx on Ubuntu if the VM has been shut down once - indicating that the
+                    cloudinit/subiquity phase was successfully finished.
+                    We compare GuestStatePath LastWriteTime as a simple and quick way to check if
+                    the VM's status has changed i.e. when it was stopped.
+                    One minute seems like a sane interval, we might need to increase it in the future.
+                #>
+                while ($hvMachine | Get-VMHardDiskDrive | Where-Object Path -like "*_INSTALL*")
+                {
+                    if ($hvMachine.State -ne 'Running' -and ((Get-Item -Path $hvMachine.GuestStatePath).LastWriteTime - $hvMachine.CreationTime) -gt '00:01:00')
+                    {
+                        Write-ScreenInfo -Type Verbose "Removing installation disk '$Name'"
+                        $disk = $hvMachine | Get-VMHardDiskDrive | Where-Object Path -like "*_INSTALL*"
+                        $diskPath = $disk.Path # Otherwise $disk will be update after remove-vmharddiskdrive was called
+                        $disk | Remove-VMHardDiskDrive
+                        Remove-Item -Path $diskPath -Force
+                    }
+                    $hvMachine = Get-LWHypervVM -Name $resoureName
+                }
+            } -ArgumentList $lab.Export(), $linuxVm.Name, $DoNotUseCredSsp
+        }
+    
         if ($null -eq $DelayBetweenComputers)
         {
             $hypervMachineCount = (Get-LabVM -IncludeLinux | Where-Object HostType -eq HyperV).Count
@@ -669,19 +709,21 @@
         $toStart = Get-LabVM -IncludeLinux:$(-not (Get-LabConfigurationItem -Name DoNotWaitForLinux -Default $false)) | Where-Object SkipDeployment -eq $false
         Start-LabVM -ComputerName $toStart -DelayBetweenComputers $DelayBetweenComputers -ProgressIndicator 30 -TimeoutInMinutes $timeoutRemaining -Wait
 
+        Get-Job -Name 'Removing INSTALL.vhdx *' | Stop-Job -PassThru | Remove-Job -Force
         $userName = (Get-Lab).DefaultInstallationCredential.UserName
         $nonDomainControllers = Get-LabVM -Filter { $_.Roles.Name -notcontains 'RootDc' -and $_.Roles.Name -notcontains 'DC' -and $_.Roles.Name -notcontains 'FirstChildDc' -and -not $_.SkipDeployment }
-        if ($nonDomainControllers) {
+        if ($nonDomainControllers)
+        {
             Invoke-LabCommand -ActivityName 'Setting PasswordNeverExpires for local deployment accounts' -ComputerName $nonDomainControllers -ScriptBlock {
                 # Still supporting ANCIENT server 2008 R2 with it's lack of CIM cmdlets :'(
-                    if (Get-Command Get-CimInstance -ErrorAction SilentlyContinue)
-                    {
-                        Get-CimInstance -Query "Select * from Win32_UserAccount where name = '$userName' and localaccount='true'" | Set-CimInstance -Property @{ PasswordExpires = $false}
-                    }
-                    else
-                    {
-                        Get-WmiObject -Query "Select * from Win32_UserAccount where name = '$userName' and localaccount='true'" | Set-WmiInstance -Arguments @{ PasswordExpires = $false}
-                    }
+                if (Get-Command Get-CimInstance -ErrorAction SilentlyContinue)
+                {
+                    Get-CimInstance -Query "Select * from Win32_UserAccount where name = '$userName' and localaccount='true'" | Set-CimInstance -Property @{ PasswordExpires = $false }
+                }
+                else
+                {
+                    Get-WmiObject -Query "Select * from Win32_UserAccount where name = '$userName' and localaccount='true'" | Set-WmiInstance -Arguments @{ PasswordExpires = $false }
+                }
             } -Variable (Get-Variable userName) -NoDisplay
         }
 
@@ -693,7 +735,7 @@
     if ($lab.DefaultVirtualizationEngine -eq 'Azure')
     {
         $azvms = Get-LabVm | Where-Object SkipDeployment -eq $false
-        $disconnectedVms = Invoke-LabCommand -PassThru -NoDisplay -ComputerName $azvms -ScriptBlock { $null -eq (Get-NetConnectionProfile -IPv4Connectivity Internet -ErrorAction SilentlyContinue) } | Where-Object { $_}
+        $disconnectedVms = Invoke-LabCommand -PassThru -NoDisplay -ComputerName $azvms -ScriptBlock { $null -eq (Get-NetConnectionProfile -IPv4Connectivity Internet -ErrorAction SilentlyContinue) } | Where-Object { $_ }
         if ($disconnectedVms) { Restart-LabVm $disconnectedVms.PSComputerName -Wait -NoDisplay -NoNewLine }
     }
 
@@ -723,7 +765,7 @@
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
-    if (($InstallSshKnownHosts -and (Get-LabVm).SshPublicKey) -or ($performAll-and (Get-LabVm).SshPublicKey))
+    if (($InstallSshKnownHosts -and (Get-LabVm).SshPublicKey) -or ($performAll -and (Get-LabVm).SshPublicKey))
     {
         Write-ScreenInfo -Message "Adding lab machines to $home/.ssh/known_hosts" -TaskStart
         
