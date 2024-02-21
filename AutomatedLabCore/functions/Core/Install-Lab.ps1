@@ -634,10 +634,10 @@
 
     if (($StartRemainingMachines -or $performAll) -and (Get-LabVM -IncludeLinux | Where-Object -Property SkipDeployment -eq $false))
     {
-        $linuxHosts = (Get-LabVM -IncludeLinux | Where-Object OperatingSystemType -eq 'Linux').Count
+        $linuxHosts = Get-LabVM -IncludeLinux | Where-Object OperatingSystemType -eq 'Linux'
         Write-ScreenInfo -Message 'Starting remaining machines' -TaskStart
         $timeoutRemaining = 60
-        if ($linuxHosts -and -not (Get-LabConfigurationItem -Name DoNotWaitForLinux -Default $false))
+        if ($linuxHosts.Count -gt 0 -and -not (Get-LabConfigurationItem -Name DoNotWaitForLinux -Default $false))
         {
             $timeoutRemaining = 15
             Write-ScreenInfo -Type Warning -Message "There are $linuxHosts Linux hosts in the lab.
@@ -709,7 +709,6 @@
         $toStart = Get-LabVM -IncludeLinux:$(-not (Get-LabConfigurationItem -Name DoNotWaitForLinux -Default $false)) | Where-Object SkipDeployment -eq $false
         Start-LabVM -ComputerName $toStart -DelayBetweenComputers $DelayBetweenComputers -ProgressIndicator 30 -TimeoutInMinutes $timeoutRemaining -Wait
 
-        Get-Job -Name 'Removing INSTALL.vhdx *' | Stop-Job -PassThru | Remove-Job -Force
         $userName = (Get-Lab).DefaultInstallationCredential.UserName
         $nonDomainControllers = Get-LabVM -Filter { $_.Roles.Name -notcontains 'RootDc' -and $_.Roles.Name -notcontains 'DC' -and $_.Roles.Name -notcontains 'FirstChildDc' -and -not $_.SkipDeployment }
         if ($nonDomainControllers)
@@ -774,7 +773,7 @@
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
-    Get-Job -Name 'Ensure Ubuntu Boot Order*' -ErrorAction SilentlyContinue | Stop-Job -PassThru | Remove-Job -Force
+    Get-Job -Name 'Removing INSTALL.vhdx *' -ErrorAction SilentlyContinue | Stop-Job -PassThru | Remove-Job -Force
 
     try
     {
