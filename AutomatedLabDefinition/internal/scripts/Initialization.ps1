@@ -609,13 +609,6 @@ autoinstall:
     version: 2
   shutdown: poweroff
   storage:
-    grub:
-      install_devices:
-        - /dev/sda1
-      replace_linux_default: False
-      update_nvram: True
-      terminal: console
-      remove_duplicate_entries: True
     config:
       - type: disk
         match: {}
@@ -645,7 +638,6 @@ autoinstall:
         id: boot-partition
         device: os-drive
         size: 1G
-        grub_device: false
       - type: format
         id: boot-format
         volume: boot-partition
