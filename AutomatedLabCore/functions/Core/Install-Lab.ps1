@@ -660,7 +660,8 @@
                     [Parameter(Mandatory)]
                     [string]$ComputerName
                 )
-                Import-Lab -LabBytes $LabBytes
+
+                Import-Lab -LabBytes $LabBytes -NoDisplay -NoValidation
                 $resourceName = $(Get-LabVM -IncludeLinux -ComputerName $ComputerName).ResourceName
                 
                 $hvMachine = Get-LWHypervVM -Name $resourceName
@@ -684,6 +685,7 @@
                         $hvMachine | Hyper-V\Start-VM
                         return
                     }
+                    Start-Sleep -Seconds 10
                     $hvMachine = Get-LWHypervVM -Name $resourceName
                 }
             } -ArgumentList $(Get-Lab).Export(), $linuxVm.Name
