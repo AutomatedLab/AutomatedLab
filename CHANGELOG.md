@@ -2,6 +2,8 @@
 
 ## Unreleased (yyyy-MM-dd)
 
+## 5.51.0 (2024-03-18)
+
 ### Enhancements
 
 - Removing a lab only removes Hyper-V virtual network switches created by AL previously (#1590).
