@@ -182,6 +182,7 @@
                 $param['KeyFilePath'] = $m.SshPrivateKeyPath
                 $param['Port'] = if ($m.HostType -eq 'Azure') {$m.AzureConnectionInfo.SshPort} else { 22 }
                 $param['UserName'] = $cred.UserName.Replace("$($m.Name)\", '')
+                $param['Options'] = @{StrictHostKeyChecking = 'no'}
             }
             elseif ($m.OperatingSystemType -eq 'Linux')
             {
@@ -257,6 +258,13 @@
                     $internalSession = New-PSSession @param -ErrorAction SilentlyContinue -ErrorVariable sessionError
                     $internalSession | Add-Member -Name LabMachineName -MemberType ScriptProperty -Value { $this.Name.Substring(0, $this.Name.IndexOf('_')) }
 
+                    if ($m.LinuxType -eq 'Ubuntu' -and $sessionError -and $sessionError.Exception.Message -like '*SSH*')
+                    {
+                        # Issue: During installation, SSH host key changes and we need to reinsert the updated key.
+                        UnInstall-LabSshKnownHost -ComputerName $m.Name
+                        Install-LabSshKnownHost
+                    }
+
                     # Additional check here for availability/state due to issues with Azure IaaS
                     if ($internalSession -and $internalSession.Availability -eq 'Available' -and $internalSession.State -eq 'Opened')
                     {
@@ -267,7 +275,6 @@
                         {
                             Connect-LWAzureLabSourcesDrive -Session $internalSession -SuppressErrors
                         }
-
                     }
                     else
                     {
