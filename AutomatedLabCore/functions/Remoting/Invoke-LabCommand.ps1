@@ -327,7 +327,7 @@
         $session = @(New-LabPSSession -ComputerName $machines -DoNotUseCredSsp:$DoNotUseCredSsp -UseLocalCredential:$UseLocalCredential -Credential $credential -IgnoreAzureLabSources:$IgnoreAzureLabSources.IsPresent)
         if (-not $session)
         {
-            Write-LogFunctionExitWithError "Could not create a session to machine '$machines'"
+            Write-ScreenInfo -Type Error -Message "Could not create a session to machine '$machines'"
             return
         }
 
