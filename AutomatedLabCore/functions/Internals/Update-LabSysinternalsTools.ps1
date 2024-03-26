@@ -1,5 +1,8 @@
 ﻿function Update-LabSysinternalsTools
 {
+    [CmdletBinding()]
+    param ( )
+
     if ($IsLinux -or $IsMacOs) { return }
     if (Get-LabConfigurationItem -Name SkipSysInternals) {return}
     #Update SysInternals suite if needed
@@ -102,15 +105,16 @@
 
                 # Download SysInternals suite
 
-                $tempFilePath = [System.IO.Path]::GetTempFileName()
-                $tempFilePath = Rename-Item -Path $tempFilePath -NewName ([System.IO.Path]::ChangeExtension($tempFilePath, '.zip')) -PassThru
+                $tempFilePath = New-TemporaryFile
+                $tempFilePath | Remove-Item
+                $tempFilePath = [System.IO.Path]::ChangeExtension($tempFilePath.FullName, '.zip')
                 Write-PSFMessage -Message "Temp file: '$tempFilePath'"
 
                 try
                 {
-                    Invoke-WebRequest -Uri $sysInternalsDownloadURL -UseBasicParsing -OutFile $tempFilePath
-                    $fileDownloaded = $true
-                    Write-PSFMessage -Message "File '$sysInternalsDownloadURL' downloaded"
+                    Invoke-WebRequest -Uri $sysInternalsDownloadURL -UseBasicParsing -OutFile $tempFilePath -ErrorAction Stop
+                    $fileDownloaded = Test-Path -Path $tempFilePath
+                    Write-PSFMessage -Message "File '$sysInternalsDownloadURL' downloaded: $fileDownloaded"
                 }
                 catch
                 {
