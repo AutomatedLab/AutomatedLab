@@ -1,5 +1,8 @@
 ﻿function Update-LabSysinternalsTools
 {
+    [CmdletBinding()]
+    param ( )
+
     if ($IsLinux -or $IsMacOs) { return }
     if (Get-LabConfigurationItem -Name SkipSysInternals) {return}
     #Update SysInternals suite if needed
