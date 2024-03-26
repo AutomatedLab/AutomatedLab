@@ -72,8 +72,7 @@
 
         if ($hypervVms)
         {
-            Stop-LWHypervVM -ComputerName $hypervVms -TimeoutInMinutes $ShutdownTimeoutInMinutes -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewLine `
-            -ErrorVariable hypervErrors -ErrorAction SilentlyContinue
+            Stop-LWHypervVM -ComputerName $hypervVms -TimeoutInMinutes $ShutdownTimeoutInMinutes -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewLine -ErrorAction SilentlyContinue
         }
         if ($azureVms)
         {
