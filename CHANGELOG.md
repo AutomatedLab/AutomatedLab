@@ -17,6 +17,7 @@
 - Fixed an issue which prevented the promotion process of additional Active Directory Domain
   Controllers from being restartable (#1608).
 - Fixed a syntax issue in 'CreateDscSqlDatabase.ps1'.
+- Fix transient issue in 'Update-LabSysinternalsTools' (#1599)
 
 ## 5.50.0 (2023-11-10)
 
