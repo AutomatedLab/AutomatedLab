@@ -25,7 +25,7 @@
 
         if ($windows)
         {
-            $jobs += Invoke-LabCommand -ComputerName $windows -NoDisplay -AsJob -PassThru -ScriptBlock {
+            $jobs += Invoke-LabCommand -ComputerName $windows -NoDisplay -AsJob -PassThru -ErrorAction SilentlyContinue -ErrorVariable invokeErrors -ScriptBlock {
                 Stop-Computer -Force -ErrorAction Stop
             }
         }
@@ -48,13 +48,30 @@
             Write-ScreenInfo -Message "Could not stop Hyper-V VM(s): '$($failedJobs.Location)'" -Type Error
         }
 
-        $stopFailures = foreach ($failedJob in $failedJobs)
+        $stopFailures = [System.Collections.Generic.List[string]]::new()
+        
+        foreach ($failedJob in $failedJobs)
         {
             if (Get-LabVM -ComputerName $failedJob.Location -IncludeLinux)
             {
-                $failedJob.Location
+                $stopFailures.Add($failedJob.Location)
             }
         }
+
+        foreach ($invokeError in $invokeErrors.TargetObject)
+        {
+            if ($invokeError -is [System.Management.Automation.Runspaces.Runspace] -and $invokeError.ConnectionInfo.ComputerName -as [ipaddress])
+            {
+                # Special case - return value is an IP address instead of a host name. We need to look it up.
+                $stopFailures.Add((Get-LabVM -ComputerName $ComputerName -IncludeLinux | Where-Object Ipv4Address -eq $invokeError.ConnectionInfo.ComputerName).ResourceName)
+            }
+            elseif ($invokeError -is [System.Management.Automation.Runspaces.Runspace])
+            {
+                $stopFailures.Add((Get-LabVM -ComputerName $invokeError.ConnectionInfo.ComputerName -IncludeLinux).ResourceName)
+            }
+        }
+
+        $stopFailures = $stopFailures | Sort-Object -Unique
 
         if ($stopFailures)
         {

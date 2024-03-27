@@ -29,10 +29,10 @@
         Stop-Computer -Force
     }
 
-    $jobs = Invoke-LabCommand -ComputerName $ComputerName -ActivityName Shutdown -NoDisplay -ScriptBlock $scriptBlock -AsJob -PassThru
+    $jobs = Invoke-LabCommand -ComputerName $ComputerName -ActivityName Shutdown -NoDisplay -ScriptBlock $scriptBlock -AsJob -PassThru -ErrorAction SilentlyContinue
     $jobs | Wait-Job -Timeout ($ShutdownTimeoutInMinutes * 60) | Out-Null
 
-    if ($jobs.Count -ne ($jobs | Where-Object State -eq Completed).Count)
+    if (-not $jobs -or ($jobs.Count -ne ($jobs | Where-Object State -eq Completed).Count))
     {
         Write-ScreenInfo "Not all machines stopped in the timeout of $ShutdownTimeoutInMinutes" -Type Warning
     }

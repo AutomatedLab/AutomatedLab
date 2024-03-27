@@ -72,8 +72,7 @@
 
         if ($hypervVms)
         {
-            Stop-LWHypervVM -ComputerName $hypervVms -TimeoutInMinutes $ShutdownTimeoutInMinutes -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewLine `
-            -ErrorVariable hypervErrors -ErrorAction SilentlyContinue
+            Stop-LWHypervVM -ComputerName $hypervVms -TimeoutInMinutes $ShutdownTimeoutInMinutes -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewLine -ErrorAction SilentlyContinue
         }
         if ($azureVms)
         {
@@ -100,6 +99,11 @@
                 {
                     $remainingTarget
                 }
+                elseif ($remainingTarget -is [System.Management.Automation.Runspaces.Runspace] -and $remainingTarget.ConnectionInfo.ComputerName -as [ipaddress])
+                {
+                    # Special case - return value is an IP address instead of a host name. We need to look it up.
+                    $machines | Where-Object Ipv4Address -eq $remainingTarget.ConnectionInfo.ComputerName
+                }
                 elseif ($remainingTarget -is [System.Management.Automation.Runspaces.Runspace])
                 {
                     $remainingTarget.ConnectionInfo.ComputerName
@@ -113,7 +117,7 @@
         }
 
         if ($remainingTargets.Count -gt 0) {
-            Stop-LabVM2 -ComputerName $remainingTargets
+            Stop-LabVM2 -ComputerName ($remainingTargets | Sort-Object -Unique)
         }
 
         if ($Wait)
