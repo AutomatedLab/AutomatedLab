@@ -112,13 +112,13 @@
         @($Session | Foreach-Object {
                 if ($_.State -eq 'Broken')
                 {
-                    New-LabPSSession -Session $_
+                    New-LabPSSession -Session $_ -ErrorAction SilentlyContinue
                 }
                 else
                 {
                     $_
                 }
-        })
+        } | Where-Object {$_}) # Remove empty values. Invoke-LWCommand fails too early if AsJob is present and a broken session cannot be recreated
     )
 
     if (-not $ActivityName)
