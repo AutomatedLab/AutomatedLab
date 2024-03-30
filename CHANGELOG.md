@@ -2,6 +2,11 @@
 
 ## Unreleased (yyyy-MM-dd)
 
+### Bugs
+
+- Fix transient issue in 'Update-LabSysinternalsTools' (#1599).
+- Fixed an issue in Stop-LabVm (#1619) with invalid error objects.
+
 ## 5.51.0 (2024-03-18)
 
 ### Enhancements
@@ -17,7 +22,6 @@
 - Fixed an issue which prevented the promotion process of additional Active Directory Domain
   Controllers from being restartable (#1608).
 - Fixed a syntax issue in 'CreateDscSqlDatabase.ps1'.
-- Fixed an issue in Stop-LabVm (#1619) with invalid error objects.
 
 ## 5.50.0 (2023-11-10)
 
