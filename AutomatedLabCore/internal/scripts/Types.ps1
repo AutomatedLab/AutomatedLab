@@ -892,6 +892,7 @@ $gpoType = @'
                         }
                         catch (COMException e)
                         {
+                            var ignore = e;
                             RegCloseKey(gphSubKey);
                             RegCloseKey(gphKey);
                             return ResultCode.SaveFailed;
@@ -1084,7 +1085,7 @@ try
 }
 catch
 {
-    Add-Type -TypeDefinition $pkiInternalsTypes
+    Add-Type -TypeDefinition $pkiInternalsTypes -IgnoreWarnings -WarningAction SilentlyContinue
 }
 
 try
@@ -1093,7 +1094,7 @@ try
 }
 catch
 {
-    Add-Type -TypeDefinition $gpoType -IgnoreWarnings
+    Add-Type -TypeDefinition $gpoType -IgnoreWarnings -WarningAction SilentlyContinue
 }
 
 try
@@ -1102,5 +1103,5 @@ try
 }
 catch
 {
-    Add-Type -TypeDefinition $certStoreTypes
+    Add-Type -TypeDefinition $certStoreTypes -IgnoreWarnings -WarningAction SilentlyContinue
 }
