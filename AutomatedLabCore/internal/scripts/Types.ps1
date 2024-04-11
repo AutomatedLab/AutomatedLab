@@ -1093,7 +1093,7 @@ try
 }
 catch
 {
-    Add-Type -TypeDefinition $gpoType -IgnoreWarnings
+    Add-Type -TypeDefinition $gpoType -IgnoreWarnings 3>&1
 }
 
 try
