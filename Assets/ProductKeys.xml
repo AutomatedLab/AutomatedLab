@@ -116,6 +116,12 @@
   <ProductKey OperatingSystemName="Windows Server 2022 Datacenter (Desktop Experience)" Key="WX4NM-KYWYW-QJJR4-XV3QB-6VM33" Version="10.0.17763.107" />
   <ProductKey OperatingSystemName="Windows Server 2022 Datacenter Evaluation" Key="WX4NM-KYWYW-QJJR4-XV3QB-6VM33" Version="10.0.17763.107" />
   <ProductKey OperatingSystemName="Windows Server 2022 Datacenter Evaluation (Desktop Experience)" Key="WX4NM-KYWYW-QJJR4-XV3QB-6VM33" Version="10.0.17763.107" />
+
+  <!--2025-->
+  <ProductKey OperatingSystemName="Windows Server 2025 Standard" Key="MFY9F-XBN2F-TYFMP-CCV49-RMYVH" Version="10.0.26085.1" />
+  <ProductKey OperatingSystemName="Windows Server 2025 Standard (Desktop Experience)" Key="MFY9F-XBN2F-TYFMP-CCV49-RMYVH" Version="10.0.26085.1" />
+  <ProductKey OperatingSystemName="Windows Server 2025 Datacenter" Key="2KNJJ-33Y9H-2GXGX-KMQWH-G6H67" Version="10.0.26085.1" />
+  <ProductKey OperatingSystemName="Windows Server 2025 Datacenter (Desktop Experience)" Key="2KNJJ-33Y9H-2GXGX-KMQWH-G6H67" Version="10.0.26085.1" />
   
   <!-- Win 11--> 
   <ProductKey OperatingSystemName="Windows 11 Pro" Key="W269N-WFGWX-YVC9B-4J6C9-T83GX" Version="10.0.17134.1" />
