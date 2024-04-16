@@ -113,7 +113,9 @@ namespace AutomatedLab
         Win2008 = 3,
         Win2008R2 = 4,
         Win2012 = 5,
-        Win2012R2 = 6
+        Win2012R2 = 6,
+        WinThreshold = 7,
+        Win2025 = 10
     }
 
     public enum SwitchType
