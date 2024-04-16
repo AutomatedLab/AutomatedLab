@@ -8,6 +8,7 @@
 - Fixed an issue in Stop-LabVm (#1619) with invalid error objects.
 - Fixed an issue in 'New-LWHypervVmConnectSettingsFile' storing
   the config file if the directory does not yet exist (#1611).
+- Suppressed an error message removing virtual networks (#1633).
 
 ## 5.51.0 (2024-03-18)
 
