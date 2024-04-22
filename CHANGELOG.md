@@ -15,6 +15,7 @@
 ### Enhancements
 
 - Removing a lab only removes Hyper-V virtual network switches created by AL previously (#1590).
+- Added support and product key for Windows Server 2025 Insider Preview (#1626).
 
 ### Bugs
 
