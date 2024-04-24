@@ -9,12 +9,14 @@
 - Fixed an issue in 'New-LWHypervVmConnectSettingsFile' storing
   the config file if the directory does not yet exist (#1611).
 - Suppressed an error message removing virtual networks (#1633).
+- Suppressed a warning when adding the GPO .net type (#1627).
 
 ## 5.51.0 (2024-03-18)
 
 ### Enhancements
 
 - Removing a lab only removes Hyper-V virtual network switches created by AL previously (#1590).
+- Added support and product key for Windows Server 2025 Insider Preview (#1626).
 
 ### Bugs
 

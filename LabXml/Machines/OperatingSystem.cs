@@ -114,6 +114,8 @@ namespace AutomatedLab
                             return "10.0";
                         case "2022":
                             return "10.0";
+                        case "2025":
+                            return "10.0";
                         case "7":
                             return "6.1";
                         case "8":
