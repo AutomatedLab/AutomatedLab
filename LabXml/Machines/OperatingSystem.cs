@@ -28,9 +28,9 @@ namespace AutomatedLab
             {"2019-datacenter_microsoftwindowsserver", "Windows Server 2019 Datacenter (Desktop Experience)" },
             {"2019-datacenter-core_microsoftwindowsserver", "Windows Server 2019 Datacenter" },
             {"2022-datacenter-azure-edition_microsoftwindowsserver", "Windows Server 2022 Datacenter (Desktop Experience)" },
-            {"2022-datacenter-azure-edition-core_microsoftwindowsserver", "Windows Server 2022 Datacenter" }, // probably
-            {"windows-server-vnext-azure-edition_microsoftserveroperatingsystems-previews", "Windows Server 2025 Datacenter (Desktop Experience)" }, // probably
-            {"windows-server-vnext-azure-edition-core_microsoftserveroperatingsystems-previews", "Windows Server 2025 Datacenter" },
+            {"2022-datacenter-azure-edition-core_microsoftwindowsserver", "Windows Server 2022 Datacenter" },
+            {"windows-server-vnext-azure-edition_microsoftwindowsserver", "Windows Server 2025 Datacenter (Desktop Experience)" }, // probably
+            {"windows-server-vnext-azure-edition-core_microsoftwindowsserver", "Windows Server 2025 Datacenter" }, // probably
             {"win10-22h2-ent_microsoftwindowsdesktop", "Windows 10 Enterprise" },
             {"win10-22h2-entn_microsoftwindowsdesktop", "Windows 10 Enterprise N" },
             {"win10-22h2-pro_microsoftwindowsdesktop", "Windows 10 Pro" },
