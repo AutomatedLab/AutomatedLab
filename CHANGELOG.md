@@ -2,6 +2,10 @@
 
 ## Unreleased (yyyy-MM-dd)
 
+### Enhancements
+
+- Updated some of the OSses used on Azure (#1630)
+
 ### Bugs
 
 - Fix transient issue in 'Update-LabSysinternalsTools' (#1599).
