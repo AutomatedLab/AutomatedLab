@@ -188,7 +188,7 @@
 
             if ($hostFileAddedEntries)
             {
-                Write-ScreenInfo -Message "The hosts file has been added $hostFileAddedEntries records. Clean them up using 'Remove-Lab' or manually if needed" -Type Warning
+                Write-ScreenInfo -Message "The hosts file has been updated with $hostFileAddedEntries records. Clean them up using 'Remove-Lab' or manually if needed" -Type Warning
             }
 
             if ($script:data.Machines | Where-Object SkipDeployment -eq $false)
