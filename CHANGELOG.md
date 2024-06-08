@@ -4,6 +4,12 @@
 
 ### Enhancements
 
+### Bugs
+
+## 5.52.0 (2024-06-08)
+
+### Enhancements
+
 - Updated some of the OSses used on Azure (#1630)
 
 ### Bugs
