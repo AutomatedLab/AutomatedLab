@@ -27,15 +27,18 @@ namespace AutomatedLab
             {"2016-datacenter-Server-core_microsoftwindowsserver", "Windows Server 2016 Datacenter" },
             {"2019-datacenter_microsoftwindowsserver", "Windows Server 2019 Datacenter (Desktop Experience)" },
             {"2019-datacenter-core_microsoftwindowsserver", "Windows Server 2019 Datacenter" },
-            {"2022-datacenter_microsoftwindowsserver", "Windows Server 2022 Datacenter (Desktop Experience)" },
-            {"2022-datacenter-core_microsoftwindowsserver", "Windows Server 2022 Datacenter" },
-            {"datacenter-core-1803-with-Containers-smalldisk_microsoftwindowsserver", "Windows Server Datacenter" },
-            {"win7-sp1-ent-n-x64_microsoftvisualstudio", "Windows 7 Enterprise N" },
-            {"win81-ent-n-x64_microsoftvisualstudio", "Windows 8.1 Enterprise N" },
-            {"windows-10-n-x64_microsoftvisualstudio", "Windows 10 Enterprise N" },
-            {"20h2-ent_microsoftwindowsdesktop", "Windows 10 Enterprise" },
-            {"20h2-pro_microsoftwindowsdesktop", "Windows 10 Pro" },
-            {"win11-21h2-ent_microsoftwindowsdesktop", "Windows 11 Enterprise" },
+            {"2022-datacenter-azure-edition_microsoftwindowsserver", "Windows Server 2022 Datacenter (Desktop Experience)" },
+            {"2022-datacenter-azure-edition-core_microsoftwindowsserver", "Windows Server 2022 Datacenter" },
+            {"windows-server-vnext-azure-edition_microsoftwindowsserver", "Windows Server 2025 Datacenter (Desktop Experience)" }, // probably
+            {"windows-server-vnext-azure-edition-core_microsoftwindowsserver", "Windows Server 2025 Datacenter" }, // probably
+            {"win10-22h2-ent_microsoftwindowsdesktop", "Windows 10 Enterprise" },
+            {"win10-22h2-entn_microsoftwindowsdesktop", "Windows 10 Enterprise N" },
+            {"win10-22h2-pro_microsoftwindowsdesktop", "Windows 10 Pro" },
+            {"win10-22h2-pron_microsoftwindowsdesktop", "Windows 10 Pro N" },
+            {"win11-23h2-pro_microsoftwindowsdesktop", "Windows 11 Pro" },
+            {"win11-23h2-pron_microsoftwindowsdesktop", "Windows 11 Pro N" },
+            {"win11-23h2-ent_microsoftwindowsdesktop", "Windows 11 Enterprise" },
+            {"win11-23h2-entn_microsoftwindowsdesktop", "Windows 11 Enterprise N" },
             {"6.10_openlogic", "CentOS 6.10"},
             {"6.9_openlogic", "CentOS 6.9"},
             {"7.2_openlogic", "CentOS 7.2"},
@@ -58,6 +61,8 @@ namespace AutomatedLab
             {"21_10_canonical", "Ubuntu-Server 21.10 \"Impish Indri\""},
             {"22_04-lts_canonical", "Ubuntu-Server 22.04 LTS \"Jammy Jellyfish\"" },
             {"22_10_canonical", "Ubuntu-Server 22.10 \"Kinetic Kudu\""},
+            {"23_04-lts_canonical", "Ubuntu-Server 23.04 LTS \"Lunar Lobster\"" },
+            {"23_10_canonical", "Ubuntu-Server 23.10 \"Mantic Minotaur\""},
             {"6.10_redhat", "Red Hat Enterprise Linux 6.1" },
             {"7.2_redhat", "Red Hat Enterprise Linux 7.2" },
             {"7.3_redhat", "Red Hat Enterprise Linux 7.3" },
@@ -77,8 +82,10 @@ namespace AutomatedLab
             {"8_7_redhat", "Red Hat Enterprise Linux 8.7" },
             {"9_0_redhat", "Red Hat Enterprise Linux 9" },
             {"9_1_redhat", "Red Hat Enterprise Linux 9.1" },
-            {"kali_kali-linux", "Kali Linux 2022.3" },
-            {"kali-20224_kali-linux", "Kali Linux 2022.4" }
+            {"9_2_redhat", "Red Hat Enterprise Linux 9.2" },
+            {"9_3_redhat", "Red Hat Enterprise Linux 9.3" },
+            {"kali-2023-3_kali-linux", "Kali Linux 2023.3" },
+            {"kali-2023-4_kali-linux", "Kali Linux 2023.4" }
             };
         private Dictionary<string, string> isoNameToAzureSku;
 
@@ -113,6 +120,8 @@ namespace AutomatedLab
                         case "2019":
                             return "10.0";
                         case "2022":
+                            return "10.0";
+                        case "2025":
                             return "10.0";
                         case "7":
                             return "6.1";

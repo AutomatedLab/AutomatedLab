@@ -33,7 +33,7 @@ namespace AutomatedLab
                     if (!dcIpAddresses.Contains(ip))
                     yield return new ValidationMessage
                     {
-                        Message = string.Format("The DNS server '{0}' configured on the VNet is propaply not the right one. Make sure you point to a DNS server inside the lab.", ip),
+                        Message = string.Format("The DNS server '{0}' configured on the VNet is probably not the right one. Make sure you point to a DNS server inside the lab.", ip),
                         TargetObject = vnet.Name,
                         Type = MessageType.Warning
                     };

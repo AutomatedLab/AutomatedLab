@@ -84,8 +84,13 @@ function New-LWHypervVmConnectSettingsFile
         
         $machineVmConnectConfig.Settings.Add($setting)
         
-        #Files will be stored in path 'C:\Users\randr\AppData\Roaming\Microsoft\Windows\Hyper-V\Client\1.0'
+        #Files will be stored in path 'C:\Users\<Username>\AppData\Roaming\Microsoft\Windows\Hyper-V\Client\1.0'
         $configFilePath = '{0}\Microsoft\Windows\Hyper-V\Client\1.0\vmconnect.rdp.{1}.config' -f $env:APPDATA, $vm.Id
+        $configFileParentPath = Split-Path -Path $configFilePath -Parent
+        if (-not (Test-Path -Path $configFileParentPath -PathType Container))
+        {
+            mkdir -Path $configFileParentPath -Force | Out-Null
+        }
         $machineVmConnectConfig.Export($configFilePath)
     }
     

@@ -8,7 +8,7 @@ schema: 2.0.0
 # Add-LabDiskDefinition
 
 ## SYNOPSIS
-Add lab disk definition
+Add lab disk definition.
 
 ## SYNTAX
 
@@ -19,8 +19,8 @@ Add-LabDiskDefinition [-Name] <String> [-DiskSizeInGb] <Int32> [[-Label] <String
 ```
 
 ## DESCRIPTION
-Adds a disk definition the the current lab.
-Disk definitions can be used by lab machines
+Adds a disk definition to the current lab.
+Disk definitions can be used by lab machines.
 
 ## EXAMPLES
 
@@ -35,8 +35,8 @@ Creates a new disk definition and attaches the disk to the machine definition SQ
 ## PARAMETERS
 
 ### -AllocationUnitSize
-The allocation unit size in Byte to use, e.g.
-64kb
+The allocation unit size in Bytes to use, e.g.
+64kb.
 
 ```yaml
 Type: Int64
@@ -51,7 +51,7 @@ Accept wildcard characters: False
 ```
 
 ### -DiskSizeInGb
-The disk size in GB
+The disk size in GB.
 
 ```yaml
 Type: Int32
@@ -66,7 +66,7 @@ Accept wildcard characters: False
 ```
 
 ### -DriveLetter
-The drive letter to assign
+The drive letter to assign.
 
 ```yaml
 Type: Char
@@ -81,7 +81,7 @@ Accept wildcard characters: False
 ```
 
 ### -Label
-The label to assign
+The label to assign.
 
 ```yaml
 Type: String
@@ -96,7 +96,7 @@ Accept wildcard characters: False
 ```
 
 ### -Name
-The disk name
+The disk name.
 
 ```yaml
 Type: String
@@ -127,7 +127,7 @@ Accept wildcard characters: False
 ```
 
 ### -PassThru
-Indicates that the disk object should be passed back to the caller
+Indicates that the disk object should be passed back to the caller.
 
 ```yaml
 Type: SwitchParameter
@@ -142,7 +142,7 @@ Accept wildcard characters: False
 ```
 
 ### -SkipInitialize
-Indicates that the initialization of the disk with a file system should be skipped
+Indicates that the initialization of the disk with a file system should be skipped.
 
 ```yaml
 Type: SwitchParameter
