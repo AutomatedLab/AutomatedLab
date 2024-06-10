@@ -6,6 +6,8 @@
 
 ### Bugs
 
+- Improved message in validator 'AzureSpecifiedRoleSizeNotFound'.
+
 ## 5.53.0 (2024-06-08)
 
 ### Enhancements
