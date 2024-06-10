@@ -670,26 +670,6 @@
         $vmSize = Get-LWAzureVmSize -Machine $Machine
         $imageRef = Get-LWAzureSku -Machine $machine
 
-        if (($Machine.VmGeneration -eq 2 -and $vmSize.Gen2Supported) -or ($vmSize.Gen2Supported -and -not $vmSize.Gen1Supported))
-        {
-            $newImage = $lab.AzureSettings.VMImages | 
-                Where-Object {
-                [AutomatedLab.OperatingSystem]::new(('{0}_{1}' -f $_.Skus, $_.PublisherName).ToLower(), $true).OperatingSystemName -eq $machine.OperatingSystem.OperatingSystemName -and $_.HyperVGeneration -eq 'V2' } |
-                Sort-Object -Property Version -Descending | Select-Object -First 1
-
-            if (-not $newImage)
-            {
-                throw "Selected VM size $vmSize for $Machine only suppports G2 VMs, however no matching Generation 2 image was found for your selection: Publisher $($imageRef.publisher), offer $($imageRef.offer), sku $($imageRef.sku)!"
-            }
-
-            $imageRef = @{
-                publisher = $newImage.PublisherName
-                version   = $newImage.Version
-                offer     = $newImage.Offer
-                sku       = $newImage.Skus
-            }
-        }
-
         if (-not $vmSize)
         {
             throw "No valid VM size found for '$Machine'. For a list of available role sizes, use the command 'Get-LabAzureAvailableRoleSize -LocationName $($lab.AzureSettings.DefaultLocation.Location)'"
@@ -697,7 +677,6 @@
 
         Write-ScreenInfo -Type Verbose -Message "Adding $Machine with size $vmSize, publisher $($imageRef.publisher), offer $($imageRef.offer), sku $($imageRef.sku)!"
 
-        $machNet = Get-LabVirtualNetworkDefinition -Name $machine.Network[0]
         $machTemplate = @{
             name       = $machine.ResourceName
             tags       = @{ 
