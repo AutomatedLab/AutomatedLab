@@ -24,7 +24,7 @@ namespace AutomatedLab
             {
                 var azImg = lab.AzureSettings.VmImages.Where(s => s.AutomatedLabOperatingSystemName == machine.OperatingSystem.OperatingSystemName && s.HyperVGeneration.ToLower() == $"v{machine.VmGeneration}");
 
-                if (azImg != null) continue;
+                if (azImg.Count() > 0) continue;
 
                 yield return new ValidationMessage()
                 {
