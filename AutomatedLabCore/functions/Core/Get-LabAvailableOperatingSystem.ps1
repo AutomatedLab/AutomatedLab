@@ -60,10 +60,7 @@
         $cachedOsList = New-Object $type
         foreach ($os in $cachedSkus)
         {
-            # Converting ToLower() as Azure Stack Hub images seem to mix case
-            # building longer SKU to take care of bad naming conventions with the linux images
-            $osname = '{0}_{1}' -f $os.Skus, $os.PublisherName
-            $cachedOs = [AutomatedLab.OperatingSystem]::new($osname.ToLower(), $true)
+            $cachedOs = [AutomatedLab.OperatingSystem]::new($os.AutomatedLabOperatingSystemName)
             if ($cachedOs.OperatingSystemName) {$cachedOsList.Add($cachedOs)}
         }
 
@@ -78,9 +75,7 @@
 
         foreach ($sku in $skus)
         {
-            # Converting ToLower() as Azure Stack Hub images seem to mix case
-            $osname = '{0}_{1}' -f $sku.Skus, $sku.PublisherName
-            $azureOs = [AutomatedLab.OperatingSystem]::new($osname.ToLower(), $true)
+            $azureOs = [AutomatedLab.OperatingSystem]::new($sku.AutomatedLabOperatingSystemName)
             if (-not $azureOs.OperatingSystemName) { continue }
 
             $osList.Add($azureOs )
