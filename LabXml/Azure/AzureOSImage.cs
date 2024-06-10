@@ -12,12 +12,15 @@ namespace AutomatedLab.Azure
         public string Skus { get; set; }
         public string Version { get; set; }
         public string HyperVGeneration { get; set; }
-        public string AutomatedLabOperatingSystemName { get; private set; }
-
-        public AzureOSImage()
+        public string AutomatedLabOperatingSystemName
         {
-            AutomatedLabOperatingSystemName = OsNameFromAzureString($"{Skus}_{PublisherName}");
+            get
+            {
+                return OsNameFromAzureString($"{Skus}_{PublisherName}");
+            }
         }
+
+        public AzureOSImage() { }
 
         public override string ToString()
         {
