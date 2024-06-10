@@ -11,6 +11,7 @@ namespace AutomatedLab.Azure
         public string PublisherName { get; set; }
         public string Skus { get; set; }
         public string Version { get; set; }
+        public string HyperVGeneration { get; set; }
 
         public AzureOSImage()
         { }
