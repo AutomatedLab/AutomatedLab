@@ -124,7 +124,7 @@
     }
     else
     {
-        $vmImageName = (New-Object AutomatedLab.OperatingSystem($machine.OperatingSystem)).AzureImageName
+        $vmImageName = $machine.OperatingSystem.AzureImageName
         if (-not $vmImageName)
         {
             throw "There is no Azure VM image for the operating system '$($Machine.OperatingSystem)'. The machine cannot be created. Cancelling lab setup."
