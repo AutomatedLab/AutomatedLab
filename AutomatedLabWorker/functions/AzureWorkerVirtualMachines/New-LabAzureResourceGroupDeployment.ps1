@@ -672,7 +672,11 @@
 
         if (($Machine.VmGeneration -eq 2 -and $vmSize.Gen2Supported) -or ($vmSize.Gen2Supported -and -not $vmSize.Gen1Supported))
         {
-            $newImage = $lab.AzureSettings.VMImages | Where-Object { $_.PublisherName -eq $imageref.Publisher -and $_.Offer -eq $imageref.Offer -and $_.HyperVGeneration -eq 'V2' }
+            $newImage = $lab.AzureSettings.VMImages | 
+                Where-Object {
+                [AutomatedLab.OperatingSystem]::new(('{0}_{1}' -f $_.Skus, $_.PublisherName).ToLower(), $true).OperatingSystemName -eq $machine.OperatingSystem.OperatingSystemName -and $_.HyperVGeneration -eq 'V2' } |
+                Sort-Object -Property Version -Descending | Select-Object -First 1
+
             if (-not $newImage)
             {
                 throw "Selected VM size $vmSize for $Machine only suppports G2 VMs, however no matching Generation 2 image was found for your selection: Publisher $($imageRef.publisher), offer $($imageRef.offer), sku $($imageRef.sku)!"
