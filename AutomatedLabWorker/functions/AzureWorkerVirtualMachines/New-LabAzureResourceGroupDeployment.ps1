@@ -670,23 +670,6 @@
         $vmSize = Get-LWAzureVmSize -Machine $Machine
         $imageRef = Get-LWAzureSku -Machine $machine
 
-        if (($Machine.VmGeneration -eq 2 -and $vmSize.Gen2Supported) -or ($vmSize.Gen2Supported -and -not $vmSize.Gen1Supported))
-        {
-            $pattern = '{0}(-g2$|gen2|-gensecond$)' -f $imageRef.sku # Yes, why should the image names be consistent? Also of course we don't need a damn VMGeneration property...
-            $newImage = $lab.AzureSettings.VMImages | Where-Object { $_.PublisherName -eq $imageref.Publisher -and $_.Offer -eq $imageref.Offer -and $_.Skus -match $pattern }
-            if (-not $newImage)
-            {
-                throw "Selected VM size $vmSize for $Machine only suppports G2 VMs, however no matching Generation 2 image was found for your selection: Publisher $($imageRef.publisher), offer $($imageRef.offer), sku $($imageRef.sku)!"
-            }
-
-            $imageRef = @{
-                publisher = $newImage.PublisherName
-                version   = $newImage.Version
-                offer     = $newImage.Offer
-                sku       = $newImage.Skus
-            }
-        }
-
         if (-not $vmSize)
         {
             throw "No valid VM size found for '$Machine'. For a list of available role sizes, use the command 'Get-LabAzureAvailableRoleSize -LocationName $($lab.AzureSettings.DefaultLocation.Location)'"
@@ -694,7 +677,6 @@
 
         Write-ScreenInfo -Type Verbose -Message "Adding $Machine with size $vmSize, publisher $($imageRef.publisher), offer $($imageRef.offer), sku $($imageRef.sku)!"
 
-        $machNet = Get-LabVirtualNetworkDefinition -Name $machine.Network[0]
         $machTemplate = @{
             name       = $machine.ResourceName
             tags       = @{ 

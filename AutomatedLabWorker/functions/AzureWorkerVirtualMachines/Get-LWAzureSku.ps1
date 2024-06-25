@@ -124,19 +124,19 @@
     }
     else
     {
-        $vmImageName = (New-Object AutomatedLab.OperatingSystem($machine.OperatingSystem)).AzureImageName
-        if (-not $vmImageName)
+        $vmImage = $lab.AzureSettings.VmImages |
+        Where-Object { $_.AutomatedLabOperatingSystemName -eq $Machine.OperatingSystem.OperatingSystemName -and $_.HyperVGeneration -eq "V$($Machine.VmGeneration)" } |
+        Select-Object -First 1
+
+        if (-not $vmImage)
         {
             throw "There is no Azure VM image for the operating system '$($Machine.OperatingSystem)'. The machine cannot be created. Cancelling lab setup."
         }
 
-        $vmImage = $lab.AzureSettings.VmImages |
-        Where-Object { "$($_.Skus)_$($_.PublisherName)" -eq $vmImageName } |
-        Select-Object -First 1
-
-        $offerName = $vmImageName = ($vmImage).Offer
+        $offerName = ($vmImage).Offer
         $publisherName = ($vmImage).PublisherName
         $skusName = ($vmImage).Skus
+        $version = $vmImage.Version
     }
 
     Write-PSFMessage -Message "We selected the SKUs $skusName from offer $offerName by publisher $publisherName"
@@ -144,6 +144,6 @@
         offer     = $offerName
         publisher = $publisherName
         sku       = $skusName
-        version   = 'latest'
+        version   = if ($version) { $version } else { 'latest' }
     }
 }
