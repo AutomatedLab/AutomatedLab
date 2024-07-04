@@ -404,7 +404,6 @@
                 apiVersion = $apiVersions['VirtualNetworkApi']
                 dependsOn  = @(
                     "[resourceId('Microsoft.Network/virtualNetworks', '$($network.ResourceName)')]"
-                    $externalPeer
                 )
                 type       = "Microsoft.Network/virtualNetworks/virtualNetworkPeerings"
                 name       = "$($network.ResourceName)/$($network.ResourceName)To$($peerName)"

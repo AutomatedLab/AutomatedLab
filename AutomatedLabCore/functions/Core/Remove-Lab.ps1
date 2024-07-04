@@ -79,7 +79,17 @@
 
             if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
             {
-                Write-ScreenInfo -Message "Removing Resource Group '$labName' and all resources in this group"
+                Write-ScreenInfo -Message "Removing Resource Group '$labName' and all resources in this group"             
+                foreach ($network in $(Get-Lab).VirtualNetworks) {
+                    $remoteNet = Get-AzVirtualNetwork -Name $network.ResourceName
+                    foreach ($externalPeer in $network.PeeringVnetResourceIds) {
+                        $peerName = $externalPeer -split '/' | Select-Object -Last 1
+                        $vNet = Get-AzResource -Id $externalPeer | Get-AzVirtualNetwork
+                        Write-ScreenInfo -Type Verbose -Message ('Adding peering from {0} to {1} to VNet' -f $network.ResourceName, $peerName)
+                        Remove-AzVirtualNetworkPeering -VirtualNetworkName $vnet.Name -ResourceGroupname $vnet.ResourceGroupName -Name "$($network.ResourceName)To$($peerName)" -Force
+                    }
+                }
+                
                 #without cloning the collection, a Runtime Exceptionis thrown: An error occurred while enumerating through a collection: Collection was modified; enumeration operation may not execute
                 # If RG contains Recovery Vault, remove vault properly
                 Remove-LWAzureRecoveryServicesVault
