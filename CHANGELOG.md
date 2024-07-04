@@ -7,6 +7,7 @@
 ### Bugs
 
 - Improved message in validator 'AzureSpecifiedRoleSizeNotFound'.
+- Remove deprecated functions from help and manifest
 
 ## 5.53.0 (2024-06-08)
 
