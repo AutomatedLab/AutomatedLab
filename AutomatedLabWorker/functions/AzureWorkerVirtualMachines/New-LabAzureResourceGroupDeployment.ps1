@@ -379,6 +379,29 @@
                 }
             }
         }
+
+        foreach ($externalPeer in $network.PeeringVnetResourceIds) {
+            $peerName = $externalPeer -split '/' | Select-Object -Last 1
+            Write-ScreenInfo -Type Verbose -Message ('Adding peering from {0} to {1} to VNet template' -f $network.ResourceName, $peerName)
+            $template.Resources += @{
+                apiVersion = $apiVersions['VirtualNetworkApi']
+                dependsOn  = @(
+                    "[resourceId('Microsoft.Network/virtualNetworks', '$($network.ResourceName)')]"
+                )
+                type       = "Microsoft.Network/virtualNetworks/virtualNetworkPeerings"
+                name       = "$($network.ResourceName)/$($network.ResourceName)To$($peerName)"
+                location   = "[resourceGroup().location]"
+                properties = @{
+                    allowVirtualNetworkAccess = $true
+                    allowForwardedTraffic     = $false
+                    allowGatewayTransit       = $false
+                    useRemoteGateways         = $false
+                    remoteVirtualNetwork      = @{
+                        id = $externalPeer
+                    }
+                }
+            }
+        }
         #endregion
 
         #region Public Ip

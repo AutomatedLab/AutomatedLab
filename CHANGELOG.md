@@ -4,6 +4,8 @@
 
 ### Enhancements
 
+- Allow very basic peering with unmnanaged VNETs (#1653), given that the account running the lab script has the appropriate permissions.
+
 ### Bugs
 
 - Improved message in validator 'AzureSpecifiedRoleSizeNotFound'.
