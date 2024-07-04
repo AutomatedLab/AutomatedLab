@@ -418,24 +418,6 @@
                     }
                 }
             }
-            $template.Resources += @{
-                apiVersion = $apiVersions['VirtualNetworkApi']
-                dependsOn  = @(
-                    "[resourceId('Microsoft.Network/virtualNetworks', '$($network.ResourceName)')]"
-                    $externalPeer
-                )
-                type       = "Microsoft.Network/virtualNetworks/virtualNetworkPeerings"
-                name       = "$($peerName)/$($peerName)To$($network.ResourceName)"
-                properties = @{
-                    allowVirtualNetworkAccess = $true
-                    allowForwardedTraffic     = $false
-                    allowGatewayTransit       = $false
-                    useRemoteGateways         = $false
-                    remoteVirtualNetwork      = @{
-                        id = "[resourceId('Microsoft.Network/virtualNetworks', '$($network.ResourceName)')]"
-                    }
-                }
-            }
         }
         #endregion
 
