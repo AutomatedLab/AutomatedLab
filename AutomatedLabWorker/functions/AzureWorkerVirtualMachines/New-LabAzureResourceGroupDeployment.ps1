@@ -367,7 +367,6 @@
                 )
                 type       = "Microsoft.Network/virtualNetworks/virtualNetworkPeerings"
                 name       = "$($network.ResourceName)/$($network.ResourceName)To$($peer)"
-                location   = "[resourceGroup().location]"
                 properties = @{
                     allowVirtualNetworkAccess = $true
                     allowForwardedTraffic     = $false
@@ -375,6 +374,24 @@
                     useRemoteGateways         = $false
                     remoteVirtualNetwork      = @{
                         id = "[resourceId('Microsoft.Network/virtualNetworks', '$peer')]"
+                    }
+                }
+            }
+            $template.Resources += @{
+                apiVersion = $apiVersions['VirtualNetworkApi']
+                dependsOn  = @(
+                    "[resourceId('Microsoft.Network/virtualNetworks', '$($network.ResourceName)')]"
+                    "[resourceId('Microsoft.Network/virtualNetworks', '$($peer)')]"
+                )
+                type       = "Microsoft.Network/virtualNetworks/virtualNetworkPeerings"
+                name       = "$($peer)/$($peer)To$($network.ResourceName)"
+                properties = @{
+                    allowVirtualNetworkAccess = $true
+                    allowForwardedTraffic     = $false
+                    allowGatewayTransit       = $false
+                    useRemoteGateways         = $false
+                    remoteVirtualNetwork      = @{
+                        id = "[resourceId('Microsoft.Network/virtualNetworks', '$($network.ResourceName)')]"
                     }
                 }
             }
@@ -387,10 +404,10 @@
                 apiVersion = $apiVersions['VirtualNetworkApi']
                 dependsOn  = @(
                     "[resourceId('Microsoft.Network/virtualNetworks', '$($network.ResourceName)')]"
+                    $externalPeer
                 )
                 type       = "Microsoft.Network/virtualNetworks/virtualNetworkPeerings"
                 name       = "$($network.ResourceName)/$($network.ResourceName)To$($peerName)"
-                location   = "[resourceGroup().location]"
                 properties = @{
                     allowVirtualNetworkAccess = $true
                     allowForwardedTraffic     = $false
@@ -398,6 +415,24 @@
                     useRemoteGateways         = $false
                     remoteVirtualNetwork      = @{
                         id = $externalPeer
+                    }
+                }
+            }
+            $template.Resources += @{
+                apiVersion = $apiVersions['VirtualNetworkApi']
+                dependsOn  = @(
+                    "[resourceId('Microsoft.Network/virtualNetworks', '$($network.ResourceName)')]"
+                    $externalPeer
+                )
+                type       = "Microsoft.Network/virtualNetworks/virtualNetworkPeerings"
+                name       = "$($peerName)/$($peerName)To$($network.ResourceName)"
+                properties = @{
+                    allowVirtualNetworkAccess = $true
+                    allowForwardedTraffic     = $false
+                    allowGatewayTransit       = $false
+                    useRemoteGateways         = $false
+                    remoteVirtualNetwork      = @{
+                        id = "[resourceId('Microsoft.Network/virtualNetworks', '$($network.ResourceName)')]"
                     }
                 }
             }
