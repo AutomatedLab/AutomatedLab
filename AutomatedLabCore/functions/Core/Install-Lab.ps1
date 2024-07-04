@@ -203,7 +203,7 @@
                         $peerName = $externalPeer -split '/' | Select-Object -Last 1
                         $vNet = Get-AzResource -Id $externalPeer | Get-AzVirtualNetwork
                         Write-ScreenInfo -Type Verbose -Message ('Adding peering from {0} to {1} to VNet' -f $network.ResourceName, $peerName)
-                        Add-AzVirtualNetworkPeering -VirtualNetwork $vnet -RemoteVirtualNetworkId $remoteNet.id -Name "$($network.ResourceName)To$($peerName)"
+                        $null = Add-AzVirtualNetworkPeering -VirtualNetwork $vnet -RemoteVirtualNetworkId $remoteNet.id -Name "$($network.ResourceName)To$($peerName)"
                     }
                 }
             }

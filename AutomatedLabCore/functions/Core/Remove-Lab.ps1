@@ -86,7 +86,7 @@
                         $peerName = $externalPeer -split '/' | Select-Object -Last 1
                         $vNet = Get-AzResource -Id $externalPeer | Get-AzVirtualNetwork
                         Write-ScreenInfo -Type Verbose -Message ('Adding peering from {0} to {1} to VNet' -f $network.ResourceName, $peerName)
-                        Remove-AzVirtualNetworkPeering -VirtualNetworkName $vnet.Name -ResourceGroupname $vnet.ResourceGroupName -Name "$($network.ResourceName)To$($peerName)" -Force
+                        $null = Remove-AzVirtualNetworkPeering -VirtualNetworkName $vnet.Name -ResourceGroupname $vnet.ResourceGroupName -Name "$($network.ResourceName)To$($peerName)" -Force
                     }
                 }
                 
