@@ -30,7 +30,8 @@
     Get-AzVMImageSku |
     Get-AzVMImage |
     Group-Object -Property Skus, Offer |
-    ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 | Get-AzVmImage }
+    ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 | Get-AzVmImage } |
+    Where-Object PurchasePlan -eq $null
 
     # Linux
     # Ubuntu - official
@@ -42,7 +43,9 @@
     Where-Object Skus -notmatch 'arm64' |
     Get-AzVMImage |
     Group-Object -Property Skus, Offer |
-    ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 | Get-AzVmImage }
+    ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 | Get-AzVmImage } |
+    Where-Object PurchasePlan -eq $null
+
     # RedHat - official
     $publishers |
     Where-Object PublisherName -eq 'RedHat' |
@@ -52,7 +55,9 @@
     Where-Object Skus -notmatch '(RAW|LVM|CI)' |
     Get-AzVMImage |
     Group-Object -Property Skus, Offer |
-    ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 | Get-AzVmImage }
+    ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 | Get-AzVmImage } |
+    Where-Object PurchasePlan -eq $null
+
     # CentOS - Roguewave, sounds slightly suspicious
     $publishers |
     Where-Object PublisherName -eq 'OpenLogic' |
@@ -61,7 +66,9 @@
     Get-AzVMImageSku |
     Get-AzVMImage |
     Group-Object -Property Skus, Offer |
-    ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 | Get-AzVmImage }
+    ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 | Get-AzVmImage } |
+    Where-Object PurchasePlan -eq $null
+
     # Kali
     $publishers |
     Where-Object PublisherName -eq 'Kali-Linux' |
@@ -69,7 +76,8 @@
     Get-AzVMImageSku |
     Get-AzVMImage |
     Group-Object -Property Skus, Offer |
-    ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 | Get-AzVmImage }
+    ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 | Get-AzVmImage } |
+    Where-Object PurchasePlan -eq $null
 
     # Desktop
     $publishers |
@@ -78,7 +86,8 @@
     Get-AzVMImageSku |
     Get-AzVMImage |
     Group-Object -Property Skus, Offer |
-    ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 | Get-AzVmImage }
+    ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 | Get-AzVmImage } |
+    Where-Object PurchasePlan -eq $null
 
     # SQL
     $publishers |
@@ -88,7 +97,8 @@
     Get-AzVMImage |
     Where-Object Skus -in 'Standard','Enterprise' |
     Group-Object -Property Skus, Offer |
-    ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 | Get-AzVmImage }
+    ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 | Get-AzVmImage } |
+    Where-Object PurchasePlan -eq $null
 
     # VisualStudio
     $publishers |
@@ -98,7 +108,8 @@
     Get-AzVMImage |
     Where-Object Offer -eq 'VisualStudio' |
     Group-Object -Property Skus, Offer |
-    ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 | Get-AzVmImage }
+    ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 | Get-AzVmImage } |
+    Where-Object PurchasePlan -eq $null
 
     # Client OS
     $publishers |
@@ -108,7 +119,8 @@
     Get-AzVMImage |
     Where-Object Offer -eq 'Windows' |
     Group-Object -Property Skus, Offer |
-    ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 | Get-AzVmImage }
+    ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 | Get-AzVmImage } |
+    Where-Object PurchasePlan -eq $null
 
     # Sharepoint 2013 and 2016
     $publishers |
@@ -118,5 +130,6 @@
     Get-AzVMImage |
     Where-Object Offer -eq 'MicrosoftSharePointServer' |
     Group-Object -Property Skus, Offer |
-    ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 | Get-AzVmImage }
+    ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 | Get-AzVmImage } |
+    Where-Object PurchasePlan -eq $null
 }

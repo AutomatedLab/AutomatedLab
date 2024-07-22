@@ -367,7 +367,6 @@
                 )
                 type       = "Microsoft.Network/virtualNetworks/virtualNetworkPeerings"
                 name       = "$($network.ResourceName)/$($network.ResourceName)To$($peer)"
-                location   = "[resourceGroup().location]"
                 properties = @{
                     allowVirtualNetworkAccess = $true
                     allowForwardedTraffic     = $false
@@ -375,6 +374,46 @@
                     useRemoteGateways         = $false
                     remoteVirtualNetwork      = @{
                         id = "[resourceId('Microsoft.Network/virtualNetworks', '$peer')]"
+                    }
+                }
+            }
+            $template.Resources += @{
+                apiVersion = $apiVersions['VirtualNetworkApi']
+                dependsOn  = @(
+                    "[resourceId('Microsoft.Network/virtualNetworks', '$($network.ResourceName)')]"
+                    "[resourceId('Microsoft.Network/virtualNetworks', '$($peer)')]"
+                )
+                type       = "Microsoft.Network/virtualNetworks/virtualNetworkPeerings"
+                name       = "$($peer)/$($peer)To$($network.ResourceName)"
+                properties = @{
+                    allowVirtualNetworkAccess = $true
+                    allowForwardedTraffic     = $false
+                    allowGatewayTransit       = $false
+                    useRemoteGateways         = $false
+                    remoteVirtualNetwork      = @{
+                        id = "[resourceId('Microsoft.Network/virtualNetworks', '$($network.ResourceName)')]"
+                    }
+                }
+            }
+        }
+
+        foreach ($externalPeer in $network.PeeringVnetResourceIds) {
+            $peerName = $externalPeer -split '/' | Select-Object -Last 1
+            Write-ScreenInfo -Type Verbose -Message ('Adding peering from {0} to {1} to VNet template' -f $network.ResourceName, $peerName)
+            $template.Resources += @{
+                apiVersion = $apiVersions['VirtualNetworkApi']
+                dependsOn  = @(
+                    "[resourceId('Microsoft.Network/virtualNetworks', '$($network.ResourceName)')]"
+                )
+                type       = "Microsoft.Network/virtualNetworks/virtualNetworkPeerings"
+                name       = "$($network.ResourceName)/$($network.ResourceName)To$($peerName)"
+                properties = @{
+                    allowVirtualNetworkAccess = $true
+                    allowForwardedTraffic     = $false
+                    allowGatewayTransit       = $false
+                    useRemoteGateways         = $false
+                    remoteVirtualNetwork      = @{
+                        id = $externalPeer
                     }
                 }
             }
