@@ -361,7 +361,6 @@ nav:
   - New-LabVHDX: AutomatedLabCore/en-us/New-LabVHDX.md
   - New-LabVM: AutomatedLabCore/en-us/New-LabVM.md
   - New-LWAzureLoadBalancer: AutomatedLabWorker/en-us/New-LWAzureLoadBalancer.md
-  - New-LWAzureNetworkSwitch: AutomatedLabWorker/en-us/New-LWAzureNetworkSwitch.md
   - New-LWHypervNetworkSwitch: AutomatedLabWorker/en-us/New-LWHypervNetworkSwitch.md
   - New-LWHypervVM: AutomatedLabWorker/en-us/New-LWHypervVM.md
   - New-LWReferenceVHDX: AutomatedLabWorker/en-us/New-LWReferenceVHDX.md
@@ -390,7 +389,6 @@ nav:
   - Remove-LabVM: AutomatedLabCore/en-us/Remove-LabVM.md
   - Remove-LabVMSnapshot: AutomatedLabCore/en-us/Remove-LabVMSnapshot.md
   - Remove-LWAzureLoadBalancer: AutomatedLabWorker/en-us/Remove-LWAzureLoadBalancer.md
-  - Remove-LWAzureNetworkSwitch: AutomatedLabWorker/en-us/Remove-LWAzureNetworkSwitch.md
   - Remove-LWAzureRecoveryServicesVault: AutomatedLabWorker/en-us/Remove-LWAzureRecoveryServicesVault.md
   - Remove-LWAzureVM: AutomatedLabWorker/en-us/Remove-LWAzureVM.md
   - Remove-LWAzureVmSnapshot: AutomatedLabWorker/en-us/Remove-LWAzureVmSnapshot.md
