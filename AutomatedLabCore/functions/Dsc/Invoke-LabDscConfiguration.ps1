@@ -59,9 +59,12 @@
             }
         }
 
-        $tempPath = [System.IO.Path]::GetTempFileName()
-        Remove-Item -Path $tempPath
-        New-Item -ItemType Directory -Path $tempPath | Out-Null
+        $mofTempPath = [System.IO.Path]::GetTempFileName()
+        $metaMofTempPath = [System.IO.Path]::GetTempFileName()
+        Remove-Item -Path $mofTempPath
+        Remove-Item -Path $metaMofTempPath
+        New-Item -ItemType Directory -Path $mofTempPath | Out-Null
+        New-Item -ItemType Directory -Path $metaMofTempPath | Out-Null
 
         $dscModules = @()
 
@@ -100,20 +103,26 @@
                 $param += $Parameter
             }
             
-            $mof = & $Configuration.Name @param
+            $mofs = & $Configuration.Name @param
             
-            if ($mof.Count -gt 1)
-            {
-                $mof = $mof | Where-Object { $_.Name -like "*$c*" }
-            }
-            $mof = $mof | Rename-Item -NewName "$($Configuration.Name)_$c.mof" -Force -PassThru
-            $mof | Move-Item -Destination $outputPath -Force
+            $mof = $mofs | Where-Object { $_.Name -like "*$c*" -and $_.Name -notlike '*.meta.mof' }
+            $metaMof = $mofs | Where-Object { $_.Name -like "*$c*" -and $_.Name -like '*.meta.mof' }
 
-            Remove-Item -Path $tempPath -Force -Recurse
+            if ($null -ne $mof)
+            {
+                $mof = $mof | Rename-Item -NewName "$($Configuration.Name)_$c.mof" -Force -PassThru
+                $mof | Move-Item -Destination $outputPath -Force
+                Remove-Item -Path $mofTempPath -Force -Recurse
+            }
+            if ($null -ne $metaMof)
+            {
+                $metaMof = $metaMof | Rename-Item -NewName "$($Configuration.Name)_$c.meta.mof" -Force -PassThru
+                $metaMof | Move-Item -Destination $outputPath -Force
+                Remove-Item -Path $metaMofTempPath -Force -Recurse
+            }
         }
 
         $mofFiles = Get-ChildItem -Path $outputPath -Filter *.mof | Where-Object Name -Match '(?<ConfigurationName>\w+)_(?<ComputerName>[\w-_]+)\.mof'
-
         foreach ($c in $ComputerName)
         {
             foreach ($mofFile in $mofFiles)
@@ -121,6 +130,18 @@
                 if ($mofFile.Name -match "(?<ConfigurationName>$($Configuration.Name))_(?<ComputerName>$c)\.mof")
                 {
                     Send-File -Source $mofFile.FullName -Session (New-LabPSSession -ComputerName $Matches.ComputerName) -Destination "C:\AL Dsc\$($Configuration.Name)" -Force
+                }
+            }
+        }
+
+        $metaMofFiles = Get-ChildItem -Path $outputPath -Filter *.mof | Where-Object Name -Match '(?<ConfigurationName>\w+)_(?<ComputerName>[\w-_]+)\.meta.mof'
+        foreach ($c in $ComputerName)
+        {
+            foreach ($metaMofFile in $metaMofFiles)
+            {
+                if ($metaMofFile.Name -match "(?<ConfigurationName>$($Configuration.Name))_(?<ComputerName>$c)\.meta.mof")
+                {
+                    Send-File -Source $metaMofFile.FullName -Session (New-LabPSSession -ComputerName $Matches.ComputerName) -Destination "C:\AL Dsc\$($Configuration.Name)" -Force
                 }
             }
         }
@@ -138,16 +159,31 @@
             $path = "C:\AL Dsc\$($Configuration.Name)"
 
             Remove-Item -Path "$path\localhost.mof" -ErrorAction SilentlyContinue
+            Remove-Item -Path "$path\localhost.meta.mof" -ErrorAction SilentlyContinue
 
-            $mofFiles = Get-ChildItem -Path $path -Filter *.mof
+            $mofFiles = Get-ChildItem -Path $path -Filter *.mof | Where-Object Name -notlike *.meta.mof
             if ($mofFiles.Count -gt 1)
             {
                 throw "There is more than one MOF file in the folder '$path'. Expected is only one file."
             }
 
-            $mofFiles | Rename-Item -NewName localhost.mof
+            $metaMofFiles = Get-ChildItem -Path $path -Filter *.mof | Where-Object Name -like *.meta.mof
+            if ($metaMofFiles.Count -gt 1)
+            {
+                throw "There is more than one Meta MOF file in the folder '$path'. Expected is only one file."
+            }
 
-            Start-DscConfiguration -Path $path -Wait:$Wait -Force:$Force
+            if ($null -ne $metaMofFiles)
+            {
+                $metaMofFiles | Rename-Item -NewName localhost.meta.mof
+                Set-DscLocalConfigurationManager -Path $path -Force:$Force
+            }
+
+            if ($null -ne $mofFiles)
+            {
+                $mofFiles | Rename-Item -NewName localhost.mof
+                Start-DscConfiguration -Path $path -Wait:$Wait -Force:$Force
+            }
 
         } -Variable (Get-Variable -Name Configuration, Wait, Force)
     }
