@@ -20,8 +20,4 @@
     {
         $script:un['autoinstall']['user-data']['users'] += $usr
     }
-
-    $script:un['autoinstall']['user-data']['system_info'] = @{
-        'default_user' = $usr
-    }
 }
