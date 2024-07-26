@@ -11,6 +11,7 @@
 
 - Improved message in validator 'AzureSpecifiedRoleSizeNotFound'.
 - Remove deprecated functions from help and manifest.
+- Fix Write-ScreenInfo (fixes #1648)
 
 ## 5.53.0 (2024-06-08)
 

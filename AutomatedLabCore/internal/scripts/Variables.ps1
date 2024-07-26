@@ -169,7 +169,7 @@ $adInstallFirstChildDc2012 = {
         }
         else
         {
-            Write-ScreenInfo "Domain $ParentDomainName was not reachable ($count)" -Type Warning
+            Write-Warning "Domain $ParentDomainName was not reachable ($count)"
         }
 
         Start-Sleep -Seconds 1
@@ -201,7 +201,7 @@ $adInstallFirstChildDc2012 = {
     $retriesDone = 0
     do
     {
-        Write-Verbose "The first try to promote '$(HOSTNAME.EXE)' did not work. The error was '$($result.Message)'. Retrying after $SecondsBetweenRetries seconds. Retry count $retriesDone of $Retries." -Type Warning
+        Write-Verbose "The first try to promote '$(HOSTNAME.EXE)' did not work. The error was '$($result.Message)'. Retrying after $SecondsBetweenRetries seconds. Retry count $retriesDone of $Retries."
         ipconfig.exe /flushdns | Out-Null
 
         try
@@ -323,7 +323,7 @@ $adInstallFirstChildDcPre2012 = {
         }
         else
         {
-            Write-ScreenInfo "Domain $ParentDomainName was not reachable ($count)" -Type Warning
+            Write-Warning "Domain $ParentDomainName was not reachable ($count)"
         }
 
         Start-Sleep -Seconds 1
@@ -410,7 +410,7 @@ $adInstallFirstChildDcPre2012 = {
     $retriesDone = 0
     while ($LASTEXITCODE -ge 11 -and $retriesDone -lt $Retries)
     {
-        Write-ScreenInfo "Promoting the Domain Controller '$(HOSTNAME.EXE)' did not work. The error code was '$LASTEXITCODE'. Retrying after $SecondsBetweenRetries seconds. Retry count $retriesDone of $Retries." -Type Warning
+        Write-Warning "Promoting the Domain Controller '$(HOSTNAME.EXE)' did not work. The error code was '$LASTEXITCODE'. Retrying after $SecondsBetweenRetries seconds. Retry count $retriesDone of $Retries."
         ipconfig.exe /flushdns | Out-Null
 
         Start-Sleep -Seconds $SecondsBetweenRetries
@@ -480,7 +480,7 @@ $adInstallDc2012 = {
         }
         else
         {
-            Write-ScreenInfo "Domain $DomainName was not reachable ($count)" -Type Warning
+            Write-Warning "Domain $DomainName was not reachable ($count)"
         }
 
         Start-Sleep -Seconds 1
@@ -559,7 +559,7 @@ $adInstallDc2012 = {
     $retriesDone = 0
     while ($result.Status -eq 'Error' -and $retriesDone -lt $Retries)
     {
-        Write-ScreenInfo "The first try to promote '$(HOSTNAME.EXE)' did not work. The error was '$($result.Message)'. Retrying after $SecondsBetweenRetries seconds. Retry count $retriesDone of $Retries." -Type Warning
+        Write-Warning "The first try to promote '$(HOSTNAME.EXE)' did not work. The error was '$($result.Message)'. Retrying after $SecondsBetweenRetries seconds. Retry count $retriesDone of $Retries."
         ipconfig.exe /flushdns | Out-Null
 
         Start-Sleep -Seconds $SecondsBetweenRetries
@@ -693,7 +693,7 @@ $adInstallDcPre2012 = {
         }
         else
         {
-            Write-ScreenInfo "Domain $DomainName was not reachable ($count)" -Type Warning
+            Write-Warning "Domain $DomainName was not reachable ($count)"
         }
 
         Start-Sleep -Seconds 1
@@ -718,7 +718,7 @@ $adInstallDcPre2012 = {
     $retriesDone = 0
     while ($LASTEXITCODE -ge 11 -and $retriesDone -lt $Retries)
     {
-        Write-ScreenInfo "The first try to promote '$(HOSTNAME.EXE)' did not work. The error code was '$LASTEXITCODE'. Retrying after $SecondsBetweenRetries seconds. Retry count $retriesDone of $Retries." -Type Warning
+        Write-Warning "The first try to promote '$(HOSTNAME.EXE)' did not work. The error code was '$LASTEXITCODE'. Retrying after $SecondsBetweenRetries seconds. Retry count $retriesDone of $Retries."
         ipconfig.exe /flushdns | Out-Null
 
         Start-Sleep -Seconds $SecondsBetweenRetries
