@@ -2,6 +2,8 @@
 
 ## Unreleased (yyyy-MM-dd)
 
+## 5.54.0 (2024-08-16)
+
 ### Enhancements
 
 - Allow very basic peering with unmnanaged VNETs (#1653), given that the account running the lab script has the appropriate permissions.
