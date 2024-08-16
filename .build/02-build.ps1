@@ -4,6 +4,9 @@ function BuildModule
     param
     (
         $Name,
+
+        $ModuleRoot = $PSScriptRoot,
+
         [switch]
         $SkipStringBuilder
     )
@@ -14,8 +17,8 @@ function BuildModule
     }
 
     #region Handle Working Directory DefaultsHostsFile
-    $WorkingDirectory = Join-Path -Path $PSScriptRoot -ChildPath "..\$Name"
-    $publishDir = New-Item -Path $PSScriptRoot -Name "..\publish" -ItemType Directory -Force
+    $WorkingDirectory = Join-Path -Path $ModuleRoot -ChildPath "..\$Name"
+    $publishDir = New-Item -Path $ModuleRoot -Name "..\publish" -ItemType Directory -Force
     #endregion Handle Working Directory Defaults
 
     # Prepare publish folder
