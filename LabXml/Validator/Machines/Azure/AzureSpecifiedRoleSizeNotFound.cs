@@ -28,7 +28,7 @@ namespace AutomatedLab
             {
                 yield return new ValidationMessage()
                 {
-                    Message = string.Format("The specified role {0} does not exist in Azure", machine.AzureProperties["RoleSize"]),
+                    Message = string.Format("The specified role {0} does not exist in Azure. Please run '(Get-LabDefinition).AzureSettings.RoleSizes' to get a list of available role sizes.", machine.AzureProperties["RoleSize"]),
                     Type = MessageType.Error,
                     TargetObject = machine.Name
                 };

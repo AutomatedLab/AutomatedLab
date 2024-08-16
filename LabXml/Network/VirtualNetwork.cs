@@ -87,6 +87,9 @@ namespace AutomatedLab
             set { connectToVnets = value; }
         }
 
+        // Allowing Azure users to peer to a non-AL-managed VNET
+        public List<string> PeeringVnetResourceIds { get; set; }
+
         public List<IPAddress> DnsServers
         {
             get { return dnsServers; }

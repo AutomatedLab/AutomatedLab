@@ -420,7 +420,7 @@ Get/Set/Register/Unregister-PSFConfig -Module AutomatedLab -Name AutoSyncLabSour
     }
     catch
     {
-        Write-ScreenInfo 'Querying available operating system images from Azure'
+        Write-ScreenInfo 'No OS cache available. Querying available operating system images from Azure. This takes some time, as we need to query for the VM Generation as well. The information will be cached.'
         $global:cacheVmImages = Get-LabAzureAvailableSku -Location $DefaultLocationName
         $vmImages = $global:cacheVmImages
     }

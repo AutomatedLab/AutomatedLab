@@ -90,12 +90,13 @@ Accept wildcard characters: False
 
 ### -AzureProperties
 Extra properties for Azure based virtual network.
-Options are:   SubnetName:           Name of subnet to be create inside the virtual network. 
-SubnetAddressPrefix:  If a subnet of another size than the virtual network is desired, use this parameter to specify this. 
-LocationName:         Azure Datacenter of where to create the virtual network. 
-DnsServers:           DNS servers for the virtual network.
-All machines in the virtual network will be configured to use these DNS servers if they are not configured manually. 
-ConnectToVnets:       If specified, a VPN gateway will be created and configure to connect the network being created with the network(s) specified by this parameter.
+Options are:
+SubnetName: The name of the subnet to create in the virtual network. AL does not segment virtual networks into subnets. One virtual network per network definition will be created
+SubnetAddressPrefix: The address prefix (e.g. 24) of the subnet that will be created.
+LocationName: The Azure location name (e.g. westeurope). Bear in mind that this should not differ from your lab's default location.
+DnsServers: Comma-separated DNS servers for the network.
+ConnectToVnets: Connections to other Lab VNETs by leveraging VNET peering. When connecting two or more lab networks through this parameter, please also specifiy this for all additional network definitions
+PeeringVnetResourceIds: Connections to VNETs not managed by AutomatedLab. A list of resource IDs for the peering is required in the form /subscriptions/<GUID>/resourceGroups/<RGNAME>/providers/Microsoft.Network/virtualNetworks/<VNETNAME>. All peerings will be created with VNET access, no GW transit, no forwarding and no remote gateways.
 
 ```yaml
 Type: Hashtable[]

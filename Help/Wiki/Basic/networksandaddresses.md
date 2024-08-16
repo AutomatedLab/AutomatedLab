@@ -23,7 +23,8 @@ Additionally, the parameters AzureProperties and HyperVProperties can be used to
 * SubnetAddressPrefix: The address prefix (e.g. 24) of the subnet that will be created.
 * LocationName: The Azure location name (e.g. westeurope). Bear in mind that this should not differ from your lab's default location.
 * DnsServers: Comma-separated DNS servers for the network.
-* ConnectToVnets: Connections to other VNETs by leveraging VNET peering. When connecting two or more lab networks through this parameter, please also specifiy this for all additional network definitions
+* ConnectToVnets: Connections to other Lab VNETs by leveraging VNET peering. When connecting two or more lab networks through this parameter, please also specifiy this for all additional network definitions
+* PeeringVnetResourceIds: Connections to VNETs not managed by AutomatedLab. A list of resource IDs for the peering is required in the form /subscriptions/<GUID>/resourceGroups/<RGNAME>/providers/Microsoft.Network/virtualNetworks/<VNETNAME>. All peerings will be created with VNET access, no GW transit, no forwarding and no remote gateways.
 
 For HyperV, the following properties are valid:
 

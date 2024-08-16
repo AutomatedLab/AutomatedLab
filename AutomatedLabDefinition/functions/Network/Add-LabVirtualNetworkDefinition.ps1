@@ -27,7 +27,7 @@
         Add-LabAzureSubscription
     }
 
-    $azurePropertiesValidKeys = 'Subnets', 'LocationName', 'DnsServers', 'ConnectToVnets', 'DnsLabel'
+    $azurePropertiesValidKeys = 'Subnets', 'LocationName', 'DnsServers', 'ConnectToVnets', 'DnsLabel', 'PeeringVnetResourceIds'
     $hypervPropertiesValidKeys = 'SwitchType', 'AdapterName', 'ManagementAdapter'
 
     if (-not (Get-LabDefinition))
@@ -141,6 +141,11 @@
 	if($AzureProperties.ConnectToVnets)
 	{
 		$network.ConnectToVnets = $AzureProperties.ConnectToVnets
+	}
+
+	if($AzureProperties.PeeringVnetResourceIds)
+	{
+		$network.PeeringVnetResourceIds = $AzureProperties.PeeringVnetResourceIds
 	}
 
 	if($AzureProperties.DnsServers)

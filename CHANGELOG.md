@@ -2,9 +2,18 @@
 
 ## Unreleased (yyyy-MM-dd)
 
+## 5.54.0 (2024-08-16)
+
 ### Enhancements
 
+- Allow very basic peering with unmnanaged VNETs (#1653), given that the account running the lab script has the appropriate permissions.
+- 'Invoke-LabDscConfiguration' can now deal with MetaMofs additionally to MOFs (fixes #1651).
+
 ### Bugs
+
+- Improved message in validator 'AzureSpecifiedRoleSizeNotFound'.
+- Remove deprecated functions from help and manifest.
+- Fix Write-ScreenInfo (fixes #1648)
 
 ## 5.53.0 (2024-06-08)
 

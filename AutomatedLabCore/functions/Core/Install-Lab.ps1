@@ -196,6 +196,18 @@
                 New-LabVM -Name ($script:data.Machines | Where-Object SkipDeployment -eq $false) -CreateCheckPoints:$CreateCheckPoints
             }
 
+            if ($engine -eq 'Azure') {                
+                foreach ($network in $script:data.VirtualNetworks) {
+                    $remoteNet = Get-AzVirtualNetwork -Name $network.ResourceName
+                    foreach ($externalPeer in $network.PeeringVnetResourceIds) {
+                        $peerName = $externalPeer -split '/' | Select-Object -Last 1
+                        $vNet = Get-AzResource -Id $externalPeer | Get-AzVirtualNetwork
+                        Write-ScreenInfo -Type Verbose -Message ('Adding peering from {0} to {1} to VNet' -f $network.ResourceName, $peerName)
+                        $null = Add-AzVirtualNetworkPeering -VirtualNetwork $vnet -RemoteVirtualNetworkId $remoteNet.id -Name "$($network.ResourceName)To$($peerName)"
+                    }
+                }
+            }
+
             #VMs created, export lab definition again to update MAC addresses
             Set-LabDefinition -Machines $Script:data.Machines
             Export-LabDefinition -Force -ExportDefaultUnattendedXml -Silent

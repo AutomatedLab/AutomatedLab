@@ -172,27 +172,6 @@ namespace AutomatedLab
             set { installation = value; }
         }
 
-        public string AzureImageName
-        {
-            get
-            {
-                try
-                {
-                    return isoNameToAzureSku[OperatingSystemName];
-                }
-                catch (ArgumentNullException)
-                {
-                    // Key is null - can happen
-                }
-                catch (KeyNotFoundException)
-                {
-                    // OS not in dictionary - can happen
-                }
-
-                return string.Empty;
-            }
-        }
-
         public string VMWareImageName
         {
             get
@@ -271,26 +250,6 @@ namespace AutomatedLab
         {
             LinuxPackageGroup = new List<String>();
             Architecture = Architecture.Unknown;
-            isoNameToAzureSku = azureToIsoName.ToDictionary(kp => kp.Value, kp => kp.Key);
-        }
-
-        public OperatingSystem(string azureSkuName, bool azure = true)
-        {
-            isoNameToAzureSku = azureToIsoName.ToDictionary(kp => kp.Value, kp => kp.Key);
-            Architecture = Architecture.Unknown;
-
-            try
-            {
-                operatingSystemName = azureToIsoName[azureSkuName];
-            }
-            catch (ArgumentNullException)
-            {
-                // Key is null - can happen
-            }
-            catch (KeyNotFoundException)
-            {
-                // OS not in dictionary - can happen
-            }
         }
 
         static OperatingSystem()
@@ -343,7 +302,6 @@ namespace AutomatedLab
 
         public OperatingSystem(string operatingSystemName)
         {
-            isoNameToAzureSku = azureToIsoName.ToDictionary(kp => kp.Value, kp => kp.Key);
             this.operatingSystemName = operatingSystemName;
             LinuxPackageGroup = new List<String>();
             Architecture = Architecture.Unknown;
