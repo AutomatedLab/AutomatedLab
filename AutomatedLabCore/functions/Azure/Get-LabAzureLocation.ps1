@@ -77,7 +77,7 @@
 
         if ($List)
         {
-            $azureLocations | Sort-Object -Property Latency | Format-Table DisplayName, Latency
+            $azureLocations | Sort-Object -Property Latency | Select-Object -Property DisplayName, Latency
         }
         else
         {

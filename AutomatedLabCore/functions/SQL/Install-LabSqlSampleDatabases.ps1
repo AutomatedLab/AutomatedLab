@@ -173,7 +173,7 @@
         'C:\Program Files\Microsoft SQL Server\MSSQL15.$roleInstance\MSSQL\DATA\WideWorldImporters_InMemory_Data_1',
         REPLACE
 "@
-                Invoke-Sqlcmd -ServerInstance $connectionInstance -Query $query
+                Invoke-Sqlcmd -ServerInstance $connectionInstance -Query $query -TrustServerCertificate
             } -DependencyFolderPath $dependencyFolder -Variable (Get-Variable roleInstance)
         }
         'SQLServer2022'
@@ -196,7 +196,7 @@
         'C:\Program Files\Microsoft SQL Server\MSSQL16.$roleInstance\MSSQL\DATA\WideWorldImporters_InMemory_Data_1',
         REPLACE
 "@
-                Invoke-Sqlcmd -ServerInstance $connectionInstance -Query $query
+                Invoke-Sqlcmd -ServerInstance $connectionInstance -Query $query -TrustServerCertificate
             } -DependencyFolderPath $dependencyFolder -Variable (Get-Variable roleInstance)
         }
         default
