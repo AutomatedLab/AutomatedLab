@@ -2,6 +2,10 @@
 
 ## Unreleased (yyyy-MM-dd)
 
+### Enhancements
+
+- Added product keys for Windows Server 2025.
+
 ## 5.54.0 (2024-08-16)
 
 ### Enhancements
