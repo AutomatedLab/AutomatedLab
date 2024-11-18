@@ -2,6 +2,10 @@
 
 ## Unreleased (yyyy-MM-dd)
 
+### Enhancements
+
+- Added product keys for Windows Server 2025.
+
 ### Bugs
 
 - Removed the colum 'LastUpdated' from the table 'RegistrationData' in the DSC database.
