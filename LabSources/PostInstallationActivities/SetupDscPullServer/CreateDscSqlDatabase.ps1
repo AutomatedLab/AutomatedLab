@@ -225,7 +225,6 @@ CREATE TABLE [dbo].[RegistrationData](
 	[NodeName] [nvarchar](255) NULL,
 	[IPAddress] [nvarchar](255) NULL,
 	[ConfigurationNames] [nvarchar](max) NULL,
-    [LastUpdated] [date] NULL,
  CONSTRAINT [PK_RegistrationData] PRIMARY KEY CLUSTERED 
 (
     [AgentId] ASC

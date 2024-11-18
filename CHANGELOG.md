@@ -2,6 +2,10 @@
 
 ## Unreleased (yyyy-MM-dd)
 
+### Bugs
+
+- Removed the colum 'LastUpdated' from the table 'RegistrationData' in the DSC database.
+
 ## 5.54.0 (2024-08-16)
 
 ### Enhancements
