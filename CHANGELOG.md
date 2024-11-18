@@ -6,6 +6,10 @@
 
 - Added product keys for Windows Server 2025.
 
+### Bugs
+
+- Removed the colum 'LastUpdated' from the table 'RegistrationData' in the DSC database.
+
 ## 5.54.0 (2024-08-16)
 
 ### Enhancements
