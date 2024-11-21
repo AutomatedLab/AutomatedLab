@@ -8,7 +8,8 @@
 
 ### Bugs
 
-- Removed the colum 'LastUpdated' from the table 'RegistrationData' in the DSC database.
+- Removed the column 'LastUpdated' from the table 'RegistrationData' in the DSC database.
+- Fixed an issue installing SQL sample databases (#1663).
 - Used 'Select-Object instead of 'Format-Table'.
 
 ## 5.54.0 (2024-08-16)
