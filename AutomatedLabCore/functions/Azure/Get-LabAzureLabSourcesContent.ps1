@@ -38,12 +38,12 @@
 
     if ($File)
     {
-        $content = $content | Where-Object -FilterScript { $_.GetType().FullName -eq 'Microsoft.Azure.Storage.File.CloudFile' }
+        $content = $content | Where-Object -FilterScript { $_ -is [Microsoft.WindowsAzure.Commands.Common.Storage.ResourceModel.AzureStorageFile] }
     }
 
     if ($Directory)
     {
-        $content = $content | Where-Object -FilterScript { $_.GetType().FullName -eq 'Microsoft.Azure.Storage.File.CloudFileDirectory' }
+        $content = $content | Where-Object -FilterScript { $_ -is [Microsoft.WindowsAzure.Commands.Common.Storage.ResourceModel.AzureStorageFileDirectory] }
     }
 
     $content = $content |
