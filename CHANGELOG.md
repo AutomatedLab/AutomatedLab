@@ -2,6 +2,10 @@
 
 ## Unreleased (yyyy-MM-dd)
 
+### Bugs
+
+- Updated code for compatibility with Az.Storage 8.0.0.
+
 ## 5.55.0 (2024-12-31)
 
 ### Enhancements
