@@ -4,7 +4,6 @@
 
 ### Enhancements
 
-- 'DefaultAzureRoleSize' is not 'DS'.
 - Not all Skus with a restriction 'NotAvailableForSubscription' will be ignored, only the
   ones that have a 'NotAvailableForSubscription'-restriction for the location.
 - Taking VM generation into account when selecting an Azure role size / image.
