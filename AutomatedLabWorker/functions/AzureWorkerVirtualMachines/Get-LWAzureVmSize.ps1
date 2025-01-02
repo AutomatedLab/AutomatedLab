@@ -25,7 +25,7 @@
     {
         $DefaultAzureRoleSize = Get-LabConfigurationItem -Name DefaultAzureRoleSize
         $roleSize = $lab.AzureSettings.RoleSizes |
-        Where-Object { $_.MemoryInMB -ge $machine.Memory -and $_.NumberOfCores -ge $machine.Processors -and $machine.Disks.Count -le $_.MaxDataDiskCount } |
+        Where-Object { $_.MemoryInMB -ge ($machine.Memory / 1MB) -and $_.NumberOfCores -ge $machine.Processors -and $machine.Disks.Count -le $_.MaxDataDiskCount } |
         Sort-Object -Property MemoryInMB, NumberOfCores |
         Select-Object -First 1
 
