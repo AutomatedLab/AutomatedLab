@@ -54,10 +54,18 @@
         }
 
         $roleSize = $lab.AzureSettings.RoleSizes |
-        Where-Object { $_.Name -Match $pattern -and $_.Name -notlike '*promo*' } |
-        Where-Object { $_.MemoryInMB -ge ($machine.Memory / 1MB) -and $_.NumberOfCores -ge $machine.Processors } |
-        Sort-Object -Property MemoryInMB, NumberOfCores, @{ Expression = { if ($_.Name -match '.+_v(?<Version>\d{1,2})') { $Matches.Version } }; Ascending = $false } |
-        Select-Object -First 1
+            Where-Object { $_.Name -Match $pattern -and $_.Name -notlike '*promo*' } |
+            Where-Object { $_.MemoryInMB -ge ($machine.Memory / 1MB) -and $_.NumberOfCores -ge $machine.Processors } |
+            Where-Object { 
+                if ($Machine.VmGeneration -eq 2) {
+                    $_.Gen2Supported -eq $true
+                }
+                elseif ($Machine.VmGeneration -eq 1) {
+                    $_.Gen1Supported -eq $true
+                }
+            } |
+            Sort-Object -Property MemoryInMB, NumberOfCores, @{ Expression = { if ($_.Name -match '.+_v(?<Version>\d{1,2})') { $Matches.Version } }; Ascending = $false } |
+            Select-Object -First 1
 
         Write-PSFMessage -Message "Using specified role size of '$($roleSize.Name)' out of role sizes '$pattern'"
     }
