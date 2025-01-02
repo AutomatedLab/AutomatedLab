@@ -38,7 +38,7 @@
             'A' { '^Standard_A\d{1,2}(_v\d{1,3})|Basic_A\d{1,2}' }
             'AS' { '^Standard_AS\d{1,2}(_v\d{1,3})' }
             'AC' { '^Standard_AC\d{1,2}(_v\d{1,3})' }
-            'D' { '^Standard_D\d{1,2}s?(_v\d{1,3})' }
+            'D' { '^Standard_D\d{1,2}s(_v\d{1,3})' }
             'DS' { '^Standard_DS\d{1,2}(-\d\d?)?(_v\d{1,3})' }
             'DC' { '^Standard_DC\d{1,2}s(_v\d{1,3})' }
             "E" { '^Standard_E\d{1,2}s(_v\d{1,3})' }
