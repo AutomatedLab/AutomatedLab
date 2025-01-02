@@ -2,6 +2,10 @@
 
 ## Unreleased (yyyy-MM-dd)
 
+### Bugs
+
+- 'Get-LWAzureWindowsFeature' did never work as the 'PassThru' switch was missing.
+
 ## 5.55.0 (2024-12-31)
 
 ### Enhancements
