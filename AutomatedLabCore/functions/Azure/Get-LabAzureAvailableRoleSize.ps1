@@ -46,15 +46,15 @@
     {
         $rsInfo = $availableRoleSizes | Where-Object Name -eq $vms.Name
 
-            [AutomatedLab.Azure.AzureRmVmSize]@{
-                NumberOfCores = $vms.NumberOfCores
-                MemoryInMB = $vms.MemoryInMB
-                Name = $vms.Name
-                MaxDataDiskCount = $vms.MaxDataDiskCount
-                ResourceDiskSizeInMB = $vms.ResourceDiskSizeInMB
-                OSDiskSizeInMB = $vms.OSDiskSizeInMB
-                Gen1Supported = ($rsInfo.Capabilities | Where-Object Name -eq HyperVGenerations).Value -like '*v1*'
-                Gen2Supported = ($rsInfo.Capabilities | Where-Object Name -eq HyperVGenerations).Value -like '*v2*'
-            }
+        [AutomatedLab.Azure.AzureRmVmSize]@{
+            NumberOfCores = $vms.NumberOfCores
+            MemoryInMB = $vms.MemoryInMB
+            Name = $vms.Name
+            MaxDataDiskCount = $vms.MaxDataDiskCount
+            ResourceDiskSizeInMB = $vms.ResourceDiskSizeInMB
+            OSDiskSizeInMB = $vms.OSDiskSizeInMB
+            Gen1Supported = ($rsInfo.Capabilities | Where-Object Name -eq HyperVGenerations).Value -like '*v1*'
+            Gen2Supported = ($rsInfo.Capabilities | Where-Object Name -eq HyperVGenerations).Value -like '*v2*'
+        }
     }
 }
