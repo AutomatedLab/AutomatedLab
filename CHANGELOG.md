@@ -2,8 +2,6 @@
 
 ## Unreleased (yyyy-MM-dd)
 
-## 5.55.0 (2024-12-31)
-
 ### Enhancements
 
 - 'DefaultAzureRoleSize' is not 'DS'.
@@ -14,6 +12,8 @@
 ### Bugs
 
 - Updated selection of Azure VM role sizes. It was outdated.
+
+## 5.55.0 (2024-12-31)
 
 ### Enhancements
 
