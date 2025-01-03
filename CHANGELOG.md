@@ -12,6 +12,7 @@
 
 - Updated selection of Azure VM role sizes. It was outdated.
 - Updated code for compatibility with Az.Storage 8.0.0.
+- 'Get-LWAzureWindowsFeature' did never work as the 'PassThru' switch was missing.
 
 ## 5.55.0 (2024-12-31)
 
