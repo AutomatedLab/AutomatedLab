@@ -19,8 +19,8 @@
     {
         $param = @{
             UseDeviceAuthentication = $true
-            ErrorAction             = 'SilentlyContinue' 
-            WarningAction           = 'Continue'            
+            ErrorAction             = 'SilentlyContinue'
+            WarningAction           = 'Continue'
         }
 
         if ($script:lab.AzureSettings.Environment)
@@ -38,33 +38,23 @@
         return
     }
 
-    $availableRoleSizes = if ((Get-Command Get-AzComputeResourceSku).Parameters.ContainsKey('Location'))
-    {
-        Get-AzComputeResourceSku -Location $azLocation.Location | Where-Object {
-            $_.ResourceType -eq 'virtualMachines' -and $_.Restrictions.ReasonCode -notcontains 'NotAvailableForSubscription' -and ($_.Capabilities | Where-Object Name -eq CpuArchitectureType).Value -notlike '*arm*'
-        }
+    $availableRoleSizes = Get-AzComputeResourceSku -Location $azLocation.Location | Where-Object {
+        $_.ResourceType -eq 'virtualMachines' -and ($_.Restrictions | Where-Object Type -eq Location).ReasonCode -ne 'NotAvailableForSubscription' -and ($_.Capabilities | Where-Object Name -eq CpuArchitectureType).Value -notlike '*arm*'
     }
-    else
-    {
-        Get-AzComputeResourceSku | Where-Object {
-            $_.Locations -contains $azLocation.Location -and $_.ResourceType -eq 'virtualMachines' -and $_.Restrictions.ReasonCode -notcontains 'NotAvailableForSubscription' -and ($_.Capabilities | Where-Object Name -eq CpuArchitectureType).Value -notlike '*arm*'
-        }
-    }
-    
 
     foreach ($vms in (Get-AzVMSize -Location $azLocation.Location | Where-Object -Property Name -in $availableRoleSizes.Name))
     {
         $rsInfo = $availableRoleSizes | Where-Object Name -eq $vms.Name
 
-            [AutomatedLab.Azure.AzureRmVmSize]@{
-                NumberOfCores = $vms.NumberOfCores
-                MemoryInMB = $vms.MemoryInMB
-                Name = $vms.Name
-                MaxDataDiskCount = $vms.MaxDataDiskCount
-                ResourceDiskSizeInMB = $vms.ResourceDiskSizeInMB
-                OSDiskSizeInMB = $vms.OSDiskSizeInMB
-                Gen1Supported = ($rsInfo.Capabilities | Where-Object Name -eq HyperVGenerations).Value -like '*v1*'
-                Gen2Supported = ($rsInfo.Capabilities | Where-Object Name -eq HyperVGenerations).Value -like '*v2*'
-            }
+        [AutomatedLab.Azure.AzureRmVmSize]@{
+            NumberOfCores = $vms.NumberOfCores
+            MemoryInMB = $vms.MemoryInMB
+            Name = $vms.Name
+            MaxDataDiskCount = $vms.MaxDataDiskCount
+            ResourceDiskSizeInMB = $vms.ResourceDiskSizeInMB
+            OSDiskSizeInMB = $vms.OSDiskSizeInMB
+            Gen1Supported = ($rsInfo.Capabilities | Where-Object Name -eq HyperVGenerations).Value -like '*v1*'
+            Gen2Supported = ($rsInfo.Capabilities | Where-Object Name -eq HyperVGenerations).Value -like '*v2*'
+        }
     }
 }

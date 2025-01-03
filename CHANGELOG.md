@@ -2,8 +2,15 @@
 
 ## Unreleased (yyyy-MM-dd)
 
+### Enhancements
+
+- Not all Skus with a restriction 'NotAvailableForSubscription' will be ignored, only the
+  ones that have a 'NotAvailableForSubscription'-restriction for the location.
+- Taking VM generation into account when selecting an Azure role size / image.
+
 ### Bugs
 
+- Updated selection of Azure VM role sizes. It was outdated.
 - Updated code for compatibility with Az.Storage 8.0.0.
 
 ## 5.55.0 (2024-12-31)
