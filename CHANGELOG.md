@@ -2,15 +2,8 @@
 
 ## Unreleased (yyyy-MM-dd)
 
-### Bugs
-
-- 'Get-LWAzureWindowsFeature' did never work as the 'PassThru' switch was missing.
-
-## 5.55.0 (2024-12-31)
-
 ### Enhancements
 
-- 'DefaultAzureRoleSize' is not 'DS'.
 - Not all Skus with a restriction 'NotAvailableForSubscription' will be ignored, only the
   ones that have a 'NotAvailableForSubscription'-restriction for the location.
 - Taking VM generation into account when selecting an Azure role size / image.
@@ -18,6 +11,10 @@
 ### Bugs
 
 - Updated selection of Azure VM role sizes. It was outdated.
+- Updated code for compatibility with Az.Storage 8.0.0.
+- 'Get-LWAzureWindowsFeature' did never work as the 'PassThru' switch was missing.
+
+## 5.55.0 (2024-12-31)
 
 ### Enhancements
 

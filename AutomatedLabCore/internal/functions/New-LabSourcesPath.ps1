@@ -6,20 +6,20 @@
         [string]
         $RelativePath,
 
-        [Microsoft.Azure.Storage.File.CloudFileShare]
+        [Microsoft.WindowsAzure.Commands.Common.Storage.ResourceModel.AzureStorageFileShare]
         $Share
     )
 
     $container = Split-Path -Path $RelativePath
     if (-not $container)
     {
-        New-AzStorageDirectory -Share $Share -Path $RelativePath -ErrorAction SilentlyContinue
+        New-AzStorageDirectory -ShareClient $share.ShareClient -Context $Share.Context -Path $RelativePath -ErrorAction SilentlyContinue
         return
     }
 
-    if (-not (Get-AzStorageFile -Share $Share -Path $container -ErrorAction SilentlyContinue))
+    if (-not (Get-AzStorageFile -ShareClient $Share.ShareClient -Context $share.Context -Path $container -ErrorAction SilentlyContinue))
     {
         New-LabSourcesPath -RelativePath $container -Share $Share
-        New-AzStorageDirectory -Share $Share -Path $container -ErrorAction SilentlyContinue
+        New-AzStorageDirectory -ShareClient $share.ShareClient -Context $Share.Context -Path $container -ErrorAction SilentlyContinue
     }
 }
