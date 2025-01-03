@@ -11,6 +11,7 @@
 ### Bugs
 
 - Updated selection of Azure VM role sizes. It was outdated.
+- Updated code for compatibility with Az.Storage 8.0.0.
 
 ## 5.55.0 (2024-12-31)
 
