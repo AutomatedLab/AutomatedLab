@@ -438,7 +438,7 @@ namespace AutomatedLab
                 {
                     userName = "root";
                 }
-                if (OperatingSystemType != OperatingSystemType.Linux)
+                if (OperatingSystemType != OperatingSystemType.Linux || (OperatingSystemType == OperatingSystemType.Linux && LinuxType == LinuxType.Ubuntu))
                 {
                     userName = string.Format(@"{0}\{1}", name, installationUser.UserName);
                 }
