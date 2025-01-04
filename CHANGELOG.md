@@ -7,10 +7,14 @@
 - Not all Skus with a restriction 'NotAvailableForSubscription' will be ignored, only the
   ones that have a 'NotAvailableForSubscription'-restriction for the location.
 - Taking VM generation into account when selecting an Azure role size / image.
+- Added parameter 'UseAzureUrl' to 'Get-LabTfsFeed'.
+- Add *.azure.com to Local Intranet Zone in Azure VM initialization.
 
 ### Bugs
 
 - Updated selection of Azure VM role sizes. It was outdated.
+- Fix regex pattern to match hostnames in remote URL for Azure deployments.
+- The SSH code in 'Remove-LabPSSession' has been removed, it needs to be revised.
 
 ## 5.55.0 (2024-12-31)
 
