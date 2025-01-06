@@ -2,7 +2,10 @@
 {
     [CmdletBinding()]
     param
-    ( )
+    (
+        [Parameter()]
+        [switch]$UseAzureUrl
+    )
 
     $buildWorkers = Get-LabVM -Role TfsBuildWorker
     if (-not $buildWorkers)
@@ -83,7 +86,7 @@
 
         [string]$machineName = $tfsServer
 
-        if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure' -and -not ($tfsServer.Roles.Name -eq 'AzDevOps' -and $tfsServer.SkipDeployment))
+        if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure' -and -not ($tfsServer.Roles.Name -eq 'AzDevOps' -and $tfsServer.SkipDeployment -and $UseAzureUrl))
         {
             $tfsPort = (Get-LabAzureLoadBalancedPort -DestinationPort $tfsPort -ComputerName $tfsServer -ErrorAction SilentlyContinue).Port
             $machineName = $tfsServer.AzureConnectionInfo.DnsName
