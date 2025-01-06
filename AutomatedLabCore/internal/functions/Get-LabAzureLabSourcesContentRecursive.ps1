@@ -15,25 +15,29 @@
 
     $content = @()
 
-    $temporaryContent = if ($Path)
-    {
-        $StorageContext | Get-AzStorageFile -Path $Path -ErrorAction SilentlyContinue
+    $param = @{
+        Context = $StorageContext.Context
     }
-    else
+    if ($Path)
     {
-        $StorageContext | Get-AzStorageFile
+        $param.Path = $Path
+        $param.ErrorAction = 'SilentlyContinue'
     }
+    
+    if ($StorageContext.ShareDirectoryClient) { $param.ShareDirectoryClient = $StorageContext.ShareDirectoryClient}
+    if ($StorageContext.ShareClient) { $param.ShareClient = $StorageContext.ShareClient}
+    $temporaryContent = Get-AzStorageFile @param
 
     foreach ($item in $temporaryContent)
     {
-        if ($item.CloudFileDirectory)
+        if ($item.ShareDirectoryClient)
         {
-            $content += $item.CloudFileDirectory
+            $content += $item
             $content += Get-LabAzureLabSourcesContentRecursive -StorageContext $item
         }
-        elseif ($item.CloudFile)
+        elseif ($item.ShareFileClient)
         {
-            $content += $item.CloudFile
+            $content += $item
         }
         else
         {

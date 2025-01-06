@@ -16,6 +16,8 @@
 - Updated selection of Azure VM role sizes. It was outdated.
 - Fix regex pattern to match hostnames in remote URL for Azure deployments.
 - The SSH code in 'Remove-LabPSSession' has been removed, it needs to be revised.
+- Updated code for compatibility with Az.Storage 8.0.0.
+- 'Get-LWAzureWindowsFeature' did never work as the 'PassThru' switch was missing.
 
 ## 5.55.0 (2024-12-31)
 
