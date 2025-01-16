@@ -13,7 +13,7 @@ List or locate Artifact feed details of an Azure DevOps/TFS instance
 ## SYNTAX
 
 ```
-Get-LabTfsFeed [-ComputerName] <String> [[-FeedName] <String>] [<CommonParameters>]
+Get-LabTfsFeed [-ComputerName] <String> [[-FeedName] <String>] [-UseAzureUrl] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -56,6 +56,21 @@ Aliases:
 Required: False
 Position: 1
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -UseAzureUrl
+Use the hostname in the feed's url instead of the external Azure name.
+
+```yaml
+Type: switch
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

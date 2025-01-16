@@ -46,16 +46,16 @@
             $param['Port'] = 5985
         }
 
-        if (((Get-Command New-PSSession).Parameters.Values.Name -contains 'HostName') )
-        {
-            $param['HostName'] = $param['ComputerName']
-            $param['Port'] = if ($m.HostType -eq 'Azure') {$m.AzureConnectionInfo.SshPort} else { 22 }
-            $param.Remove('ComputerName')
-            $param.Remove('PSSessionOption')
-            $param.Remove('Authentication')
-            $param.Remove('Credential')
-            $param.Remove('UseSsl')
-        }
+        #if (((Get-Command New-PSSession).Parameters.Values.Name -contains 'HostName') )
+        #{
+        #    $param['HostName'] = $param['ComputerName']
+        #    $param['Port'] = if ($m.HostType -eq 'Azure') {$m.AzureConnectionInfo.SshPort} else { 22 }
+        #    $param.Remove('ComputerName')
+        #    $param.Remove('PSSessionOption')
+        #    $param.Remove('Authentication')
+        #    $param.Remove('Credential')
+        #    $param.Remove('UseSsl')
+        #}
 
         Get-PSSession | Where-Object {
             (($_.ComputerName -eq $param.ComputerName) -or ($_.ComputerName -eq $param.HostName)) -and
