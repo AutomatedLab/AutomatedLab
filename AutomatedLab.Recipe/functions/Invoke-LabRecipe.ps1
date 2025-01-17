@@ -125,7 +125,7 @@
         }
 
         $null = $scriptContent.AppendLine('Install-Lab')
-        $null = $scriptContent.AppendLine('Show-LabDeploymentSummary -Detailed')
+        $null = $scriptContent.AppendLine('Show-LabDeploymentSummary')
         $labBlock = [scriptblock]::Create($scriptContent.ToString())
 
         if ($OutFile)

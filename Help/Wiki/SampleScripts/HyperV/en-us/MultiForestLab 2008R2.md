@@ -70,6 +70,6 @@ $packs += Get-LabSoftwarePackage -Path $labSources\SoftwarePackages\winrar.exe -
 
 Install-LabSoftwarePackages -Machine (Get-LabVM -All) -SoftwarePackage $packs
 
-Show-LabDeploymentSummary -Detailed
+Show-LabDeploymentSummary
 
 ```

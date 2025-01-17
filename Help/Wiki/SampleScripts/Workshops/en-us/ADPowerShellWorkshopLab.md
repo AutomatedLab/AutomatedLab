@@ -49,5 +49,5 @@ Get-Job -Name 'Installation of*' | Wait-Job | Out-Null
 
 Install-LabWindowsFeature -ComputerName ADClient1 -FeatureName RSAT -IncludeAllSubFeature
 
-Show-LabDeploymentSummary -Detailed
+Show-LabDeploymentSummary
 ```

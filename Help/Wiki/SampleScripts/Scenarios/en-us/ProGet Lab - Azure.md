@@ -91,6 +91,6 @@ Invoke-LabCommand -ActivityName RegisterPSRepository -ComputerName PGClient1 -Sc
     Publish-Script -Path C:\SomeScript.ps1 -Repository Internal -NuGetApiKey $nuGetApiKey
 } -Variable (Get-Variable -Name nuGetApiKey, progetUrl)
 
-Show-LabDeploymentSummary -Detailed
+Show-LabDeploymentSummary
 
 ```

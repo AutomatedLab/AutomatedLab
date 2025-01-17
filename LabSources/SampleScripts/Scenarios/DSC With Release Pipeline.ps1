@@ -114,4 +114,4 @@ $releaseSteps = @(
 New-LabReleasePipeline -ProjectName 'ALSampleProject' -SourceRepository https://github.com/gaelcolas/DSCInfraSample -BuildSteps $buildSteps
 
 # Job done
-Show-LabDeploymentSummary -Detailed
+Show-LabDeploymentSummary

@@ -34,6 +34,6 @@ Add-LabMachineDefinition -Name sServer1 -Memory 2GB
 
 Install-Lab
 
-Show-LabDeploymentSummary -Detailed
+Show-LabDeploymentSummary
 
 ```

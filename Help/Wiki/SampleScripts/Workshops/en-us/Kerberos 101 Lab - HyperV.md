@@ -88,7 +88,7 @@ Install-LabSoftwarePackage -ComputerName KerbClient2 -Path "$labSources\Software
 Get-Job -Name 'Installation of*' | Wait-Job | Out-Null
 
 Checkpoint-LabVM -All -SnapshotName AfterInstall
-Show-LabDeploymentSummary -Detailed
+Show-LabDeploymentSummary
 
 Copy-LabFileItem -Path $labSources\Kerberos101 -ComputerName (Get-LabVM)
 

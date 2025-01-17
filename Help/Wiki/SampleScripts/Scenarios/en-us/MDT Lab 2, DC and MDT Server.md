@@ -30,6 +30,6 @@ Add-LabMachineDefinition -Name MDT2DC -Roles RootDC -DomainName contoso.com
 
 Install-Lab
 
-Show-LabDeploymentSummary -Detailed
+Show-LabDeploymentSummary
 
 ```

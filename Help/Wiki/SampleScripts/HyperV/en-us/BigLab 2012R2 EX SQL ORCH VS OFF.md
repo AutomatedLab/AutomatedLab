@@ -98,6 +98,6 @@ Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePac
 Install-LabSoftwarePackage -Path $labSources\SoftwarePackages\ReflectorInstaller.exe -CommandLine '/qn /IAgreeToTheEula' -ComputerName (Get-LabVM -Role VisualStudio2015)[1] -AsJob
 Get-Job -Name 'Installation of*' | Wait-Job | Out-Null
 
-Show-LabDeploymentSummary -Detailed
+Show-LabDeploymentSummary
 
 ```

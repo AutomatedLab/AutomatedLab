@@ -10,6 +10,8 @@
 - Added parameter 'UseAzureUrl' to 'Get-LabTfsFeed'.
 - Added parameter 'UseAzureUrl' to 'Install-LabBuildWorker' because of unexpected results in the DscWorkshop.
 - Add *.azure.com to Local Intranet Zone in Azure VM initialization.
+- Renamed the parameter 'Detailed' of 'Show-LabDeploymentSummary' to 'Summary'
+  and removed all references.
 
 ### Bugs
 

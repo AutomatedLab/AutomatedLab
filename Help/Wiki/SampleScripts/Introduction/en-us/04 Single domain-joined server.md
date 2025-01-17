@@ -13,6 +13,6 @@ Add-LabMachineDefinition -Name Client1 -Memory 1GB -OperatingSystem 'Windows 10 
 
 Install-Lab
 
-Show-LabDeploymentSummary -Detailed
+Show-LabDeploymentSummary
 
 ```

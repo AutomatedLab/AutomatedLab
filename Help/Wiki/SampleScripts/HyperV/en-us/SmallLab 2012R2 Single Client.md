@@ -26,6 +26,6 @@ Add-LabMachineDefinition -Name S2Client1 -Memory 512MB -Network $labName `
 
 Install-Lab
 
-Show-LabDeploymentSummary -Detailed
+Show-LabDeploymentSummary
 
 ```

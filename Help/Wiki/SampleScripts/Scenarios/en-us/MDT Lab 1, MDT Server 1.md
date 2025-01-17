@@ -22,6 +22,6 @@ Add-LabMachineDefinition -Name MDT1Server -Memory 1GB -OperatingSystem 'Windows 
 
 Install-Lab
 
-Show-LabDeploymentSummary -Detailed
+Show-LabDeploymentSummary
 
 ```

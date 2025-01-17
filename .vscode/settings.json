@@ -1,3 +1,7 @@
 {
-    "powershell.scriptAnalysis.settingsPath": "scriptanalyzer\\AutomatedLabRules.psd1"
+    "powershell.scriptAnalysis.settingsPath": "scriptanalyzer\\AutomatedLabRules.psd1",
+    "workbench.colorCustomizations": {
+        "editor.lineHighlightBackground": "#1073cf2d",
+        "editor.lineHighlightBorder": "#9fced11f"
+    }
 }

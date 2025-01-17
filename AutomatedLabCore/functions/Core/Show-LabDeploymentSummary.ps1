@@ -3,7 +3,7 @@
     [OutputType([System.TimeSpan])]
     [Cmdletbinding()]
     param (
-        [switch]$Detailed
+        [switch]$Summary
     )
 
     if (-not (Get-Lab -ErrorAction SilentlyContinue))
@@ -28,7 +28,7 @@
     Write-ScreenInfo -Message ("Setting up the lab took {0} hour$hoursPlural, {1} minute$minutesPlural and {2} second$secondsPlural" -f $ts.hours, $ts.minutes, $ts.seconds)
     Write-ScreenInfo -Message "Lab name is '$($lab.Name)' and is hosted on '$($lab.DefaultVirtualizationEngine)'. There are $($machines.Count) machine(s) and $($lab.VirtualNetworks.Count) network(s) defined."
 
-    if (-not $Detailed)
+    if ($Summary)
     {
         Write-ScreenInfo -Message '---------------------------------------------------------------------------'
     }

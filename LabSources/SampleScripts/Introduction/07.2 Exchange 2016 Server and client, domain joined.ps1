@@ -31,4 +31,4 @@ Restart-LabVM -ComputerName Lab2016EX1 -Wait
 
 Install-Lab -PostInstallations
 
-Show-LabDeploymentSummary -Detailed
+Show-LabDeploymentSummary

@@ -27,4 +27,4 @@ Add-LabMachineDefinition -Name SCMG2 -Memory 8GB -Role ScomManagement,ScomConsol
 Add-LabMachineDefinition -Name SCWC1 -Memory 8GB -Role ScomWebConsole -Domain contoso.com -OperatingSystem 'Windows Server 2019 Datacenter (Desktop Experience)'
 
 Install-Lab
-Show-LabDeploymentSummary -Detailed
+Show-LabDeploymentSummary

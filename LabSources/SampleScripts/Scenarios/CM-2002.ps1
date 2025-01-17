@@ -544,5 +544,5 @@ if ($PostInstallations.IsPresent) {
 else {
     Install-Lab
 }
-Show-LabDeploymentSummary -Detailed
+Show-LabDeploymentSummary
 #endregion
