@@ -34,5 +34,5 @@ Add-LabMachineDefinition -Name tfsBuild1 -Roles $role
 
 Install-Lab
 
-Show-LabDeploymentSummary -Detailed
+Show-LabDeploymentSummary
 ```

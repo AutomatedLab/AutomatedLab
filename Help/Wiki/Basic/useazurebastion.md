@@ -22,7 +22,7 @@ Add-LabMachineDefinition -Name DC1 -Memory 1GB -OperatingSystem 'Windows Server 
 
 Install-Lab
 
-Show-LabDeploymentSummary -Detailed
+Show-LabDeploymentSummary
 ```  
 
 Specifying this parameter will mean that your virtual network is extended to accomodate the bastion
@@ -45,7 +45,7 @@ Add-LabMachineDefinition -Name DC1 -Memory 1GB -OperatingSystem 'Windows Server 
 
 Install-Lab
 
-Show-LabDeploymentSummary -Detailed
+Show-LabDeploymentSummary
 ```
 
 ## Connecting via the Bastion

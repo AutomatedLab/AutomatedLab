@@ -25,6 +25,6 @@ Install-Lab
 
 Enable-LabCertificateAutoenrollment -Computer -User -CodeSigning
 
-Show-LabDeploymentSummary -Detailed
+Show-LabDeploymentSummary
 
 ```

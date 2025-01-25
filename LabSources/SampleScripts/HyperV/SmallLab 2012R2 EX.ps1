@@ -24,4 +24,4 @@ Add-LabMachineDefinition -Name E1Ex1 -Memory 4GB -Network $labName -IpAddress 19
 
 Install-Lab
 
-Show-LabDeploymentSummary -Detailed
+Show-LabDeploymentSummary

@@ -107,5 +107,5 @@ if ($createCheckpoint)
     Checkpoint-LabVM -All -SnapshotName 'AfterSetupComplete'
 }
 
-Show-LabDeploymentSummary -Detailed
+Show-LabDeploymentSummary
 ```

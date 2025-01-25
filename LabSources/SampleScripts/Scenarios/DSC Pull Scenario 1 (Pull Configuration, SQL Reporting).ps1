@@ -80,4 +80,4 @@ Install-LabWindowsFeature -ComputerName DPULL1 -FeatureName Web-Mgmt-Console
 
 Install-LabDscClient -All
 
-Show-LabDeploymentSummary -Detailed
+Show-LabDeploymentSummary

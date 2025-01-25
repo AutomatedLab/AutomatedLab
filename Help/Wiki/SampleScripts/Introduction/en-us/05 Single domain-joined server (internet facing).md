@@ -23,6 +23,6 @@ Add-LabMachineDefinition -Name Client1 -Memory 1GB -Network Lab0 -OperatingSyste
 
 Install-Lab
 
-Show-LabDeploymentSummary -Detailed
+Show-LabDeploymentSummary
 
 ```

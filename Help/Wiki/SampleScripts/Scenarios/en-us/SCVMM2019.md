@@ -68,5 +68,5 @@ if ($Engine -eq 'Azure')
 {
     Stop-LabVm -All
 }
-Show-LabDeploymentSummary -Detailed
+Show-LabDeploymentSummary
 ```

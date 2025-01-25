@@ -21,4 +21,4 @@ Add-LabMachineDefinition -Name E1Client -Memory 2GB -OperatingSystem 'Windows 10
 
 Install-Lab
 
-Show-LabDeploymentSummary -Detailed
+Show-LabDeploymentSummary

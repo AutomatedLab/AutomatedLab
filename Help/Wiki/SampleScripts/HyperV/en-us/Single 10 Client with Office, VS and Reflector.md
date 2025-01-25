@@ -35,6 +35,6 @@ Install-LabSoftwarePackages -Machine (Get-LabVM -All) -SoftwarePackage $packs
 #Install Reflector to the first VisualStudio machine
 Install-LabSoftwarePackage -Path $labSources\SoftwarePackages\ReflectorInstaller.exe -CommandLine '/qn /IAgreeToTheEula' -ComputerName (Get-LabVM -Role VisualStudio2015)
 
-Show-LabDeploymentSummary -Detailed
+Show-LabDeploymentSummary
 
 ```

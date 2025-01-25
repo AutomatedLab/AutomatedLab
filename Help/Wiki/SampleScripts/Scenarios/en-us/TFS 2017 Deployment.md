@@ -37,5 +37,5 @@ Add-LabMachineDefinition -Name tfs2Build1 -Roles TfsBuildWorker
 
 Install-Lab
 
-Show-LabDeploymentSummary -Detailed
+Show-LabDeploymentSummary
 ```

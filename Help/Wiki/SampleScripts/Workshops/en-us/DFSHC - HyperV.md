@@ -635,5 +635,5 @@ if ($runBreakScripts)
 }
 #endregion Break Scripts
 
-Show-LabDeploymentSummary -Detailed
+Show-LabDeploymentSummary
 ```

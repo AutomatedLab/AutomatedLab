@@ -13,7 +13,7 @@ Show installation time
 ## SYNTAX
 
 ```
-Show-LabDeploymentSummary [-Detailed] [<CommonParameters>]
+Show-LabDeploymentSummary [-Summary] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -24,15 +24,15 @@ AutomatedLab keeps track of the time it took from the first lab command to the e
 
 ### Example 1
 ```powershell
-PS C:\> Show-LabDeploymentSummary -Detailed
+PS C:\> Show-LabDeploymentSummary
 ```
 
-Display all necessary bits of information on the current lab deployment, including helpful cmdlets to get started
+Display all necessary bits of information on the current lab deployment, including helpful cmdlets to get started.
 
 ## PARAMETERS
 
-### -Detailed
-Indicates that a detailed summary should be displayed
+### -Summary
+Indicates that only a short summary should be displayed.
 
 ```yaml
 Type: SwitchParameter

@@ -91,4 +91,4 @@ Invoke-LabCommand -ActivityName 'Give the AgpmUsers local admin rights on the Ag
 
 Checkpoint-LabVM -All -SnapshotName 2
 
-Show-LabDeploymentSummary -Detailed
+Show-LabDeploymentSummary

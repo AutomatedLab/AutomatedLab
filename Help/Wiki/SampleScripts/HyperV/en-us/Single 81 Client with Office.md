@@ -22,6 +22,6 @@ Add-LabMachineDefinition -Name TestClient2 -Memory 2GB -Network $labName -IpAddr
 
 Install-Lab
 
-Show-LabDeploymentSummary -Detailed
+Show-LabDeploymentSummary
 
 ```

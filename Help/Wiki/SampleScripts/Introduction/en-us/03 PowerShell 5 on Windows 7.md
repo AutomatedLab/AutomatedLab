@@ -19,6 +19,6 @@ Install-LabSoftwarePackage -Path $labSources\SoftwarePackages\Notepad++.exe -Com
 
 Checkpoint-LabVM -All -SnapshotName 1
 
-Show-LabDeploymentSummary -Detailed
+Show-LabDeploymentSummary
 
 ```

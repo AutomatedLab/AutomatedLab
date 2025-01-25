@@ -102,6 +102,6 @@ if (Get-LabVM -ComputerName POSHClient1)
     Restart-LabVM -ComputerName POSHClient1 -Wait
 }
 
-Show-LabDeploymentSummary -Detailed
+Show-LabDeploymentSummary
 
 ```

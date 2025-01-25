@@ -46,6 +46,6 @@ Install-Lab -CA
 
 Enable-LabCertificateAutoenrollment -Computer -User -CodeSigning
 
-Show-LabDeploymentSummary -Detailed
+Show-LabDeploymentSummary
 
 ```

@@ -105,4 +105,4 @@ Install-LabWindowsFeature -ComputerName PoshClient1 -FeatureName RSAT -IncludeAl
 #stop all machines to save money
 Stop-LabVM -All -Wait
 
-Show-LabDeploymentSummary -Detailed
+Show-LabDeploymentSummary
