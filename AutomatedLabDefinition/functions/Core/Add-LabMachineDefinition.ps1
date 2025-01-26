@@ -982,6 +982,10 @@
                 $adapter.Ipv4Gateway.Add($adapterVirtualNetwork.AddressSpace.FirstUsable)
             }
 
+            if (-not $Gateway -and $adapterVirtualNetwork.UseNat) {
+                $adapter.Ipv4Gateway.Add($adapterVirtualNetwork.AddressSpace.FirstUsable)
+            }
+
             $machine.NetworkAdapters.Add($adapter)
         }
 
