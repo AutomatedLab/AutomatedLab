@@ -20,7 +20,6 @@
     foreach ($module in $modules) {
         $param = @{
             Name  = $module.Name
-            Force = $true
         }
 
         $isPresent = if ($module.MinimumVersion) {

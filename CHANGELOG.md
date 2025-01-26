@@ -20,6 +20,7 @@
 - The SSH code in 'Remove-LabPSSession' has been removed, it needs to be revised.
 - Updated code for compatibility with Az.Storage 8.0.0.
 - 'Get-LWAzureWindowsFeature' did never work as the 'PassThru' switch was missing.
+- Do not remove / re-import already imported Az* modules to allow the user some control.
 
 ## 5.55.0 (2024-12-31)
 
