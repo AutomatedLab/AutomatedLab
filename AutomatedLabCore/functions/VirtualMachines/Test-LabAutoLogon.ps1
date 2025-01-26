@@ -33,6 +33,12 @@
                 
                 if ($isAdReady)
                 {
+                    $domain = (Get-Lab).Domains | Where-Object Name -eq $Machine.DomainName
+					$parameters = @{
+						UserName = $domain.Administrator.UserName
+						Password = $domain.Administrator.Password
+					}
+                    
                     $parameters['DomainName'] = $machine.DomainName
                 }
                 else
@@ -42,6 +48,12 @@
             }
             else
             {
+                $domain = (Get-Lab).Domains | Where-Object Name -eq $Machine.DomainName
+                $parameters = @{
+                    UserName = $domain.Administrator.UserName
+                    Password = $domain.Administrator.Password
+                }
+                
                 $parameters['DomainName'] = $machine.DomainName
             }
         }

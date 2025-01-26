@@ -1,4 +1,9 @@
-﻿git submodule -q update --init --recursive
+﻿param (
+  [switch]
+  $IsLocalBuild
+)
+
+git submodule -q update --init --recursive
 $buildFolder = if ($env:APPVEYOR_BUILD_FOLDER) { $env:APPVEYOR_BUILD_FOLDER } else { (Resolve-Path "$PSScriptRoot/..").Path }
 Write-Host "Init task - Set version number if necessary"
 if ($env:APPVEYOR_BUILD_VERSION)
@@ -25,7 +30,7 @@ if (-not $IsLinux -and -not (Get-PackageProvider -Name Nuget))
 {
   $null = Install-PackageProvider -Name Nuget -Force -Scope CurrentUser
 }
-elseif ($IsLinux)
+elseif ($IsLinux -and -not $IsLocalBuild.IsPresent)
 {
   # Ruby tool FPM can build packages for multiple distributions
   $null = sudo apt update
@@ -37,7 +42,7 @@ elseif ($IsLinux)
 try { [System.Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTIN', 0, 'Machine') } catch {}
 $env:AUTOMATEDLAB_TELEMETRY_OPTIN = 0
 
-if ($IsLinux)
+if ($IsLinux -and -not $IsLocalBuild.IsPresent)
 {
   $null = sudo mkdir /usr/share/AutomatedLab/Assets -p
   $null = sudo mkdir /usr/share/AutomatedLab/Stores -p
@@ -51,11 +56,13 @@ Save-Module -Name powershell-yaml, Pester, AutomatedLab.Common, PSFramework, xPS
 if (-not $env:PSModulePath.Contains($modpath.FullName))
 {
   $sep = [io.path]::PathSeparator
-  $env:PSModulePath = $modPath.FullName
+  $env:PSModulePath = "$($modPath.FullName)$sep$($env:PSModulePath)"
 }
 
 Remove-Module -Name PackageManagement, PowerShellGet -Force
 Import-Module -Name PackageManagement, PowerShellGet
+
+if ($IsLocalBuild.IsPresent) { return }
 
 if ($env:APPVEYOR_REPO_BRANCH -eq "master" -and [string]::IsNullOrWhiteSpace($env:APPVEYOR_PULL_REQUEST_TITLE) -and $currVersion -gt $compareVersion)
 {

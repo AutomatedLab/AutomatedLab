@@ -130,16 +130,16 @@
                     if ($VerbosePreference -eq 'Continue')
                     {
                         $Message | ForEach-Object { Microsoft.PowerShell.Utility\Write-Host $_ -ForegroundColor Cyan }
-                        $Global:PSLog_NoNewLine = $false
                     }
+                    $Global:PSLog_NoNewLine = $false
                 }
                 Debug
                 {
                     if ($DebugPreference -eq 'Continue')
                     {
                         $Message | ForEach-Object { Microsoft.PowerShell.Utility\Write-Host $_ -ForegroundColor Cyan }
-                        $Global:PSLog_NoNewLine = $false
                     }
+                    $Global:PSLog_NoNewLine = $false
                 }
             }
         }

@@ -12,30 +12,18 @@ Get pre/post-installation activity
 
 ## SYNTAX
 
-### FileContentDependencyLocalScript
+### LocalScript
 ```
-Get-LabInstallationActivity -DependencyFolder <String> [-KeepFolder] -ScriptFilePath <String>
+Get-LabInstallationActivity [-DependencyFolder <String>] [-KeepFolder] -ScriptFilePath <String>
  [-Variable <PSVariable[]>] [-Function <FunctionInfo[]>] [-DoNotUseCredSsp] [-CustomRole <String>]
  [<CommonParameters>]
 ```
 
-### FileContentDependencyRemoteScript
+### RemoteScript
 ```
-Get-LabInstallationActivity -DependencyFolder <String> [-KeepFolder] -ScriptFileName <String>
+Get-LabInstallationActivity [-DependencyFolder <String>] [-KeepFolder]
  [-Variable <PSVariable[]>] [-Function <FunctionInfo[]>] [-DoNotUseCredSsp] [-CustomRole <String>]
  [<CommonParameters>]
-```
-
-### IsoImageDependencyLocalScript
-```
-Get-LabInstallationActivity -IsoImage <String> -ScriptFilePath <String> [-Variable <PSVariable[]>]
- [-Function <FunctionInfo[]>] [-DoNotUseCredSsp] [-CustomRole <String>] [<CommonParameters>]
-```
-
-### IsoImageDependencyRemoteScript
-```
-Get-LabInstallationActivity -IsoImage <String> -ScriptFileName <String> [-Variable <PSVariable[]>]
- [-Function <FunctionInfo[]>] [-DoNotUseCredSsp] [-CustomRole <String>] [<CommonParameters>]
 ```
 
 ### CustomRole
@@ -62,8 +50,8 @@ Configures the custom role ProGet5 with two role properties.
 ### Example 2
 ```powershell
 $postInstallActivity = @()
-$postInstallActivity += Get-LabPostInstallationActivity -ScriptFileName 'New-ADLabAccounts 2.0.ps1' -DependencyFolder $labSources\PostInstallationActivities\PrepareFirstChildDomain
-$postInstallActivity += Get-LabPostInstallationActivity -ScriptFileName PrepareRootDomain.ps1 -DependencyFolder $labSources\PostInstallationActivities\PrepareRootDomain
+$postInstallActivity += Get-LabPostInstallationActivity -ScriptFilePath "$labSources\PostInstallationActivities\PrepareFirstChildDomain\New-ADLabAccounts 2.0.ps1" -DependencyFolder $labSources\PostInstallationActivities\PrepareFirstChildDomain
+$postInstallActivity += Get-LabPostInstallationActivity -ScriptFilePath $labSources\PostInstallationActivities\PrepareRootDomain\PrepareRootDomain.ps1 -DependencyFolder $labSources\PostInstallationActivities\PrepareRootDomain
 Add-LabMachineDefinition -Name POSHDC1 -Memory 512MB -Roles RootDC -IpAddress 192.168.30.10 -PostInstallationActivity $postInstallActivity
 ```
 
@@ -92,7 +80,7 @@ A folder of dependency files if necessary
 
 ```yaml
 Type: String
-Parameter Sets: FileContentDependencyLocalScript, FileContentDependencyRemoteScript
+Parameter Sets: LocalScript, RemoteScript
 Aliases:
 
 Required: True
@@ -133,27 +121,12 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -IsoImage
-The ISO image that should be mounted during post-installation
-
-```yaml
-Type: String
-Parameter Sets: IsoImageDependencyLocalScript, IsoImageDependencyRemoteScript
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -KeepFolder
 Indicates that the target folder should be kept on the machine
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: FileContentDependencyLocalScript, FileContentDependencyRemoteScript, CustomRole
+Parameter Sets: LocalScript, RemoteScript, CustomRole
 Aliases:
 
 Required: False
@@ -180,27 +153,12 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -ScriptFileName
-The remote script file name
-
-```yaml
-Type: String
-Parameter Sets: FileContentDependencyRemoteScript, IsoImageDependencyRemoteScript
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -ScriptFilePath
 The script file path of the script that is executed
 
 ```yaml
 Type: String
-Parameter Sets: FileContentDependencyLocalScript, IsoImageDependencyLocalScript
+Parameter Sets: LocalScript
 Aliases:
 
 Required: True

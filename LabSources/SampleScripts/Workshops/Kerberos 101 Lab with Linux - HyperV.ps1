@@ -34,7 +34,7 @@ $PSDefaultParameterValues = @{
 Set-LabInstallationCredential -Username Install -Password Somepass1
 
 #The PostInstallationActivity is just creating some users
-$postInstallActivity = Get-LabPostInstallationActivity -ScriptFileName PrepareRootDomain.ps1 -DependencyFolder $labSources\PostInstallationActivities\PrepareRootDomain
+$postInstallActivity = Get-LabPostInstallationActivity -ScriptFilePath $labSources\PostInstallationActivities\PrepareRootDomain\PrepareRootDomain.ps1 -DependencyFolder $labSources\PostInstallationActivities\PrepareRootDomain
 Add-LabMachineDefinition -Name KerbDC1 -IpAddress 192.168.22.10 -DnsServer1 192.168.22.10  -DomainName vm.net -Roles RootDC -PostInstallationActivity $postInstallActivity
 
 $netAdapter = @()
@@ -54,7 +54,7 @@ Set-LabInstallationCredential -Username Install -Password Somepass2
 #The PostInstallationActivity is filling the domain with some life.
 #At the end about 6000 users are available with OU and manager hierarchy as well as a bunch of groups
 $role = Get-LabMachineRoleDefinition -Role FirstChildDC -Properties @{ ParentDomain = 'vm.net'; NewDomain = 'a' }
-$postInstallActivity = Get-LabPostInstallationActivity -ScriptFileName 'New-ADLabAccounts 2.0.ps1' -DependencyFolder $labSources\PostInstallationActivities\PrepareFirstChildDomain
+$postInstallActivity = Get-LabPostInstallationActivity -ScriptFilePath "$labSources\PostInstallationActivities\PrepareFirstChildDomain\New-ADLabAccounts 2.0.ps1" -DependencyFolder $labSources\PostInstallationActivities\PrepareFirstChildDomain
 Add-LabMachineDefinition -Name KerbDC2 -IpAddress 192.168.22.11 -DnsServer1 192.168.22.10 -DnsServer2 192.168.22.11 -DomainName a.vm.net -Roles $role -PostInstallationActivity $postInstallActivity
 
 #This is a web server in the child domain
@@ -84,7 +84,7 @@ Set-LabInstallationCredential -Username Install -Password Somepass0
 
 #this will become the root domain controller of the second forest
 #The PostInstallationActivity is just creating some users
-$postInstallActivity = Get-LabPostInstallationActivity -ScriptFileName PrepareRootDomain.ps1 -DependencyFolder $labSources\PostInstallationActivities\PrepareRootDomain
+$postInstallActivity = Get-LabPostInstallationActivity -ScriptFilePath $labSources\PostInstallationActivities\PrepareRootDomain\PrepareRootDomain.ps1 -DependencyFolder $labSources\PostInstallationActivities\PrepareRootDomain
 Add-LabMachineDefinition -Name KerbDC0 -IpAddress 192.168.22.100 -DnsServer1 192.168.22.100 -DomainName test.net -Roles RootDC -PostInstallationActivity $postInstallActivity
 
 #This is a web serverin the child domain

@@ -52,7 +52,7 @@ if ($addMemberServer)
 
 #Defining child.contoso.com machines
 $role = Get-LabMachineRoleDefinition -Role FirstChildDC -Properties @{ ParentDomain = 'contoso.com'; NewDomain = 'child' }
-$postInstallActivity = Get-LabPostInstallationActivity -ScriptFileName 'New-ADLabAccounts 2.0.ps1' -DependencyFolder $labSources\PostInstallationActivities\PrepareFirstChildDomain
+$postInstallActivity = Get-LabPostInstallationActivity -ScriptFilePath "$labSources\PostInstallationActivities\PrepareFirstChildDomain\New-ADLabAccounts 2.0.ps1" -DependencyFolder $labSources\PostInstallationActivities\PrepareFirstChildDomain
 Add-LabMachineDefinition -Name ChildDC1 -IpAddress 192.168.41.20 -DnsServer1 192.168.41.10 -DnsServer2 192.168.41.11 -DomainName child.contoso.com -Roles $role -PostInstallationActivity $postInstallActivity
 
 Add-LabMachineDefinition -Name ChildDC2 -DiskName BackupChild -IpAddress 192.168.41.21 -DnsServer1 192.168.41.10 -DnsServer2 192.168.41.11 -DomainName child.contoso.com -Roles DC

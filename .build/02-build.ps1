@@ -1,4 +1,11 @@
-﻿# Build modules for installer
+﻿param (
+    [switch]
+    $IsLocalBuild,
+
+    [switch]
+    $SkipInstaller
+)
+#region Build modules for installer
 function BuildModule
 {
     param
@@ -103,6 +110,132 @@ if (-not $IsLinux)
 }
 
 Copy-Item -Path (Join-Path -Path $buildFolder 'Assets/ProductKeys.xml') -Destination (Join-Path -Path $versionedDir.FullName 'ProductKeys.xml')
+#endregion
+
+#region Help
+Write-Host "Init task - compiling help for Installer"
+if (-not (Get-Module -List PlatyPs))
+{
+    Write-Host 'Installing Package Provider'
+    try
+    {
+        #https://docs.microsoft.com/en-us/dotnet/api/system.net.securityprotocoltype?view=netcore-2.0#System_Net_SecurityProtocolType_SystemDefault
+        if ($PSVersionTable.PSVersion.Major -lt 6 -and [Net.ServicePointManager]::SecurityProtocol -notmatch 'Tls12')
+        {
+            Write-Verbose -Message 'Adding support for TLS 1.2'
+            [Net.ServicePointManager]::SecurityProtocol += [Net.SecurityProtocolType]::Tls12
+        }
+    }
+    catch
+    {
+        Write-Warning -Message 'Adding TLS 1.2 to supported security protocols was unsuccessful.'
+    }
+    if (-not (Get-PackageProvider nuget)) { Install-PackageProvider nuget -Force }
+    Write-Host 'Installing Module PlatyPS'
+    Install-Module PlatyPS -Force -AllowClobber -SkipPublisherCheck -Scope CurrentUser
+}
+
+Write-Host 'Trying to build generic help content'
+# Prepare about_help from wiki content (until a better solution presents itself)
+@'
+# AutomatedLab Roles Overview
+## about_AutomatedLabRoles
+
+# SHORT DESCRIPTION
+Generic help about the role system of AutomatedLab
+
+# LONG DESCRIPTION
+
+'@ | Set-Content -Path (Join-Path $buildFolder -ChildPath Help/AutomatedLabCore/en-us/about_AutomatedLabRoles.md)
+$roleContent = Get-Content -Path (Join-Path $buildFolder -ChildPath Help/Wiki/Roles/roles.md) | ForEach-Object { if ($_.StartsWith('#')) { $_.Insert(0, '#') } else { $_ } }
+$roleContent | Add-Content -Path (Join-Path $buildFolder -ChildPath Help/AutomatedLabCore/en-us/about_AutomatedLabRoles.md)
+
+$helpFiles = Get-ChildItem -Path (Join-Path $buildFolder -ChildPath Help/Wiki/Roles) -Exclude roles.md
+$roleContent = @'
+# AutomatedLab {0} Role
+## about_AutomatedLab_{0}
+
+# SHORT DESCRIPTION
+Generic help about the Role '{0}' in AutomatedLab
+
+# LONG DESCRIPTION
+
+'@
+foreach ($helpfile in $helpFiles)
+{
+    $rolename = $helpFile.BaseName
+
+    $roleContent -f $rolename | Set-Content -Path (Join-Path $buildFolder -ChildPath Help/AutomatedLabCore/en-us/about_AutomatedLab_$rolename.md)
+    foreach ($line in ($helpFile | Get-Content))
+    {
+        if ($line.StartsWith('#'))
+        {
+            $line = $line.Insert(0, '#')
+        }
+        $line | Add-Content -Path (Join-Path $buildFolder -ChildPath Help/AutomatedLabCore/en-us/about_AutomatedLab_$rolename.md)
+    }
+}
+
+@'
+# AutomatedLab Basics
+## about_AutomatedLabBasics
+
+# SHORT DESCRIPTION
+Generic help about the basics of AutomatedLab
+
+# LONG DESCRIPTION
+
+'@ | Set-Content -Path (Join-Path $buildFolder -ChildPath Help/AutomatedLabCore/en-us/about_AutomatedLabBasics.md)
+[System.Collections.Generic.List[System.IO.FileInfo]]$helpFiles = Get-Item -Path (Join-Path $buildFolder -ChildPath Help/Wiki/Basic/gettingstarted.md)
+$helpFiles.AddRange([IO.FileInfo[]](Get-ChildItem -Path (Join-Path $buildFolder -ChildPath Help/Wiki/Basic)))
+foreach ($line in ($helpFiles | Get-Content))
+{
+    if ($line.StartsWith('#'))
+    {
+        $line = $line.Insert(0, '#')
+    }
+    $line | Add-Content -Path (Join-Path $buildFolder -ChildPath Help/AutomatedLabCore/en-us/about_AutomatedLabBasics.md)
+}
+
+@'
+# AutomatedLab Advanced
+## about_AutomatedLabAdvanced
+
+# SHORT DESCRIPTION
+Generic help about the advanced mechanics of AutomatedLab
+
+# LONG DESCRIPTION
+
+'@ | Set-Content -Path (Join-Path $buildFolder -ChildPath Help/AutomatedLabCore/en-us/about_AutomatedLabAdvanced.md)
+$advHelp = Get-ChildItem -Path (Join-Path $buildFolder -ChildPath Help/Wiki/Advanced)
+foreach ($line in ($advHelp | Get-Content))
+{
+    if ($line.StartsWith('#'))
+    {
+        $line = $line.Insert(0, '#')
+    }
+    $line | Add-Content -Path (Join-Path $buildFolder -ChildPath Help/AutomatedLabCore/en-us/about_AutomatedLabAdvanced.md)
+}
+
+foreach ($moduleName in (Get-ChildItem -Path $buildFolder/Help -Directory -Exclude Wiki))
+{
+    Write-Host "Building help for module '$($moduleName.BaseName)'"
+    foreach ($language in ($moduleName | Get-ChildItem -Directory))
+    {
+        $ci = try { [cultureinfo]$language.BaseName } catch { }
+        if (-not $ci) { continue }
+
+        $mPath = Join-Path -Path $buildFolder -ChildPath "publish\$($moduleName.BaseName)\*" -Resolve
+        $opPath = Join-Path -Path $mPath -ChildPath $ci.Name
+        Write-Host "Generating help XML in $opPath"
+        $null = New-ExternalHelp -Path $language.FullName -OutputPath $opPath -Force
+    }
+}
+#endregion
+
+if ($SkipInstaller.IsPresent) {
+    return
+}
 
 # Build solution after AppVeyor patched it - local build needs to do that themselves
 # Solution builds installer (Windows only) and requires all modules to be packaged before producing proper artefact
@@ -130,16 +263,7 @@ if ([System.Environment]::OSVersion.Platform -eq 'Win32NT')
     }
 }
 
-if ([System.Environment]::OSVersion.Platform -eq 'Unix')
-{
-    $null = dotnet build -f net6.0 LabXml/LabXml.csproj
-    if ($LASTEXITCODE -ne 0)
-    {
-        Add-AppVeyorMessage -Category Warning "Running dotnet build of the csproj may have failed, exit code $LASTEXITCODE"
-    }
-}
-
-if (-not $IsLinux)
+if (-not $IsLinux -and -not $IsLocalBuild.IsPresent)
 {
     return
 }

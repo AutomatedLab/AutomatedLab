@@ -34,14 +34,14 @@ $PSDefaultParameterValues = @{
 #the first machine is the root domain controller, DDL and DFL is defined manually
 $role = Get-LabMachineRoleDefinition -Role RootDC @{ DomainFunctionalLevel = 'Win2008'; ForestFunctionalLevel = 'Win2008' }
 #The PostInstallationActivity is just creating some users
-$postInstallActivity = Get-LabPostInstallationActivity -ScriptFileName PrepareRootDomain.ps1 -DependencyFolder $labSources\PostInstallationActivities\PrepareRootDomain
+$postInstallActivity = Get-LabPostInstallationActivity -ScriptFilePath $labSources\PostInstallationActivities\PrepareRootDomain\PrepareRootDomain.ps1 -DependencyFolder $labSources\PostInstallationActivities\PrepareRootDomain
 Add-LabMachineDefinition -Name T2DC1 -Memory 512MB -IpAddress 192.168.71.10 -DomainName test2.net -Roles $role -PostInstallationActivity $postInstallActivity
 
 #this is the first domain controller of the child domain 'child1' defined above
 #The PostInstallationActivity is filling the domain with some life.
 #At the end about 6000 users are available with OU and manager hierarchy as well as a bunch of groups
 $role = Get-LabMachineRoleDefinition -Role FirstChildDC -Properties @{ ParentDomain = 'test2.net'; NewDomain = 'child1'; DomainFunctionalLevel = 'Win2012R2' }
-$postInstallActivity = Get-LabPostInstallationActivity -ScriptFileName 'New-ADLabAccounts 2.0.ps1' -DependencyFolder $labSources\PostInstallationActivities\PrepareFirstChildDomain
+$postInstallActivity = Get-LabPostInstallationActivity -ScriptFilePath "$labSources\PostInstallationActivities\PrepareFirstChildDomain\New-ADLabAccounts 2.0.ps1" -DependencyFolder $labSources\PostInstallationActivities\PrepareFirstChildDomain
 Add-LabMachineDefinition -Name T2DC2 -Memory 512MB -IpAddress 192.168.71.11 -Roles $role
 
 #This will be the SQL server with the usual demo databases
