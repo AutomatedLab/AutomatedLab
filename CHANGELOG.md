@@ -2,6 +2,20 @@
 
 ## Unreleased (yyyy-MM-dd)
 
+### Enhancements
+
+### Bugs
+
+## 5.58.0 (2025-06-23)
+
+### Enhancements
+
+- The `Az.Compute` cmdlet `Get-AzVMSize` got replaced by `Get-AzComputeResourceSku`. Making the necessary changes.
+
+### Bugs
+
+- Fix issue with Get-AzStorageAccount returning nullable booleans as NULL now
+
 ## 5.57.0 (2025-06-09)
 
 ### Enhancements
