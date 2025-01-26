@@ -29,7 +29,7 @@
 
     RequiredModules        = @(
         'AutomatedLabCore'
-        @{ ModuleName = 'AutomatedLab.Common'; ModuleVersion = '2.3.17' }
+        @{ ModuleName = 'AutomatedLab.Common'; ModuleVersion = '2.3.37' }
         'AutomatedLab.Recipe'
         'AutomatedLab.Ships'
         'AutomatedLabDefinition'
@@ -39,7 +39,6 @@
         'AutomatedLabWorker'
         'PSLog'
         'PSFileTransfer'
-        'HostsFile'
         'Pester'
         'powershell-yaml'
         'PSFramework'

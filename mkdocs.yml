@@ -97,6 +97,7 @@ nav:
     - CM-2002.ps1: Wiki/SampleScripts/Scenarios/en-us/CM-2002.md
     - CM-2103.ps1: Wiki/SampleScripts/Scenarios/en-us/CM-2103.md
     - CM-2203.ps1: Wiki/SampleScripts/Scenarios/en-us/CM-2203.md
+    - ContosoApp: Wiki/SampleScripts/Scenarios/en-us/ContosoApp.md
     - DSC Pull Scenario 1 (Pull Configuration).ps1: Wiki/SampleScripts/Scenarios/en-us/DSC Pull Scenario 1 (Pull Configuration).md
     - DSC Pull Scenario 1 (Pull Configuration, SQL Reporting).ps1: Wiki/SampleScripts/Scenarios/en-us/DSC Pull Scenario 1 (Pull Configuration, SQL Reporting).md
     - DSC Pull Scenario 2 (Pull Partial Configuration).ps1: Wiki/SampleScripts/Scenarios/en-us/DSC Pull Scenario 2 (Pull Partial Configuration).md
@@ -147,7 +148,6 @@ nav:
 - Lab telemetry: Wiki/About/telemetry.md
 - Version history: https://github.com/AutomatedLab/AutomatedLab/blob/master/CHANGELOG.md
 - Module help:
-  - Add-HostEntry: HostsFile/en-us/Add-HostEntry.md
   - Add-LabAzureAppServicePlanDefinition: AutomatedLabDefinition/en-us/Add-LabAzureAppServicePlanDefinition.md
   - Add-LabAzureSubscription: AutomatedLabCore/en-us/Add-LabAzureSubscription.md
   - Add-LabAzureWebAppDefinition: AutomatedLabDefinition/en-us/Add-LabAzureWebAppDefinition.md
@@ -168,7 +168,6 @@ nav:
   - Checkpoint-LabVM: AutomatedLabCore/en-us/Checkpoint-LabVM.md
   - Checkpoint-LWAzureVM: AutomatedLabWorker/en-us/Checkpoint-LWAzureVM.md
   - Checkpoint-LWHypervVM: AutomatedLabWorker/en-us/Checkpoint-LWHypervVM.md
-  - Clear-HostFile: HostsFile/en-us/Clear-HostFile.md
   - Clear-Lab: AutomatedLabCore/en-us/Clear-Lab.md
   - Clear-LabCache: AutomatedLabCore/en-us/Clear-LabCache.md
   - Connect-Lab: AutomatedLabCore/en-us/Connect-Lab.md
@@ -206,8 +205,6 @@ nav:
   - Export-UnattendedFile: AutomatedLabUnattended/en-us/Export-UnattendedFile.md
   - Get-CallerPreference: PSLog/en-us/Get-CallerPreference.md
   - Get-DiskSpeed: AutomatedLabDefinition/en-us/Get-DiskSpeed.md
-  - Get-HostEntry: HostsFile/en-us/Get-HostEntry.md
-  - Get-HostFile: HostsFile/en-us/Get-HostFile.md
   - Get-Lab: AutomatedLabCore/en-us/Get-Lab.md
   - Get-LabAvailableAddresseSpace: AutomatedLabDefinition/en-us/Get-LabAvailableAddresseSpace.md
   - Get-LabAvailableOperatingSystem: AutomatedLabCore/en-us/Get-LabAvailableOperatingSystem.md
@@ -371,7 +368,6 @@ nav:
   - Receive-File: PSFileTransfer/en-us/Receive-File.md
   - Register-LabArgumentCompleters: AutomatedLabCore/en-us/Register-LabArgumentCompleters.md
   - Register-LabAzureRequiredResourceProvider: AutomatedLabCore/en-us/Register-LabAzureRequiredResourceProvider.md
-  - Remove-HostEntry: HostsFile/en-us/Remove-HostEntry.md
   - Remove-Lab: AutomatedLabCore/en-us/Remove-Lab.md
   - Remove-LabAzureLabSourcesStorage: AutomatedLabCore/en-us/Remove-LabAzureLabSourcesStorage.md
   - Remove-LabAzureResourceGroup: AutomatedLabCore/en-us/Remove-LabAzureResourceGroup.md

@@ -1,8 +1,59 @@
 # Changelog
 
-## Unreleased (yyyy-MM-dd)
+## [Unreleased]
 
-## 5.59.0 (2025-08-18)
+## [5.60.0] - 2026-03-05
+
+### Added
+
+- Add ContosoApp sample scenario under `LabSources\SampleScripts\Scenarios\ContosoApp`
+  - `10_New-ContosoLab.ps1` — Creates a four-VM lab (DC, SQL, App, Web) on Hyper-V
+  - `20_Install-ContosoApp.ps1` — Builds and deploys a .NET 6 three-tier web application
+  - `Build-ContosoApp.ps1` — Helper script that scaffolds and compiles the ContosoApp
+  - `readme.md` — Step-by-step deployment guide
+- Add option to opt out of Storage Account creation (#1753)
+  - Switch to Entra-Auth not possible, as we require storage shares, which would require using ADDS or Azure Domain Services. If SAS keys cannot be used, no storage is the current option.
+- Added The following new ValidRoleProperties: (thanks @constantinhager)
+  - SQLServer2012 - 2022
+  - FailOverNode
+  - HyperV
+- Added support for SQL Server 2025
+- Added NAT support
+
+### Changed
+
+- Refactored WiX installer to dynamically populate all LabSources content via PreBuild.ps1
+  - Removed all static LabSources file entries, directory definitions, and DirectoryRef fragments from Product.wxs
+  - PreBuild.ps1 now recursively scans `LabSources/` and builds the entire directory tree and file components at build time
+  - Adding or removing files in LabSources no longer requires manual Product.wxs updates
+- Updated `Invoke-LabPester` to scan the `$global:LabSources\CustomRoles` directory for Pester tests (#1764)
+- Use Storage Account kind `storagev2` for all new lab sources storages
+  - Storages will be upgraded automatically
+- Made `Get-LabMachineRoleDefinition -Syntax` more user-friendly (#1562)
+- Fixed retired parameter Location for `Get-AzVmSize`
+- New parameter to configure location of static lab files on VMs
+- Updated help (Fixes #1800 with better documentation)
+
+### Removed
+
+- HostsFile module removed and cmdlets integrated into AutomatedLab.Common
+
+### Bugs
+
+- Removed dependency to NewtonSoft.Json
+  - The module frequently hinders import on Linux, and apparently on Windows now as well (<https://github.com/AutomatedLab/AutomatedLab.Common/issues/132>)
+  - The module has not been updated since 2019
+- Fixed issue with case-sensitive Linux OS name matching (#1766)
+- Added filtering to Install-LabSshKnownHost in an attempt to speed up the function
+- Fix issue with incompatible parameters that were introduced to CreateDscSqlDatabase.ps1 in 5.59
+- Fix nested Hyper-V on Azure SKU validator (#1679)
+- `Test-LabAzureModuleAvailability`
+  - Fixed module behavior to only import that are not yet loaded ([#1793](https://github.com/AutomatedLab/AutomatedLab/issues/1793)).
+  - Fixed error handling so the function returns $false in case of a module load error ([#1794](https://github.com/AutomatedLab/AutomatedLab/issues/1794)).
+- Remove dependcy on International module by generating language list statically (#1640)
+- Fix bug in `Remove-LabMachineDefinition` in which the function accepts pipeline input but does not process it.
+
+## [5.59.0] - 2025-08-18
 
 ### Removed
 
@@ -32,7 +83,7 @@
 - Fix issue with BinarySerializer in Lab Snippets (Get-TopologicalSort #1732).
 - Update ADK download links, thank you @TKiller609 (#1740).
 
-## 5.58.0 (2025-06-23)
+## [5.58.0] - 2025-06-23
 
 ### Enhancements
 
@@ -42,7 +93,7 @@
 
 - Fix issue with Get-AzStorageAccount returning nullable booleans as NULL now.
 
-## 5.57.0 (2025-06-09)
+## [5.57.0] - 2025-06-09
 
 ### Enhancements
 
@@ -62,7 +113,7 @@
 - Removed WindowsAdminCenter custom role
 - Fixed WindowsAdminCenter built-in role to work with current InnoSetup-based installer (#1686)
 
-## 5.56.0 (2025-01-26)
+## [5.56.0] - 2025-01-26
 
 ### Enhancements
 
@@ -85,7 +136,7 @@
 - 'Get-LWAzureWindowsFeature' did never work as the 'PassThru' switch was missing.
 - Do not remove / re-import already imported Az* modules to allow the user some control.
 
-## 5.55.0 (2024-12-31)
+## [5.55.0] - 2024-12-31
 
 ### Enhancements
 
@@ -97,7 +148,7 @@
 - Fixed an issue installing SQL sample databases (#1663).
 - Used 'Select-Object instead of 'Format-Table'.
 
-## 5.54.0 (2024-08-16)
+## [5.54.0] - 2024-08-16
 
 ### Enhancements
 
@@ -110,7 +161,7 @@
 - Remove deprecated functions from help and manifest.
 - Fix Write-ScreenInfo (fixes #1648)
 
-## 5.53.0 (2024-06-08)
+## [5.53.0] - 2024-06-08
 
 ### Enhancements
 
@@ -125,7 +176,7 @@
 - Suppressed an error message removing virtual networks (#1633).
 - Suppressed a warning when adding the GPO .net type (#1627).
 
-## 5.51.0 (2024-03-18)
+## [5.51.0] - 2024-03-18
 
 ### Enhancements
 
@@ -142,7 +193,7 @@
   Controllers from being restartable (#1608).
 - Fixed a syntax issue in 'CreateDscSqlDatabase.ps1'.
 
-## 5.50.0 (2023-11-10)
+## [5.50.0] - 2023-11-10
 
 ### Enhancements
 
@@ -155,7 +206,7 @@
 
 - Fix If-Condition in 'Start-LWHypervVM'. Used wrong variables; PreDelaySeconds & PostDelaySeconds (#1582).
 
-## 5.49.0 (2023-08-01)
+## [5.49.0] - 2023-08-01
 
 ### Enhancements
 
@@ -169,6 +220,7 @@
 - The script 'AzureLabSources.ps1' maps the share via IP address if mapping via names fails. It
   sometimes files mapping by name with the error 'A specified logon session does not exist'
 - Added error handling to 'Connect-LWAzureLabSourcesDrive'
+- Improved support for Ubuntu (cloud-init required)
 
 ### Bugs
 
@@ -180,7 +232,7 @@
 - 'Clear-LabCache' did not remove global variables used for caching.
 - AutomatedLab.Common was not copied properly to HyperV
 
-## 5.48.0 (2023-04-05)
+## [5.48.0] - 2023-04-05
 
 ### Enhancements
 
@@ -200,7 +252,7 @@
 - Ensure required resource providers and features are registered (#1510)
 - Fix error creating AdfsSsl certificate template during AD FS role installation.
 
-## 5.47.0 (2023-02-20)
+## [5.47.0] - 2023-02-20
 
 ### Enhancements
 
@@ -232,7 +284,7 @@
 - Fixed issue when Pester <5.0 was loaded (#1418)
 - Fixed PSSession handling when by adding parameter `DoNotRemoveExistingLabPSSessions` to `Import-Lab` (#1485)
 
-## 5.46.0 (2022-11-24)
+## [5.46.0] - 2022-11-24
 
 ### Enhancements
 
@@ -252,7 +304,7 @@
 - SkipDeployment was not fully utilized
   - Cmdlets modifying machine status now skip SkipDeployment VMs, as cmdlet usage often does not make sense anyways
 
-## 5.45.0 (2022-09-01)
+## [5.45.0] - 2022-09-01
 
 ### Enhancements
 
@@ -278,7 +330,7 @@
 - Fixed #1371. Assigning PostInstallationActivity resulted into a prompt due to missing arguments.
 - Add more retry attempts to Get-LWAzureVm to address issues like #1362
 
-## 5.44.0 (2022-07-22)
+## [5.44.0] - 2022-07-22
 
 ### Enhancements
 
@@ -295,7 +347,7 @@
 - Force-create DeployDebug folder in case it does not exist, which occasionally led to issues with msi installations
 - Fixing SharePoint issue if IP addresses are used instead of host names
 
-## 5.43.0 (2022-06-30)
+## [5.43.0] - 2022-06-30
 
 ### Enhancements
 
@@ -316,9 +368,10 @@
 - Fixed issue with cluster resources being added a second time
 - Fixed function importing for the HostsFile module
 
-## 5.42.0 (2022-05-05)
+## [5.42.0] - 2022-05-05
 
 ### Enhancements
+
 - Added auto-completer for parameter 'SnapshotName'.
 - Added support for files in a folder copy in Copy-LabFileItem.
 - 'Invoke-LabDscConfiguration' accepts parameters for DSC configuration now.
@@ -335,6 +388,7 @@
 - Fixing issue with Hyper-V where network adapter MAC address went missing, breaking cmdlets like Repair-LWHyperVNetworkConfig
 
 ### Bugs
+
 - Fixing issue with Get-LabAzureAvailableRoleSize by filtering earlier.
 - Corrected various issues in the SharePoint role installation script.
 - Corrected incorrect HERE string in the PrepareRootDomain script
@@ -346,9 +400,10 @@
 - Removing unsupported kickstart parameter for old CentOS versions
 - Removing unused DefaultStorageAccount-Cmdlets
 
-## 5.41.0 (2022-01-31)
+## [5.41.0] - 2022-01-31
 
 ### Enhancements
+
 - Performance improvements of DSC Pullserver reports from DscWorkshop
   - precalculation of values from JSON based status reports at insert time
 - Added 2022 and Win11 to Azure image name table
@@ -358,6 +413,7 @@
 - Enabling additional parameter LocationName in Get-LabAzureAvailableRoleSize
 
 ### Bugs
+
 - Fixing issue with data disks on Azure
 - Fixed a connection bug in 'Copy-LabALCommon' with CredSsp
 - Fixed issue with AutomatedLab.Ships where folder browsing would not work
@@ -367,7 +423,7 @@
 - Fixing a bug with Azure-based labs which would stall during Add-LabAzureSubscription
 - Fixed display bugs in 'Remove-Lab'.
 
-## 5.40.0 (2021-10-13)
+## [5.40.0] - 2021-10-13
 
 ### Enhancements
 
@@ -375,7 +431,7 @@
   - Does not check event log any longer but uses CIM instead to check if the reboot was successfully executed
 - Azure managed disks now actually support all the parameters that Add-LabDiskDefinition exposes
 - Configuration Manager custom role(s) converted to built-in role
-  -  Thanks to the excellent work of @codaamok we were able to include Configuration Manager in our built-in roles
+  - Thanks to the excellent work of @codaamok we were able to include Configuration Manager in our built-in roles
 - Deployment validation now really includes hook for Custom Roles
 - Windows 11 GLVM keys added
 
@@ -391,7 +447,7 @@
 - Fixed typos and added SkipDeployment to the filter
 - Output of Get-LabVhdx fixed, was reporting wrong path
 
-## 5.39.0 (2021-08-20)
+## [5.39.0] - 2021-08-20
 
 ### Enhancements
 
@@ -411,7 +467,7 @@
   that are enabled for SkipDeployment were taken into account. This is now fixed.
 - The network interface name was not assigned if there is only one interface defined for a VM.
 
-## 5.38.0 (2021-07-14)
+## [5.38.0] - 2021-07-14
 
 ### Enhancements
 
@@ -427,30 +483,36 @@
 - Fixed bug in CA deployment: NETBIOS domain name was disregarded if one was explicitly configured
 - Fixing multiple bugs in DSC Pull Server DB deployment
 
-## 5.37.0 (2021-05-31)
+## [5.37.0] - 2021-05-31
 
 ### Enhancements
+
 - Configurable parameters for LabSources sync to Azure
   - AutoSyncLabSources: boolean (defaults to false, user gets to choose in Add-LabAzureSubscription)
   - LabSourcesSyncIntervalDays: uint, defaults to 60 (our previous hardcoded value)
 - Added MEMCM / ConfigMgr / SCCM 2103 custom role
 
 ### Fixes
+
 - Fixed issue where custom role properties did not deserialise (issue #1164)
 - Fixing issue when `Install-Lab -BaseImages` or `-NetworkSwitches` was used
 - Azure DevOps installation 'failed' with success code 3010 (reboot required).
 - Fixed 'PasswordNeverExpires' when there is only DCs in the lab.
-## 5.36.0 (2021-04-27)
+
+## [5.36.0] - 2021-04-27
 
 ### Enhancements
+
 - Updated the DSC SQL DB for better reporting.
 
 ### Fixes
+
 - Fixing issue during deployment when admin account is set not to expire (email submission)
 
-## 5.35.0 (2021-04-23)
+## [5.35.0] - 2021-04-23
 
 ### Enhancements
+
 - New `*-LabSnippet` cmdlets!
 - New PreInstallationActivity parameter for Add-LabMachineDefinition
   - Immediately before a role is deployed, the PreInstallationActivity is executed
@@ -465,20 +527,23 @@
 - Setting lab administrative accounts to never expire.
 
 ### Fixes
+
 - Fixed #1033, NonExistingDnsServerAssigned is now only called if domain controllers are defined in the lab.
 - Fixed issue with SharePoint servers not being deployed when they had other roles applied to them.
 - Adding alias Disable-LabHostRemoting for increased visibility (Fixes #1137).
 - AL does no longer use the Hyper-V VM's notes field exclusively (Fixes #1135).
 
-## 5.34.0 (2021-03-30)
+## [5.34.0] - 2021-03-30
 
 ### Enhancements
+
 - New roles to deploy Remote Desktop Services.
 - VM path now globally configurable.
 - Replaced dynamic parameters with user-friendly TEPP Argument Completers.
 - Update Exchange2019 custom role to use public download.
 
 ### Fixes
+
 - Fixed #1087. AL now supports WIM and ESD files in Windows ISOs.
 - Fixed #1115, the validator for AzDevOps/TFS now also validates SQLServer2019
 - Fixing issue with Get-LabInternetFile on Azure when no LabSources have been synced yet.
@@ -489,9 +554,10 @@
 - Adding validator for DNS settings on domain members and domain controllers (#3)
 - Fixing issue with post-install scripts and DNS resolution on Linux
 
-## 5.33.0 (2021-03-03)
+## [5.33.0] - 2021-03-03
 
 ### Enhancements
+
 - Add superseeded updates cleanup to Update-LabIsoImage (Issue #1061)
 - Add Cmdlet Enable-LabInternalRouting to configure routing between networks connected to routing VM
 - Caching of ISO files updated to be more user-friendly (issue #1068)
@@ -525,19 +591,21 @@
 - Improved startup time for Linux VMs by setting boot order to boot from DVD instead of PXE
 - Fixed issue #1081, AD Replication Sites not beingt created
 
-## 5.32.0 (2020-12-31)
+## [5.32.0] - 2020-12-31
 
 ### Enhancements
+
 - Enabled auto-onboarding of Hypervisors for SCVMM role
 
 ### Fixes
+
 - Fixed issue with SCVMM role where ADK files would not be fully downloaded
 - Fix unnessary UEFI dependency of Update-LabIsoImage
 - Fix the issue with Update-LabIsoImage removing OS images not targeted for update (Issue #1051)
 - Fixed that only the first additional 10 disks were initialized
 - Fixed regex, considering drives with underscores and hyphens in the name now
 
-## 5.30.0 (2020-12-15)
+## [5.30.0] - 2020-12-15
 
 ### Enhancements
 
@@ -569,7 +637,7 @@
 - Fixed an issue where SQLNcli would not be installed for SCCM custom roles (#1031)
 - Fixed a visual issue during SQL deployment on Azure (New-Item is called on $labsources)
 
-## 5.22.0 - 2020-07-10
+## [5.22.0] - 2020-07-10
 
 ### Enhancements
 
@@ -600,7 +668,8 @@
 - Enabling configuration of allowed inbound IP addresses for Azure load balancer
 
 ### Bug Fixes
-- Get-LabInternetFile did not work on Azure when the Uri did not contain a file name like 'https://go.microsoft.com/fwlink/?Linkid=85215'.
+
+- Get-LabInternetFile did not work on Azure when the Uri did not contain a file name like '<https://go.microsoft.com/fwlink/?Linkid=85215>'.
 - Decreased runtime of installation on Azure by disabling the Azure LabSources check in Copy-LabAlCommon
 - Build Agent role on Azure can now again connect to its server (Fixes #938)
 - Fixed Install-LabRdsCertificate which did not work with 2012 R2 lab VMs
@@ -609,9 +678,9 @@
 - Fixed Azure error handling
 - Added compatibility with CentOS 8 (partially fixes #967)
 
-## 5.21.0 - 2020-05-26
+## [5.21.0] - 2020-05-26
 
-## 5.16.0 - 2019-09-29
+## [5.16.0] - 2019-09-29
 
 ### Enhancements
 
@@ -644,7 +713,7 @@
 - ARM Template Deployment now deploys outgoing NAT as well, re-enabling VM internet access...
 - Re-enabled BGInfo
 
-## 5.20.0 - 2020-04-20
+## [5.20.0] - 2020-04-20
 
 ### Enhancements
 
@@ -662,9 +731,10 @@
 - 'doNotSkipNonNonEnglishIso' did not work as there as a scoping issue with the variable (#860).
 - Fixed an issue with the new dependencies and moved them to offline installer.
 
-## 5.19.0 - 2020-04-03
+## [5.19.0] - 2020-04-03
 
 ### Enhancements
+
 - SQL setup now does not override custom configuration file any longer when no other parameters are specified.
 - Add-LabMachineDefinition now assumes the most recent OS as a default if no system is specified.
 - Added System Center Configuration Manager 1902 custom role - Thank you @codaamok !
@@ -682,6 +752,7 @@
 - Lab with Domain Join added (Fixes #194)
 
 ### Bug Fixes
+
 - Fixes hardcode reference to a SQL configuration file with the path supplied in SQL role's properties `ConfigurationFile` - Thank you @codaamok !
 - Fixes timing issues with ADDS on Azure by skipping the wait period for guest reboots on Azure.
 - Rewritten some of the logic in Get-LabInternetFile.
@@ -708,7 +779,7 @@
 - Fixed an issue with newer OpenSuSE ISOs not having a .content file
 - Fixed an issue where Wait-LabVm timed out on an existing domain controller
 
-## 5.17.0 - 2020-01-08
+## [5.17.0] - 2020-01-08
 
 ### Enhancements
 
@@ -736,7 +807,7 @@
 - Improved error handling if no Az module is available
 - Fixed issues in 'Reset-LabAdPassword' and 'Enable-LabAutoLogon'
 
-## 5.16.0 - 2019-09-29
+## [5.16.0] - 2019-09-29
 
 ### Enhancements
 
@@ -745,9 +816,10 @@
 - Updated Sql2017ManagementStudio link to version 18.2
 
 ### Bug fixes
+
 - Azure module test method updated to actually locate the Az module (Fixed #671)
 
-## 5.15.0 - 2019-09-20
+## [5.15.0] - 2019-09-20
 
 ### Enhancements
 
@@ -765,23 +837,26 @@
 - Fixed #646 Restore-LabVMSnapshot throws errors
 - Fixed #709 Bootloader did not load an operating system
 
-## 5.13.0 - 2019-06-27
+## [5.13.0] - 2019-06-27
 
 ### Bug fixes
+
 - Copy-LabFileItem in Install-LabSoftwarePackage introduced new issue
 
-## 5.13.0 - 2019-06-27
+## [5.13.0] - 2019-06-27
 
 ### Bug fixes
+
 - Software installation in Azure failing
 - Installer needs to install PSFramework
 - Set module version of AutomatedLab.Common in manifest to ensure recent version when
 downloaded through PSGallery
 - Removed dependency of PSFileTransfer to PSFramework, as cmdlets were used in remote sessions
 
-## 5.11.0 - 2019-06-26
+## [5.11.0] - 2019-06-26
 
 ### Bug fixes
+
 - DNS forwarder on Azure DC will not be reset any longer (thanks @dmi3mis)
 - Certificate issues fixed
 - Azure module version increase
@@ -791,6 +866,7 @@ downloaded through PSGallery
 - Fixing error messages during lab deployment when CustomRoles folder is missing (but unused)
 
 ### Enhancements
+
 - Deployment test added to TFS deployment
 - Help updated to use ReadTheDocs.io
 - .NET Core compatibility enabled
@@ -798,7 +874,7 @@ downloaded through PSGallery
 - Aliases replaced
 - AutomatedLabNotifications is able to use Microsoft.Speech (Voice output)
 
-## 5.10.0 - 2019-05-15
+## [5.10.0] - 2019-05-15
 
 ### Bug fixes
 
@@ -815,7 +891,7 @@ downloaded through PSGallery
 - Using Az 2.0 now
 - Windows Admin Center implemented on Azure as well
 
-## 5.9.0 - 2019-03-25
+## [5.9.0] - 2019-03-25
 
 ### Enhancements
 
@@ -833,7 +909,7 @@ downloaded through PSGallery
 - Sample scripts corrected (Thank you @waiholiu !)
 - Random Lab XML corruptions fixed
 
-## 5.7.0 - 2019-02-16
+## [5.7.0] - 2019-02-16
 
 ### Enhancements
 
@@ -841,7 +917,7 @@ downloaded through PSGallery
 - New function Get-LabCache
 - Support for custom DNS label on Azure
 
-## 5.6.0 - 2019-02-08
+## [5.6.0] - 2019-02-08
 
 ### Bug fixes
 
@@ -852,7 +928,7 @@ downloaded through PSGallery
 - AppVeyor build process updated to make versioning prettier
 - TFS build worker setup updated to use SChannel
 
-## 5.5.* - 2019-01-30
+## [5.5.0] - 2019-01-30
 
 ### Enhancements
 
@@ -881,7 +957,7 @@ downloaded through PSGallery
 - Broken ODT link fixed (Thanks @dmi3mis !)
 - Validators MandatoryRoleProperties' and 'UnknownRoleProperties' fixed
 
-## 5.1.0 - 2018-11-26
+## [5.1.0] - 2018-11-26
 
 ### Enhancements
 
@@ -899,7 +975,7 @@ downloaded through PSGallery
 - Issue with Windows 1809 and -DiskImage cmdlets producing unwanted output fixed
 - Fixed SQL Setup (2016+) by preinstalling C++ redist
 
-## 5.0.4 - 2018-09-28
+## [5.0.4] - 2018-09-28
 
 ### Enhancements
 
@@ -917,20 +993,26 @@ downloaded through PSGallery
 - Issues with Azure subscription usage fixed
 - Issues with stopping Linux VMs fixed
 
-## 5.0.4 - 2018-08-03
+## [5.0.4] - 2018-08-03
+
 ### Enhancements
+
 - Better Azure cache handling
 - Update to AzureRM module 6.1
 - Added support or Windows Server 2019
 - Added support again for SQL Server 2008
 - Added support for Windows 10 Pro on Azure
+
 ### Fixes
+
 - Fixing a serious issue in Get-LWAzureVMConnectionInfo
 - Fixed issues installing SQL Server on VMs with PowerShell 4.0
 - Minor fixes
-## 5.0.3 - 2018-05-24
+
+## [5.0.3] - 2018-05-24
 
 ### Enhancements
+
 - New cmdlet Uninstall-WindowsFeature
 - Telemetry is more tranparent writing evnts into the application event log
 - AL as a Service is now available via REST API
@@ -939,13 +1021,14 @@ downloaded through PSGallery
 - AL support rolling back security changes made to the host (Undo-LabHostRemoting)
 
 ### Fixes
+
 - Azure works again now with AzureRM module 6.1 and higher
   - Caching of operating systems was not working
 - Fixed port issues with TFS on Azure
 - AL now also runs on non eu-us hosts (still there is some trouble with Russian hosts)
 - SCCM custom role now really works
 
-## 5.0.1 - 2018-04-13
+## [5.0.1] - 2018-04-13
 
 ### Enhancements
 
@@ -956,6 +1039,7 @@ downloaded through PSGallery
 - Support for TFS 2018
 
 ### Fixes
+
 - Some evaluation SKUs were missing product keys
 - TFS port in Azure
 - Fixed bugs in Hyper-V snapshot functions
@@ -963,7 +1047,7 @@ downloaded through PSGallery
 - Custom Roles now work on Azure
 - Progress indicators work again
 
-## 5.0 - 2018-04-04
+## [5.0.0] - 2018-04-04
 
 ### Enhancements
 
@@ -987,7 +1071,7 @@ downloaded through PSGallery
 - Missing Toast messages fixed
 - Display messages, timer fixed
 
-## v4.7.2.2 - 2018-01-18
+## [4.7.2-2] - 2018-01-18
 
 ### Fixes
 
@@ -1016,7 +1100,7 @@ downloaded through PSGallery
 - Install-LabWindowsFeature: Added parameter IncludeManagementTools
 - TFS added
 
-## v4.5.0.0 - 2017-11-18
+## [4.5.0] - 2017-11-18
 
 ### Fixes
 

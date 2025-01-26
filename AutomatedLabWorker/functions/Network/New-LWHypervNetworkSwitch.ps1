@@ -46,7 +46,7 @@
                 $adapterCountWithSameMac = (Get-NetAdapter | Where-Object { $_.MacAddress -eq $adapterMac -and $_.DriverDescription -ne 'Microsoft Network Adapter Multiplexor Driver' } | Group-Object -Property MacAddress).Count
                 if ($adapterCountWithSameMac -gt 1)
                 {
-                    if (Get-NetLbfoTeam -Name $network.AdapterName)
+                    if (Get-NetLbfoTeam -Name $network.AdapterName -ErrorAction SilentlyContinue)
                     {
                         Write-ScreenInfo -Message "Network Adapter ($($network.AdapterName)) is a teamed interface, ignoring duplicate MAC checking" -Type Warning
                     }
@@ -68,6 +68,10 @@
                 {
                     Start-Sleep -Seconds 2
                     $switch = New-VMSwitch -Name $network.ResourceName -SwitchType ([string]$network.SwitchType) -ErrorAction Stop
+                }
+
+                if ($network.UseNat) {
+                    $null = New-NetNat -Name $network.ResourceName -InternalIPInterfaceAddressPrefix $network.AddressSpace
                 }
 
                 Set-LWHypervNetworkSwitchDescription -NetworkSwitchName $network.ResourceName -Hashtable @{

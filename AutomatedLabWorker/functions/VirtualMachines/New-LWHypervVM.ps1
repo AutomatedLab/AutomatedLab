@@ -1,6 +1,6 @@
 ﻿function New-LWHypervVM
 {
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification = "Not relevant on Linux")]
     [Cmdletbinding()]
     Param (
         [Parameter(Mandatory)]
@@ -46,7 +46,88 @@
         $Machine.ProductKey = $Machine.OperatingSystem.ProductKey
     }
 
-    Import-UnattendedContent -Content $Machine.UnattendedXmlContent
+    $unattendContent = $Machine.UnattendedXmlContent
+    if ($Machine.LinuxType -eq 'Suse' -and $Machine.OperatingSystem.OperatingSystemName -match 'Leap') {
+        $unattendContent = $unattendContent -replace 'SUSEVERSION', "$($Machine.OperatingSystem.Version.Major).$($Machine.OperatingSystem.Version.Minor)"
+    }
+
+    Import-UnattendedContent -Content $unattendContent
+
+    # Ensure package selection works
+    if ($Machine.LinuxType -eq 'Suse' -and $Machine.OperatingSystem.OperatingSystemName -match 'Tumbleweed') {
+        $nsm = [System.Xml.XmlNamespaceManager]::new((Get-UnattendedContent).NameTable)
+        $nsm.AddNamespace('un', "http://www.suse.com/1.0/yast2ns")
+        $nsm.AddNamespace('config', "http://www.suse.com/1.0/configns" )
+        $addOnNode = (Get-UnattendedContent).SelectSingleNode('/un:profile/un:add-on/un:add_on_others', $nsm)
+        $addOnNode.RemoveAll()
+
+        # Restore attribute after clearing the node
+        $listAttr = (Get-UnattendedContent).CreateAttribute('t')
+        $listAttr.InnerText = 'list'
+        $null = $addOnNode.Attributes.Append($listAttr)
+
+        $listNodeUpdate = (Get-UnattendedContent).CreateElement('listentry', $nsm.LookupNamespace('un'))
+        $mapAttr = (Get-UnattendedContent).CreateAttribute('t')
+        $mapAttr.InnerText = 'map'
+        $aliasNode = (Get-UnattendedContent).CreateElement('alias', $nsm.LookupNamespace('un'))
+        $aliasNode.InnerText = 'repo-update'
+        $mediaUrlNode = (Get-UnattendedContent).CreateElement('media_url', $nsm.LookupNamespace('un')) 
+        $mediaUrlNode.InnerText = 'http://download.opensuse.org/update/tumbleweed/'
+        $nameNode = (Get-UnattendedContent).CreateElement('name', $nsm.LookupNamespace('un'))
+        $nameNode.InnerText = 'Update'
+        $priorityNode = (Get-UnattendedContent).CreateElement('priority', $nsm.LookupNamespace('un'))
+        $priorityNode.InnerText = '1'
+        $null = $listNodeUpdate.AppendChild($aliasNode)
+        $null = $listNodeUpdate.AppendChild($mediaUrlNode)
+        $null = $listNodeUpdate.AppendChild($nameNode)
+        $null = $listNodeUpdate.AppendChild($priorityNode)
+        $null = $listNodeUpdate.Attributes.Append($mapAttr)
+        $null = $addOnNode.AppendChild($listNodeUpdate)
+
+
+        $listNodeNonOss = (Get-UnattendedContent).CreateElement('listentry', $nsm.LookupNamespace('un'))
+        $mapAttr = (Get-UnattendedContent).CreateAttribute('t')
+        $mapAttr.InnerText = 'map'
+        $aliasNode = (Get-UnattendedContent).CreateElement('alias', $nsm.LookupNamespace('un'))
+        $aliasNode.InnerText = 'repo-update'
+        $mediaUrlNode = (Get-UnattendedContent).CreateElement('media_url', $nsm.LookupNamespace('un')) 
+        $mediaUrlNode.InnerText = 'http://download.opensuse.org/tumbleweed/repo/non-oss/'
+        $nameNode = (Get-UnattendedContent).CreateElement('name', $nsm.LookupNamespace('un'))
+        $nameNode.InnerText = 'Update'
+        $priorityNode = (Get-UnattendedContent).CreateElement('priority', $nsm.LookupNamespace('un'))
+        $priorityNode.InnerText = '2'
+        $null = $listNodeNonOss.AppendChild($aliasNode)
+        $null = $listNodeNonOss.AppendChild($mediaUrlNode)
+        $null = $listNodeNonOss.AppendChild($nameNode)
+        $null = $listNodeNonOss.AppendChild($priorityNode)
+        $null = $listNodeNonOss.Attributes.Append($mapAttr)
+        $null = $addOnNode.AppendChild($listNodeNonOss)
+    }
+    #endregion
+
+    #region Ubuntu Desktop configuration
+    # ref: https://github.com/canonical/autoinstall-desktop
+    if ($Machine.LinuxType -eq 'Ubuntu' -and $Machine.OperatingSystem.Edition -eq 'Desktop') {
+        Set-UnattendedPackage -Package 'ubuntu-desktop'
+        Set-UnattendedPackage -Package firefox -IsSnap $true
+        if ($Machine.OperatingSystem.Version.Major -eq 20) {
+            Set-UnattendedPackage -Package gnome-3-38-2004 -IsSnap $true
+            Add-UnattendedPreinstallationCommand -Description 'Enable Hardware Experience' -Command "echo 'linux-generic-hwe-20.04' > /run/kernel-meta-package"
+        } elseif ($Machine.OperatingSystem.Version.Major -eq 22) {
+            Set-UnattendedPackage -Package gnome-42-2204 -IsSnap $true # Same package is installed as verified on installed OS
+            Add-UnattendedPreinstallationCommand -Description 'Enable Hardware Experience' -Command "echo 'linux-generic-hwe-22.04' > /run/kernel-meta-package"
+        } else {
+            Set-UnattendedPackage -Package gnome-42-2204 -IsSnap $true # Same package is installed as verified on installed OS
+            Add-UnattendedPreinstallationCommand -Description 'Enable Hardware Experience' -Command "echo 'linux-generic-hwe-24.04' > /run/kernel-meta-package"
+        }
+        Set-UnattendedPackage -Package gtk-common-themes -IsSnap $true
+        Set-UnattendedPackage -Package snap-store -IsSnap $true
+        Set-UnattendedPackage -Package snapd-desktop-integration -IsSnap $true
+        Add-UnattendedSynchronousCommand -Description 'Configure grub' -Command "sed -i /etc/default/grub -e 's/GRUB_CMDLINE_LINUX_DEFAULT=`".*/GRUB_CMDLINE_LINUX_DEFAULT=`"quiet splash`"/'"
+        Add-UnattendedSynchronousCommand -Description 'Update grub' -Command 'update-grub'
+        Add-UnattendedSynchronousCommand -Description 'Keep cloud init' -Command 'apt-get install -y cloud-init'
+        Add-UnattendedSynchronousCommand -Description 'Remove unused packages' -Command 'apt-get autoremove -y'
+    }
     #endregion
 
     #region network adapter settings
@@ -60,7 +141,7 @@
 
     $type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.NetworkAdapter
     $adapters = New-Object $type
-    $Machine.NetworkAdapters | ForEach-Object {$adapters.Add($_)}
+    $Machine.NetworkAdapters | ForEach-Object { $adapters.Add($_) }
 
     if ($Machine.IsDomainJoined)
     {
@@ -83,9 +164,12 @@
         }
     }
 
+    $adapterCount = 0
     foreach ($adapter in $adapters)
     {
         $ipSettings = @{}
+        $openSuseLinuxRcNetwork = [System.Text.StringBuilder]::new()
+        $null = $openSuseLinuxRcNetwork.Append("ifcfg=`"eth$($adapterCount)`"=")
 
         $prefixlength = 12 - $macAddressPrefix.Length
         $mac = "$macAddressPrefix{0:X$prefixLength}" -f $macIdx++
@@ -117,22 +201,33 @@
 
         $ipSettings.Add('Gateways', ($adapter.Ipv4Gateway + $adapter.Ipv6Gateway))
         $ipSettings.Add('DNSServers', ($adapter.Ipv4DnsServers + $adapter.Ipv6DnsServers))
+        
+        $null = $openSuseLinuxRcNetwork.Append($ipSettings.IpAddresses -join ' ')
+        $null = $openSuseLinuxRcNetwork.Append(' ')
+        $null = $openSuseLinuxRcNetwork.Append($ipSettings.Gateways -join ' ')
+        $null = $openSuseLinuxRcNetwork.Append(' ')
+        $null = $openSuseLinuxRcNetwork.Append($ipSettings.DNSServers -join ' ')
 
         if (-not $Machine.IsDomainJoined -and (-not $adapter.ConnectionSpecificDNSSuffix))
         {
             $rootDomainName = Get-LabVM -Role RootDC | Select-Object -First 1 | Select-Object -ExpandProperty DomainName
             $ipSettings.Add('DnsDomain', $rootDomainName)
+            $null = $openSuseLinuxRcNetwork.Append(" $rootDomainName")
         }
 
         if ($adapter.ConnectionSpecificDNSSuffix)
         {
             $ipSettings.Add('DnsDomain', $adapter.ConnectionSpecificDNSSuffix)
+            $null = $openSuseLinuxRcNetwork.Append(" $($adapter.ConnectionSpecificDNSSuffix)")
         }
+
         $ipSettings.Add('UseDomainNameDevolution', (([string]($adapter.AppendParentSuffixes)) = 'true'))
         if ($adapter.AppendDNSSuffixes)
         {
             $ipSettings.Add('DNSSuffixSearchOrder', $adapter.AppendDNSSuffixes -join ',')
+            $null = $openSuseLinuxRcNetwork.Append(" $($adapter.AppendDNSSuffixes -join ' ')")
         }
+
         $ipSettings.Add('EnableAdapterDomainNameRegistration', ([string]($adapter.DnsSuffixInDnsRegistration)).ToLower())
         $ipSettings.Add('DisableDynamicUpdate', ([string](-not $adapter.RegisterInDNS)).ToLower())
 
@@ -151,12 +246,13 @@
 
         switch ($Adapter.NetbiosOptions)
         {
-            'Default'  { $ipSettings.Add('NetBIOSOptions', '0') }
-            'Enabled'  { $ipSettings.Add('NetBIOSOptions', '1') }
+            'Default' { $ipSettings.Add('NetBIOSOptions', '0') }
+            'Enabled' { $ipSettings.Add('NetBIOSOptions', '1') }
             'Disabled' { $ipSettings.Add('NetBIOSOptions', '2') }
         }
 
         Add-UnattendedNetworkAdapter @ipSettings
+        $adapterCount++
     }
 
     $Machine.NetworkAdapters = $adapters
@@ -234,22 +330,43 @@
     }
 
     Set-UnattendedFirewallState -State $Machine.EnableWindowsFirewall
+
+    if ($Machine.LinuxType -eq 'Suse') {
+        try {
+            $repoContent = (Invoke-RestMethod -Method Get -Uri "https://packages.microsoft.com/config/rhel/$Version/prod.repo" -ErrorAction Stop) -split "`n"
+        }
+        catch { }
+
+        $pwshRelease = ((Invoke-RestMethod -Uri 'https://api.github.com/repos/PowerShell/PowerShell/releases/latest' -ErrorAction SilentlyContinue).assets | Where-Object Name -match 'rh\.x86_64\.rpm').browser_download_url
+        if (-not $pwshRelease) {
+            $pwshRelease = 'https://github.com/PowerShell/PowerShell/releases/download/v7.5.2/powershell-7.5.2-1.rh.x86_64.rpm'
+        }
+
+        Add-UnattendedSynchronousCommand -Command "sudo zypper update -y && sudo zypper install -y libicu libopenssl3`nsudo rpm -i --nodeps $pwshRelease`necho `"Subsystem powershell /usr/bin/pwsh -sshs -NoLogo`" >> /etc/ssh/sshd_config`nsystemctl restart sshd`n" -Description 'Install PowerShell'
+    }
     
-    if ($Machine.OperatingSystemType -eq 'Linux' -and -not [string]::IsNullOrEmpty($Machine.SshPublicKey))
+    if (-not [string]::IsNullOrEmpty($Machine.SshPublicKey) -and $Machine.LinuxType -in 'Ubuntu', 'Suse')
     {
-        Add-UnattendedSynchronousCommand -Command "restorecon -R /root/.ssh/" -Description 'Restore SELinux context'
-        Add-UnattendedSynchronousCommand -Command "restorecon -R /$($Machine.InstallationUser.UserName)/.ssh/" -Description 'Restore SELinux context'
-        Add-UnattendedSynchronousCommand -Command "sed -i 's|[#]*PubkeyAuthentication yes|PubkeyAuthentication yes|g' /etc/ssh/sshd_config" -Description 'PowerShell is so much better.'
-        Add-UnattendedSynchronousCommand -Command "sed -i 's|[#]*PasswordAuthentication yes|PasswordAuthentication no|g' /etc/ssh/sshd_config" -Description 'PowerShell is so much better.'
-        Add-UnattendedSynchronousCommand -Command "sed -i 's|[#]*GSSAPIAuthentication yes|GSSAPIAuthentication yes|g' /etc/ssh/sshd_config" -Description 'PowerShell is so much better.'
-        Add-UnattendedSynchronousCommand -Command "chmod 700 /home/$($Machine.InstallationUser.UserName)/.ssh && chmod 600 /home/$($Machine.InstallationUser.UserName)/.ssh/authorized_keys" -Description 'SSH'
-        Add-UnattendedSynchronousCommand -Command "chmod 700 /root/.ssh && chmod 600 /root/.ssh/authorized_keys" -Description 'SSH'
-        Add-UnattendedSynchronousCommand -Command "chown -R $($Machine.InstallationUser.UserName):$($Machine.InstallationUser.UserName) /home/$($Machine.InstallationUser.UserName)/.ssh" -Description 'SSH'
-        Add-UnattendedSynchronousCommand -Command "chown -R root:root /root/.ssh" -Description 'SSH'        
-        Add-UnattendedSynchronousCommand -Command "echo `"$($Machine.SshPublicKey)`" > /home/$($Machine.InstallationUser.UserName)/.ssh/authorized_keys" -Description 'SSH'
-        Add-UnattendedSynchronousCommand -Command "echo `"$($Machine.SshPublicKey)`" > /root/.ssh/authorized_keys" -Description 'SSH'
-        Add-UnattendedSynchronousCommand -Command "mkdir -p /home/$($Machine.InstallationUser.UserName)/.ssh" -Description 'SSH'
-        Add-UnattendedSynchronousCommand -Command "mkdir -p /root/.ssh" -Description 'SSH'
+        Add-UnattendedSshPublicKey -PublicKey $Machine.SshPublicKey
+    }
+    elseif ($Machine.OperatingSystemType -eq 'Linux' -and -not [string]::IsNullOrEmpty($Machine.SshPublicKey))
+    {
+        $command = @"
+mkdir -p /root/.ssh
+mkdir -p /home/$($Machine.InstallationUser.UserName)/.ssh
+echo "$($Machine.SshPublicKey)" > /root/.ssh/authorized_keys
+echo "$($Machine.SshPublicKey)" > /home/$($Machine.InstallationUser.UserName)/.ssh/authorized_keys
+chown -R root:root /root/.ssh
+chown -R $($Machine.InstallationUser.UserName):$($Machine.InstallationUser.UserName) /home/$($Machine.InstallationUser.UserName)/.ssh
+chmod 700 /root/.ssh && chmod 600 /root/.ssh/authorized_keys
+chmod 700 /home/$($Machine.InstallationUser.UserName)/.ssh && chmod 600 /home/$($Machine.InstallationUser.UserName)/.ssh/authorized_keys
+sed -i 's|[#]*GSSAPIAuthentication yes|GSSAPIAuthentication yes|g' /etc/ssh/sshd_config
+sed -i 's|[#]*PasswordAuthentication yes|PasswordAuthentication no|g' /etc/ssh/sshd_config
+sed -i 's|[#]*PubkeyAuthentication yes|PubkeyAuthentication yes|g' /etc/ssh/sshd_config
+restorecon -R /$($Machine.InstallationUser.UserName)/.ssh/
+restorecon -R /root/.ssh/
+"@
+        Add-UnattendedSynchronousCommand -Command $command -Description 'SSH'
     }
 
     if ($Machine.Roles.Name -contains 'RootDC' -or
@@ -271,8 +388,8 @@
 
             $parameters = @{
                 DomainName = $Machine.DomainName
-                Username = $domain.Administrator.UserName
-                Password = $domain.Administrator.Password
+                Username   = $domain.Administrator.UserName
+                Password   = $domain.Administrator.Password
             }
             if ($Machine.OrganizationalUnit) {
                 $parameters['OrganizationalUnit'] = $machine.OrganizationalUnit
@@ -280,23 +397,51 @@
 
             Set-UnattendedDomain @parameters
 
-            if ($Machine.OperatingSystemType -eq 'Linux')
+            if ($Machine.OperatingSystemType -eq 'Linux' -and $Machine.LinuxType -ne 'Ubuntu')
             {
+                if ($Machine.LinuxType -eq 'Suse')
+                {
+                    Set-UnattendedPackage -Package sssd, samba
+                }
+
                 $sudoParam = @{
-                    Command = "sed -i '/^%wheel.*/a %$($Machine.DomainName.ToUpper())\\\\domain\\ admins ALL=(ALL) NOPASSWD: ALL' /etc/sudoers"
+                    Command     = "sed -i '/^%wheel.*/a %$($Machine.DomainName.ToUpper())\\\\domain\\ admins ALL=(ALL) NOPASSWD: ALL' /etc/sudoers"
                     Description = 'Enable domain admin as sudoer without password'
                 }
 
                 Add-UnattendedSynchronousCommand @sudoParam
+                [System.Collections.Generic.List[string]] $commands = @(
+                    "mkdir -p /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh"
+                    "chown -R $($domain.Administrator.UserName)@$($Machine.DomainName):domain\ users@$($Machine.DomainName) /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh" 
+                    "chmod 700 /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh && chmod 600 /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/authorized_keys"
+                    "echo `"$($Machine.SshPublicKey)`" > /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/authorized_keys"
+                    "restorecon -R /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/"
+                )
 
                 if (-not [string]::IsNullOrEmpty($Machine.SshPublicKey))
                 {
-                    Add-UnattendedSynchronousCommand -Command "restorecon -R /$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/" -Description 'Restore SELinux context'
-                    Add-UnattendedSynchronousCommand -Command "echo `"$($Machine.SshPublicKey)`" > /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/authorized_keys" -Description 'SSH'
-                    Add-UnattendedSynchronousCommand -Command "chmod 700 /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh && chmod 600 /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/authorized_keys" -Description 'SSH'
-                    Add-UnattendedSynchronousCommand -Command "chown -R $($Machine.InstallationUser.UserName)@$($Machine.DomainName):$($Machine.InstallationUser.UserName)@$($Machine.DomainName) /home/$($Machine.InstallationUser.UserName)@$($Machine.DomainName)/.ssh" -Description 'SSH'
-                    Add-UnattendedSynchronousCommand -Command "mkdir -p /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh" -Description 'SSH'
+                    $command = @"
+mkdir -p /home/$($Machine.InstallationUser.UserName.ToLower())@$($Machine.DomainName.ToLower())/.ssh
+chown -R "$($Machine.InstallationUser.UserName)@$($Machine.DomainName):domain users@$($Machine.DomainName)" /home/$($Machine.InstallationUser.UserName.ToLower())@$($Machine.DomainName.ToLower())/.ssh
+chmod 700 /home/$($Machine.InstallationUser.UserName.ToLower())@$($Machine.DomainName.ToLower())/.ssh && chmod 600 /home/$($Machine.InstallationUser.UserName.ToLower())@$($Machine.DomainName.ToLower())/.ssh/authorized_keys
+echo "$($Machine.SshPublicKey)" > /home/$($Machine.InstallationUser.UserName.ToLower())@$($Machine.DomainName.ToLower())/.ssh/authorized_keys
+restorecon -R /$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/
+"@
+                    Add-UnattendedSynchronousCommand -Command $command -Description 'SSH'
                 }
+            }
+            elseif ($Machine.OperatingSystemType -eq 'Linux' -and $Machine.LinuxType -eq 'Ubuntu')
+            {
+                Write-UnattendedFile -Content $Machine.SshPublicKey -DestinationPath "/home/$($domain.Administrator.UserName.ToLower())@$($Machine.DomainName)/.ssh/authorized_keys"
+                Write-UnattendedFile -Content @"
+#!/bin/bash
+mkdir -p /home/$($domain.Administrator.UserName.ToLower())@$($Machine.DomainName)/.ssh
+chown -R $($domain.Administrator.UserName.ToLower())@$($Machine.DomainName):domain\ users@$($Machine.DomainName) /home/$($domain.Administrator.UserName.ToLower())@$($Machine.DomainName)
+chmod 700 /home/$($domain.Administrator.UserName.ToLower())@$($Machine.DomainName)/.ssh && chmod 600 /home/$($domain.Administrator.UserName.ToLower())@$($Machine.DomainName)/.ssh/authorized_keys
+restorecon -R /home/$($domain.Administrator.UserName.ToLower())@$($Machine.DomainName)/.ssh/
+rm -rf /etc/cron.d/postconf
+"@ -DestinationPath '/postconf.sh'
+                Write-UnattendedFile -Content '@reboot root sleep 30; bash /postconf.sh' -DestinationPath '/etc/cron.d/10postconf'
             }
         }
     }
@@ -336,33 +481,34 @@
     {
         $nextDriveLetter = [char[]](67..90) |
         Where-Object { (Get-CimInstance -Class Win32_LogicalDisk |
-        Select-Object -ExpandProperty DeviceID) -notcontains "$($_):"} |
+                Select-Object -ExpandProperty DeviceID) -notcontains "$($_):" } |
         Select-Object -First 1
         $systemDisk = New-Vhd -Path $path -SizeBytes ($lab.Target.ReferenceDiskSizeInGB * 1GB) -BlockSizeBytes 1MB
         $mountedOsDisk = $systemDisk | Mount-VHD -Passthru
-        $mountedOsDisk | Initialize-Disk -PartitionStyle GPT
-        $size = 6GB
-        if ($Machine.LinuxType -in 'RedHat', 'Ubuntu')
-        {
-            $size = 100MB
-        }
-        $label = if ($Machine.LinuxType -eq 'RedHat') { 'OEMDRV' } else { 'CIDATA' }
-        $unattendPartition = $mountedOsDisk | New-Partition -Size $size
 
-        # Use a small FAT32 partition to hold AutoYAST and Kickstart configuration
-        $diskpartCmd = "@
-            select disk $($mountedOsDisk.DiskNumber)
-            select partition $($unattendPartition.PartitionNumber)
-            format quick fs=fat32 label=$label
-            exit
-        @"
-        $diskpartCmd | diskpart.exe | Out-Null
+            $mountedOsDisk | Initialize-Disk -PartitionStyle GPT
+            $size = 6GB
+            if ($Machine.LinuxType -in 'RedHat', 'Ubuntu')
+            {
+                $size = 100MB
+            }
+            $label = if ($Machine.LinuxType -eq 'RedHat') { 'OEMDRV' } else { 'CIDATA' }
+            $unattendPartition = $mountedOsDisk | New-Partition -Size $size
 
-        $unattendPartition | Set-Partition -NewDriveLetter $nextDriveLetter
-        $unattendPartition = $unattendPartition | Get-Partition
-        $drive = [System.IO.DriveInfo][string]$unattendPartition.DriveLetter
+            # Use a small FAT32 partition to hold AutoYAST and Kickstart configuration
+            $diskpartCmd = "@
+                select disk $($mountedOsDisk.DiskNumber)
+                select partition $($unattendPartition.PartitionNumber)
+                format quick fs=fat32 label=$label
+                exit
+            @"
+            $diskpartCmd | diskpart.exe | Out-Null
 
-        if ( $machine.OperatingSystemType -eq 'Linux' -and $machine.LinuxPackageGroup )
+            $unattendPartition | Set-Partition -NewDriveLetter $nextDriveLetter
+            $unattendPartition = $unattendPartition | Get-Partition
+            $drive = [System.IO.DriveInfo][string]$unattendPartition.DriveLetter
+
+        if ($machine.LinuxPackageGroup )
         {
             Set-UnattendedPackage -Package $machine.LinuxPackageGroup
         }
@@ -387,7 +533,7 @@
             # Copy data
             Copy-Item -Path "$($isoDrive.RootDirectory.FullName)*" -Destination $drive.RootDirectory.FullName -Recurse -Force -PassThru |
             Where-Object IsReadOnly | Set-ItemProperty -name IsReadOnly -Value $false
-
+            
             # Unmount ISO
             [void] (Dismount-DiskImage -ImagePath $Machine.OperatingSystem.IsoPath)
 
@@ -396,16 +542,19 @@
             $grubFile = Get-ChildItem -Recurse -Path $drive.RootDirectory.FullName -Filter 'grub.cfg'
             $isolinuxFile = Get-ChildItem -Recurse -Path $drive.RootDirectory.FullName -Filter 'isolinux.cfg'
 
-            ($grubFile | Get-Content -Raw) -replace "splash=silent", "splash=silent textmode=1 autoyast=device:///autoinst.xml" | Set-Content -Path $grubFile.FullName
-            ($isolinuxFile | Get-Content -Raw) -replace "splash=silent", "splash=silent textmode=1 autoyast=device:///autoinst.xml" | Set-Content -Path $isolinuxFile.FullName
+            ($grubFile | Get-Content -Raw) -replace "splash=silent", "splash=silent textmode=1 $openSuseLinuxRcNetwork YAST_SKIP_XML_VALIDATION=1 autoyast=device:///autoinst.xml" | Set-Content -Path $grubFile.FullName
+            ($isolinuxFile | Get-Content -Raw) -replace "splash=silent", "splash=silent textmode=1 $openSuseLinuxRcNetwork YAST_SKIP_XML_VALIDATION=1 autoyast=device:///autoinst.xml" | Set-Content -Path $isolinuxFile.FullName
         }
         elseif ($machine.LinuxType -eq 'Ubuntu')
         {
-            $null = New-Item -Path $drive.RootDirectory -Name meta-data -Force -Value "instance-id: iid-local01`nlocal-hostname: $($Machine.Name)"
-            Export-UnattendedFile -Path (Join-Path -Path $drive.RootDirectory -ChildPath user-data)
-            $ubuLease = '{0:d2}.{1:d2}' -f $machine.OperatingSystem.Version.Major,$machine.OperatingSystem.Version.Minor # Microsoft Repo does not use $RELEASE but version number instead.
+            Export-UnattendedFile -Path $drive.RootDirectory
+            $ubuLease = '{0:d2}.{1:d2}' -f $machine.OperatingSystem.Version.Major, $machine.OperatingSystem.Version.Minor # Microsoft Repo does not use $RELEASE but version number instead.
             (Get-Content -Path (Join-Path -Path $drive.RootDirectory -ChildPath user-data)) -replace 'REPLACERELEASE', $ubuLease | Set-Content (Join-Path -Path $drive.RootDirectory -ChildPath user-data)
-            Copy-Item -Path (Join-Path -Path $drive.RootDirectory -ChildPath user-data) -Destination (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath "cloudinit_$($Machine.Name).yml")
+            (Get-Content -Path (Join-Path -Path $drive.RootDirectory -ChildPath meta-data)) -replace 'REPLACERELEASE', $ubuLease | Set-Content (Join-Path -Path $drive.RootDirectory -ChildPath meta-data)
+            
+
+            Copy-Item -Path (Join-Path -Path $drive.RootDirectory -ChildPath user-data) -Destination (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath "cloudinit_user_$($Machine.Name).yml")
+            Copy-Item -Path (Join-Path -Path $drive.RootDirectory -ChildPath meta-data) -Destination (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath "cloudinit_meta_$($Machine.Name).yml")
         }
 
         $mountedOsDisk | Dismount-VHD
@@ -423,7 +572,7 @@
         $mountedOsDisk = Mount-VHD -Path $path -Passthru
         try
         {
-            $drive = $mountedosdisk | get-disk | Get-Partition | Get-Volume  | Where {$_.DriveLetter -and $_.FileSystemLabel -eq 'System'}
+            $drive = $mountedosdisk | get-disk | Get-Partition | Get-Volume  | Where { $_.DriveLetter -and $_.FileSystemLabel -eq 'System' }
 
             $paths = [Collections.ArrayList]::new()
             $alcommon = Get-Module -Name AutomatedLab.Common
@@ -481,21 +630,21 @@
     Write-ProgressIndicator
 
     $vmParameter = @{
-        Name = $Machine.ResourceName
+        Name               = $Machine.ResourceName
         MemoryStartupBytes = ($Machine.Memory)
-        VHDPath = $systemDisk.Path
-        Path = $VmPath
-        Generation = $generation
-        ErrorAction = 'Stop'
+        VHDPath            = $systemDisk.Path
+        Path               = $VmPath
+        Generation         = $generation
+        ErrorAction        = 'Stop'
     }
 
     $vm = Hyper-V\New-VM @vmParameter
 
     Set-LWHypervVMDescription -ComputerName $Machine.ResourceName -Hashtable @{
-        CreatedBy = '{0} ({1})' -f $PSCmdlet.MyInvocation.MyCommand.Module.Name, $PSCmdlet.MyInvocation.MyCommand.Module.Version
+        CreatedBy    = '{0} ({1})' -f $PSCmdlet.MyInvocation.MyCommand.Module.Name, $PSCmdlet.MyInvocation.MyCommand.Module.Version
         CreationTime = Get-Date
-        LabName = (Get-Lab).Name
-        InitState = [AutomatedLab.LabVMInitState]::Uninitialized
+        LabName      = (Get-Lab).Name
+        InitState    = [AutomatedLab.LabVMInitState]::Uninitialized
     }
 
     #Removing this check as this 'Get-SecureBootUEFI' is not supported on Azure VMs for nested virtualization
@@ -564,7 +713,8 @@
 
         $newAdapter = Add-VMNetworkAdapter @parameters
 
-        if (-not $adapter.AccessVLANID -eq 0) {
+        if (-not $adapter.AccessVLANID -eq 0)
+        {
 
             Set-VMNetworkAdapterVlan -VMNetworkAdapter $newAdapter -Access -VlanId $adapter.AccessVLANID
             Write-PSFMessage "Network Adapter: '$($adapter.VirtualSwitch.ResourceName)' for VM: '$($vm.Name)' created with VLAN ID: '$($adapter.AccessVLANID)', Ensure external routing is configured correctly"
@@ -574,8 +724,8 @@
     Write-PSFMessage "`tMachine '$Name' created"
 
     $automaticStartAction = 'Nothing'
-    $automaticStartDelay  = 0
-    $automaticStopAction  = 'ShutDown'
+    $automaticStartDelay = 0
+    $automaticStopAction = 'ShutDown'
 
     if ($Machine.HypervProperties.AutomaticStartAction) { $automaticStartAction = $Machine.HypervProperties.AutomaticStartAction }
     if ($Machine.HypervProperties.AutomaticStartDelay)  { $automaticStartDelay  = $Machine.HypervProperties.AutomaticStartDelay  }
@@ -584,10 +734,12 @@
 
     Write-ProgressIndicator
 
-    if ( $Machine.OperatingSystemType -eq 'Linux' -and $Machine.LinuxType -in 'RedHat','Ubuntu')
+    if ( $Machine.OperatingSystemType -eq 'Linux')
     {
         $dvd = $vm | Add-VMDvdDrive -Path $Machine.OperatingSystem.IsoPath -Passthru
-        $vm | Set-VMFirmware -FirstBootDevice $dvd
+        if ( $Machine.LinuxType -in 'RedHat','Ubuntu') {
+            $vm | Set-VMFirmware -FirstBootDevice $dvd
+        }
     }
 
     if ( $Machine.OperatingSystemType -eq 'Windows')
@@ -601,7 +753,8 @@
             #for Generation 2 VMs
             $vhdOsPartition = $VhdPartition | Where-Object Type -eq 'Basic'
             # If no drive letter is assigned, make sure we assign it before continuing
-            If ($vhdOsPartition.NoDefaultDriveLetter) {
+            If ($vhdOsPartition.NoDefaultDriveLetter)
+            {
                 # Get all available drive letters, and store in a temporary variable.
                 $usedDriveLetters = @(Get-Volume | ForEach-Object { "$([char]$_.DriveLetter)" }) + @(Get-CimInstance -ClassName Win32_MappedLogicalDisk | ForEach-Object { $([char]$_.DeviceID.Trim(':')) })
                 [char[]]$tempDriveLetters = Compare-Object -DifferenceObject $usedDriveLetters -ReferenceObject $( 67..90 | ForEach-Object { "$([char]$_)" }) -PassThru | Where-Object { $_.SideIndicator -eq '<=' }
@@ -651,39 +804,39 @@
 
         
 
-    if ($Machine.OperatingSystemType -eq 'Windows' -and -not [string]::IsNullOrEmpty($Machine.SshPublicKey))
-    {
-        Add-UnattendedSynchronousCommand -Command 'PowerShell -File "C:\Program Files\OpenSSH-Win64\install-sshd.ps1"' -Description 'Configure SSH'
-        Add-UnattendedSynchronousCommand -Command 'PowerShell -Command "Set-Service -Name sshd -StartupType Automatic"' -Description 'Enable SSH'
-        Add-UnattendedSynchronousCommand -Command 'PowerShell -Command "Restart-Service -Name sshd"' -Description 'Restart SSH'
-
-        Write-PSFMessage 'Copying PowerShell 7 and setting up SSH'
-        $release = try {Invoke-RestMethod -Uri 'https://api.github.com/repos/powershell/powershell/releases/latest' -UseBasicParsing -ErrorAction Stop } catch {}
-        $uri = ($release.assets | Where-Object name -like '*-win-x64.zip').browser_download_url
-        if (-not $uri)
+        if ($Machine.OperatingSystemType -eq 'Windows' -and -not [string]::IsNullOrEmpty($Machine.SshPublicKey))
         {
-            $uri = 'https://github.com/PowerShell/PowerShell/releases/download/v7.2.6/PowerShell-7.2.6-win-x64.zip'
-        }
-        $psArchive = Get-LabInternetFile -Uri $uri -Path "$labSources/SoftwarePackages/PS7.zip"
+            Add-UnattendedSynchronousCommand -Command 'PowerShell -File "C:\Program Files\OpenSSH-Win64\install-sshd.ps1"' -Description 'Configure SSH'
+            Add-UnattendedSynchronousCommand -Command 'PowerShell -Command "Set-Service -Name sshd -StartupType Automatic"' -Description 'Enable SSH'
+            Add-UnattendedSynchronousCommand -Command 'PowerShell -Command "Restart-Service -Name sshd"' -Description 'Restart SSH'
+
+            Write-PSFMessage 'Copying PowerShell 7 and setting up SSH'
+            $release = try { Invoke-RestMethod -Uri 'https://api.github.com/repos/powershell/powershell/releases/latest' -UseBasicParsing -ErrorAction Stop } catch {}
+            $uri = ($release.assets | Where-Object name -like '*-win-x64.zip').browser_download_url
+            if (-not $uri)
+            {
+                $uri = 'https://github.com/PowerShell/PowerShell/releases/download/v7.2.6/PowerShell-7.2.6-win-x64.zip'
+            }
+            $psArchive = Get-LabInternetFile -Uri $uri -Path "$labSources/SoftwarePackages/PS7.zip"
 
         
-        $release = try {Invoke-RestMethod -Uri 'https://api.github.com/repos/powershell/win32-openssh/releases/latest' -UseBasicParsing -ErrorAction Stop } catch {}
-        $uri = ($release.assets | Where-Object name -like '*-win64.zip').browser_download_url
-        if (-not $uri)
-        {
-            $uri = 'https://github.com/PowerShell/Win32-OpenSSH/releases/download/v8.9.1.0p1-Beta/OpenSSH-Win64.zip'
-        }
-        $sshArchive = Get-LabInternetFile -Uri $uri -Path "$labSources/SoftwarePackages/ssh.zip"
+            $release = try { Invoke-RestMethod -Uri 'https://api.github.com/repos/powershell/win32-openssh/releases/latest' -UseBasicParsing -ErrorAction Stop } catch {}
+            $uri = ($release.assets | Where-Object name -like '*-win64.zip').browser_download_url
+            if (-not $uri)
+            {
+                $uri = 'https://github.com/PowerShell/Win32-OpenSSH/releases/download/v8.9.1.0p1-Beta/OpenSSH-Win64.zip'
+            }
+            $sshArchive = Get-LabInternetFile -Uri $uri -Path "$labSources/SoftwarePackages/ssh.zip"
 
-        $null = New-Item -ItemType Directory -Force -Path (Join-Path -Path $vhdVolume -ChildPath 'Program Files\PowerShell\7')
-        Expand-Archive -Path "$labSources/SoftwarePackages/PS7.zip" -DestinationPath (Join-Path -Path $vhdVolume -ChildPath 'Program Files\PowerShell\7')
-        Expand-Archive -Path "$labSources/SoftwarePackages/ssh.zip" -DestinationPath (Join-Path -Path $vhdVolume -ChildPath 'Program Files')
+            $null = New-Item -ItemType Directory -Force -Path (Join-Path -Path $vhdVolume -ChildPath 'Program Files\PowerShell\7')
+            Expand-Archive -Path "$labSources/SoftwarePackages/PS7.zip" -DestinationPath (Join-Path -Path $vhdVolume -ChildPath 'Program Files\PowerShell\7')
+            Expand-Archive -Path "$labSources/SoftwarePackages/ssh.zip" -DestinationPath (Join-Path -Path $vhdVolume -ChildPath 'Program Files')
 
-        $null = New-Item -ItemType File -Path (Join-Path -Path $vhdVolume -ChildPath '\AL\SSH\keys'),(Join-Path -Path $vhdVolume -ChildPath 'ProgramData\ssh\sshd_config') -Force
+            $null = New-Item -ItemType File -Path (Join-Path -Path $vhdVolume -ChildPath '\AL\SSH\keys'), (Join-Path -Path $vhdVolume -ChildPath 'ProgramData\ssh\sshd_config') -Force
         
-        $Machine.SshPublicKey | Add-Content -Path (Join-Path -Path $vhdVolume -ChildPath '\AL\SSH\keys')
+            $Machine.SshPublicKey | Add-Content -Path (Join-Path -Path $vhdVolume -ChildPath '\AL\SSH\keys')
         
-        $sshdConfig = @"
+            $sshdConfig = @"
 Port 22
 PasswordAuthentication no
 PubkeyAuthentication yes
@@ -694,7 +847,7 @@ Subsystem powershell c:/progra~1/powershell/7/pwsh.exe -sshs -NoLogo
 "@
             $sshdConfig | Set-Content -Path (Join-Path -Path $vhdVolume -ChildPath 'ProgramData\ssh\sshd_config')
             Write-PSFMessage 'Done'
-    }
+        }
 
         if ($Machine.ToolsPath.Value)
         {
@@ -740,47 +893,48 @@ Windows Registry Editor Version 5.00
         #Using the .net class as the PowerShell provider usually does not recognize the new drive
         [System.IO.File]::WriteAllText("$vhdVolume\WSManRegKey.reg", $enableWSManRegDump)
 
-        $additionalDisksOnline = @'
-Start-Transcript -Path C:\DeployDebug\AdditionalDisksOnline.log
-$diskpartCmd = 'LIST DISK'
-$disks = $diskpartCmd | diskpart.exe
-$pattern = 'Disk (?<DiskNumber>\d{1,3}) \s+(?<State>Online|Offline)\s+(?<Size>\d+) (KB|MB|GB|TB)\s+(?<Free>\d+) (B|KB|MB|GB|TB)'
-foreach ($line in $disks)
+        $additionalDisksOnline = @"
+`$deployDebug = (New-Item -ItemType Directory -Path `$ExecutionContext.InvokeCommand.ExpandString("$AL_DeployDebugFolder") -Force).FullName
+Start-Transcript -Path `$deployDebug\AdditionalDisksOnline.log
+`$diskpartCmd = 'LIST DISK'
+`$disks = `$diskpartCmd | diskpart.exe
+`$pattern = 'Disk (?<DiskNumber>\d{1,3}) \s+(?<State>Online|Offline)\s+(?<Size>\d+) (KB|MB|GB|TB)\s+(?<Free>\d+) (B|KB|MB|GB|TB)'
+foreach (`$line in `$disks)
 {
-    if ($line -match $pattern)
+    if (`$line -match `$pattern)
     {
-        #$nextDriveLetter = [char[]](67..90) |
+        #`$nextDriveLetter = [char[]](67..90) |
         #Where-Object { (Get-CimInstance -Class Win32_LogicalDisk |
-        #Select-Object -ExpandProperty DeviceID) -notcontains "$($_):"} |
+        #Select-Object -ExpandProperty DeviceID) -notcontains "`$(`$_):"} |
         #Select-Object -First 1
-        $diskNumber = $Matches.DiskNumber
-        if ($Matches.State -eq 'Offline')
+        `$diskNumber = `$Matches.DiskNumber
+        if (`$Matches.State -eq 'Offline')
         {
-            $diskpartCmd = "@
-                SELECT DISK $diskNumber
+            `$diskpartCmd = "@
+                SELECT DISK `$diskNumber
                 ATTRIBUTES DISK CLEAR READONLY
                 ONLINE DISK
                 EXIT
             @"
-            $diskpartCmd | diskpart.exe | Out-Null
+            `$diskpartCmd | diskpart.exe | Out-Null
         }
     }
 }
-foreach ($volume in (Get-WmiObject -Class Win32_Volume))
+foreach (`$volume in (Get-WmiObject -Class Win32_Volume))
 {
-    if ($volume.Label -notmatch '(?<Label>[-_\w\d]+)_AL_(?<DriveLetter>[A-Z])')
+    if (`$volume.Label -notmatch '(?<Label>[-_\w\d]+)_AL_(?<DriveLetter>[A-Z])')
     {
         continue
     }
-        if ($volume.DriveLetter -ne "$($Matches.DriveLetter):")
+        if (`$volume.DriveLetter -ne "`$(`$Matches.DriveLetter):")
     {
-        $volume.DriveLetter = "$($Matches.DriveLetter):"
+        `$volume.DriveLetter = "`$(`$Matches.DriveLetter):"
     }
-        $volume.Label = $Matches.Label
-    $volume.Put()
+        `$volume.Label = `$Matches.Label
+    `$volume.Put()
 }
 Stop-Transcript
-'@
+"@
         [System.IO.File]::WriteAllText("$vhdVolume\AdditionalDisksOnline.ps1", $additionalDisksOnline)
 
         $defaultSettings = @{

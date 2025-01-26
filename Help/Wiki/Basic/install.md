@@ -10,8 +10,7 @@ There are two options installing AutomatedLab:
 ```powershell
 Install-PackageProvider Nuget -Force
 # SkipPublisherCheck: AutomatedLabTest requires Pester v5. On system where Pester v3 is still the only versions, you will get an error if the parameter is not present
-# AllowClobber: On some occasions, other modules seem to have published ConvertTo-Json/ConvertFrom-Json, which is overwritten by Newtonsoft.Json
-Install-Module AutomatedLab -SkipPublisherCheck -AllowClobber
+Install-Module AutomatedLab -SkipPublisherCheck
 
 #region Non-interactive host
 # Pre-configure telemetry

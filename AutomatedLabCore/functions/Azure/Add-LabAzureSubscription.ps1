@@ -313,6 +313,11 @@
     }
 
     # Check last LabSources sync timestamp
+    if (Get-LabConfigurationItem -Name AzureDisableLabSourcesStorage)
+    {
+        Write-ScreenInfo -Type Warning -Message 'You opted out of storage account creation. Please be aware that lab deployment times may increase due to it.'
+    }
+
     if ($IsLinux -or $IsMacOs)
     {
         $timestamps = $type::Import((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/Timestamps.xml'))
@@ -326,7 +331,7 @@
     $syncMaxSize = Get-LabConfigurationItem -Name LabSourcesMaxFileSizeMb
     $syncIntervalDays = Get-LabConfigurationItem -Name LabSourcesSyncIntervalDays
 
-    if (-not (Get-LabConfigurationItem -Name DoNotPrompt -Default $false) -and -not $lastchecked -and -not $AzureStack.IsPresent)
+    if (-not (Get-LabConfigurationItem -Name AzureDisableLabSourcesStorage) -and -not (Get-LabConfigurationItem -Name DoNotPrompt -Default $false) -and -not $lastchecked -and -not $AzureStack.IsPresent)
     {
         $lastchecked = [datetime]0
         $syncText = @"

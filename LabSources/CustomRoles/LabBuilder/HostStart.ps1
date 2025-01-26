@@ -77,7 +77,10 @@ Install-LabSoftwarePackage -Path $pwshPath.FullName -ComputerName $ComputerName 
 
 $netFullUrl = Get-LabConfigurationItem dotnet48DownloadLink
 $netFullPath = Get-LabInternetFile -uri $netFullUrl -Path $labsources/SoftwarePackages -PassThru
-Install-LabSoftwarePackage -Path $netFullPath.FullName -ComputerName $ComputerName -NoDisplay -CommandLine '/q /norestart /log c:\DeployDebug\dotnet48.txt' -UseShellExecute
+$deployDebugPath = Invoke-LabCommand -ActivityName 'Create Logging Directory' -ComputerName $ComputerName -ScriptBlock {
+        (New-Item -Force -ItemType Directory -Path $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder)).FullName
+    } -NoDisplay -PassThru -Variable (Get-Variable -Name AL_DeployDebugFolder -Scope Global) | Select-Object -First 1
+Install-LabSoftwarePackage -Path $netFullPath.FullName -ComputerName $ComputerName -NoDisplay -CommandLine "/q /norestart /log `"$deployDebugPath\dotnet48.txt`"" -UseShellExecute
 
 Write-ScreenInfo -Message "Downloading pode" -Type Verbose
 $downloadPath = Join-Path -Path (Get-LabSourcesLocationInternal -Local) -ChildPath SoftwarePackages\pode

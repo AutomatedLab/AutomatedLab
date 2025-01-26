@@ -12,11 +12,14 @@
     $adkPeUrl = Get-LabConfigurationItem -Name WindowsAdkPe
     $adkFile = Get-LabInternetFile -Uri $adkUrl -Path $labsources\SoftwarePackages -FileName adk.exe -PassThru -NoDisplay
     $adkpeFile = Get-LabInternetFile -Uri $adkPeUrl -Path $labsources\SoftwarePackages -FileName adkpe.exe -PassThru -NoDisplay
+    $deployDebugPath = Invoke-LabCommand -ComputerName $vms -ScriptBlock {
+        (New-Item -ItemType Directory -Path $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder) -ErrorAction SilentlyContinue -Force).FullName
+    } -PassThru -Variable (Get-Variable -Name AL_DeployDebugFolder -Scope Global) | Select-Object -First 1
     
     if ($(Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
     {
-        Install-LabSoftwarePackage -Path $adkFile.FullName -ComputerName $vms -CommandLine '/quiet /layout c:\ADKoffline' -NoDisplay
-        Install-LabSoftwarePackage -Path $adkpeFile.FullName -ComputerName $vms -CommandLine '/quiet /layout c:\ADKPEoffline' -NoDisplay
+        Install-LabSoftwarePackage -Path $adkFile.FullName -ComputerName $vms -CommandLine "/quiet /layout `"$deployDebugPath\ADKoffline`"" -NoDisplay
+        Install-LabSoftwarePackage -Path $adkpeFile.FullName -ComputerName $vms -CommandLine "/quiet /layout `"$deployDebugPath\ADKPEoffline`"" -NoDisplay
     }
     else
     {
@@ -26,8 +29,8 @@
         Copy-LabFileItem -Path ($ExecutionContext.SessionState.Path.Combine($labSources, 'SoftwarePackages/ADKPEoffline')) -ComputerName $vms
     }
     
-    Install-LabSoftwarePackage -LocalPath C:\ADKOffline\adksetup.exe -ComputerName $vms -CommandLine '/norestart /q /ceip off /features OptionId.DeploymentTools OptionId.UserStateMigrationTool OptionId.ImagingAndConfigurationDesigner' -NoDisplay
-    Install-LabSoftwarePackage -LocalPath C:\ADKPEOffline\adkwinpesetup.exe -ComputerName $vms -CommandLine '/norestart /q /ceip off /features OptionId.WindowsPreinstallationEnvironment' -NoDisplay
+    Install-LabSoftwarePackage -LocalPath $deployDebugPath\ADKOffline\adksetup.exe -ComputerName $vms -CommandLine '/norestart /q /ceip off /features OptionId.DeploymentTools OptionId.UserStateMigrationTool OptionId.ImagingAndConfigurationDesigner' -NoDisplay
+    Install-LabSoftwarePackage -LocalPath $deployDebugPath\ADKPEOffline\adkwinpesetup.exe -ComputerName $vms -CommandLine '/norestart /q /ceip off /features OptionId.WindowsPreinstallationEnvironment' -NoDisplay
 
     $ncliUrl = Get-LabConfigurationItem -Name SqlServerNativeClient2012
     try
@@ -74,7 +77,7 @@
         $cmVersion = if ($role.Properties.ContainsKey('Version')) { $role.Properties.Version } else { '2103' }
         $cmBranch = if ($role.Properties.ContainsKey('Branch')) { $role.Properties.Branch } else { 'CB' }
 
-        $VMInstallDirectory = 'C:\Install'
+        $VMInstallDirectory = "$deployDebugPath\Install"
         $CMBinariesDirectory = "$labSources\SoftwarePackages\CM-$($cmVersion)-$cmBranch"
         $CMPreReqsDirectory = "$labSources\SoftwarePackages\CM-Prereqs-$($cmVersion)-$cmBranch"
         $VMCMBinariesDirectory = "{0}\CM" -f $VMInstallDirectory

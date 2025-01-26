@@ -79,6 +79,13 @@ As AutomatedLab copies the whole folder to the machine the role is assigned to, 
 & $PSScriptRoot\Customizations.ps1
 ```
 
+### Custom Role Tests
+Pester tests are now available for Custom Roles! Use `New-LabPesterTest` to create the stub test harness like this:
+
+```PowerShell
+New-LabPesterTest -Role MyCustomRole -IsCustomRole -Path $global:LabSources\CustomRoles\MyCustomRole
+```
+
 The same pattern can be used for HostStart and HostEnd as well. You do not have to put all the logic in just one file.
 
 ### Demo Roles

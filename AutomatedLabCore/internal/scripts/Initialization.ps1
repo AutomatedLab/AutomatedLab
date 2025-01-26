@@ -4,7 +4,7 @@ if ($PSEdition -eq 'Core') {
     # These modules SHOULD be marked as Core compatible, as tested with Windows 10.0.18362.113
     # However, if they are not, they need to be imported.
     $requiredModules = @('Dism')
-    $requiredModulesImplicit = @('International') # These modules should be imported via implicit remoting. Might suffer from implicit sessions getting removed though
+    $requiredModulesImplicit = @() # These modules should be imported via implicit remoting. Might suffer from implicit sessions getting removed though
 
     $ipmoErr = $null # Initialize, otherwise Import-MOdule -Force will extend this variable indefinitely
     if ($requiredModulesImplicit -and $IsWindows) {
@@ -110,11 +110,13 @@ $osroot = if ([System.Environment]::OSVersion.Platform -eq 'Win32NT') {
 else {
     '/'
 }
-Set-PSFConfig -Module 'AutomatedLab' -Name OsRoot -Value $osroot -Initialize -Validation string
+Set-PSFConfig -Module 'AutomatedLab' -Name OsRoot -Value $osroot -Initialize -Validation string -Hidden -Description 'Host operating system root, used mostly with file transfers. Do not modify if not requried.'
 Set-PSFConfig -Module 'AutomatedLab' -Name OverridePowerPlan -Value $true -Initialize -Validation bool -Description 'On Windows: Indicates that power settings will be set to High Power during lab deployment'
 Set-PSFConfig -Module 'AutomatedLab' -Name SendFunctionTelemetry -Value $false -Initialize -Validation bool -Description 'Indicates if function call telemetry is sent' -Hidden
 Set-PSFConfig -Module 'AutomatedLab' -Name DoNotWaitForLinux -Value $false -Initialize -Validation bool -Description 'Indicates that you will not wait for Linux VMs to be ready, e.g. because you are offline and PowerShell cannot be installed.'
 Set-PSFConfig -Module 'AutomatedLab' -Name DoNotPrompt -Value $false -Initialize -Validation bool -Description 'Indicates that AutomatedLab should not display prompts. Workaround for environments that register as interactive, even if they are not. Skips enabling telemetry, skips Azure lab sources sync, forcibly configures remoting' -Hidden
+Set-PSFConfig -Module 'AutomatedLab' -Name VMDeploymentFilesFolder -Value '$([Environment]::GetFolderPath(''ApplicationData''))/DeployDebug' -Initialize -Validation string -Description 'Folder local to each VM which contains temporary files during deployment, logs and such. Will use ExecutionContext.InvokeCommand.ExpandString() to ensure xplat capabilities.'
+$Global:AL_DeployDebugFolder = Get-PSFConfigValue -FullName AutomatedLab.VMDeploymentFilesFolder
 
 #PSSession settings
 Set-PSFConfig -Module 'AutomatedLab' -Name InvokeLabCommandRetries -Value 3 -Initialize -Validation integer -Description 'Number of retries for Invoke-LabCommand'
@@ -151,6 +153,7 @@ Set-PSFConfig -Module 'AutomatedLab' -Name VMConnectRedirectedDrives -Value 'non
 #Hyper-V Network settings
 Set-PSFConfig -Module 'AutomatedLab' -Name MacAddressPrefix -Value '0017FB' -Initialize -Validation string -Description 'The MAC address prefix for Hyper-V labs' -Handler { if ($args[0].Length -eq 0 -or $args[0].Length -gt 11) { Write-PSFMessage -Level Error -Message "Invalid prefix length for MacAddressPrefix! $($args[0]) needs to be at least one character and at most 11 characters"; throw "Invalid prefix length for MacAddressPrefix! $($args[0]) needs to be at least one character and at most 11 characters" } }
 Set-PSFConfig -Module 'AutomatedLab' -Name DisableDeviceNaming -Value $false -Validation bool -Initialize -Description 'Disables Device Naming for VM NICs. Enabled by default for Hosts > 2016 and Gen 2 Guests > 2016'
+Set-PSFConfig -Module 'AutomatedLab' -Name HyperVUseNAT -Value $false -Validation bool -Initialize -Description 'Indicates if a NAT should be created for all lab environments'
 
 #Hyper-V Disk Settings
 Set-PSFConfig -Module 'AutomatedLab' -Name CreateOnlyReferencedDisks -Value $true -Initialize -Validation bool -Description 'Disks that are not references by a VM will not be created'
@@ -170,8 +173,9 @@ Set-PSFConfig -Module 'AutomatedLab' -Name DefaultAzureRoleSize -Value 'D' -Init
 Set-PSFConfig -Module 'AutomatedLab' -Name LabSourcesMaxFileSizeMb -Value 50 -Initialize -Validation integer -Description 'The default file size for Sync-LabAzureLabSources'
 Set-PSFConfig -Module 'AutomatedLab' -Name AutoSyncLabSources -Value $false -Initialize -Validation bool -Description 'Toggle auto-sync of Azure lab sources in Azure labs'
 Set-PSFConfig -Module 'AutomatedLab' -Name LabSourcesSyncIntervalDays -Value 60 -Initialize -Validation integerpositive -Description 'Interval in days for lab sources auto-sync'
-Set-PSFConfig -Module 'AutomatedLab' -Name AzureDiskSkus -Value @('Standard_LRS', 'Premium_LRS', 'StandardSSD_LRS') # 'UltraSSD_LRS' is not allowed!
+Set-PSFConfig -Module 'AutomatedLab' -Name AzureDiskSkus -Value @('Standard_LRS', 'Premium_LRS', 'StandardSSD_LRS') -Description 'SKU for Azure VM Managed Disk, no UltraSSDs' # 'UltraSSD_LRS' is not allowed!
 Set-PSFConfig -Module 'AutomatedLab' -Name AzureEnableJit -Value $false -Initialize -Validation bool -Description 'Enable this setting to have AutomatedLab configure ports 22, 3389 and 5986 for JIT access. Can be done manually with Enable-LabAzureJitAccess and requested (after enabling) with Request-LabAzureJitAccess'
+Set-PSFConfig -Module 'AutomatedLab' -Name AzureDisableLabSourcesStorage -Value $false -Initialize -Validation bool -Description 'Enable this setting to opt out of creating Lab Sources storage. This will prolong your lab deployment times significantly, if ISOs have to be mounted or large files have to be copied.'
 Set-PSFConfig -Module 'AutomatedLab' -Name RequiredAzModules -Value @(
     # Syntax: Name, MinimumVersion, RequiredVersion
     @{
@@ -273,10 +277,10 @@ Set-PSFConfig -Module 'AutomatedLab' -Name Sql2019ManagementStudio -Value 'https
 Set-PSFConfig -Module 'AutomatedLab' -Name Sql2022ManagementStudio -Value 'https://aka.ms/ssmsfullsetup' -Initialize -Validation string -Description 'Link to SSMS latest'
 
 # SSRS
-Set-PSFConfig -Module 'AutomatedLab' -Name SqlServerReportBuilder -Value https://download.microsoft.com/download/5/E/B/5EB40744-DC0A-47C0-8B0A-1830E74D3C23/ReportBuilder.msi
-Set-PSFConfig -Module 'AutomatedLab' -Name Sql2017SSRS -Value https://download.microsoft.com/download/E/6/4/E6477A2A-9B58-40F7-8AD6-62BB8491EA78/SQLServerReportingServices.exe
-Set-PSFConfig -Module 'AutomatedLab' -Name Sql2019SSRS -Value https://download.microsoft.com/download/1/a/a/1aaa9177-3578-4931-b8f3-373b24f63342/SQLServerReportingServices.exe
-Set-PSFConfig -Module 'AutomatedLab' -Name Sql2022SSRS -Value https://download.microsoft.com/download/8/3/2/832616ff-af64-42b5-a0b1-5eb07f71dec9/SQLServerReportingServices.exe
+Set-PSFConfig -Module 'AutomatedLab' -Name SqlServerReportBuilder -Value https://download.microsoft.com/download/5/E/B/5EB40744-DC0A-47C0-8B0A-1830E74D3C23/ReportBuilder.msi -Initialize -Description 'Download link to SQL Server Report Builder'
+Set-PSFConfig -Module 'AutomatedLab' -Name Sql2017SSRS -Value https://download.microsoft.com/download/E/6/4/E6477A2A-9B58-40F7-8AD6-62BB8491EA78/SQLServerReportingServices.exe -Initialize -Description 'Download link to SSRS 2017'
+Set-PSFConfig -Module 'AutomatedLab' -Name Sql2019SSRS -Value https://download.microsoft.com/download/1/a/a/1aaa9177-3578-4931-b8f3-373b24f63342/SQLServerReportingServices.exe -Initialize -Description 'Download link to SSRS 2019'
+Set-PSFConfig -Module 'AutomatedLab' -Name Sql2022SSRS -Value https://download.microsoft.com/download/8/3/2/832616ff-af64-42b5-a0b1-5eb07f71dec9/SQLServerReportingServices.exe -Initialize -Description 'Download link to SSRS 2022'
 
 #SQL Server sample database contents
 #Set-PSFConfig -Module 'AutomatedLab' -Name SQLServer2008 -Value 'http://download-codeplex.sec.s-msft.com/Download/Release?ProjectName=msftdbprodsamples&DownloadId=478218&FileTime=129906742909030000&Build=21063' -Initialize -Validation string -Description 'Link to SQL sample DB for SQL 2008'
@@ -287,6 +291,7 @@ Set-PSFConfig -Module 'AutomatedLab' -Name SQLServer2016 -Value 'https://github.
 Set-PSFConfig -Module 'AutomatedLab' -Name SQLServer2017 -Value 'https://github.com/Microsoft/sql-server-samples/releases/download/wide-world-importers-v1.0/WideWorldImporters-Full.bak' -Initialize -Validation string -Description 'Link to SQL sample DB for SQL 2017'
 Set-PSFConfig -Module 'AutomatedLab' -Name SQLServer2019 -Value 'https://github.com/Microsoft/sql-server-samples/releases/download/wide-world-importers-v1.0/WideWorldImporters-Full.bak' -Initialize -Validation string -Description 'Link to SQL sample DB for SQL 2019'
 Set-PSFConfig -Module 'AutomatedLab' -Name SQLServer2022 -Value 'https://github.com/Microsoft/sql-server-samples/releases/download/wide-world-importers-v1.0/WideWorldImporters-Full.bak' -Initialize -Validation string -Description 'Link to SQL sample DB for SQL 2022'
+Set-PSFConfig -Module 'AutomatedLab' -Name SQLServer2025 -Value 'https://github.com/Microsoft/sql-server-samples/releases/download/wide-world-importers-v1.0/WideWorldImporters-Full.bak' -Initialize -Validation string -Description 'Link to SQL sample DB for SQL 2025'
 
 #Access Database Engine
 Set-PSFConfig -Module 'AutomatedLab' -Name AccessDatabaseEngine2016x86 -Value 'https://download.microsoft.com/download/3/5/C/35C84C36-661A-44E6-9324-8786B8DBE231/AccessDatabaseEngine.exe' -Initialize -Validation string -Description 'Link to Access Database Engine (required for DSC Pull)'
@@ -294,17 +299,17 @@ Set-PSFConfig -Module 'AutomatedLab' -Name AccessDatabaseEngine2016x86 -Value 'h
 Set-PSFConfig -Module 'AutomatedLab' -Name BuildAgentUri -Value 'https://download.agent.dev.azure.com/agent/4.258.1/vsts-agent-win-x64-4.258.1.zip' -Initialize -Validation string -Description 'Link to Azure DevOps/VSTS Build Agent'
 
 # SCVMM
-Set-PSFConfig -Module 'AutomatedLab' -Name SqlOdbc11 -Value 'https://download.microsoft.com/download/5/7/2/57249A3A-19D6-4901-ACCE-80924ABEB267/ENU/x64/msodbcsql.msi' -Initialize -Validation string
-Set-PSFConfig -Module 'AutomatedLab' -Name SqlOdbc13 -Value 'https://download.microsoft.com/download/D/5/E/D5EEF288-A277-45C8-855B-8E2CB7E25B96/x64/msodbcsql.msi' -Initialize -Validation string
-Set-PSFConfig -Module 'AutomatedLab' -Name SqlCommandLineUtils -Value 'https://download.microsoft.com/download/C/8/8/C88C2E51-8D23-4301-9F4B-64C8E2F163C5/x64/MsSqlCmdLnUtils.msi' -Initialize -Validation string
-Set-PSFConfig -Module 'AutomatedLab' -Name WindowsAdk -Value 'https://download.microsoft.com/download/2/d/9/2d9c8902-3fcd-48a6-a22a-432b08bed61e/ADK/adksetup.exe' -Initialize -Validation string
-Set-PSFConfig -Module 'AutomatedLab' -Name WindowsAdkPe -Value 'https://download.microsoft.com/download/5/5/6/556e01ec-9d78-417d-b1e1-d83a2eff20bc/ADKWinPEAddons/adkwinpesetup.exe' -Initialize -Validation string
+Set-PSFConfig -Module 'AutomatedLab' -Name SqlOdbc11 -Value 'https://download.microsoft.com/download/5/7/2/57249A3A-19D6-4901-ACCE-80924ABEB267/ENU/x64/msodbcsql.msi' -Initialize -Validation string -Description 'Download Link for SQL ODBC Driver 11, used with SCVMM'
+Set-PSFConfig -Module 'AutomatedLab' -Name SqlOdbc13 -Value 'https://download.microsoft.com/download/D/5/E/D5EEF288-A277-45C8-855B-8E2CB7E25B96/x64/msodbcsql.msi' -Initialize -Validation string -Description 'Download Link for SQL ODBC Driver 13, used with SCVMM'
+Set-PSFConfig -Module 'AutomatedLab' -Name SqlCommandLineUtils -Value 'https://download.microsoft.com/download/C/8/8/C88C2E51-8D23-4301-9F4B-64C8E2F163C5/x64/MsSqlCmdLnUtils.msi' -Initialize -Validation string -Description 'Download Link for SQL Commandline Utils, used with SCVMM'
+Set-PSFConfig -Module 'AutomatedLab' -Name WindowsAdk -Value 'https://download.microsoft.com/download/2/d/9/2d9c8902-3fcd-48a6-a22a-432b08bed61e/ADK/adksetup.exe' -Initialize -Validation string -Description 'Download Link for Windows ADK, used with SCVMM'
+Set-PSFConfig -Module 'AutomatedLab' -Name WindowsAdkPe -Value 'https://download.microsoft.com/download/5/5/6/556e01ec-9d78-417d-b1e1-d83a2eff20bc/ADKWinPEAddons/adkwinpesetup.exe' -Initialize -Validation string -Description 'Download Link for Windows ADK PE, used with SCVMM'
 
 # SCOM
-Set-PSFConfig -Module AutomatedLab -Name SqlClrType2014 -Value 'https://download.microsoft.com/download/6/7/8/67858AF1-B1B3-48B1-87C4-4483503E71DC/ENU/x64/SQLSysClrTypes.msi' -Initialize -Validation string
-Set-PSFConfig -Module AutomatedLab -Name SqlClrType2016 -Value "https://download.microsoft.com/download/6/4/5/645B2661-ABE3-41A4-BC2D-34D9A10DD303/ENU/x64/SQLSysClrTypes.msi" -Initialize -Validation string
-Set-PSFConfig -Module AutomatedLab -Name SqlClrType2019 -Value "https://download.microsoft.com/download/d/d/1/dd194c5c-d859-49b8-ad64-5cbdcbb9b7bd/SQLSysClrTypes.msi" -Initialize -Validation string
-Set-PSFConfig -Module 'AutomatedLab' -Name ReportViewer2015 -Value 'https://download.microsoft.com/download/A/1/2/A129F694-233C-4C7C-860F-F73139CF2E01/ENU/x86/ReportViewer.msi'
+Set-PSFConfig -Module AutomatedLab -Name SqlClrType2014 -Value 'https://download.microsoft.com/download/6/7/8/67858AF1-B1B3-48B1-87C4-4483503E71DC/ENU/x64/SQLSysClrTypes.msi' -Initialize -Validation string -Description  'Download link to SQL Server Clr Types v2014, used with SCOM'
+Set-PSFConfig -Module AutomatedLab -Name SqlClrType2016 -Value "https://download.microsoft.com/download/6/4/5/645B2661-ABE3-41A4-BC2D-34D9A10DD303/ENU/x64/SQLSysClrTypes.msi" -Initialize -Validation string -Description 'Download link to SQL Server Clr Types v2016, used with SCOM'
+Set-PSFConfig -Module AutomatedLab -Name SqlClrType2019 -Value "https://download.microsoft.com/download/d/d/1/dd194c5c-d859-49b8-ad64-5cbdcbb9b7bd/SQLSysClrTypes.msi" -Initialize -Validation string -Description 'Download link to SQL Server Clr Types v2019, used with SCOM'
+Set-PSFConfig -Module 'AutomatedLab' -Name ReportViewer2015 -Value 'https://download.microsoft.com/download/A/1/2/A129F694-233C-4C7C-860F-F73139CF2E01/ENU/x86/ReportViewer.msi' -Initialize -Description 'SQL Server Report Viewer 2015'
 
 # OpenSSH
 Set-PSFConfig -Module 'AutomatedLab' -Name OpenSshUri -Value 'https://github.com/PowerShell/Win32-OpenSSH/releases/download/v7.6.0.0p1-Beta/OpenSSH-Win64.zip' -Initialize -Validation string -Description 'Link to OpenSSH binaries'
@@ -390,17 +395,17 @@ Set-PSFConfig -Module AutomatedLab -Name SharePoint2019Prerequisites -Value @(
 ) -Initialize -Description 'List of prerequisite urls for SP2013' -Validation stringarray
 
 # Dynamics 365 CRM
-Set-PSFConfig -Module AutomatedLab -Name SqlServerNativeClient2012 -Value "https://download.microsoft.com/download/B/E/D/BED73AAC-3C8A-43F5-AF4F-EB4FEA6C8F3A/ENU/x64/sqlncli.msi" -Initialize -Validation string
-Set-PSFConfig -Module AutomatedLab -Name SqlClrType2014 -Value "https://download.microsoft.com/download/1/3/0/13089488-91FC-4E22-AD68-5BE58BD5C014/ENU/x64/SQLSysClrTypes.msi" -Initialize -Validation string
-Set-PSFConfig -Module AutomatedLab -Name SqlClrType2016 -Value "https://download.microsoft.com/download/6/4/5/645B2661-ABE3-41A4-BC2D-34D9A10DD303/ENU/x64/SQLSysClrTypes.msi" -Initialize -Validation string
-Set-PSFConfig -Module AutomatedLab -Name SqlClrType2019 -Value "https://download.microsoft.com/download/d/d/1/dd194c5c-d859-49b8-ad64-5cbdcbb9b7bd/SQLSysClrTypes.msi" -Initialize -Validation string
-Set-PSFConfig -Module AutomatedLab -Name SqlSmo2016 -Value "https://download.microsoft.com/download/6/4/5/645B2661-ABE3-41A4-BC2D-34D9A10DD303/ENU/x64/SharedManagementObjects.msi" -Initialize -Validation string
-Set-PSFConfig -Module AutomatedLab -Name Dynamics365Uri -Value 'https://download.microsoft.com/download/B/D/0/BD0FA814-9885-422A-BA0E-54CBB98C8A33/CRM9.0-Server-ENU-amd64.exe' -Initialize -Validation String
+Set-PSFConfig -Module AutomatedLab -Name SqlServerNativeClient2012 -Value "https://download.microsoft.com/download/B/E/D/BED73AAC-3C8A-43F5-AF4F-EB4FEA6C8F3A/ENU/x64/sqlncli.msi" -Initialize -Validation string -Description 'Download link to SQL Native Client v2012, used with Dynamics and ConfigMgr'
+Set-PSFConfig -Module AutomatedLab -Name SqlClrType2014 -Value "https://download.microsoft.com/download/1/3/0/13089488-91FC-4E22-AD68-5BE58BD5C014/ENU/x64/SQLSysClrTypes.msi" -Initialize -Validation string -Description 'Download link to SQL Server Clr Types v2014, used with Dynamics'
+Set-PSFConfig -Module AutomatedLab -Name SqlClrType2016 -Value "https://download.microsoft.com/download/6/4/5/645B2661-ABE3-41A4-BC2D-34D9A10DD303/ENU/x64/SQLSysClrTypes.msi" -Initialize -Validation string -Description 'Download link to SQL Server Clr Types v2016, used with Dynamics'
+Set-PSFConfig -Module AutomatedLab -Name SqlClrType2019 -Value "https://download.microsoft.com/download/d/d/1/dd194c5c-d859-49b8-ad64-5cbdcbb9b7bd/SQLSysClrTypes.msi" -Initialize -Validation string -Description 'Download link to SQL Server Clr Types v2019, used with Dynamics'
+Set-PSFConfig -Module AutomatedLab -Name SqlSmo2016 -Value "https://download.microsoft.com/download/6/4/5/645B2661-ABE3-41A4-BC2D-34D9A10DD303/ENU/x64/SharedManagementObjects.msi" -Initialize -Validation string -Description 'Download link to SQL Server Share Management Objects v2016, used with Dynamics'
+Set-PSFConfig -Module AutomatedLab -Name Dynamics365Uri -Value 'https://download.microsoft.com/download/B/D/0/BD0FA814-9885-422A-BA0E-54CBB98C8A33/CRM9.0-Server-ENU-amd64.exe' -Initialize -Validation String -Description 'Dynamics 365 Download URI, defaults to CRM9.0'
 
 # Exchange Server
-Set-PSFConfig -Module AutomatedLab -Name Exchange2013DownloadUrl -Value 'https://download.microsoft.com/download/7/F/D/7FDCC96C-26C0-4D49-B5DB-5A8B36935903/Exchange2013-x64-cu23.exe'
-Set-PSFConfig -Module AutomatedLab -Name Exchange2016DownloadUrl -Value 'https://download.microsoft.com/download/8/d/2/8d2d01b4-5bbb-4726-87da-0e331bc2b76f/ExchangeServer2016-x64-CU23.ISO'
-Set-PSFConfig -Module AutomatedLab -Name Exchange2019DownloadUrl -Value 'https://download.microsoft.com/download/b/c/7/bc766694-8398-4258-8e1e-ce4ddb9b3f7d/ExchangeServer2019-x64-CU12.ISO'
+Set-PSFConfig -Module AutomatedLab -Name Exchange2013DownloadUrl -Value 'https://download.microsoft.com/download/7/F/D/7FDCC96C-26C0-4D49-B5DB-5A8B36935903/Exchange2013-x64-cu23.exe' -Initialize -Description 'Download url for Exchange Server 2013 exe'
+Set-PSFConfig -Module AutomatedLab -Name Exchange2016DownloadUrl -Value 'https://download.microsoft.com/download/8/d/2/8d2d01b4-5bbb-4726-87da-0e331bc2b76f/ExchangeServer2016-x64-CU23.ISO' -Initialize -Description 'Download url for Exchange Server 2016 ISO'
+Set-PSFConfig -Module AutomatedLab -Name Exchange2019DownloadUrl -Value 'https://download.microsoft.com/download/b/c/7/bc766694-8398-4258-8e1e-ce4ddb9b3f7d/ExchangeServer2019-x64-CU12.ISO' -Initialize -Description 'Download url for Exchange Server 2019 ISO'
 
 # ConfigMgr
 Set-PSFConfig -Module AutomatedLab -Name ConfigurationManagerWmiExplorer -Value 'https://github.com/vinaypamnani/wmie2/releases/download/v2.0.0.2/WmiExplorer_2.0.0.2.zip' -Description 'Link to WMI explorer' -Validation string
@@ -417,400 +422,686 @@ Set-PSFConfig -Module AutomatedLab -Name ConfigurationManagerUrl2411TP -Value "h
 # Validation
 Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
     ValidRoleProperties     = @{
-        Orchestrator2012         = @(
-            'DatabaseServer'
-            'DatabaseName'
-            'ServiceAccount'
-            'ServiceAccountPassword'
-        )
-        DC                       = @(
-            'IsReadOnly'
-            'SiteName'
-            'SiteSubnet'
-            'DatabasePath'
-            'LogPath'
-            'SysvolPath'
-            'DsrmPassword'
-        )
-        CaSubordinate            = @(
-            'ParentCA'
-            'ParentCALogicalName'
-            'CACommonName'
-            'CAType'
-            'KeyLength'
-            'CryptoProviderName'
-            'HashAlgorithmName'
-            'DatabaseDirectory'
-            'LogDirectory'
-            'ValidityPeriod'
-            'ValidityPeriodUnits'
-            'CertsValidityPeriod'
-            'CertsValidityPeriodUnits'
-            'CRLPeriod'
-            'CRLPeriodUnits'
-            'CRLOverlapPeriod'
-            'CRLOverlapUnits'
-            'CRLDeltaPeriod'
-            'CRLDeltaPeriodUnits'
-            'UseLDAPAIA'
-            'UseHTTPAIA'
-            'AIAHTTPURL01'
-            'AIAHTTPURL02'
-            'AIAHTTPURL01UploadLocation'
-            'AIAHTTPURL02UploadLocation'
-            'UseLDAPCRL'
-            'UseHTTPCRL'
-            'CDPHTTPURL01'
-            'CDPHTTPURL02'
-            'CDPHTTPURL01UploadLocation'
-            'CDPHTTPURL02UploadLocation'
-            'InstallWebEnrollment'
-            'InstallWebRole'
-            'CPSURL'
-            'CPSText'
-            'InstallOCSP'
-            'OCSPHTTPURL01'
-            'OCSPHTTPURL02'
-            'DoNotLoadDefaultTemplates'
-        )
-        Office2016               = 'SharedComputerLicensing'
-        DSCPullServer            = @(
-            'DoNotPushLocalModules'
-            'DatabaseEngine'
-            'SqlServer'
-            'DatabaseName'
-        )
-        FirstChildDC             = @(
-            'ParentDomain'
-            'NewDomain'
-            'DomainFunctionalLevel'
-            'SiteName'
-            'SiteSubnet'
-            'NetBIOSDomainName'
-            'DatabasePath'
-            'LogPath'
-            'SysvolPath'
-            'DsrmPassword'
-        )
+        Orchestrator2012         = @{
+            'DatabaseServer'         = '[string] Name of the database server'
+            'DatabaseName'           = '[string] Name of the Database'
+            'ServiceAccount'         = '[string] Name of the service account'
+            'ServiceAccountPassword' = '[string] Plaintext password of the service account'
+        }
+        DC                       = @{
+            'IsReadOnly'   = '[string] valid values true, false. Indicates a RODC'
+            'SiteName'     = '[string] Name of the site to place this DC in. Defaults to Default-First-Site-Name'
+            'SiteSubnet'   = '[string] Subnet CIDR, required if SiteName is used'
+            'DatabasePath' = '[string] Local path for AD Database'
+            'LogPath'      = '[string] Local path for LogDB'
+            'SysvolPath'   = '[string] Local path for Sysvol'
+            'DsrmPassword' = '[string] Plaintext DSRM password'
+        }
+        CaSubordinate            = @{
+            'ParentCA'                   = '[string]'
+            'ParentCALogicalName'        = '[string]'
+            'CACommonName'               = '[string]'
+            'CAType'                     = '[string] Type of Sub CA. Valid values: EnterpriseSubordinateCA, StandAloneSubordinateCA, <auto>'
+            'KeyLength'                  = @'
+[string] Integer in string. Valid values depend on Crypo Provider
+
+Microsoft Base Smart Card Crypto Provider => 1024,2048,4096
+Microsoft Enhanced Cryptographic Provider 1.0 => 512,1024,2048,4096
+ECDSA_P256#Microsoft Smart Card Key Storage Provider => 256
+ECDSA_P521#Microsoft Smart Card Key Storage Provider => 521
+RSA#Microsoft Software Key Storage Provider => 512,1024,2048,4096
+Microsoft Base Cryptographic Provider v1.0 => 512,1024,2048,4096
+ECDSA_P521#Microsoft Software Key Storage Provider => 521
+ECDSA_P256#Microsoft Software Key Storage Provider => 256
+Microsoft Strong Cryptographic Provider => 512,1024,2048,4096
+ECDSA_P384#Microsoft Software Key Storage Provider => 384
+Microsoft Base DSS Cryptographic Provider => 512,1024
+RSA#Microsoft Smart Card Key Storage Provider => 1024,2048,4096
+DSA#Microsoft Software Key Storage Provider => 512,1024,2048,4096
+ECDSA_P384#Microsoft Smart Card Key Storage Provider => 384
+'@
+            'CryptoProviderName'         = @'
+[string] Name of Crypto Provider. Valid Values:
+
+Microsoft Base Smart Card Crypto Provider
+Microsoft Enhanced Cryptographic Provider 1.0
+ECDSA_P256#Microsoft Smart Card Key Storage Provider
+ECDSA_P521#Microsoft Smart Card Key Storage Provider
+RSA#Microsoft Software Key Storage Provider
+Microsoft Base Cryptographic Provider v1.0
+ECDSA_P521#Microsoft Software Key Storage Provider
+ECDSA_P256#Microsoft Software Key Storage Provider
+Microsoft Strong Cryptographic Provider
+ECDSA_P384#Microsoft Software Key Storage Provider
+Microsoft Base DSS Cryptographic Provider
+RSA#Microsoft Smart Card Key Storage Provider
+DSA#Microsoft Software Key Storage Provider
+ECDSA_P384#Microsoft Smart Card Key Storage Provider
+'@
+            'HashAlgorithmName'          = @'
+[string] Hash algorithm to use. Valid values depend on Crypo Provider
+
+Microsoft Base Smart Card Crypto Provider => 'sha1','md2','md4','md5'
+Microsoft Enhanced Cryptographic Provider 1.0 =>'sha1','md2','md4','md5'
+ECDSA_P256#Microsoft Smart Card Key Storage Provider =>'sha256','sha384','sha512','sha1'
+ECDSA_P521#Microsoft Smart Card Key Storage Provider =>'sha256','sha384','sha512','sha1'
+RSA#Microsoft Software Key Storage Provider =>'sha256','sha384','sha512','sha1','md5','md4','md2'
+Microsoft Base Cryptographic Provider v1.0 =>'sha1','md2','md4','md5'
+ECDSA_P521#Microsoft Software Key Storage Provider =>'sha256','sha384','sha512','sha1'
+ECDSA_P256#Microsoft Software Key Storage Provider =>'sha256','sha384','sha512','sha1'
+Microsoft Strong Cryptographic Provider =>'sha1','md2','md4','md5'
+ECDSA_P384#Microsoft Software Key Storage Provider =>'sha256','sha384','sha512','sha1'
+Microsoft Base DSS Cryptographic Provider =>'sha1'
+RSA#Microsoft Smart Card Key Storage Provider =>'sha256','sha384','sha512','sha1','md5','md4','md2'
+DSA#Microsoft Software Key Storage Provider =>'sha1'
+ECDSA_P384#Microsoft Smart Card Key Storage Provider =>'sha256','sha384','sha512','sha1'
+'@
+            'DatabaseDirectory'          = '[string] Local path to the CA database'
+            'LogDirectory'               = '[string] Local path to the CA log folder'
+            'ValidityPeriod'             = '[string] CA cert validity Period. Valid values <auto>, Years, Months, Weeks, Days, Hours'
+            'ValidityPeriodUnits'        = '[string] Integer in a string containing the units of the select ValidityPeriod, e.g. 6 for ValidityPeriod Weeks'
+            'CertsValidityPeriod'        = '[string] Issued certificate validity period. Valid values <auto>, Years, Months, Weeks, Days, Hours'
+            'CertsValidityPeriodUnits'   = '[string] Integer in a string containing the units of the select CertsValidityPeriod, e.g. 6 for CertsValidityPeriod Weeks'
+            'CRLPeriod'                  = '[string] Certificate Revocation List Period. Valid values <auto>, Years, Months, Weeks, Days, Hours'
+            'CRLPeriodUnits'             = '[string] Integer in a string containing the units of the select CRLPeriod, e.g. 6 for CRLPeriod Weeks'
+            'CRLOverlapPeriod'           = '[string] Certificate Revocation List Overlap Period. Valid values <auto>, Years, Months, Weeks, Days, Hours'
+            'CRLOverlapUnits'            = '[string] Integer in a string containing the units of the select CRLOverlapPeriod, e.g. 6 for CRLOverlapPeriod Weeks'
+            'CRLDeltaPeriod'             = '[string] Delta Certificate Revocation List Period. Valid values <auto>, Years, Months, Weeks, Days, Hours'
+            'CRLDeltaPeriodUnits'        = '[string] Integer in a string containing the units of the select CRLDeltaPeriod, e.g. 6 for CRLDeltaPeriod Weeks'
+            'UseLDAPAIA'                 = '[string] Indicates that LDAP-hosted Authority Information Access should be used. Valid values Yes, No, <auto>'
+            'UseHTTPAIA'                 = '[string] Indicates that HTTP-hosted Authority Information Access should be used. Valid values Yes, No, <auto>'
+            'AIAHTTPURL01'               = '[string] HTTP (HTTPS not supported) Authority Information Access URL'
+            'AIAHTTPURL02'               = '[string] HTTP (HTTPS not supported) Authority Information Access URL'
+            'AIAHTTPURL01UploadLocation' = '[string] Local folder for Authority Information Access uploads'
+            'AIAHTTPURL02UploadLocation' = '[string] Local folder for Authority Information Access uploads'
+            'UseLDAPCRL'                 = '[string] Indicates that an LDAP-integrated CRL Distribution Point should be used. Valid values Yes, No, <auto>'
+            'UseHTTPCRL'                 = '[string] Indicates that an HTTP-hosted CRL Distribution Point should be used. Valid values Yes, No, <auto>'
+            'CDPHTTPURL01'               = '[string] HTTP (HTTPS not supported) CRL Distribution Point URL'
+            'CDPHTTPURL02'               = '[string] HTTP (HTTPS not supported) CRL Distribution Point URL'
+            'CDPHTTPURL01UploadLocation' = '[string] Local folder for  CRL Distribution Point uploads'
+            'CDPHTTPURL02UploadLocation' = '[string] Local folder for  CRL Distribution Point uploads'
+            'InstallWebEnrollment'       = '[string] Valid values Yes, No, <auto>'
+            'InstallWebRole'             = '[string] Valid values Yes, No, <auto>'
+            'CPSURL'                     = '[string] Certificate Policy Statement URL'
+            'CPSText'                    = '[string] Certificate Policy Statement Text'
+            'InstallOCSP'                = '[string] Indicates that the Online Responder should be enabled. Valid values Yes, No, <auto>'
+            'OCSPHTTPURL01'              = '[string] HTTP (HTTPS not supported) URL for the online responder'
+            'OCSPHTTPURL02'              = '[string] HTTP (HTTPS not supported) URL for the online responder'
+            'DoNotLoadDefaultTemplates'  = '[string] Indicates that default templates should not be loaded. Valid value Yes - any other value disables this flag.'
+        }
+        Office2016               = @{
+            'SharedComputerLicensing' = '[string] ???'
+        }
+        DSCPullServer            = @{
+            'DoNotPushLocalModules' = '[string] boolean in a string, indicates that local DSC resource modules should not be publishes. Valid values 0,1, false, true'
+            'DatabaseEngine'        = '[string] The database engine to use. Defaults to edb'
+            'SqlServer'             = '[string] The SQL server where the database is stored, if engine is sql'
+            'DatabaseName'          = '[string] The name of the database for DSC, if engine is sql. Defaults to DSC'
+        }
+        FirstChildDC             = @{
+            'ParentDomain'          = '[string] Name of parent domain for this child domain'
+            'NewDomain'             = '[string] Name of new domain'
+            'DomainFunctionalLevel' = '[string] Functional level of the domain'
+            'SiteName'              = '[string] Name of the site to place this DC in. Defaults to Default-First-Site-Name'
+            'SiteSubnet'            = '[string] Subnet CIDR, required if SiteName is used'
+            'NetBIOSDomainName'     = '[string] Name of the NETBIOS domain, eg CONTOSO'
+            'DatabasePath'          = '[string] Local path for AD Database'
+            'LogPath'               = '[string] Local path for LogDB'
+            'SysvolPath'            = '[string] Local path for Sysvol'
+            'DsrmPassword'          = '[string] Plaintext DSRM password'
+        }
         ADFS                     = @(
             'DisplayName'
             'ServiceName'
             'ServicePassword'
         )
-        RootDC                   = @(
-            'DomainFunctionalLevel'
-            'ForestFunctionalLevel'
-            'SiteName'
-            'SiteSubnet'
-            'NetBiosDomainName'
-            'DatabasePath'
-            'LogPath'
-            'SysvolPath'
-            'DsrmPassword'
-        )
-        CaRoot                   = @(
-            'CACommonName'
-            'CAType'
-            'KeyLength'
-            'CryptoProviderName'
-            'HashAlgorithmName'
-            'DatabaseDirectory'
-            'LogDirectory'
-            'ValidityPeriod'
-            'ValidityPeriodUnits'
-            'CertsValidityPeriod'
-            'CertsValidityPeriodUnits'
-            'CRLPeriod'
-            'CRLPeriodUnits'
-            'CRLOverlapPeriod'
-            'CRLOverlapUnits'
-            'CRLDeltaPeriod'
-            'CRLDeltaPeriodUnits'
-            'UseLDAPAIA'
-            'UseHTTPAIA'
-            'AIAHTTPURL01'
-            'AIAHTTPURL02'
-            'AIAHTTPURL01UploadLocation'
-            'AIAHTTPURL02UploadLocation'
-            'UseLDAPCRL'
-            'UseHTTPCRL'
-            'CDPHTTPURL01'
-            'CDPHTTPURL02'
-            'CDPHTTPURL01UploadLocation'
-            'CDPHTTPURL02UploadLocation'
-            'InstallWebEnrollment'
-            'InstallWebRole'
-            'CPSURL'
-            'CPSText'
-            'InstallOCSP'
-            'OCSPHTTPURL01'
-            'OCSPHTTPURL02'
-            'DoNotLoadDefaultTemplates'
-        )
-        Tfs2015                  = @('Port', 'InitialCollection', 'DbServer')
-        Tfs2017                  = @('Port', 'InitialCollection', 'DbServer')
-        Tfs2018                  = @('Port', 'InitialCollection', 'DbServer')
-        AzDevOps                 = @('Port', 'InitialCollection', 'DbServer', 'PAT', 'Organisation')
-        TfsBuildWorker           = @(
-            'NumberOfBuildWorkers'
-            'TfsServer'
-            'AgentPool'
-            'PAT'
-            'Organisation'
-            'Capabilities'
-        )
-        WindowsAdminCenter       = @('Port')
-        Scvmm2016                = @(
-            'MUOptIn'
-            'SqlMachineName'
-            'LibraryShareDescription'
-            'UserName'
-            'CompanyName'
-            'IndigoHTTPSPort'
-            'SQMOptIn'
-            'TopContainerName'
-            'SqlInstanceName'
-            'RemoteDatabaseImpersonation'
-            'LibraryShareName'
-            'SqlDatabaseName'
-            'VmmServiceLocalAccount'
-            'IndigoNETTCPPort'
-            'CreateNewLibraryShare'
-            'WSManTcpPort'
-            'IndigoHTTPPort'
-            'ProductKey'
-            'BitsTcpPort'
-            'CreateNewSqlDatabase'
-            'ProgramFiles'
-            'LibrarySharePath'
-            'IndigoTcpPort'
-            'SkipServer'
-            'ConnectHyperVRoleVms'
-            'ConnectClusters'
-        )
-        Scvmm2019                = @(
-            'MUOptIn'
-            'SqlMachineName'
-            'LibraryShareDescription'
-            'UserName'
-            'CompanyName'
-            'IndigoHTTPSPort'
-            'SQMOptIn'
-            'TopContainerName'
-            'SqlInstanceName'
-            'RemoteDatabaseImpersonation'
-            'LibraryShareName'
-            'SqlDatabaseName'
-            'VmmServiceLocalAccount'
-            'IndigoNETTCPPort'
-            'CreateNewLibraryShare'
-            'WSManTcpPort'
-            'IndigoHTTPPort'
-            'ProductKey'
-            'BitsTcpPort'
-            'CreateNewSqlDatabase'
-            'ProgramFiles'
-            'LibrarySharePath'
-            'IndigoTcpPort'
-            'SkipServer'
-            'ConnectHyperVRoleVms'
-            'ConnectClusters'
-        )
-        DynamicsFull             = @(
-            'SqlServer',
-            'ReportingUrl',
-            'OrganizationCollation',
-            'IsoCurrencyCode'
-            'CurrencyName'
-            'CurrencySymbol'
-            'CurrencyPrecision'
-            'Organization'
-            'OrganizationUniqueName'
-            'CrmServiceAccount'
-            'SandboxServiceAccount'
-            'DeploymentServiceAccount'
-            'AsyncServiceAccount'
-            'VSSWriterServiceAccount'
-            'MonitoringServiceAccount'
-            'CrmServiceAccountPassword'
-            'SandboxServiceAccountPassword'
-            'DeploymentServiceAccountPassword'
-            'AsyncServiceAccountPassword'
-            'VSSWriterServiceAccountPassword'
-            'MonitoringServiceAccountPassword'
-            'IncomingExchangeServer',
-            'PrivUserGroup',
-            'SQLAccessGroup',
-            'ReportingGroup',
-            'PrivReportingGroup'
-            'LicenseKey'
-        )
-        DynamicsFrontend         = @(
-            'SqlServer',
-            'ReportingUrl',
-            'OrganizationCollation',
-            'IsoCurrencyCode'
-            'CurrencyName'
-            'CurrencySymbol'
-            'CurrencyPrecision'
-            'Organization'
-            'OrganizationUniqueName'
-            'CrmServiceAccount'
-            'SandboxServiceAccount'
-            'DeploymentServiceAccount'
-            'AsyncServiceAccount'
-            'VSSWriterServiceAccount'
-            'MonitoringServiceAccount'
-            'CrmServiceAccountPassword'
-            'SandboxServiceAccountPassword'
-            'DeploymentServiceAccountPassword'
-            'AsyncServiceAccountPassword'
-            'VSSWriterServiceAccountPassword'
-            'MonitoringServiceAccountPassword'
-            'IncomingExchangeServer',
-            'PrivUserGroup',
-            'SQLAccessGroup',
-            'ReportingGroup',
-            'PrivReportingGroup'
-            'LicenseKey'
-        )
-        DynamicsBackend          = @(
-            'SqlServer',
-            'ReportingUrl',
-            'OrganizationCollation',
-            'IsoCurrencyCode'
-            'CurrencyName'
-            'CurrencySymbol'
-            'CurrencyPrecision'
-            'Organization'
-            'OrganizationUniqueName'
-            'CrmServiceAccount'
-            'SandboxServiceAccount'
-            'DeploymentServiceAccount'
-            'AsyncServiceAccount'
-            'VSSWriterServiceAccount'
-            'MonitoringServiceAccount'
-            'CrmServiceAccountPassword'
-            'SandboxServiceAccountPassword'
-            'DeploymentServiceAccountPassword'
-            'AsyncServiceAccountPassword'
-            'VSSWriterServiceAccountPassword'
-            'MonitoringServiceAccountPassword'
-            'IncomingExchangeServer',
-            'PrivUserGroup',
-            'SQLAccessGroup',
-            'ReportingGroup',
-            'PrivReportingGroup'
-            'LicenseKey'
-        )
-        DynamicsAdmin            = @(
-            'SqlServer',
-            'ReportingUrl',
-            'OrganizationCollation',
-            'IsoCurrencyCode'
-            'CurrencyName'
-            'CurrencySymbol'
-            'CurrencyPrecision'
-            'Organization'
-            'OrganizationUniqueName'
-            'CrmServiceAccount'
-            'SandboxServiceAccount'
-            'DeploymentServiceAccount'
-            'AsyncServiceAccount'
-            'VSSWriterServiceAccount'
-            'MonitoringServiceAccount'
-            'CrmServiceAccountPassword'
-            'SandboxServiceAccountPassword'
-            'DeploymentServiceAccountPassword'
-            'AsyncServiceAccountPassword'
-            'VSSWriterServiceAccountPassword'
-            'MonitoringServiceAccountPassword'
-            'IncomingExchangeServer',
-            'PrivUserGroup',
-            'SQLAccessGroup',
-            'ReportingGroup',
-            'PrivReportingGroup'
-            'LicenseKey'
-        )
-        ScomManagement           = @(
-            'ManagementGroupName'
-            'SqlServerInstance'
-            'SqlInstancePort'
-            'DatabaseName'
-            'DwSqlServerInstance'
-            'InstallLocation'
-            'DwSqlInstancePort'
-            'DwDatabaseName'
-            'ActionAccountUser'
-            'ActionAccountPassword'
-            'DASAccountUser'
-            'DASAccountPassword'
-            'DataReaderUser'
-            'DataReaderPassword'
-            'DataWriterUser'
-            'DataWriterPassword'
-            'EnableErrorReporting'
-            'SendCEIPReports'
-            'UseMicrosoftUpdate'
-            'AcceptEndUserLicenseAgreement'
-            'ProductKey'
-        )
+        RootDC                   = @{
+            'ForestFunctionalLevel' = '[string] Functional level of the forest'
+            'DomainFunctionalLevel' = '[string] Functional level of the domain'
+            'SiteName'              = '[string] Name of the site to place this DC in. Defaults to Default-First-Site-Name'
+            'SiteSubnet'            = '[string] Subnet CIDR, required if SiteName is used'
+            'NetBIOSDomainName'     = '[string] Name of the NETBIOS domain, eg CONTOSO'
+            'DatabasePath'          = '[string] Local path for AD Database'
+            'LogPath'               = '[string] Local path for LogDB'
+            'SysvolPath'            = '[string] Local path for Sysvol'
+            'DsrmPassword'          = '[string] Plaintext DSRM password'
+        }
+        CaRoot                   = @{
+            'CACommonName'               = '[string]'
+            'CAType'                     = '[string] Type of Sub CA. Valid values: EnterpriseSubordinateCA, StandAloneSubordinateCA, <auto>'
+            'KeyLength'                  = @'
+[string] Integer in string. Valid values depend on Crypo Provider
 
-        ScomConsole              = @(
-            'EnableErrorReporting'
-            'InstallLocation'
-            'SendCEIPReports'
-            'UseMicrosoftUpdate'
-            'AcceptEndUserLicenseAgreement'
-        )
+Microsoft Base Smart Card Crypto Provider => 1024,2048,4096
+Microsoft Enhanced Cryptographic Provider 1.0 => 512,1024,2048,4096
+ECDSA_P256#Microsoft Smart Card Key Storage Provider => 256
+ECDSA_P521#Microsoft Smart Card Key Storage Provider => 521
+RSA#Microsoft Software Key Storage Provider => 512,1024,2048,4096
+Microsoft Base Cryptographic Provider v1.0 => 512,1024,2048,4096
+ECDSA_P521#Microsoft Software Key Storage Provider => 521
+ECDSA_P256#Microsoft Software Key Storage Provider => 256
+Microsoft Strong Cryptographic Provider => 512,1024,2048,4096
+ECDSA_P384#Microsoft Software Key Storage Provider => 384
+Microsoft Base DSS Cryptographic Provider => 512,1024
+RSA#Microsoft Smart Card Key Storage Provider => 1024,2048,4096
+DSA#Microsoft Software Key Storage Provider => 512,1024,2048,4096
+ECDSA_P384#Microsoft Smart Card Key Storage Provider => 384
+'@
+            'CryptoProviderName'         = @'
+[string] Name of Crypto Provider. Valid Values:
 
-        ScomWebConsole           = @(
-            'ManagementServer'
-            'WebSiteName'
-            'WebConsoleAuthorizationMode'
-            'SendCEIPReports'
-            'UseMicrosoftUpdate'
-            'AcceptEndUserLicenseAgreement'
-        )
+Microsoft Base Smart Card Crypto Provider
+Microsoft Enhanced Cryptographic Provider 1.0
+ECDSA_P256#Microsoft Smart Card Key Storage Provider
+ECDSA_P521#Microsoft Smart Card Key Storage Provider
+RSA#Microsoft Software Key Storage Provider
+Microsoft Base Cryptographic Provider v1.0
+ECDSA_P521#Microsoft Software Key Storage Provider
+ECDSA_P256#Microsoft Software Key Storage Provider
+Microsoft Strong Cryptographic Provider
+ECDSA_P384#Microsoft Software Key Storage Provider
+Microsoft Base DSS Cryptographic Provider
+RSA#Microsoft Smart Card Key Storage Provider
+DSA#Microsoft Software Key Storage Provider
+ECDSA_P384#Microsoft Smart Card Key Storage Provider
+'@
+            'HashAlgorithmName'          = @'
+[string] Hash algorithm to use. Valid values depend on Crypo Provider
 
-        ScomReporting            = @(
-            'ManagementServer'
-            'SRSInstance'
-            'DataReaderUser'
-            'DataReaderPassword'
-            'SendODRReports'
-            'UseMicrosoftUpdate'
-            'AcceptEndUserLicenseAgreement'
-        )
-        RemoteDesktopSessionHost = @(
-            'CollectionName'
-            'CollectionDescription'
-            'PersonalUnmanaged'
-            'AutoAssignUser'
-            'GrantAdministrativePrivilege'
-            'PooledUnmanaged'
-        )
-        RemoteDesktopGateway     = @(
-            'GatewayExternalFqdn'
-            'BypassLocal'
-            'LogonMethod'
-            'UseCachedCredentials'
-            'GatewayMode'
-        )
-        RemoteDesktopLicensing   = @(
-            'Mode'
-        )
-        ConfigurationManager     = @(
-            'Version'
-            'Branch'
-            'Roles'
-            'SiteName'
-            'SiteCode'
-            'SqlServerName'
-            'DatabaseName'
-            'WsusContentPath'
-            'AdminUser'
-        )
+Microsoft Base Smart Card Crypto Provider => 'sha1','md2','md4','md5'
+Microsoft Enhanced Cryptographic Provider 1.0 =>'sha1','md2','md4','md5'
+ECDSA_P256#Microsoft Smart Card Key Storage Provider =>'sha256','sha384','sha512','sha1'
+ECDSA_P521#Microsoft Smart Card Key Storage Provider =>'sha256','sha384','sha512','sha1'
+RSA#Microsoft Software Key Storage Provider =>'sha256','sha384','sha512','sha1','md5','md4','md2'
+Microsoft Base Cryptographic Provider v1.0 =>'sha1','md2','md4','md5'
+ECDSA_P521#Microsoft Software Key Storage Provider =>'sha256','sha384','sha512','sha1'
+ECDSA_P256#Microsoft Software Key Storage Provider =>'sha256','sha384','sha512','sha1'
+Microsoft Strong Cryptographic Provider =>'sha1','md2','md4','md5'
+ECDSA_P384#Microsoft Software Key Storage Provider =>'sha256','sha384','sha512','sha1'
+Microsoft Base DSS Cryptographic Provider =>'sha1'
+RSA#Microsoft Smart Card Key Storage Provider =>'sha256','sha384','sha512','sha1','md5','md4','md2'
+DSA#Microsoft Software Key Storage Provider =>'sha1'
+ECDSA_P384#Microsoft Smart Card Key Storage Provider =>'sha256','sha384','sha512','sha1'
+'@
+            'DatabaseDirectory'          = '[string] Local path to the CA database'
+            'LogDirectory'               = '[string] Local path to the CA log folder'
+            'ValidityPeriod'             = '[string] CA cert validity Period. Valid values <auto>, Years, Months, Weeks, Days, Hours'
+            'ValidityPeriodUnits'        = '[string] Integer in a string containing the units of the select ValidityPeriod, e.g. 6 for ValidityPeriod Weeks'
+            'CertsValidityPeriod'        = '[string] Issued certificate validity period. Valid values <auto>, Years, Months, Weeks, Days, Hours'
+            'CertsValidityPeriodUnits'   = '[string] Integer in a string containing the units of the select CertsValidityPeriod, e.g. 6 for CertsValidityPeriod Weeks'
+            'CRLPeriod'                  = '[string] Certificate Revocation List Period. Valid values <auto>, Years, Months, Weeks, Days, Hours'
+            'CRLPeriodUnits'             = '[string] Integer in a string containing the units of the select CRLPeriod, e.g. 6 for CRLPeriod Weeks'
+            'CRLOverlapPeriod'           = '[string] Certificate Revocation List Overlap Period. Valid values <auto>, Years, Months, Weeks, Days, Hours'
+            'CRLOverlapUnits'            = '[string] Integer in a string containing the units of the select CRLOverlapPeriod, e.g. 6 for CRLOverlapPeriod Weeks'
+            'CRLDeltaPeriod'             = '[string] Delta Certificate Revocation List Period. Valid values <auto>, Years, Months, Weeks, Days, Hours'
+            'CRLDeltaPeriodUnits'        = '[string] Integer in a string containing the units of the select CRLDeltaPeriod, e.g. 6 for CRLDeltaPeriod Weeks'
+            'UseLDAPAIA'                 = '[string] Indicates that LDAP-hosted Authority Information Access should be used. Valid values Yes, No, <auto>'
+            'UseHTTPAIA'                 = '[string] Indicates that HTTP-hosted Authority Information Access should be used. Valid values Yes, No, <auto>'
+            'AIAHTTPURL01'               = '[string] HTTP (HTTPS not supported) Authority Information Access URL'
+            'AIAHTTPURL02'               = '[string] HTTP (HTTPS not supported) Authority Information Access URL'
+            'AIAHTTPURL01UploadLocation' = '[string] Local folder for Authority Information Access uploads'
+            'AIAHTTPURL02UploadLocation' = '[string] Local folder for Authority Information Access uploads'
+            'UseLDAPCRL'                 = '[string] Indicates that an LDAP-integrated CRL Distribution Point should be used. Valid values Yes, No, <auto>'
+            'UseHTTPCRL'                 = '[string] Indicates that an HTTP-hosted CRL Distribution Point should be used. Valid values Yes, No, <auto>'
+            'CDPHTTPURL01'               = '[string] HTTP (HTTPS not supported) CRL Distribution Point URL'
+            'CDPHTTPURL02'               = '[string] HTTP (HTTPS not supported) CRL Distribution Point URL'
+            'CDPHTTPURL01UploadLocation' = '[string] Local folder for  CRL Distribution Point uploads'
+            'CDPHTTPURL02UploadLocation' = '[string] Local folder for  CRL Distribution Point uploads'
+            'InstallWebEnrollment'       = '[string] Valid values Yes, No, <auto>'
+            'InstallWebRole'             = '[string] Valid values Yes, No, <auto>'
+            'CPSURL'                     = '[string] Certificate Policy Statement URL'
+            'CPSText'                    = '[string] Certificate Policy Statement Text'
+            'InstallOCSP'                = '[string] Indicates that the Online Responder should be enabled. Valid values Yes, No, <auto>'
+            'OCSPHTTPURL01'              = '[string] HTTP (HTTPS not supported) URL for the online responder'
+            'OCSPHTTPURL02'              = '[string] HTTP (HTTPS not supported) URL for the online responder'
+            'DoNotLoadDefaultTemplates'  = '[string] Indicates that default templates should not be loaded. Valid value Yes - any other value disables this flag.'
+        }
+        Tfs2015                  = @{
+            'Port'              = '[string] Integer, Port to use.'
+            'InitialCollection' = '[string] Name of the intial collection'
+            'DbServer'          = '[string] Name of the SQL server. Defaults to any available in the lab'
+        }
+        Tfs2017                  = @{
+            'Port'              = '[string] Integer, Port to use.'
+            'InitialCollection' = '[string] Name of the intial collection'
+            'DbServer'          = '[string] Name of the SQL server. Defaults to any available in the lab'
+        }
+        Tfs2018                  = @{
+            'Port'              = '[string] Integer, Port to use.'
+            'InitialCollection' = '[string] Name of the intial collection'
+            'DbServer'          = '[string] Name of the SQL server. Defaults to any available in the lab'
+        }
+        AzDevOps                 = @{
+            'Port'              = '[string] Integer, Port to use.'
+            'InitialCollection' = '[string] Name of the intial collection'
+            'DbServer'          = '[string] Name of the SQL server. Defaults to any available in the lab'
+            'PAT'               = '[string] Privileged Access Token if a hosted Azure DevOps instance is used'
+            'Organisation'      = '[string] Azure DevOps Organisation, if no VM should be deployed. Format: https://dev.azure.com/YourOrgHere'
+        }
+        TfsBuildWorker           = @{
+            'NumberOfBuildWorkers' = '[string] Integer in a string, Number of Build Worker services to host on this VM'
+            'TfsServer'            = '[string] Name of the TFS/Azure DevOps server'
+            'AgentPool'            = '[string] Name of the Agent Pool that will be used/created'
+            'PAT'                  = '[string] Privileged Access Token if a hosted Azure DevOps instance is used'
+            'Organisation'         = '[string] Azure DevOps Organisation, if no VM should be deployed. Format: https://dev.azure.com/YourOrgHere'
+            'Capabilities'         = '[string] A hashtable, converted to Json (!), containing the names and values of the Agent capabilities.'
+        }
+        WindowsAdminCenter       = @{
+            'Port' = '[string] The port WAC should listen on'
+        }
+        Scvmm2016                = @{
+            'MUOptIn'                     = '[string] 0 or 1. Defaults to 0. Indicates that Microsoft Update should be used.'
+            'SqlMachineName'              = '[string] Name of the SQL Server'
+            'LibraryShareDescription'     = '[string] Description of the library share'
+            'UserName'                    = '[string] User name of the server service'
+            'CompanyName'                 = '[string] Name of the company'
+            'IndigoHTTPSPort'             = '[string] HTTPS Port of the management (?)'
+            'SQMOptIn'                    = '[string] 0 or 1. Telemetry opt in. Defaults to 0'
+            'TopContainerName'            = '[string] Organizational Unit, defaults to CN=VMMServer,DC=contoso,DC=com'
+            'SqlInstanceName'             = '[string] Name of the SQL Instance, defaults to MSSQLSERVER'
+            'RemoteDatabaseImpersonation' = '[string] 0 or 1. Defaults to 0'
+            'LibraryShareName'            = '[string] Name of the library share, defaults to MSSCVMMLibrary'
+            'SqlDatabaseName'             = '[string] Name of the SQL database, defaults to VirtualManagerDB'
+            'VmmServiceLocalAccount'      = '[string] 0 or 1. Defaults to 0. Indicates that a local service account should be used.'
+            'IndigoNETTCPPort'            = '[string] TCP Port of management (?)'
+            'CreateNewLibraryShare'       = '[string] 0 or 1, defaults to 1. Indicates if a new library share should be created'
+            'WSManTcpPort'                = '[string] Web Service Management Port, defaults to 5985'
+            'IndigoHTTPPort'              = '[string] HTTP Port of the management (?)'
+            'ProductKey'                  = '[string] Product Key to use'
+            'BitsTcpPort'                 = '[string] Port for BITS transfers. Defaults to 443'
+            'CreateNewSqlDatabase'        = '[string] 0 or 1. Defaults to 1, indicates that a new DB should be created'
+            'ProgramFiles'                = '[string] Install location for SCVMM. Defaults to C:\Program Files\Microsoft System Center\Virtual Machine Manager {0}'
+            'LibrarySharePath'            = '[string] Library share path, defaults to C:\ProgramData\Virtual Machine Manager Library Files'
+            'IndigoTcpPort'               = '[string] TCP Port of management (?)'
+            'SkipServer'                  = '[string] Value irrelevant, if parameter is present, only the Console will be deployed'
+            'ConnectHyperVRoleVms'        = '[string] List of Hyper-V VMs to connect, separated by ; or ,'
+            'ConnectClusters'             = '[string] List of Hyper-V Clusters to connect, separated by ; or ,'
+        }
+        Scvmm2019                = @{
+            'MUOptIn'                     = '[string] 0 or 1. Defaults to 0. Indicates that Microsoft Update should be used.'
+            'SqlMachineName'              = '[string] Name of the SQL Server'
+            'LibraryShareDescription'     = '[string] Description of the library share'
+            'UserName'                    = '[string] User name of the server service'
+            'CompanyName'                 = '[string] Name of the company'
+            'IndigoHTTPSPort'             = '[string] HTTPS Port of the management (?)'
+            'SQMOptIn'                    = '[string] 0 or 1. Telemetry opt in. Defaults to 0'
+            'TopContainerName'            = '[string] Organizational Unit, defaults to CN=VMMServer,DC=contoso,DC=com'
+            'SqlInstanceName'             = '[string] Name of the SQL Instance, defaults to MSSQLSERVER'
+            'RemoteDatabaseImpersonation' = '[string] 0 or 1. Defaults to 0'
+            'LibraryShareName'            = '[string] Name of the library share, defaults to MSSCVMMLibrary'
+            'SqlDatabaseName'             = '[string] Name of the SQL database, defaults to VirtualManagerDB'
+            'VmmServiceLocalAccount'      = '[string] 0 or 1. Defaults to 0. Indicates that a local service account should be used.'
+            'IndigoNETTCPPort'            = '[string] TCP Port of management (?)'
+            'CreateNewLibraryShare'       = '[string] 0 or 1, defaults to 1. Indicates if a new library share should be created'
+            'WSManTcpPort'                = '[string] Web Service Management Port, defaults to 5985'
+            'IndigoHTTPPort'              = '[string] HTTP Port of the management (?)'
+            'ProductKey'                  = '[string] Product Key to use'
+            'BitsTcpPort'                 = '[string] Port for BITS transfers. Defaults to 443'
+            'CreateNewSqlDatabase'        = '[string] 0 or 1. Defaults to 1, indicates that a new DB should be created'
+            'ProgramFiles'                = '[string] Install location for SCVMM. Defaults to C:\Program Files\Microsoft System Center\Virtual Machine Manager {0}'
+            'LibrarySharePath'            = '[string] Library share path, defaults to C:\ProgramData\Virtual Machine Manager Library Files'
+            'IndigoTcpPort'               = '[string] TCP Port of management (?)'
+            'SkipServer'                  = '[string] Value irrelevant, if parameter is present, only the Console will be deployed'
+            'ConnectHyperVRoleVms'        = '[string] List of Hyper-V VMs to connect, separated by ; or ,'
+            'ConnectClusters'             = '[string] List of Hyper-V Clusters to connect, separated by ; or ,'
+        }
+        DynamicsFull             = @{
+            'SqlServer'                        = '[string] Name of the SQL backend'
+            'ReportingUrl'                     = '[string] URI to SQL Reporting'
+            'OrganizationCollation'            = '[string] Default collation for the organization'
+            'IsoCurrencyCode'                  = '[string] Currency code, e.g. USD'
+            'CurrencyName'                     = '[string] Currency name, e.g. US Dollar'
+            'CurrencySymbol'                   = '[string] Currency Symbol, e.g. $'
+            'CurrencyPrecision'                = '[string] Precision, e.g. 2'
+            'Organization'                     = '[string] Name of the organization'
+            'OrganizationUniqueName'           = '[string] Unique name of the organization, usually lower-case with no separators'
+            'CrmServiceAccount'                = '[string] Service account name, will be created'
+            'SandboxServiceAccount'            = '[string] Service account name, will be created'
+            'DeploymentServiceAccount'         = '[string] Service account name, will be created'
+            'AsyncServiceAccount'              = '[string] Service account name, will be created'
+            'VSSWriterServiceAccount'          = '[string] Service account name, will be created'
+            'MonitoringServiceAccount'         = '[string] Service account name, will be created'
+            'CrmServiceAccountPassword'        = '[string] Plaintext password for sedrvice account'
+            'SandboxServiceAccountPassword'    = '[string] Plaintext password for sedrvice account'
+            'DeploymentServiceAccountPassword' = '[string] Plaintext password for sedrvice account'
+            'AsyncServiceAccountPassword'      = '[string] Plaintext password for sedrvice account'
+            'VSSWriterServiceAccountPassword'  = '[string] Plaintext password for sedrvice account'
+            'MonitoringServiceAccountPassword' = '[string] Plaintext password for sedrvice account'
+            'IncomingExchangeServer'           = '[string] Exchange server for incoming messages'
+            'PrivUserGroup'                    = '[string] User group DN for privileged user'
+            'SQLAccessGroup'                   = '[string] User group DN for SQL access'
+            'ReportingGroup'                   = '[string] User group DN for Reporting access'
+            'PrivReportingGroup'               = '[string] User group DN for privileged reporting'
+            'LicenseKey'                       = '[string] Defaults to trial key'
+        }
+        DynamicsFrontend         = @{
+            'SqlServer'                        = '[string] Name of the SQL backend'
+            'ReportingUrl'                     = '[string] URI to SQL Reporting'
+            'OrganizationCollation'            = '[string] Default collation for the organization'
+            'IsoCurrencyCode'                  = '[string] Currency code, e.g. USD'
+            'CurrencyName'                     = '[string] Currency name, e.g. US Dollar'
+            'CurrencySymbol'                   = '[string] Currency Symbol, e.g. $'
+            'CurrencyPrecision'                = '[string] Precision, e.g. 2'
+            'Organization'                     = '[string] Name of the organization'
+            'OrganizationUniqueName'           = '[string] Unique name of the organization, usually lower-case with no separators'
+            'CrmServiceAccount'                = '[string] Service account name, will be created'
+            'SandboxServiceAccount'            = '[string] Service account name, will be created'
+            'DeploymentServiceAccount'         = '[string] Service account name, will be created'
+            'AsyncServiceAccount'              = '[string] Service account name, will be created'
+            'VSSWriterServiceAccount'          = '[string] Service account name, will be created'
+            'MonitoringServiceAccount'         = '[string] Service account name, will be created'
+            'CrmServiceAccountPassword'        = '[string] Plaintext password for sedrvice account'
+            'SandboxServiceAccountPassword'    = '[string] Plaintext password for sedrvice account'
+            'DeploymentServiceAccountPassword' = '[string] Plaintext password for sedrvice account'
+            'AsyncServiceAccountPassword'      = '[string] Plaintext password for sedrvice account'
+            'VSSWriterServiceAccountPassword'  = '[string] Plaintext password for sedrvice account'
+            'MonitoringServiceAccountPassword' = '[string] Plaintext password for sedrvice account'
+            'IncomingExchangeServer'           = '[string] Exchange server for incoming messages'
+            'PrivUserGroup'                    = '[string] User group DN for privileged user'
+            'SQLAccessGroup'                   = '[string] User group DN for SQL access'
+            'ReportingGroup'                   = '[string] User group DN for Reporting access'
+            'PrivReportingGroup'               = '[string] User group DN for privileged reporting'
+            'LicenseKey'                       = '[string] Defaults to trial key'
+        }
+        DynamicsBackend          = @{
+            'SqlServer'                        = '[string] Name of the SQL backend'
+            'ReportingUrl'                     = '[string] URI to SQL Reporting'
+            'OrganizationCollation'            = '[string] Default collation for the organization'
+            'IsoCurrencyCode'                  = '[string] Currency code, e.g. USD'
+            'CurrencyName'                     = '[string] Currency name, e.g. US Dollar'
+            'CurrencySymbol'                   = '[string] Currency Symbol, e.g. $'
+            'CurrencyPrecision'                = '[string] Precision, e.g. 2'
+            'Organization'                     = '[string] Name of the organization'
+            'OrganizationUniqueName'           = '[string] Unique name of the organization, usually lower-case with no separators'
+            'CrmServiceAccount'                = '[string] Service account name, will be created'
+            'SandboxServiceAccount'            = '[string] Service account name, will be created'
+            'DeploymentServiceAccount'         = '[string] Service account name, will be created'
+            'AsyncServiceAccount'              = '[string] Service account name, will be created'
+            'VSSWriterServiceAccount'          = '[string] Service account name, will be created'
+            'MonitoringServiceAccount'         = '[string] Service account name, will be created'
+            'CrmServiceAccountPassword'        = '[string] Plaintext password for sedrvice account'
+            'SandboxServiceAccountPassword'    = '[string] Plaintext password for sedrvice account'
+            'DeploymentServiceAccountPassword' = '[string] Plaintext password for sedrvice account'
+            'AsyncServiceAccountPassword'      = '[string] Plaintext password for sedrvice account'
+            'VSSWriterServiceAccountPassword'  = '[string] Plaintext password for sedrvice account'
+            'MonitoringServiceAccountPassword' = '[string] Plaintext password for sedrvice account'
+            'IncomingExchangeServer'           = '[string] Exchange server for incoming messages'
+            'PrivUserGroup'                    = '[string] User group DN for privileged user'
+            'SQLAccessGroup'                   = '[string] User group DN for SQL access'
+            'ReportingGroup'                   = '[string] User group DN for Reporting access'
+            'PrivReportingGroup'               = '[string] User group DN for privileged reporting'
+            'LicenseKey'                       = '[string] Defaults to trial key'
+        }
+        DynamicsAdmin            = @{
+            'SqlServer'                        = '[string] Name of the SQL backend'
+            'ReportingUrl'                     = '[string] URI to SQL Reporting'
+            'OrganizationCollation'            = '[string] Default collation for the organization'
+            'IsoCurrencyCode'                  = '[string] Currency code, e.g. USD'
+            'CurrencyName'                     = '[string] Currency name, e.g. US Dollar'
+            'CurrencySymbol'                   = '[string] Currency Symbol, e.g. $'
+            'CurrencyPrecision'                = '[string] Precision, e.g. 2'
+            'Organization'                     = '[string] Name of the organization'
+            'OrganizationUniqueName'           = '[string] Unique name of the organization, usually lower-case with no separators'
+            'CrmServiceAccount'                = '[string] Service account name, will be created'
+            'SandboxServiceAccount'            = '[string] Service account name, will be created'
+            'DeploymentServiceAccount'         = '[string] Service account name, will be created'
+            'AsyncServiceAccount'              = '[string] Service account name, will be created'
+            'VSSWriterServiceAccount'          = '[string] Service account name, will be created'
+            'MonitoringServiceAccount'         = '[string] Service account name, will be created'
+            'CrmServiceAccountPassword'        = '[string] Plaintext password for sedrvice account'
+            'SandboxServiceAccountPassword'    = '[string] Plaintext password for sedrvice account'
+            'DeploymentServiceAccountPassword' = '[string] Plaintext password for sedrvice account'
+            'AsyncServiceAccountPassword'      = '[string] Plaintext password for sedrvice account'
+            'VSSWriterServiceAccountPassword'  = '[string] Plaintext password for sedrvice account'
+            'MonitoringServiceAccountPassword' = '[string] Plaintext password for sedrvice account'
+            'IncomingExchangeServer'           = '[string] Exchange server for incoming messages'
+            'PrivUserGroup'                    = '[string] User group DN for privileged user'
+            'SQLAccessGroup'                   = '[string] User group DN for SQL access'
+            'ReportingGroup'                   = '[string] User group DN for Reporting access'
+            'PrivReportingGroup'               = '[string] User group DN for privileged reporting'
+            'LicenseKey'                       = '[string] Defaults to trial key'
+        }
+        ScomManagement           = @{
+            'ManagementGroupName'           = '[string] Management Group name, defaults to SCOM<version>'
+            'SqlServerInstance'             = '[string] SQL Instance to select'
+            'SqlInstancePort'               = '[string] Port of the SQL instance'
+            'DatabaseName'                  = '[string] SQL Database backend name'
+            'DwSqlServerInstance'           = '[string] SQL Data Warehouse Server Instance name'
+            'InstallLocation'               = '[string] Installation directory, defaults to C:\Program Files\Microsoft System Center\Operations Manager'
+            'DwSqlInstancePort'             = '[string] SQL Data Warehouse Instance Port'
+            'DwDatabaseName'                = '[string] SQL Data Warehouse Database backend name'
+            'ActionAccountUser'             = '[string] Service Account, defaults to OM19AA, will be created'
+            'ActionAccountPassword'         = '[string] Plaintext password for service account'
+            'DASAccountUser'                = '[string] Service Account, defaults to OM19DAS, will be created'
+            'DASAccountPassword'            = '[string] Plaintext password for service account'
+            'DataReaderUser'                = '[string] Service Account, defaults to OM19READ, will be created'
+            'DataReaderPassword'            = '[string] Plaintext password for service account'
+            'DataWriterUser'                = '[string] Service Account, defaults to OM19WRITE, will be created'
+            'DataWriterPassword'            = '[string] Plaintext password for service account'
+            'EnableErrorReporting'          = '[string] Never, Queued or Always. Defaults to Never'
+            'SendCEIPReports'               = '[string] 0 or 1, indicates that CEIP reports should be sent. Defaults to 0'
+            'UseMicrosoftUpdate'            = '[string] 0 or 1, incicates that MS Update should be used. Defaults to 0'
+            'AcceptEndUserLicenseAgreement' = '[string] Accept EULA. Defaults to 1. THERE IS NO POINT OF USING 0 IN A LAB'
+            'ProductKey'                    = '[string] Product key to activate'
+        }
+        ScomConsole              = @{
+            'InstallLocation'               = '[string] Installation directory, defaults to C:\Program Files\Microsoft System Center\Operations Manager'
+            'EnableErrorReporting'          = '[string] Never, Queued or Always. Defaults to Never'
+            'SendCEIPReports'               = '[string] 0 or 1, indicates that CEIP reports should be sent. Defaults to 0'
+            'UseMicrosoftUpdate'            = '[string] 0 or 1, incicates that MS Update should be used. Defaults to 0'
+            'AcceptEndUserLicenseAgreement' = '[string] Accept EULA. Defaults to 1. THERE IS NO POINT OF USING 0 IN A LAB'
+        }
+
+        ScomWebConsole           = @{
+            'ManagementServer'              = '[string] Name of the SCOM management server'
+            'WebSiteName'                   = '[string] Name of the website to host. Defaults to Default Web Site'
+            'WebConsoleAuthorizationMode'   = '[string] Mixed or Network. Authentication method for web console. Defaults to Mixed'
+            'SendCEIPReports'               = '[string] 0 or 1, indicates that CEIP reports should be sent. Defaults to 0'
+            'UseMicrosoftUpdate'            = '[string] 0 or 1, incicates that MS Update should be used. Defaults to 0'
+            'AcceptEndUserLicenseAgreement' = '[string] Accept EULA. Defaults to 1. THERE IS NO POINT OF USING 0 IN A LAB'
+        }
+                
+        FailoverNode             = @{
+            'ClusterName' = '[string] The name of the cluster the node will join.'
+            'ClusterIP'   = '[string] The IP address of the cluster.'
+        }
+        HyperV                   = @{
+            'MaximumStorageMigrations'                  = '[uint32] The maximum number of storage migrations allowed.'
+            'MaximumVirtualMachineMigrations'           = '[uint32] The maximum number of virtual machine migrations allowed.'
+            'VirtualMachineMigrationAuthenticationType' = '[Microsoft.HyperV.PowerShell.MigrationAuthenticationType] The authentication type for virtual machine migration.'
+            'UseAnyNetworkForMigration'                 = '[bool] Whether to use any network for migration.'
+            'VirtualMachineMigrationPerformanceOption'  = '[Microsoft.HyperV.PowerShell.VMMigrationPerformance] The performance option for virtual machine migration.'
+            'ResourceMeteringSaveInterval'              = '[timespan] The save interval for resource metering.'
+            'NumaSpanningEnabled'                       = '[bool] Whether NUMA spanning is enabled.'
+            'EnableEnhancedSessionMode'                 = '[bool] Whether enhanced session mode is enabled.'
+        }
+        SQLServer2012            = @{
+            'Features'              = '[string[]] The features to install. Possible values: SQLENGINE, REPLICATION, FULLTEXT, RS, AS, IS, MDS, DQC, CONN, BC, SDK, TOOLS, OCS'
+            'ConfigurationFile'     = '[string] The path to the configuration file.'
+            'InstanceName'          = '[string] The name of the SQL Server instance.'
+            'Collation'             = '[string] The collation for the SQL Server instance.'
+            'SQLSvcAccount'         = '[string] The account to run the SQL Server service.'
+            'SQLSvcPassword'        = '[string] The password for the SQL Server service account.'
+            'AgtSvcAccount'         = '[string] The account to run the SQL Server Agent service.'
+            'AgtSvcPassword'        = '[string] The password for the SQL Server Agent service account.'
+            'RsSvcAccount'          = '[string] The account to run the SQL Server Reporting Services service.'
+            'RsSvcPassword'         = '[string] The password for the SQL Server Reporting Services service account.'
+            'AgtSvcStartupType'     = '[string] The startup type for the SQL Server Agent service.'
+            'BrowserSvcStartupType' = '[string] The startup type for the SQL Server Browser service.'
+            'RsSvcStartupType'      = '[string] The startup type for the SQL Server Reporting Services service.'
+            'AsSysAdminAccounts'    = '[string[]] The accounts to add to the SQL Server sysadmin role.'
+            'AsSvcAccount'          = '[string] The account to run the SQL Server Analysis Services service.'
+            'AsSvcPassword'         = '[string] The password for the SQL Server Analysis Services service account.'
+            'IsSvcAccount'          = '[string] The account to run the SQL Server Integration Services service.'
+            'IsSvcPassword'         = '[string] The password for the SQL Server Integration Services service account.'
+            'SQLSysAdminAccounts'   = '[string[]] The accounts to add to the SQL Server sysadmin role.'
+        }
+        SQLServer2014            = @{
+            'Features'              = '[string[]] The features to install. Possible values: SQLENGINE, REPLICATION, FULLTEXT, RS, AS, IS, MDS, DQC, CONN, BC, SDK, TOOLS, OCS'
+            'ConfigurationFile'     = '[string] The path to the configuration file.'
+            'InstanceName'          = '[string] The name of the SQL Server instance.'
+            'Collation'             = '[string] The collation for the SQL Server instance.'
+            'SQLSvcAccount'         = '[string] The account to run the SQL Server service.'
+            'SQLSvcPassword'        = '[string] The password for the SQL Server service account.'
+            'AgtSvcAccount'         = '[string] The account to run the SQL Server Agent service.'
+            'AgtSvcPassword'        = '[string] The password for the SQL Server Agent service account.'
+            'RsSvcAccount'          = '[string] The account to run the SQL Server Reporting Services service.'
+            'RsSvcPassword'         = '[string] The password for the SQL Server Reporting Services service account.'
+            'AgtSvcStartupType'     = '[string] The startup type for the SQL Server Agent service.'
+            'BrowserSvcStartupType' = '[string] The startup type for the SQL Server Browser service.'
+            'RsSvcStartupType'      = '[string] The startup type for the SQL Server Reporting Services service.'
+            'AsSysAdminAccounts'    = '[string[]] The accounts to add to the SQL Server sysadmin role.'
+            'AsSvcAccount'          = '[string] The account to run the SQL Server Analysis Services service.'
+            'AsSvcPassword'         = '[string] The password for the SQL Server Analysis Services service account.'
+            'IsSvcAccount'          = '[string] The account to run the SQL Server Integration Services service.'
+            'IsSvcPassword'         = '[string] The password for the SQL Server Integration Services service account.'
+            'SQLSysAdminAccounts'   = '[string[]] The accounts to add to the SQL Server sysadmin role.'
+        }
+        SQLServer2016            = @{
+            'Features'              = '[string[]] The features to install. Possible values: SQLENGINE, REPLICATION, FULLTEXT, RS, AS, IS, MDS, DQC, CONN, BC, SDK, TOOLS, OCS'
+            'ConfigurationFile'     = '[string] The path to the configuration file.'
+            'InstanceName'          = '[string] The name of the SQL Server instance.'
+            'Collation'             = '[string] The collation for the SQL Server instance.'
+            'SQLSvcAccount'         = '[string] The account to run the SQL Server service.'
+            'SQLSvcPassword'        = '[string] The password for the SQL Server service account.'
+            'AgtSvcAccount'         = '[string] The account to run the SQL Server Agent service.'
+            'AgtSvcPassword'        = '[string] The password for the SQL Server Agent service account.'
+            'RsSvcAccount'          = '[string] The account to run the SQL Server Reporting Services service.'
+            'RsSvcPassword'         = '[string] The password for the SQL Server Reporting Services service account.'
+            'AgtSvcStartupType'     = '[string] The startup type for the SQL Server Agent service.'
+            'BrowserSvcStartupType' = '[string] The startup type for the SQL Server Browser service.'
+            'RsSvcStartupType'      = '[string] The startup type for the SQL Server Reporting Services service.'
+            'AsSysAdminAccounts'    = '[string[]] The accounts to add to the SQL Server sysadmin role.'
+            'AsSvcAccount'          = '[string] The account to run the SQL Server Analysis Services service.'
+            'AsSvcPassword'         = '[string] The password for the SQL Server Analysis Services service account.'
+            'IsSvcAccount'          = '[string] The account to run the SQL Server Integration Services service.'
+            'IsSvcPassword'         = '[string] The password for the SQL Server Integration Services service account.'
+            'SQLSysAdminAccounts'   = '[string[]] The accounts to add to the SQL Server sysadmin role.'
+        }
+        SQLServer2017            = @{
+            'Features'              = '[string[]] The features to install. Possible values: SQLENGINE, REPLICATION, FULLTEXT, RS, AS, IS, MDS, DQC, CONN, BC, SDK, TOOLS, OCS'
+            'ConfigurationFile'     = '[string] The path to the configuration file.'
+            'InstanceName'          = '[string] The name of the SQL Server instance.'
+            'Collation'             = '[string] The collation for the SQL Server instance.'
+            'SQLSvcAccount'         = '[string] The account to run the SQL Server service.'
+            'SQLSvcPassword'        = '[string] The password for the SQL Server service account.'
+            'AgtSvcAccount'         = '[string] The account to run the SQL Server Agent service.'
+            'AgtSvcPassword'        = '[string] The password for the SQL Server Agent service account.'
+            'RsSvcAccount'          = '[string] The account to run the SQL Server Reporting Services service.'
+            'RsSvcPassword'         = '[string] The password for the SQL Server Reporting Services service account.'
+            'AgtSvcStartupType'     = '[string] The startup type for the SQL Server Agent service.'
+            'BrowserSvcStartupType' = '[string] The startup type for the SQL Server Browser service.'
+            'RsSvcStartupType'      = '[string] The startup type for the SQL Server Reporting Services service.'
+            'AsSysAdminAccounts'    = '[string[]] The accounts to add to the SQL Server sysadmin role.'
+            'AsSvcAccount'          = '[string] The account to run the SQL Server Analysis Services service.'
+            'AsSvcPassword'         = '[string] The password for the SQL Server Analysis Services service account.'
+            'IsSvcAccount'          = '[string] The account to run the SQL Server Integration Services service.'
+            'IsSvcPassword'         = '[string] The password for the SQL Server Integration Services service account.'
+            'SQLSysAdminAccounts'   = '[string[]] The accounts to add to the SQL Server sysadmin role.'
+        }
+        SQLServer2019            = @{
+            'Features'              = '[string[]] The features to install. Possible values: SQLENGINE, REPLICATION, FULLTEXT, RS, AS, IS, MDS, DQC, CONN, BC, SDK, TOOLS, OCS'
+            'ConfigurationFile'     = '[string] The path to the configuration file.'
+            'InstanceName'          = '[string] The name of the SQL Server instance.'
+            'Collation'             = '[string] The collation for the SQL Server instance.'
+            'SQLSvcAccount'         = '[string] The account to run the SQL Server service.'
+            'SQLSvcPassword'        = '[string] The password for the SQL Server service account.'
+            'AgtSvcAccount'         = '[string] The account to run the SQL Server Agent service.'
+            'AgtSvcPassword'        = '[string] The password for the SQL Server Agent service account.'
+            'RsSvcAccount'          = '[string] The account to run the SQL Server Reporting Services service.'
+            'RsSvcPassword'         = '[string] The password for the SQL Server Reporting Services service account.'
+            'AgtSvcStartupType'     = '[string] The startup type for the SQL Server Agent service.'
+            'BrowserSvcStartupType' = '[string] The startup type for the SQL Server Browser service.'
+            'RsSvcStartupType'      = '[string] The startup type for the SQL Server Reporting Services service.'
+            'AsSysAdminAccounts'    = '[string[]] The accounts to add to the SQL Server sysadmin role.'
+            'AsSvcAccount'          = '[string] The account to run the SQL Server Analysis Services service.'
+            'AsSvcPassword'         = '[string] The password for the SQL Server Analysis Services service account.'
+            'IsSvcAccount'          = '[string] The account to run the SQL Server Integration Services service.'
+            'IsSvcPassword'         = '[string] The password for the SQL Server Integration Services service account.'
+            'SQLSysAdminAccounts'   = '[string[]] The accounts to add to the SQL Server sysadmin role.'
+        }
+        SQLServer2022            = @{
+            'Features'              = '[string[]] The features to install. Possible values: SQLENGINE, REPLICATION, FULLTEXT, RS, AS, IS, MDS, DQC, CONN, BC, SDK, TOOLS, OCS'
+            'ConfigurationFile'     = '[string] The path to the configuration file.'
+            'InstanceName'          = '[string] The name of the SQL Server instance.'
+            'Collation'             = '[string] The collation for the SQL Server instance.'
+            'SQLSvcAccount'         = '[string] The account to run the SQL Server service.'
+            'SQLSvcPassword'        = '[string] The password for the SQL Server service account.'
+            'AgtSvcAccount'         = '[string] The account to run the SQL Server Agent service.'
+            'AgtSvcPassword'        = '[string] The password for the SQL Server Agent service account.'
+            'RsSvcAccount'          = '[string] The account to run the SQL Server Reporting Services service.'
+            'RsSvcPassword'         = '[string] The password for the SQL Server Reporting Services service account.'
+            'AgtSvcStartupType'     = '[string] The startup type for the SQL Server Agent service.'
+            'BrowserSvcStartupType' = '[string] The startup type for the SQL Server Browser service.'
+            'RsSvcStartupType'      = '[string] The startup type for the SQL Server Reporting Services service.'
+            'AsSysAdminAccounts'    = '[string[]] The accounts to add to the SQL Server sysadmin role.'
+            'AsSvcAccount'          = '[string] The account to run the SQL Server Analysis Services service.'
+            'AsSvcPassword'         = '[string] The password for the SQL Server Analysis Services service account.'
+            'IsSvcAccount'          = '[string] The account to run the SQL Server Integration Services service.'
+            'IsSvcPassword'         = '[string] The password for the SQL Server Integration Services service account.'
+            'SQLSysAdminAccounts'   = '[string[]] The accounts to add to the SQL Server sysadmin role.'
+        }
+        SQLServer2025            = @{
+            'Features'              = '[string[]] The features to install. Possible values: SQLENGINE, REPLICATION, FULLTEXT, RS, AS, IS, MDS, DQC, CONN, BC, SDK, TOOLS, OCS'
+            'ConfigurationFile'     = '[string] The path to the configuration file.'
+            'InstanceName'          = '[string] The name of the SQL Server instance.'
+            'Collation'             = '[string] The collation for the SQL Server instance.'
+            'SQLSvcAccount'         = '[string] The account to run the SQL Server service.'
+            'SQLSvcPassword'        = '[string] The password for the SQL Server service account.'
+            'AgtSvcAccount'         = '[string] The account to run the SQL Server Agent service.'
+            'AgtSvcPassword'        = '[string] The password for the SQL Server Agent service account.'
+            'RsSvcAccount'          = '[string] The account to run the SQL Server Reporting Services service.'
+            'RsSvcPassword'         = '[string] The password for the SQL Server Reporting Services service account.'
+            'AgtSvcStartupType'     = '[string] The startup type for the SQL Server Agent service.'
+            'BrowserSvcStartupType' = '[string] The startup type for the SQL Server Browser service.'
+            'RsSvcStartupType'      = '[string] The startup type for the SQL Server Reporting Services service.'
+            'AsSysAdminAccounts'    = '[string[]] The accounts to add to the SQL Server sysadmin role.'
+            'AsSvcAccount'          = '[string] The account to run the SQL Server Analysis Services service.'
+            'AsSvcPassword'         = '[string] The password for the SQL Server Analysis Services service account.'
+            'IsSvcAccount'          = '[string] The account to run the SQL Server Integration Services service.'
+            'IsSvcPassword'         = '[string] The password for the SQL Server Integration Services service account.'
+            'SQLSysAdminAccounts'   = '[string[]] The accounts to add to the SQL Server sysadmin role.'
+        }
+        ScomReporting            = @{
+            'ManagementServer'              = '[string] Name of the SCOM management server'
+            'SRSInstance'                   = '[string] SQL Reporting Services Instance'
+            'DataReaderUser'                = '[string] Service Account, defaults to OM19READ, will be created'
+            'DataReaderPassword'            = '[string] Plaintext password for service account'
+            'SendODRReports'                = '[string] 0 or 1, indicated that reports should be sent. Defaults to 0'
+            'UseMicrosoftUpdate'            = '[string] 0 or 1, incicates that MS Update should be used. Defaults to 0'
+            'AcceptEndUserLicenseAgreement' = '[string] Accept EULA. Defaults to 1. THERE IS NO POINT OF USING 0 IN A LAB'
+            'InstallLocation'               = '[string] Installation directory, defaults to C:\Program Files\Microsoft System Center\Operations Manager'
+        }
+        RemoteDesktopSessionHost = @{
+            'CollectionName'               = '[string] Name of the collection'
+            'CollectionDescription'        = '[string] Description of the collection'
+            'PersonalUnmanaged'            = '[string] Value irrelevant. If present, PersonalUnmanaged will be true'
+            'AutoAssignUser'               = '[string] Boolean type 0,1,false or true. Indicates that users should be auto-assigned to this host'
+            'GrantAdministrativePrivilege' = '[string] Boolean type 0,1,false or true. Indicates that users are granted admin privileges'
+            'PooledUnmanaged'              = '[string] Value irrelevant. If present, PoolUnmanaged will be true'
+        }
+        RemoteDesktopGateway     = @{
+            'GatewayExternalFqdn'  = '[string] External FQDN of the GW'
+            'BypassLocal'          = '[string] Boolean type 0,1,false or true. Indicates whether authorized remote users bypass the RD Gateway server for local connections.'
+            'LogonMethod'          = '[string] Password, GatewayAuthMode, AllowUserToSelectDuringConnection. Specifies the method for authenticating user access to the RD Gateway server'
+            'UseCachedCredentials' = '[string] Boolean type 0,1,false or true. Indicates that cached credentials may be used.'
+            'GatewayMode'          = '[string] DoNotUse, Custom, Automatic. Specifies a value that indicates whether or not authorized remote users use the RD Gateway server and, if so, whether they detect existing RD Gateway settings automatically or enter settings manually'
+        }
+        RemoteDesktopLicensing   = @{
+            'Mode' = '[string] Specifies the licensing mode to configure for the deployment. Valid values are PerUser, PerDevice, and NotConfigured.'
+        }
+        ConfigurationManager     = @{
+            'Version'         = '[string] Version to use, e.g. 2103'
+            'Branch'          = '[string] Branch to use, e.g. CB'
+            'Roles'           = '[string] Comma-separated list of roles in single string. Valid roles: None, Management point, Distribution Point, Software Update Point, Reporting Services Point, Endpoint Protection Point'
+            'SiteName'        = '[string] CM Site Name, defaults to AutomatedLab-01'
+            'SiteCode'        = '[string] CM Site Code, defaults to AL1'
+            'SqlServerName'   = '[string] Name of the SQL server to use'
+            'DatabaseName'    = '[string] Name of the Database to use'
+            'WsusContentPath' = '[string] WSUS content directory'
+            'AdminUser'       = '[string] Name of admin user'
+            'ProductId'       = '[string] Product Key'
+        }        
     }
     MandatoryRoleProperties = @{
         ADFSProxy = @(
@@ -923,8 +1214,8 @@ Register-PSFTeppScriptblock -Name AutomatedLab-CustomRole -ScriptBlock {
 
 Register-PSFTeppScriptblock -Name AutomatedLab-AzureRoleSize -ScriptBlock {
     $defaultLocation = (Get-LabAzureDefaultLocation -ErrorAction SilentlyContinue).Location
-    (Get-AzVMSize -Location $defaultLocation -ErrorAction SilentlyContinue |
-    Where-Object -Property Name -notlike *basic* | Sort-Object -Property Name).Name
+    (Get-AzComputeResourceSku -Location $defaultLocation -ErrorAction SilentlyContinue |
+    Where-Object ResourceType -eq virtualMachines | Sort-Object -Property Name).Name
 }
 
 Register-PSFTeppScriptblock -Name AutomatedLab-TimeZone -ScriptBlock {

@@ -23,7 +23,8 @@ Invoke-LabPester -LabName <String> [-Show <Object>] [-PassThru] [-OutputFile <St
 ```
 
 ## DESCRIPTION
-Invoke all role-specific pester tests for a lab
+Invoke all role-specific pester tests for a lab. This includes any tests that exist in CustomRoles. Use 
+`New-LabPesterTest` to create the Pester test stub in your Custom Role folder.
 
 ## EXAMPLES
 

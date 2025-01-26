@@ -26,8 +26,8 @@
         $availableRoles | Where-Object { $_.ToString() -notin 'ADDS', 'SQLServer', 'SharePoint', 'SCVMM', 'SCOM', 'Dynamics', 'RDS' } | ForEach-Object {
             [PSCustomObject]@{
                 Role                = $_.ToString()
-                ValidProperties     = $config.ValidRoleProperties[$_.ToString()]
                 MandatoryProperties = $config.MandatoryRoleProperties[$_.ToString()]
+                ValidProperties     = $config.ValidRoleProperties[$_.ToString()].Keys
             }
         }
         return
@@ -36,7 +36,11 @@
     foreach ($availableRole in $availableRoles) {
         if ($Role.HasFlag([AutomatedLab.Roles]$availableRole)) {            
             if ($Syntax.IsPresent -and $config.ValidRoleProperties.Contains($availableRole.ToString())) {
-                $roleObjects += "Get-LabMachineRoleDefinition -Role $availableRole -Properties @{`r`n$($config.ValidRoleProperties[$availableRole.ToString()] -join `"='value'`r`n`")='value'`r`n}`r`n"
+                $roleParams = foreach ($parameter in ($config.ValidRoleProperties[$availableRole.ToString()].GetEnumerator() | Sort-Object Key)) {
+                    $paramType = if ($config.MandatoryRoleProperties[$availableRole.ToString()]) { '(Required)' } else { '(Optional)' }
+                    "    $($parameter.Key) = '$paramType $($parameter.Value)'`r`n"
+                }
+                $roleObjects += "Get-LabMachineRoleDefinition -Role $availableRole -Properties @{`r`n$roleParams}`r`n"
             }
             elseif ($Syntax.IsPresent -and -not $config.ValidRoleProperties.Contains($availableRole.ToString())) {
                 $roleObjects += "Get-LabMachineRoleDefinition -Role $availableRole`r`n"

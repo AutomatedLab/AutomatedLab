@@ -38,16 +38,13 @@
 
             ipconfig.exe -flushdns
 
-            if (-not -(Test-Path -Path C:\DeployDebug))
-            {
-                New-Item C:\DeployDebug -Force -ItemType Directory | Out-Null
-            }
+            $deployDebug = New-Item -ItemType Directory -Path $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder) -ErrorAction SilentlyContinue -Force
 
             Write-Verbose -Message 'Getting list of DCs'
             $dcs = repadmin.exe /viewlist *
             Write-Verbose -Message "List: '$($dcs -join ', ')'"
-            (Get-Date -Format 'yyyy-MM-dd hh:mm:ss') | Add-Content -Path c:\DeployDebug\DCList.log -Force
-            $dcs | Add-Content -Path c:\DeployDebug\DCList.log
+            Get-Date -Format 'yyyy-MM-dd hh:mm:ss' | Add-Content -Path "$($deployDebug.FullName)\DCList.log" -Force
+            $dcs | Where-Object {$_ -ne $null} | Add-Content -Path "$($deployDebug.FullName)\DCList.log"
 
             foreach ($dc in $dcs)
             {
@@ -56,13 +53,13 @@
                     $dcName = $dc.Split()[2]
                     Write-Verbose -Message "Executing 'repadmin.exe /SyncAll /Ae $dcname'"
                     $result = repadmin.exe /SyncAll /Ae $dcName
-                    (Get-Date -Format 'yyyy-MM-dd hh:mm:ss') | Add-Content -Path "c:\DeployDebug\Syncs-$($dcName).log" -Force
-                    $result | Add-Content -Path "c:\DeployDebug\Syncs-$($dcName).log"
+                    (Get-Date -Format 'yyyy-MM-dd hh:mm:ss') | Add-Content -Path "$($deployDebug.FullName)\Syncs-$($dcName).log" -Force
+                    $result | Add-Content -Path "$($deployDebug.FullName)\Syncs-$($dcName).log"
                 }
             }
             Write-Verbose -Message "Executing 'repadmin.exe /ReplSum'"
             $result = repadmin.exe /ReplSum
-            $result | Add-Content -Path c:\DeployDebug\repadmin.exeResult.log
+            $result | Add-Content -Path "$($deployDebug.FullName)\repadmin.exeResult.log"
 
             Restart-Service -Name DNS -WarningAction SilentlyContinue
 
@@ -71,8 +68,8 @@
             Write-Verbose -Message 'Getting list of DCs'
             $dcs = repadmin.exe /viewlist *
             Write-Verbose -Message "List: '$($dcs -join ', ')'"
-            (Get-Date -Format 'yyyy-MM-dd hh:mm:ss') | Add-Content -Path c:\DeployDebug\DCList.log -Force
-            $dcs | Add-Content -Path c:\DeployDebug\DCList.log
+            (Get-Date -Format 'yyyy-MM-dd hh:mm:ss') | Add-Content -Path "$($deployDebug.FullName)\DCList.log" -Force
+            $dcs | Add-Content -Path "$($deployDebug.FullName)\DCList.log"
             foreach ($dc in $dcs)
             {
                 if ($dc)
@@ -80,25 +77,24 @@
                     $dcName = $dc.Split()[2]
                     Write-Verbose -Message "Executing 'repadmin.exe /SyncAll /Ae $dcname'"
                     $result = repadmin.exe /SyncAll /Ae $dcName
-                    (Get-Date -Format 'yyyy-MM-dd hh:mm:ss') | Add-Content -Path "c:\DeployDebug\Syncs-$($dcName).log" -Force
-                    $result | Add-Content -Path "c:\DeployDebug\Syncs-$($dcName).log"
+                    (Get-Date -Format 'yyyy-MM-dd hh:mm:ss') | Add-Content -Path "$($deployDebug.FullName)\Syncs-$($dcName).log" -Force
+                    $result | Add-Content -Path "$($deployDebug.FullName)\Syncs-$($dcName).log"
                 }
             }
             Write-Verbose -Message "Executing 'repadmin.exe /ReplSum'"
             $result = repadmin.exe /ReplSum
-            $result | Add-Content -Path c:\DeployDebug\repadmin.exeResult.log
+            $result | Add-Content -Path "$($deployDebug.FullName)\repadmin.exeResult.log"
 
             ipconfig.exe /registerdns
 
             Restart-Service -Name DNS -WarningAction SilentlyContinue
 
             #for debugging
-            #dnscmd /zoneexport $env:USERDNSDOMAIN "c:\DeployDebug\$($env:USERDNSDOMAIN).txt"
+            #dnscmd /zoneexport $env:USERDNSDOMAIN "$($deployDebug.FullName)\$($env:USERDNSDOMAIN).txt"
         }
         #endregion Force Replication Scriptblock
 
-        Invoke-LabCommand -ActivityName "Performing ipconfig /registerdns on '$ComputerName'" `
-        -ComputerName $ComputerName -ScriptBlock { ipconfig.exe /registerdns } -NoDisplay
+        Invoke-LabCommand -ActivityName "Performing ipconfig /registerdns on '$ComputerName'" -ComputerName $ComputerName -ScriptBlock { ipconfig.exe /registerdns } -NoDisplay -Variable (Get-Variable -Scope Global -Name AL_DeployDebugFolder)
 
         if ($AsJob)
         {

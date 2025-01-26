@@ -4,11 +4,11 @@
 
     [Parameter()]
     [string[]]
-    $ExternalDependency = @('PSFramework', 'newtonsoft.json', 'SHiPS', 'xPSDesiredStateConfiguration', 'xDscDiagnostics', 'xWebAdministration'),
+    $ExternalDependency = @('PSFramework', 'SHiPS', 'xPSDesiredStateConfiguration', 'xDscDiagnostics', 'xWebAdministration'),
 
     [Parameter()]
     [string[]]
-    $InternalModules = @('AutomatedLab','AutomatedLab.Common\AutomatedLab.Common','AutomatedLab.Recipe', 'AutomatedLab.Ships','AutomatedLabDefinition','AutomatedLabNotifications','AutomatedLabTest','AutomatedLabUnattended','AutomatedLabWorker','HostsFile','PSFileTransfer','PSLog')
+    $InternalModules = @('AutomatedLab','AutomatedLab.Common\AutomatedLab.Common','AutomatedLab.Recipe', 'AutomatedLab.Ships','AutomatedLabDefinition','AutomatedLabNotifications','AutomatedLabTest','AutomatedLabUnattended','AutomatedLabWorker', 'PSFileTransfer','PSLog')
 )
 
 Remove-Item -Path (Join-Path $SolutionDir scratch) -Recurse -Force -ErrorAction SilentlyContinue

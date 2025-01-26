@@ -148,8 +148,8 @@
     $caScriptBlock = {
 
         param ($param)
-
-        $param | Export-Clixml C:\DeployDebug\CaParams.xml
+        $deployDebug = (New-Item -Force -ItemType Directory -Path $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder)).FullName
+        $param | Export-Clixml $deployDebug\CaParams.xml
 
         #Make semi-sure that each install of CA server is not done at the same time
         Start-Sleep -Seconds $param.PreDelaySeconds
@@ -299,7 +299,7 @@
         {
             Write-Debug -Message 'Install command:'
             Write-Debug -Message $installCommand
-            Set-Content -Path 'C:\debug-CAinst.txt' -value $installCommand
+            Set-Content -Path "$deployDebug\debug-CAinst.txt" -value $installCommand
         }
 
 
@@ -547,8 +547,7 @@
     #endregion
 
     Write-PSFMessage -Message "Performing installation of $($param.CAType) on '$($param.ComputerName)'"
-    $job = Invoke-LabCommand -ActivityName "Install CA on '$($param.Computername)'" -ComputerName $param.ComputerName`
-    -Scriptblock $caScriptBlock -ArgumentList $param -NoDisplay -AsJob -PassThru
+    $job = Invoke-LabCommand -ActivityName "Install CA on '$($param.Computername)'" -ComputerName $param.ComputerName -Scriptblock $caScriptBlock -ArgumentList $param -NoDisplay -AsJob -PassThru -Variable (Get-Variable -Name AL_DeployDebugFolder -Scope Global)
 
     $job
 

@@ -10,6 +10,11 @@
 
     Test-LabHostConnected -Throw -Quiet
 
+    if (Get-LabConfigurationItem -Name AzureDisableLabSourcesStorage) {
+        Write-ScreenInfo -Type Verbose -Message "User opted out of storage account creation."
+        return
+    }
+
     Write-LogFunctionEntry
 
     Test-LabAzureSubscription
@@ -44,7 +49,7 @@
     {
         Write-ScreenInfo "No storage account for AutomatedLabSources could not be found, creating it"
         $storageAccountName = "automatedlabsources$((1..5 | ForEach-Object { [char[]](97..122) | Get-Random }) -join '')"
-        New-AzStorageAccount -ResourceGroupName $azureLabSourcesResourceGroupName -Name $storageAccountName -Location $LocationName -Kind Storage -SkuName Standard_LRS | Out-Null
+        New-AzStorageAccount -ResourceGroupName $azureLabSourcesResourceGroupName -Name $storageAccountName -Location $LocationName -Kind StorageV2 -SkuName Standard_LRS | Out-Null
         $storageAccount = Get-AzStorageAccount -ResourceGroupName $azureLabSourcesResourceGroupName | Where-Object StorageAccountName -like automatedlabsources?????
     }
 

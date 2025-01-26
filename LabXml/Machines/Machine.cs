@@ -50,20 +50,7 @@ namespace AutomatedLab
         {
             get
             {
-                if (System.Text.RegularExpressions.Regex.IsMatch(OperatingSystem.OperatingSystemName, "CentOS|Red Hat|Fedora|Oracle"))
-                {
-                    return LinuxType.RedHat;
-                }
-                if (System.Text.RegularExpressions.Regex.IsMatch(OperatingSystem.OperatingSystemName, "Suse"))
-                {
-                    return LinuxType.SuSE;
-                }
-                if (System.Text.RegularExpressions.Regex.IsMatch(OperatingSystem.OperatingSystemName, "Ubuntu|Kali"))
-                {
-                    return LinuxType.Ubuntu;
-                }
-
-                return LinuxType.Unknown;
+                return OperatingSystem.LinuxType;
             }
         }
 
@@ -438,7 +425,7 @@ namespace AutomatedLab
                 {
                     userName = "root";
                 }
-                if (OperatingSystemType != OperatingSystemType.Linux)
+                if (OperatingSystemType != OperatingSystemType.Linux || (OperatingSystemType == OperatingSystemType.Linux && LinuxType == LinuxType.Ubuntu))
                 {
                     userName = string.Format(@"{0}\{1}", name, installationUser.UserName);
                 }

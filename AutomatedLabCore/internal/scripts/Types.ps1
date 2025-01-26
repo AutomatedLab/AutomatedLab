@@ -1376,5 +1376,5 @@ try
 }
 catch
 {
-    Add-Type -TypeDefinition $certStoreTypes
+    Add-Type -TypeDefinition $certStoreTypes -IgnoreWarnings -WarningAction SilentlyContinue
 }

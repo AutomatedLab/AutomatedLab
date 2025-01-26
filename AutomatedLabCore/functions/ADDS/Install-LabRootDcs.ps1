@@ -54,14 +54,14 @@
     $jobs = @()
     if ($machines)
     {
-        Invoke-LabCommand -ComputerName $machines -ActivityName "Create folder 'C:\DeployDebug' for debug info" -NoDisplay -ScriptBlock {
-            New-Item -ItemType Directory -Path 'c:\DeployDebug' -ErrorAction SilentlyContinue | Out-Null
+        Invoke-LabCommand -ComputerName $machines -ActivityName "Create folder '$AL_DeployDebugFolder' for debug info" -NoDisplay -ScriptBlock {            
+            $deployDebug = New-Item -ItemType Directory -Path $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder) -ErrorAction SilentlyContinue -Force
 
-            $acl = Get-Acl -Path C:\DeployDebug
+            $acl = Get-Acl -Path $deployDebug.FullName
             $rule = New-Object System.Security.AccessControl.FileSystemAccessRule('Everyone', 'Read', 'ObjectInherit', 'None', 'Allow')
             $acl.AddAccessRule($rule)
-            Set-Acl -Path C:\DeployDebug -AclObject $acl
-        } -DoNotUseCredSsp -UseLocalCredential
+            Set-Acl -Path $deployDebug.FullName -AclObject $acl
+        } -DoNotUseCredSsp -UseLocalCredential -Variable (Get-Variable -Scope Global -Name AL_DeployDebugFolder)
 
         foreach ($machine in $machines)
         {
@@ -137,6 +137,7 @@
             -PassThru `
             -NoDisplay `
             -ScriptBlock $scriptblock `
+            -Variable (Get-Variable -Scope Global -Name AL_DeployDebugFolder) `
             -ArgumentList $machine.DomainName,
             $machine.InstallationUser.Password,
             $forestFunctionalLevel,
@@ -232,11 +233,11 @@
             $rootDomains = $machines | Group-Object -Property DomainName
             foreach($root in $rootDomains)
             {
-                $domainJoinedMachines = ($linuxMachines | Where-Object DomainName -eq $root.Name).Name
+                $domainJoinedMachines = $linuxMachines | Where-Object DomainName -eq $root.Name
                 if (-not $domainJoinedMachines) { continue }
                 $oneTimePassword = ($root.Group)[0].InstallationUser.Password
                 Invoke-LabCommand -ActivityName 'Add computer objects for domain-joined Linux machines' -ComputerName ($root.Group)[0] -ScriptBlock {
-                    foreach ($m in $domainJoinedMachines) { New-ADComputer -Name $m -AccountPassword ($oneTimePassword | ConvertTo-SecureString -AsPlaintext -Force)}
+                    foreach ($m in $domainJoinedMachines) { New-ADComputer -Name $m.Name -DnsHostName $m.FQDN -AccountPassword ($oneTimePassword | ConvertTo-SecureString -AsPlaintext -Force)}
                 } -Variable (Get-Variable -Name domainJoinedMachines,oneTimePassword) -NoDisplay
             }
         }

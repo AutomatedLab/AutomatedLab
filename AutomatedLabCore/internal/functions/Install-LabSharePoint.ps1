@@ -50,6 +50,14 @@
         Install-LabWindowsFeature -ComputerName $oldMachines -FeatureName Application-Server, AS-Web-Support, AS-TCP-Port-Sharing, AS-WAS-Support, AS-HTTP-Activation, AS-TCP-Activation, AS-Named-Pipes, AS-Net-Framework -IncludeManagementTools -IncludeAllSubFeature -NoDisplay
     }
 
+    
+    $deployDebugPath = Invoke-LabCommand -ComputerName $machines -NoDisplay -ScriptBlock {
+        $deployDebug = (New-Item -ItemType Directory -Path $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder) -ErrorAction SilentlyContinue -Force).FullName
+        $deployDebug
+        Set-Content $deployDebug\SPPrereq.ps1 -Value $Script
+
+    } -Variable (Get-Variable -Scope Global -Name AL_DeployDebugFolder) -PassThru | Select-Object -First 1
+
     Restart-LabVM -ComputerName $machines -Wait
 
     # Mount SharePoint ISO
@@ -61,12 +69,12 @@
         {
             $spImage = Mount-LabIsoImage -ComputerName $machine -IsoPath ($lab.Sources.ISOs | Where-Object { $_.Name -eq $group.Name }).Path -PassThru
             Invoke-LabCommand -ComputerName $machine -ActivityName "Copy SharePoint Installation Files" -ScriptBlock {
-                Copy-Item -Path "$($spImage.DriveLetter)\" -Destination "C:\SPInstall\" -Recurse
-                if ((Test-Path -Path 'C:\SPInstall\prerequisiteinstallerfiles') -eq $false)
+                Copy-Item -Path "$($spImage.DriveLetter)\" -Destination "$deployDebugPath\SPInstall\" -Recurse
+                if ((Test-Path -Path "$deployDebugPath\SPInstall\prerequisiteinstallerfiles") -eq $false)
                 {
-                    $null = New-Item -Path 'C:\SPInstall\prerequisiteinstallerfiles' -ItemType Directory
+                    $null = New-Item -Path "$deployDebugPath\SPInstall\prerequisiteinstallerfiles" -ItemType Directory
                 }
-            } -Variable (Get-Variable -Name spImage) -AsJob -PassThru
+            } -Variable (Get-Variable -Name spImage, deployDebugPath) -AsJob -PassThru
         }
     }
 
@@ -78,7 +86,7 @@
         Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name $thing) -Path $labsources\SoftwarePackages -FileName $fName -NoDisplay
     }
 
-    Copy-LabFileItem -Path $labsources\SoftwarePackages\vcredist_64_2012.exe, $labsources\SoftwarePackages\vcredist_64_2015.exe, $labsources\SoftwarePackages\vcredist_64_2017.exe -ComputerName $machines.Name  -DestinationFolderPath "C:\SPInstall\prerequisiteinstallerfiles"
+    Copy-LabFileItem -Path $labsources\SoftwarePackages\vcredist_64_2012.exe, $labsources\SoftwarePackages\vcredist_64_2015.exe, $labsources\SoftwarePackages\vcredist_64_2017.exe -ComputerName $machines.Name  -DestinationFolderPath "$deployDebugPath\SPInstall\prerequisiteinstallerfiles"
 
     # Download and copy Prerequisite Files to server
     Write-ScreenInfo -Message "Downloading and copying prerequisite files to servers"
@@ -109,22 +117,19 @@
             $download = Get-LabInternetFile @params
         }
 
-        Copy-LabFileItem -ComputerName $group.Group -Path $labsources\SoftwarePackages\$($group.Name)\* -DestinationFolderPath "C:\SPInstall\prerequisiteinstallerfiles"
+        Copy-LabFileItem -ComputerName $group.Group -Path $labsources\SoftwarePackages\$($group.Name)\* -DestinationFolderPath "$deployDebugPath\SPInstall\prerequisiteinstallerfiles"
 
         # Installing Prereqs
         Write-ScreenInfo -Message "Installing prerequisite files for $($group.Name) on server" -Type Verbose
         Invoke-LabCommand -ComputerName $group.Group -NoDisplay -ScriptBlock {
             param ([string] $Script )
-            if (-not (Test-Path -Path C:\DeployDebug))
-            {
-                $null = New-Item -ItemType Directory -Path C:\DeployDebug
-            }
-            Set-Content C:\DeployDebug\SPPrereq.ps1 -Value $Script
 
-        } -ArgumentList (Get-Variable -Name "$($Group.Name)InstallScript").Value.ToString()
+            Set-Content $deployDebugPath\SPPrereq.ps1 -Value $Script
+
+        } -ArgumentList (Get-Variable -Name "$($Group.Name)InstallScript").Value.ToString() -Variable (Get-Variable deployDebugPath)
     }
 
-    $instResult = Invoke-LabCommand -PassThru -ComputerName $machines -ActivityName "Install SharePoint (all) Prerequisites" -ScriptBlock { & C:\DeployDebug\SPPrereq.ps1 -Mode '/unattended' }
+    $instResult = Invoke-LabCommand -PassThru -ComputerName $machines -ActivityName "Install SharePoint (all) Prerequisites" -ScriptBlock { & $deployDebugPath\SPPrereq.ps1 -Mode '/unattended' } -Variable (Get-Variable deployDebugPath)
     $failed = $instResult | Where-Object { $_.ExitCode -notin 0, 3010 }
     if ($failed)
     {
@@ -137,7 +142,7 @@
     {
         Write-ScreenInfo -Type Verbose -Message "Some machines require a second pass at installing prerequisites: $($rebootRequired.HostName -join ',')"
         Restart-LabVM -ComputerName $rebootRequired.HostName -Wait
-        $instResult = Invoke-LabCommand -PassThru -ComputerName $rebootRequired.HostName -ActivityName "Install $($group.Name) Prerequisites" -ScriptBlock { & C:\DeployDebug\SPPrereq.ps1 -Mode '/unattended /continue' } | Where-Object { $_ -eq 3010 }
+        $instResult = Invoke-LabCommand -PassThru -ComputerName $rebootRequired.HostName -ActivityName "Install $($group.Name) Prerequisites" -ScriptBlock { & $deployDebugPath\SPPrereq.ps1 -Mode '/unattended /continue' } -Variable (Get-Variable deployDebugPath) | Where-Object { $_ -eq 3010 }
         $failed = $instResult | Where-Object { $_.ExitCode -notin 0, 3010 }
         if ($failed)
         {
@@ -156,11 +161,11 @@
         $productKey = Get-LabConfigurationItem -Name "$($group.Name)Key"
         $configFile = $spsetupConfigFileContent -f $productKey
         Invoke-LabCommand -ComputerName $group.Group -ActivityName "Install SharePoint $($group.Name)" -ScriptBlock {
-            Set-Content -Force -Path C:\SPInstall\files\al-config.xml -Value $configFile
-            $null = Start-Process -Wait "C:\SPInstall\setup.exe" -ArgumentList "/config C:\SPInstall\files\al-config.xml"
-            Set-Content C:\DeployDebug\SPInst.cmd -Value 'C:\SPInstall\setup.exe /config C:\SPInstall\files\al-config.xml'
+            Set-Content -Force -Path $deployDebugPath\SPInstall\files\al-config.xml -Value $configFile
+            $null = Start-Process -Wait "$deployDebugPath\SPInstall\setup.exe" -ArgumentList "/config `"$deployDebugPath\SPInstall\files\al-config.xml`""
+            Set-Content $deployDebugPath\SPInst.cmd -Value "$deployDebugPath\SPInstall\setup.exe /config `"$deployDebugPath\SPInstall\files\al-config.xml`""
             Get-ChildItem -Path (Join-Path ([IO.Path]::GetTempPath()) 'SharePoint Server Setup*') | Get-Content
-        } -Variable (Get-Variable -Name configFile) -AsJob -PassThru
+        } -Variable (Get-Variable -Name configFile, deployDebugPath) -AsJob -PassThru
     }
 
     Write-ScreenInfo -Message "Waiting for SharePoint role to complete installation" -NoNewLine

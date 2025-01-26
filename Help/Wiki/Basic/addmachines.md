@@ -32,6 +32,9 @@ With AutomatedLab Linux VMs can be deployed just as easily as Windows VMs. The c
 
 At the moment the machines do not support any of AutomatedLab's roles since our roles are Windows-based. However, your VMs should come up domain-joined and capable of receiving WSMAN or SSH requests. AutomatedLab uses kickstart (RHEL-based) or AutoYAST (SLES-based) to configure everything that would be configured in the unattend file of a Windows machine.
 
+>NOTE: Please do not expect PowerShell to run on something unsupported (<https://learn.microsoft.com/en-us/powershell/scripting/install/powershell-support-lifecycle?view=powershell-7.5#supported-platforms>). We **need** PowerShell to remote into the lab VMs and run our customizations. You can still add random Linux hosts, but please do not
+raise issues for this. Troubleshooting on those OSses is very time- and money-consuming.
+
 WSMAN (or rather omi-psrp-server) support is very spotty. To address this issue, please use the parameters `SshPublicKeyPath` and
 `SshPrivateKeyPath` when deploying Linux hosts. No idea how SSH keys are generated? Look here: <https://learn.microsoft.com/en-us/azure/virtual-machines/linux/create-ssh-keys-detailed>
 

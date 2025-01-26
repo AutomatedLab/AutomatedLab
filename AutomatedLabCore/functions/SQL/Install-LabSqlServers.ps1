@@ -37,12 +37,9 @@
 
     $machines = Get-LabVM -Role SQLServer | Where-Object SkipDeployment -eq $false
     
-    Invoke-LabCommand -ComputerName $machines -ScriptBlock {
-        if (-not (Test-Path C:\DeployDebug))
-        {
-            $null = New-Item -ItemType Directory -Path C:\DeployDebug
-        }
-    }
+    $deployDebugPath = Invoke-LabCommand -ComputerName $machines -ScriptBlock {
+        (New-Item -ItemType Directory -Path $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder) -ErrorAction SilentlyContinue -Force).FullName
+    } -Variable (Get-Variable -Scope Global -Name AL_DeployDebugFolder) -PassThru | Select-Object -First 1
 
     #The default SQL installation in Azure does not give the standard buildin administrators group access.
     #This section adds the rights. As only the renamed Builtin Admin account has permissions, Invoke-LabCommand cannot be used.
@@ -127,13 +124,13 @@ GO
             Write-ScreenInfo -Message 'done'
 
             Write-ScreenInfo -Message "Starting installation of pre-requisite C++ 2015 redist on machine '$($machinesBatch -join ', ')'" -NoNewLine
-            Install-LabSoftwarePackage -Path $cppredist32_2015.FullName -CommandLine ' /quiet /norestart /log C:\DeployDebug\cpp32_2015.log' -ComputerName $machinesBatch -ExpectedReturnCodes 0,3010 -AsScheduledJob -NoDisplay
-            Install-LabSoftwarePackage -Path $cppRedist64_2015.FullName -CommandLine ' /quiet /norestart /log C:\DeployDebug\cpp64_2015.log' -ComputerName $machinesBatch -ExpectedReturnCodes 0,3010 -AsScheduledJob -NoDisplay
+            Install-LabSoftwarePackage -Path $cppredist32_2015.FullName -CommandLine " /quiet /norestart /log `"$deployDebugPath\cpp32_2015.log`"" -ComputerName $machinesBatch -ExpectedReturnCodes 0,3010 -AsScheduledJob -NoDisplay
+            Install-LabSoftwarePackage -Path $cppRedist64_2015.FullName -CommandLine " /quiet /norestart /log `"$deployDebugPath\cpp64_2015.log`"" -ComputerName $machinesBatch -ExpectedReturnCodes 0,3010 -AsScheduledJob -NoDisplay
             Write-ScreenInfo -Message 'done'
 
             Write-ScreenInfo -Message "Starting installation of pre-requisite C++ 2017 redist on machine '$($machinesBatch -join ', ')'" -NoNewLine
-            Install-LabSoftwarePackage -Path $cppredist32_2017.FullName -CommandLine ' /quiet /norestart /log C:\DeployDebug\cpp32_2017.log' -ComputerName $machinesBatch -ExpectedReturnCodes 0,3010 -AsScheduledJob -NoDisplay
-            Install-LabSoftwarePackage -Path $cppRedist64_2017.FullName -CommandLine ' /quiet /norestart /log C:\DeployDebug\cpp64_2017.log' -ComputerName $machinesBatch -ExpectedReturnCodes 0,3010 -AsScheduledJob -NoDisplay
+            Install-LabSoftwarePackage -Path $cppredist32_2017.FullName -CommandLine " /quiet /norestart /log `"$deployDebugPath\cpp32_2017.log`"" -ComputerName $machinesBatch -ExpectedReturnCodes 0,3010 -AsScheduledJob -NoDisplay
+            Install-LabSoftwarePackage -Path $cppRedist64_2017.FullName -CommandLine " /quiet /norestart /log `"$deployDebugPath\cpp64_2017.log`"" -ComputerName $machinesBatch -ExpectedReturnCodes 0,3010 -AsScheduledJob -NoDisplay
             Write-ScreenInfo -Message 'done'
 
             Write-ScreenInfo -Message "Restarting '$($machinesBatch -join ', ')'" -NoNewLine
@@ -245,7 +242,7 @@ GO
                 Invoke-Ternary -Decider { $role.Properties.ContainsKey('AgtSvcPassword') } `
                 { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AgtSvcPassword=" + """$($role.Properties.AgtSvcPassword)""") } `
                 { }
-                if($role.Name -notin 'SQLServer2022')
+                if($role.Name -notin 'SQLServer2022','SQLServer2025')
                 {
                     Invoke-Ternary -Decider { $role.Properties.ContainsKey('RsSvcAccount') } `
                     { $global:setupArguments += Write-ArgumentVerbose -Argument (" /RsSvcAccount=" + """$($role.Properties.RsSvcAccount)""") } `
@@ -422,7 +419,7 @@ GO
     {
         Write-ScreenInfo -Message "Installing SSRS on'$($servers.Name -join ',')'"
         Write-ScreenInfo -Message "Installing .net Framework 4.8 on '$($servers.Name -join ',')'"
-        Install-LabSoftwarePackage -Path $dotnet48InstallFile.FullName -CommandLine '/q /norestart /log c:\DeployDebug\dotnet48.txt' -ComputerName $servers -UseShellExecute
+        Install-LabSoftwarePackage -Path $dotnet48InstallFile.FullName -CommandLine "/q /norestart /log `"$deployDebugPath\dotnet48.txt`"" -ComputerName $servers -UseShellExecute
         Restart-LabVM -ComputerName $servers -Wait
     }
 
