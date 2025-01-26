@@ -7,8 +7,11 @@
         $Password
     )
 
-    $pw = [System.Text.Encoding]::UTF8.GetBytes($Password)
-    $sha = [System.Security.Cryptography.SHA512Managed]::new()
-    $hsh = $sha.ComputeHash($pw)
-    $Script:un.identity.password = [Convert]::ToBase64String($hsh)
+    $Script:un['autoinstall']['user-data']['password'] = $Password
+
+    foreach ($user in $script:un['autoinstall']['user-data']['users'])
+    {
+        if ($user -eq 'default') { continue }
+        $user['plain_text_passwd'] = $Password
+    }
 }

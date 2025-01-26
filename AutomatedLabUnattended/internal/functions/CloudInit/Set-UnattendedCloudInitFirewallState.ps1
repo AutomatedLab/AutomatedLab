@@ -6,6 +6,6 @@
 		[boolean]$State
 	)
 
-    $script:un['late-commands'] += 'ufw enable'
-    $script:un['late-commands'] += 'ufw allow 22'
+    $script:un['autoinstall']['late-commands'] += 'curtin in-target --target=/target -- ufw enable'
+    $script:un['autoinstall']['late-commands'] += 'curtin in-target --target=/target -- ufw allow 22'
 }

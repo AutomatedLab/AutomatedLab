@@ -7,5 +7,17 @@
         $Name
     )
 
-    $Script:un.identity.username = $Name
+    $usr = @{
+        name        = $Name
+        shell       = '/bin/bash'
+        lock_passwd = $false
+        sudo        = 'ALL=(ALL) NOPASSWD:ALL'
+    }
+
+    if (-not $script:un['autoinstall']['user-data'].ContainsKey('users')) { $script:un['autoinstall']['user-data']['users'] = @() }
+
+    if ($script:un['autoinstall']['user-data']['users']['name'] -notcontains $Name)
+    {
+        $script:un['autoinstall']['user-data']['users'] += $usr
+    }
 }

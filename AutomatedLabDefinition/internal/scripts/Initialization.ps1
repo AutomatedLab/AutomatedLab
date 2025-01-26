@@ -603,50 +603,117 @@ $autoyastContent = @"
 "@
 
 $cloudInitContent = @'
-version: v1
-network:
+autoinstall:
+  version: 1
   network:
     version: 2
-storage:
-  layout:
-    name: lvm
-apt:
-  primary:
-    - arches: [amd64]
-      uri: http://us.archive.ubuntu.com/ubuntu
-  security:
-    - arches: [amd64]
-      uri: http://us.archive.ubuntu.com/ubuntu
-  sources_list: |
-    deb [arch=amd64] $PRIMARY $RELEASE main universe restricted multiverse
-    deb [arch=amd64] $PRIMARY $RELEASE-updates main universe restricted multiverse
-    deb [arch=amd64] $SECURITY $RELEASE-security main universe restricted multiverse
-    deb [arch=amd64] $PRIMARY $RELEASE-backports main universe restricted multiverse
-  sources:
-    microsoft-powershell.list:
-      source: 'deb [arch=amd64,armhf,arm64 signed-by=BC528686B50D79E339D3721CEB3E94ADBE1229CF] https://packages.microsoft.com/ubuntu/REPLACERELEASE/prod $RELEASE main'
-      keyid: BC528686B50D79E339D3721CEB3E94ADBE1229CF # https://packages.microsoft.com/keys/microsoft.asc
-packages:
-  - oddjob
-  - oddjob-mkhomedir
-  - sssd
-  - adcli
-  - krb5-workstation
-  - realmd
-  - samba-common
-  - samba-common-tools
-  - authselect-compat
-  - sshd
-  - powershell
-identity:
-  username: {}
-  hostname: {}
-  password: {}
-late-commands:
-  - 'echo "Subsystem powershell /usr/bin/pwsh -sshs -NoLogo" >> /etc/ssh/sshd_config'
+  shutdown: poweroff
+  storage:
+    config:
+      - type: disk
+        match: {}
+        id: os-drive
+        ptable: gpt
+        wipe: superblock-recursive
+        preserve: false
+        grub_device: false
+      - type: partition
+        number: 1
+        id: efi-partition
+        device: os-drive
+        size: 256M
+        flag: boot
+        grub_device: true
+      - type: format
+        id: efi-format
+        volume: efi-partition
+        fstype: fat32
+        label: ESP
+      - path: /boot/efi
+        device: efi-format
+        type: mount
+        id: mount-efi
+      - type: partition
+        number: 2
+        id: boot-partition
+        device: os-drive
+        size: 1G
+      - type: format
+        id: boot-format
+        volume: boot-partition
+        fstype: ext4
+        label: BOOT
+      - path: /boot
+        device: boot-format
+        type: mount
+        id: mount-boot
+      - type: partition
+        number: 3
+        id: root-partition
+        device: os-drive
+        size: -1
+        grub_device: false
+      - type: format
+        id: root-format
+        volume: root-partition
+        fstype: ext4
+        label: ROOT
+      - path: /
+        device: root-format
+        type: mount
+        id: mount-root
+    swap:
+      swap: 0
+    version: 1
+  ssh:
+    install-server: true
+    allow-pw: true
+  apt:
+    fallback: offline-install
+    geoip: true
+    mirror-selection:
+      primary:
+        - country-mirror
+        - uri: http://archive.ubuntu.com/ubuntu
+  packages:
+    - oddjob
+    - oddjob-mkhomedir
+    - sssd
+    - adcli
+    - realmd
+    - samba-common
+    - ssh
+    - wget
+    - apt-transport-https
+    - software-properties-common
+    - sssd-tools
+    - libnss-sss
+    - libpam-sss
+    - policycoreutils
+  user-data:
+    ssh_pwauth: true
+    hostname: {}
+    password: {}
+    users:
+      - default
+    chpasswd:
+      expire: false
+    write_files:
+      - path: /etc/environment
+        content: |
+          DEBIAN_FRONTEND="noninteractive"
+        append: true
+      - path: /etc/ssh/sshd_config
+        content: |
+          Subsystem powershell /usr/bin/pwsh -sshs -NoLogo
+        append: true
+  late-commands:
+    - curtin in-target --target=/target -- wget -q "https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb"
+    - curtin in-target --target=/target -- dpkg -i packages-microsoft-prod.deb
+    - curtin in-target --target=/target -- apt update
+    - curtin in-target --target=/target -- apt install -y powershell || true
+    - curtin in-target --target=/target -- apt -yq install krb5-user
 '@
-
-Import-Module AutomatedLabCore
 
 try
 {

@@ -7,5 +7,5 @@
         $ComputerName
     )
 
-    $Script:un.identity.hostname = $ComputerName
+    $Script:un['autoinstall']['user-data']['hostname'] = $ComputerName.ToLower()
 }

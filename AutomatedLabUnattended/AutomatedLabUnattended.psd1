@@ -24,6 +24,7 @@
     FunctionsToExport      = @(
         'Add-UnattendedNetworkAdapter',
         'Add-UnattendedRenameNetworkAdapters',
+        'Add-UnattendedSshPublicKey',
         'Add-UnattendedSynchronousCommand',
         'Export-UnattendedFile',
         'Get-UnattendedContent',
@@ -42,7 +43,8 @@
         'Set-UnattendedProductKey',
         'Set-UnattendedTimeZone',
         'Set-UnattendedUserLocale',
-        'Set-UnattendedWorkgroup'
+        'Set-UnattendedWorkgroup',
+        'Write-UnattendedFile'
     )
 
     PrivateData            = @{
