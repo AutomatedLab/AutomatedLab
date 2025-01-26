@@ -1,10 +1,18 @@
-﻿param (
+param (
 	[Parameter(Mandatory)]
 	[string]
 	$DomainAndComputerName,
 
+	[Parameter(Mandatory)]
+	[ValidateSet('Mandatory', 'Optional', 'Strict')]
+    	[string]
+	$Encrypt,
+
+    	[string]
+	$ServerInstance,
+
 	[bool]
-	$UseNwFeature = $false
+	$UseNewFeature = $false
 )
 
 [string]$createDbQuery = @'
@@ -927,12 +935,12 @@ if (-not (Test-Path -Path C:\DSCDB))
 	New-Item -ItemType Directory -Path C:\DSCDB | Out-Null
 }
 
-$dbCreated = Invoke-Sqlcmd -Query "SELECT name FROM master.sys.databases WHERE name='DSC'" -ServerInstance localhost
+$dbCreated = Invoke-Sqlcmd -Query "SELECT name FROM master.sys.databases WHERE name='DSC'" -ServerInstance $ServerInstance -Encrypt $Encrypt
 if (-not $dbCreated)
 {
 	Write-Verbose "Creating the DSC database on the local default SQL instance..."
 
-	Invoke-Sqlcmd -Query $createDbQuery -ServerInstance localhost
+	Invoke-Sqlcmd -Query $createDbQuery -ServerInstance $ServerInstance -Encrypt $Encrypt
 
 	Write-Verbose 'finished.'
 	Write-Verbose 'Database is stored on C:\DSCDB'
@@ -963,6 +971,6 @@ catch
 
 $query = $addPermissionsQuery -f $domain, $name
 
-Invoke-Sqlcmd -Query $query -ServerInstance localhost
+Invoke-Sqlcmd -Query $query -ServerInstance $ServerInstance -Encrypt $Encrypt
 
 Write-Verbose 'finished'

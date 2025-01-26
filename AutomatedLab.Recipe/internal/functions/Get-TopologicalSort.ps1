@@ -12,7 +12,7 @@ function Get-TopologicalSort
     Add-Type -AssemblyName System.Core
   
     # Clone it so as to not alter original
-    $currentEdgeList = [hashtable] (Get-ClonedObject $edgeList)
+    $currentEdgeList = [hashtable] ($edgeList | ConvertTo-PSFClixml -Depth 6 | ConvertFrom-PSFClixml)
   
     # algorithm from http://en.wikipedia.org/wiki/Topological_sorting#Algorithms
     $topologicallySortedElements = New-Object System.Collections.ArrayList

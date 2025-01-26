@@ -113,12 +113,12 @@
             throw "Unknown structure of $rhelPath. Cannot add ISO"
         }
 
-        $generalInfo = $Matches.0 -replace ';.*' -split "`n" | ConvertFrom-String -Delimiter '=' -PropertyNames Name, Value
-        $version = ([string]$generalInfo.Where({ $_.Name.Trim() -eq 'version' }).Value).Trim()
-        $name = ([string]$generalInfo.Where({ $_.Name.Trim() -eq 'name' }).Value).Trim()
-        $variant = ([string]$generalInfo.Where({ $_.Name.Trim() -eq 'variant' }).Value).Trim()
-        $versionInfo = if (-not $version) { [Version]::new(1, 0, 0, 0) } elseif ($version.Contains('.')) { $version -as [Version] } else { [Version]::new($Version, 0) }
-        $arch = if (([string]$generalInfo.Where({ $_.Name.Trim() -eq 'arch' }).Value).Trim() -eq 'x86_64') { 'x64' } else { 'x86' }
+        $generalInfo = $Matches.0 -replace ';.*' -split "`n" | ConvertFrom-StringData
+        $version = $generalInfo.version
+        $name = $generalInfo.name
+        $variant = $generalInfo.variant
+        $versionInfo = if (-not $version) { [Version]::new(1, 0, 0, 0) } elseif ($version.Contains('.')) { $version -as [Version] } else { [Version]::new($version, 0) }
+        $arch = if ($generalInfo.arch -eq 'x86_64') { 'x64' } else { 'x86' }
 
         if ($variant -and $versionInfo -ge '8.0')
         {

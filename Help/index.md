@@ -1,6 +1,6 @@
 # AutomatedLab
 
-![Image](AutomatedLab-GIF250-whitebg-lossy25.gif)
+![Image](Automated-Lab_icon256.png)
 
 AutomatedLab (AL) enables you to
 
@@ -59,45 +59,48 @@ Apart from the module itself, your system needs to meet the following requiremen
 
 ### Windows
 
-- Windows Management Framework 5+
-- NET 4.7.1 (Windows PowerShell)
+- Windows Management Framework 5+ or ideally PowerShell 7
 - Windows Server 2012 R2+/Windows 8.1+
-- Admin privileges are required.
+- Recommended OS language is en-us
+- Admin privileges are required
 
-### Linux
+### Linux, macOS
 
-- Ubuntu, Ubuntu WSL & Azure Cloud Shell supported
-- Tested on Ubuntu. Due to fragmented nature of Linux distributions, we cannot support anything else.
+- Fedora, Ubuntu, Ubuntu WSL & Azure Cloud Shell supported
+- macOS supported on best effort due to lack of Apple devices - feel free to sponsor two though :D
+- Tested on Ubuntu and Fedora. Due to fragmented nature of Linux distributions, we cannot support much else.
 - PowerShell Core 6+
-- gss-ntlmssp to enable remoting (*mandatory - no remoting, no way for AutomatedLab to do its thing*)
+- SSH or gss-ntlmssp to enable remoting (*mandatory - no remoting, no way for AutomatedLab to do its thing*)
   - If in doubt, try to `Install-Module PSWSMAN; Install-WSMAN` - no success warranted
 - IP and route commands available
 - **Azure subscription**
-  - At the moment, AutomatedLab only works using Azure.
-  - KVM planned for a later date.
+  - At the moment, AutomatedLab only works using Azure when using Linux.
+  - KVM planned for a later date by virtue of libvirt.
 
 ## Supported products
 
 This solution supports setting up virtual machines with the following.
 
 1. Windows 7, 2008 R2, 8 / 8.1 and 2012 / 2012 R2, 10 / 2016, 2019, 2022
-1. SQL Server 2008, 2008R2, 2012, 2014, 2016, 2017, 2019 [*more*](https://www.microsoft.com/en-us/sql-server)
-1. Visual Studio 2012, 2013, 2015, 2017 [*more*](https://visualstudio.microsoft.com)
-1. Team Foundation Services 2015+
-1. Azure DevOps [*more*](https://azure.microsoft.com/en-us/services/devops/server/)
-1. Exchange 2013, 2016, 2019
-1. SharePoint 2013, 2016, 2019
-1. System Center Orchestrator 2012
-1. System Center Configuration Manager 1809 or 1902+
-1. System Center Operations Manager
-1. System Center Virtual Machine Manager
-1. Microsoft Deployment Toolkit (MDT) [*more*](https://www.microsoft.com/en-us/download/details.aspx?id=54259)
-1. ProGet (Private PowerShell Gallery)
-1. Office 2013, 2016
-1. DSC Pull Server (with SQL Reporting) [*more*](https://docs.microsoft.com/en-us/powershell/scripting/dsc/pull-server/pullserver/)
-1. Hyper-V [*more*](https://docs.microsoft.com/en-us/virtualization/)
-1. Failover Clustering [*more*](https://docs.microsoft.com/en-us/windows-server/failover-clustering/failover-clustering-overview/)
-1. Dynamics 365 [*more*](https://docs.microsoft.com/en-us/dynamics365/customerengagement/on-premises/deploy/deploy-and-operate-dynamics-365-on-premises)
+2. SQL Server 2012, 2014, 2016, 2017, 2019, 2022 [*more*](https://www.microsoft.com/en-us/sql-server)
+3. Visual Studio 2012, 2013, 2015, 2017 [*more*](https://visualstudio.microsoft.com)
+4. Team Foundation Services 2015+
+5. Azure DevOps [*more*](https://azure.microsoft.com/en-us/services/devops/server/)
+6. Exchange 2013, 2016, 2019
+7. SharePoint 2013, 2016, 2019
+8. System Center Orchestrator 2012
+9. System Center Configuration Manager 1809 or 1902+
+10. System Center Operations Manager
+11. System Center Virtual Machine Manager
+12. Microsoft Deployment Toolkit (MDT) [*more*](https://www.microsoft.com/en-us/download/details.aspx?id=54259)
+13. ProGet (Private PowerShell Gallery)
+14. Office 2013, 2016
+15. DSC Pull Server (with SQL Reporting) [*more*](https://docs.microsoft.com/en-us/powershell/scripting/dsc/pull-server/pullserver/)
+16. Hyper-V [*more*](https://docs.microsoft.com/en-us/virtualization/)
+17. Failover Clustering [*more*](https://docs.microsoft.com/en-us/windows-server/failover-clustering/failover-clustering-overview/)
+18. Dynamics 365 [*more*](https://docs.microsoft.com/en-us/dynamics365/customerengagement/on-premises/deploy/deploy-and-operate-dynamics-365-on-premises)
+19. Remote Desktop Services including HTML5 web client
+20. Windows Admin Center
 
 ## Feature List
 

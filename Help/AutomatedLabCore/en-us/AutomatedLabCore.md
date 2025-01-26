@@ -15,7 +15,7 @@ AutomatedLab (AL) enables you to setup test and lab environments on Hyper-v or A
 This solution supports setting up virtual machines with the following products
 
 - Windows 7, 2008 R2, 8 / 8.1 and 2012 / 2012 R2, 10 / 2016, 2019
-- SQL Server 2008, 2008R2, 2012, 2014, 2016, 2017
+- SQL Server 2012, 2014, 2016, 2017, 2019, 2022
 - Visual Studio 2012, 2013, 2015
 - Team Foundation Services 2018, Azure DevOps
 - Exchange 2013, Exchange 2016

@@ -254,12 +254,9 @@ namespace AutomatedLab
 
         static OperatingSystem()
         {
-            string path = (string)PowerShellHelper.InvokeCommand("Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot").FirstOrDefault().BaseObject;
+            string productKeysXmlFilePath = (string)PowerShellHelper.InvokeCommand("Get-PSFConfigValue -FullName AutomatedLab.ProductKeyFilePath").FirstOrDefault().BaseObject;
+            string productKeysCustomXmlFilePath = (string)PowerShellHelper.InvokeCommand("Get-PSFConfigValue -FullName AutomatedLab.ProductKeyFilePathCustom").FirstOrDefault().BaseObject;
 
-            string productKeysXmlFilePath = $@"{path}/Assets/ProductKeys.xml";
-            string productKeysCusomXmlFilePath = string.Format(@"{0}/{1}",
-                    path,
-                    @"Assets/ProductKeysCustom.xml");
             try
             {
                 productKeys = ListXmlStore<ProductKey>.Import(productKeysXmlFilePath);
@@ -271,7 +268,7 @@ namespace AutomatedLab
 
             try
             {
-                productKeysCustom = ListXmlStore<ProductKey>.Import(productKeysCusomXmlFilePath);
+                productKeysCustom = ListXmlStore<ProductKey>.Import(productKeysCustomXmlFilePath);
             }
             catch (Exception)
             {
@@ -355,7 +352,7 @@ namespace AutomatedLab
         {
             get
             {
-                if (System.Text.RegularExpressions.Regex.IsMatch(OperatingSystemName, "CentOS|Red Hat|Fedora")) return LinuxType.RedHat;
+                if (System.Text.RegularExpressions.Regex.IsMatch(OperatingSystemName, "CentOS|Red Hat|Fedora|Oracle")) return LinuxType.RedHat;
                 if (System.Text.RegularExpressions.Regex.IsMatch(OperatingSystemName, "Suse")) return LinuxType.SuSE;
                 if (System.Text.RegularExpressions.Regex.IsMatch(OperatingSystemName, "Ubuntu|Kali")) return LinuxType.Ubuntu;
 
@@ -435,7 +432,7 @@ namespace AutomatedLab
         {
             get
             {
-                var exp = @"(?:Windows Server )?(\d{4})(( )?R2)?|(?:Windows )?((\d){1,2}(\.\d)?)|(?:(CentOS |Fedora |Red Hat Enterprise Linux |openSUSE Leap |SUSE Linux Enterprise Server ))?(\d+\.?\d?)((?: )?SP\d)?";
+                var exp = @"(?:Windows Server )?(\d{4})(( )?R2)?|(?:Windows )?((\d){1,2}(\.\d)?)|(?:(CentOS |Fedora |Red Hat Enterprise Linux |Oracle Linux |openSUSE Leap |SUSE Linux Enterprise Server ))?(\d+\.?\d?)((?: )?SP\d)?";
 
                 var match = System.Text.RegularExpressions.Regex.Match(operatingSystemName, exp, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
 

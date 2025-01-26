@@ -11,6 +11,13 @@
 
     $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
     $lab = Get-Lab
+    $azvms = Get-LWAzureVm -ComputerName $Machine | Where-Object {-not $_.Tags['InitDone']}
+
+    if ($azvms.Count -eq 0) {
+        Write-ScreenInfo -Message "Azure VMs already initialized" -Type Verbose
+        Write-LogFunctionExit
+        return
+    }
 
     $initScript = {
         param(
@@ -509,6 +516,12 @@ sudo systemctl restart sshd
     }
 
     Send-ModuleToPSSession -Module (Get-Module -ListAvailable -Name AutomatedLab.Common | Select-Object -First 1) -Session $sessions -IncludeDependencies -Force
+
+    $null = $azvms | ForEach-Object {
+        $_.Tags['InitDone'] = Get-Date -Format u
+        $_ | Update-AzVM
+    }
+
     Write-ScreenInfo -Message 'Finished' -TaskEnd
 
     Write-ScreenInfo -Message 'Stopping all new machines except domain controllers'

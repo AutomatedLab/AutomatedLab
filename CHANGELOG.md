@@ -2,9 +2,35 @@
 
 ## Unreleased (yyyy-MM-dd)
 
-### Enhancements
+## 5.59.0 (2025-08-18)
+
+### Removed
+
+- Removed support for SQL Server 2008 and 2008 R2.
 
 ### Bugs
+
+- Fixed a typo in DSC SQL DB setup script.
+- Fixed a .net type issue (#1754).
+
+### Enhancements
+
+- Support Oracle Linux 7 and 8. Oracle Linux 9 does not yet work (#1722).
+- The `Az.Compute` cmdlet `Get-AzVMSize` got replaced by `Get-AzComputeResourceSku`. Making the necessary changes.
+- Update Az module versions for public Azure.
+- Update `Get-LabMachineRoleDefinition` to have a `List` parameter (#1733).
+- Skip init of initialized VMs.
+- Grab OSX/macOS (???) CPU info using sysctl.
+- Make lab paths user-writeable by default, remove unused code to retrieve ProductKeys which are packaged with module (#1741).
+- Add URI tests to all configuration items beginning with http (#1746)
+- Added Parameter `Encrypt` and $ServerInstance used in/for the `Invoke-Sqlcmd` cmdlet.
+- Updated DSC Pull Server setup scripts.
+- Added `Credential` parameter to `Copy-LabFileItem`.
+
+### Bugs
+
+- Fix issue with BinarySerializer in Lab Snippets (Get-TopologicalSort #1732).
+- Update ADK download links, thank you @TKiller609 (#1740).
 
 ## 5.58.0 (2025-06-23)
 
@@ -14,7 +40,7 @@
 
 ### Bugs
 
-- Fix issue with Get-AzStorageAccount returning nullable booleans as NULL now
+- Fix issue with Get-AzStorageAccount returning nullable booleans as NULL now.
 
 ## 5.57.0 (2025-06-09)
 
@@ -31,6 +57,7 @@
 - Fixed issue in which Linux lab sources sync never worked... (#1705).
 - Fixed issue with Linux where ConvertFrom-String does not exist.
 - Fixed issue with Join-Path and non-existing source paths (#1709).
+- Fix issue with Get-AzStorageAccount returning nullable booleans as NULL now
 - Fixed issue with Linux and Test-LabHostConnected sometimes not able to reliably ping
 - Removed WindowsAdminCenter custom role
 - Fixed WindowsAdminCenter built-in role to work with current InnoSetup-based installer (#1686)

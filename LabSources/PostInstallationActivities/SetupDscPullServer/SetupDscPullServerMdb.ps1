@@ -1,30 +1,38 @@
 ﻿param
 (
-    [string]$ComputerName,
+    [Parameter()]
+    [string]$ComputerName = 'localhost',
 
+    [Parameter()]
     [string]$CertificateThumbPrint,
 
-    [Parameter(Mandatory)]
+    [Parameter(Mandatory = $true)]
+    [ValidateNotNullOrEmpty()]
     [string]$RegistrationKey
 )
 
 Import-Module -Name xPSDesiredStateConfiguration, PSDesiredStateConfiguration
 
-Configuration SetupDscPullServer
+configuration SetupDscPullServer
 {
     param
     (
-        [string[]]$NodeName = 'localhost',
+        [Parameter(Mandatory = $true)]
+        [string]$NodeName,
 
-        [ValidateNotNullOrEmpty()]
+        [Parameter()]
         [string]$CertificateThumbPrint = 'AllowUnencryptedTraffic',
 
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [string]$RegistrationKey
     )
 
-    LocalConfigurationManager
+    Import-DSCResource -ModuleName xPSDesiredStateConfiguration, PSDesiredStateConfiguration
+
+    node $NodeName
+    {
+            LocalConfigurationManager
     {
         RebootNodeIfNeeded = $false
         ConfigurationModeFrequencyMins = 15
@@ -32,75 +40,55 @@ Configuration SetupDscPullServer
         RefreshMode = 'PUSH'
     }
 
-    Import-DSCResource -ModuleName xPSDesiredStateConfiguration, PSDesiredStateConfiguration, xWebAdministration
-
-    Node $NodeName
-    {
         WindowsFeature DSCServiceFeature
         {
             Ensure = 'Present'
             Name   = 'DSC-Service'
         }
 
+        WindowsFeature WebMgmtConsole
+        {
+            Ensure = 'Present'
+            Name   = 'Web-Mgmt-Console'
+        }  
+
+        $sqlConnectionString = 'Provider=Microsoft.ACE.OLEDB.12.0;Data Source=C:\Program Files\WindowsPowerShell\DscService\Devices.mdb;'
+
         xDscWebService PSDSCPullServer
         {
-            Ensure                  = 'Present'
-            EndpointName            = 'PSDSCPullServer'
-            Port                    = 8080
-            PhysicalPath            = "$env:SystemDrive\inetpub\PSDSCPullServer"
-            CertificateThumbPrint   = $certificateThumbPrint
-            ModulePath              = "$env:PROGRAMFILES\WindowsPowerShell\DscService\Modules"
-            ConfigurationPath       = "$env:PROGRAMFILES\WindowsPowerShell\DscService\Configuration"
-            State                   = 'Started'
-            UseSecurityBestPractices = $false
-            DependsOn               = '[WindowsFeature]DSCServiceFeature'
+            Ensure                       = 'Present'
+            EndpointName                 = 'PSDSCPullServer'
+            Port                         = 8080
+            PhysicalPath                 = "$env:SystemDrive\inetpub\PSDSCPullServer"
+            CertificateThumbPrint        = $certificateThumbPrint
+            ModulePath                   = "$env:PROGRAMFILES\WindowsPowerShell\DscService\Modules"
+            ConfigurationPath            = "$env:PROGRAMFILES\WindowsPowerShell\DscService\Configuration"
+            State                        = 'Started'
+            UseSecurityBestPractices     = $false
+            AcceptSelfSignedCertificates = $true
+            SqlProvider                  = $true
+            SqlConnectionString          = $sqlConnectionString
+            DependsOn                    = '[WindowsFeature]DSCServiceFeature'
         }
 
-        File RegistrationKeyFile
-        {
+        file RegistrationKeyFile {
             Ensure          = 'Present'
             Type            = 'File'
             DestinationPath = "$env:ProgramFiles\WindowsPowerShell\DscService\RegistrationKeys.txt"
             Contents        = $RegistrationKey
         }
-
-        xWebConfigKeyValue CorrectDBProvider
-        {
-            ConfigSection = 'AppSettings'
-            Key = 'dbprovider'
-            Value = 'System.Data.OleDb'
-            WebsitePath = 'IIS:\sites\PSDSCPullServer'
-            DependsOn = '[xDSCWebService]PSDSCPullServer'
-        }
-
-        xWebConfigKeyValue CorrectDBConnectionStr
-        {
-            ConfigSection = 'AppSettings'
-            Key = 'dbconnectionstr'
-            Value = if ([System.Environment]::OSVersion.Version -gt '6.3.0.0') #greater then Windows Server 2012 R2
-            {
-                'Provider=Microsoft.Jet.OLEDB.4.0;Data Source=C:\Program Files\WindowsPowerShell\DscService\Devices.mdb;' #does no longer work with Server 2016+
-            }
-            else
-            {
-                'Provider=Microsoft.ACE.OLEDB.12.0;Data Source=C:\Program Files\WindowsPowerShell\DscService\Devices.mdb;'
-            }
-            WebsitePath = 'IIS:\sites\PSDSCPullServer'
-            DependsOn = '[xDSCWebService]PSDSCPullServer'
-        }
     }
 }
 
 $params = @{
-	RegistrationKey = $RegistrationKey
-	NodeName = $ComputerName
-	OutputPath = 'C:\Dsc'
+    RegistrationKey = $RegistrationKey
+    NodeName        = $ComputerName
+    OutputPath      = 'C:\Dsc'
 }
-if ($CertificateThumbPrint)
-{
-	$params.CertificateThumbPrint = $CertificateThumbPrint
+if ($CertificateThumbPrint) {
+    $params.CertificateThumbPrint = $CertificateThumbPrint
 }
 
 SetupDscPullServer @params | Out-Null
 
-Start-DscConfiguration -Path C:\Dsc -Wait
+Start-DscConfiguration -Path C:\Dsc -Wait -Force -Verbose

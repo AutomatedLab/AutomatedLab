@@ -1,5 +1,4 @@
-if ($PSEdition -eq 'Core')
-{
+if ($PSEdition -eq 'Core') {
     Add-Type -Path $PSScriptRoot/lib/core/AutomatedLab.dll
 
     # These modules SHOULD be marked as Core compatible, as tested with Windows 10.0.18362.113
@@ -8,56 +7,44 @@ if ($PSEdition -eq 'Core')
     $requiredModulesImplicit = @('International') # These modules should be imported via implicit remoting. Might suffer from implicit sessions getting removed though
 
     $ipmoErr = $null # Initialize, otherwise Import-MOdule -Force will extend this variable indefinitely
-    if ($requiredModulesImplicit)
-    {
-        try
-        {
-            if ((Get-Command Import-Module).Parameters.ContainsKey('UseWindowsPowerShell'))
-            {
+    if ($requiredModulesImplicit -and $IsWindows) {
+        try {
+            if ((Get-Command Import-Module).Parameters.ContainsKey('UseWindowsPowerShell')) {
                 Import-Module -Name $requiredModulesImplicit -UseWindowsPowerShell -WarningAction SilentlyContinue -ErrorAction Stop -Force -ErrorVariable +ipmoErr
             }
-            else
-            {
+            else {
                 Import-WinModule -Name $requiredModulesImplicit -WarningAction SilentlyContinue -ErrorAction Stop -Force -ErrorVariable +ipmoErr
             }
         }
-        catch
-        {
+        catch {
             Remove-Module -Name $requiredModulesImplicit -Force -ErrorAction SilentlyContinue
             Clear-Variable -Name ipmoErr -ErrorAction SilentlyContinue
-            foreach ($m in $requiredModulesImplicit)
-            {
+            foreach ($m in $requiredModulesImplicit) {
                 Get-ChildItem -Directory -Path ([IO.Path]::GetTempPath()) -Filter "RemoteIpMoProxy_$($m)*_localhost_*" | Remove-Item -Recurse -Force
             }
 
-            if ((Get-Command Import-Module).Parameters.ContainsKey('UseWindowsPowerShell'))
-            {
+            if ((Get-Command Import-Module).Parameters.ContainsKey('UseWindowsPowerShell')) {
                 Import-Module -Name $requiredModulesImplicit -UseWindowsPowerShell -WarningAction SilentlyContinue -ErrorAction SilentlyContinue -Force -ErrorVariable +ipmoErr
             }
-            else
-            {
+            else {
                 Import-WinModule -Name $requiredModulesImplicit -WarningAction SilentlyContinue -ErrorAction SilentlyContinue -Force -ErrorVariable +ipmoErr
             }
         }
     }
 
-    if ($requiredModules)
-    {
+    if ($requiredModules -and $IsWindows) {
         Import-Module -Name $requiredModules -SkipEditionCheck -WarningAction SilentlyContinue -ErrorAction SilentlyContinue -Force -ErrorVariable +ipmoErr
     }
 
-    if ($ipmoErr)
-    {
+    if ($ipmoErr) {
         Write-PSFMessage -Level Warning -Message "Could not import modules: $($ipmoErr.TargetObject -join ',') - your experience might be impacted."
     }
 }
-else
-{
+else {
     Add-Type -Path $PSScriptRoot/lib/full/AutomatedLab.dll
 }
 
-if ((Get-Module -ListAvailable Ships) -and (Get-Module -ListAvailable AutomatedLab.Ships))
-{
+if ((Get-Module -ListAvailable Ships) -and (Get-Module -ListAvailable AutomatedLab.Ships)) {
     Import-Module Ships, AutomatedLab.Ships
     [void] (New-PSDrive -PSProvider SHiPS -Name Labs -Root "AutomatedLab.Ships#LabHost" -WarningAction SilentlyContinue -ErrorAction SilentlyContinue)
 }
@@ -65,16 +52,20 @@ if ((Get-Module -ListAvailable Ships) -and (Get-Module -ListAvailable AutomatedL
 Set-Item -Path Env:\SuppressAzurePowerShellBreakingChangeWarnings -Value true
 
 #region Register default configuration if not present
-Set-PSFConfig -Module 'AutomatedLab' -Name LabAppDataRoot -Value (Join-Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath "AutomatedLab") -Initialize -Validation string -Description "Root folder to Labs, Assets and Stores"
+$labAppDataRoot = if (-not $IsLinux -and -not $IsMacOs) {
+    Join-Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath "AutomatedLab"
+}
+else {
+    Join-Path -Path $Home -ChildPath .automatedlab
+}
+Set-PSFConfig -Module 'AutomatedLab' -Name LabAppDataRoot -Value $labAppDataRoot -Initialize -Validation string -Description "Root folder to Labs, Assets and Stores"
 Set-PSFConfig -Module 'AutomatedLab' -Name 'DisableVersionCheck' -Value $false -Initialize -Validation bool -Description 'Set to true to skip checking GitHub for an updated AutomatedLab release'
 
-if (-not (Get-PSFConfigValue -FullName AutomatedLab.DisableVersionCheck))
-{
+if (-not (Get-PSFConfigValue -FullName AutomatedLab.DisableVersionCheck)) {
     $usedRelease = (Split-Path -Leaf -Path $PSScriptRoot) -as [version]
     $currentRelease = try { ((Invoke-RestMethod -Method Get -Uri https://api.github.com/repos/AutomatedLab/AutomatedLab/releases/latest -ErrorAction Stop).tag_Name -replace 'v') -as [Version] } catch {}
 
-    if ($currentRelease -and $usedRelease -lt $currentRelease)
-    {
+    if ($currentRelease -and $usedRelease -lt $currentRelease) {
         Write-PSFMessage -Level Host -Message "Your version of AutomatedLab is outdated. Consider updating to the recent version, $currentRelease"
     }
 }
@@ -113,12 +104,10 @@ Set-PSFConfig -Module 'AutomatedLab' -Name Timeout_VisualStudio2015Installation 
 Set-PSFConfig -Module 'AutomatedLab' -Name DefaultProgressIndicator -Value 10 -Initialize -Validation integer -Description 'After how many minutes will a progress indicator be written'
 Set-PSFConfig -Module 'AutomatedLab' -Name DisableConnectivityCheck -Value $false -Initialize -Validation bool -Description 'Indicates whether connectivity checks should be skipped. Certain systems like Azure DevOps build workers do not send ICMP packges and the method might always fail'
 Set-PSFConfig -Module 'AutomatedLab' -Name 'VmPath' -Value $null -Validation string -Initialize -Description 'VM storage location'
-$osroot = if ([System.Environment]::OSVersion.Platform -eq 'Win32NT')
-{
+$osroot = if ([System.Environment]::OSVersion.Platform -eq 'Win32NT') {
     'C:\'
 }
-else
-{
+else {
     '/'
 }
 Set-PSFConfig -Module 'AutomatedLab' -Name OsRoot -Value $osroot -Initialize -Validation string
@@ -187,31 +176,31 @@ Set-PSFConfig -Module 'AutomatedLab' -Name RequiredAzModules -Value @(
     # Syntax: Name, MinimumVersion, RequiredVersion
     @{
         Name           = 'Az.Accounts'
-        MinimumVersion = '4.0.0'
+        MinimumVersion = '5.1.0'
     }
     @{
         Name           = 'Az.Storage'
-        MinimumVersion = '8.0.0'
-    }
-    @{
-        Name           = 'Az.Compute'
         MinimumVersion = '9.0.0'
     }
     @{
+        Name           = 'Az.Compute'
+        MinimumVersion = '10.0.1'
+    }
+    @{
         Name           = 'Az.Network'
-        MinimumVersion = '7.11.0'
+        MinimumVersion = '7.17.0'
     }
     @{
         Name           = 'Az.Resources'
-        MinimumVersion = '7.7.0'
+        MinimumVersion = '8.0.0'
     }
     @{
         Name           = 'Az.Websites'
-        MinimumVersion = '3.2.2'
+        MinimumVersion = '3.4.1'
     }
     @{
         Name           = 'Az.Security'
-        MinimumVersion = '1.7.0'
+        MinimumVersion = '1.8.0'
     }
 ) -Initialize -Description 'Required Az modules'
 
@@ -244,7 +233,7 @@ Set-PSFConfig -Module 'AutomatedLab' -Name RequiredAzStackModules -Value @(
 Set-PSFConfig -Module 'AutomatedLab' -Name UseLatestAzureProviderApi -Value $true -Description 'Indicates that the latest provider API versions available in the labs region should be used' -Initialize -Validation bool
 
 #Office
-Set-PSFConfig -Module 'AutomatedLab' -Name OfficeDeploymentTool -Value 'https://download.microsoft.com/download/2/7/A/27AF1BE6-DD20-4CB4-B154-EBAB8A7D4A7E/officedeploymenttool_12827-20268.exe' -Initialize -Validation string -Description 'Link to Microsoft Office deployment tool'
+Set-PSFConfig -Module 'AutomatedLab' -Name OfficeDeploymentTool -Value 'https://download.microsoft.com/download/6c1eeb25-cf8b-41d9-8d0d-cc1dbc032140/officedeploymenttool_18827-20140.exe' -Initialize -Validation string -Description 'Link to Microsoft Office deployment tool'
 
 #SysInternals
 Set-PSFConfig -Module 'AutomatedLab' -Name SkipSysInternals -Value $false -Initialize -Validation bool -Description 'Set to true to skip downloading Sysinternals'
@@ -254,9 +243,9 @@ Set-PSFConfig -Module 'AutomatedLab' -Name SysInternalsDownloadUrl -Value 'https
 #.net Framework
 Set-PSFConfig -Module 'AutomatedLab' -Name dotnet452DownloadLink -Value 'https://download.microsoft.com/download/E/2/1/E21644B5-2DF2-47C2-91BD-63C560427900/NDP452-KB2901907-x86-x64-AllOS-ENU.exe' -Initialize -Validation string -Description 'Link to .NET 4.5.2'
 Set-PSFConfig -Module 'AutomatedLab' -Name dotnet46DownloadLink -Value 'http://download.microsoft.com/download/6/F/9/6F9673B1-87D1-46C4-BF04-95F24C3EB9DA/enu_netfx/NDP46-KB3045557-x86-x64-AllOS-ENU_exe/NDP46-KB3045557-x86-x64-AllOS-ENU.exe' -Initialize -Validation string -Description 'Link to .NET 4.6'
-Set-PSFConfig -Module 'AutomatedLab' -Name dotnet462DownloadLink -Value 'https://download.microsoft.com/download/F/9/4/F942F07D-F26F-4F30-B4E3-EBD54FABA377/NDP462-KB3151800-x86-x64-AllOS-ENU.exe' -Initialize -Validation string -Description 'Link to .NET 4.6.2'
-Set-PSFConfig -Module 'AutomatedLab' -Name dotnet471DownloadLink -Value 'https://download.microsoft.com/download/9/E/6/9E63300C-0941-4B45-A0EC-0008F96DD480/NDP471-KB4033342-x86-x64-AllOS-ENU.exe' -Initialize -Validation string -Description 'Link to .NET 4.7.1'
-Set-PSFConfig -Module 'AutomatedLab' -Name dotnet472DownloadLink -Value 'https://download.microsoft.com/download/6/E/4/6E48E8AB-DC00-419E-9704-06DD46E5F81D/NDP472-KB4054530-x86-x64-AllOS-ENU.exe' -Initialize -Validation string -Description 'Link to .NET 4.7.2'
+Set-PSFConfig -Module 'AutomatedLab' -Name dotnet462DownloadLink -Value 'https://download.microsoft.com/download/8/b/7/8b79adc2-162c-4cf4-a200-3aeaadc455bf/NDP462-KB3151800-x86-x64-AllOS-ENU.exe' -Initialize -Validation string -Description 'Link to .NET 4.6.2'
+Set-PSFConfig -Module 'AutomatedLab' -Name dotnet471DownloadLink -Value 'https://download.microsoft.com/download/8/b/7/8b79adc2-162c-4cf4-a200-3aeaadc455bf/NDP471-KB4033342-x86-x64-AllOS-ENU.exe' -Initialize -Validation string -Description 'Link to .NET 4.7.1'
+Set-PSFConfig -Module 'AutomatedLab' -Name dotnet472DownloadLink -Value 'https://download.microsoft.com/download/f/3/a/f3a6af84-da23-40a5-8d1c-49cc10c8e76f/NDP472-KB4054530-x86-x64-AllOS-ENU.exe' -Initialize -Validation string -Description 'Link to .NET 4.7.2'
 Set-PSFConfig -Module 'AutomatedLab' -Name dotnet48DownloadLink -Value 'https://download.visualstudio.microsoft.com/download/pr/7afca223-55d2-470a-8edc-6a1739ae3252/abd170b4b0ec15ad0222a809b761a036/ndp48-x86-x64-allos-enu.exe' -Initialize -Validation string -Description 'Link to .NET 4.8'
 
 # C++ redist
@@ -290,8 +279,8 @@ Set-PSFConfig -Module 'AutomatedLab' -Name Sql2019SSRS -Value https://download.m
 Set-PSFConfig -Module 'AutomatedLab' -Name Sql2022SSRS -Value https://download.microsoft.com/download/8/3/2/832616ff-af64-42b5-a0b1-5eb07f71dec9/SQLServerReportingServices.exe
 
 #SQL Server sample database contents
-Set-PSFConfig -Module 'AutomatedLab' -Name SQLServer2008 -Value 'http://download-codeplex.sec.s-msft.com/Download/Release?ProjectName=msftdbprodsamples&DownloadId=478218&FileTime=129906742909030000&Build=21063' -Initialize -Validation string -Description 'Link to SQL sample DB for SQL 2008'
-Set-PSFConfig -Module 'AutomatedLab' -Name SQLServer2008R2 -Value 'http://download-codeplex.sec.s-msft.com/Download/Release?ProjectName=msftdbprodsamples&DownloadId=478218&FileTime=129906742909030000&Build=21063' -Initialize -Validation string -Description 'Link to SQL sample DB for SQL 2008 R2'
+#Set-PSFConfig -Module 'AutomatedLab' -Name SQLServer2008 -Value 'http://download-codeplex.sec.s-msft.com/Download/Release?ProjectName=msftdbprodsamples&DownloadId=478218&FileTime=129906742909030000&Build=21063' -Initialize -Validation string -Description 'Link to SQL sample DB for SQL 2008'
+#Set-PSFConfig -Module 'AutomatedLab' -Name SQLServer2008R2 -Value 'http://download-codeplex.sec.s-msft.com/Download/Release?ProjectName=msftdbprodsamples&DownloadId=478218&FileTime=129906742909030000&Build=21063' -Initialize -Validation string -Description 'Link to SQL sample DB for SQL 2008 R2'
 Set-PSFConfig -Module 'AutomatedLab' -Name SQLServer2012 -Value 'https://github.com/Microsoft/sql-server-samples/releases/download/adventureworks/AdventureWorks2012.bak' -Initialize -Validation string -Description 'Link to SQL sample DB for SQL 2012'
 Set-PSFConfig -Module 'AutomatedLab' -Name SQLServer2014 -Value 'https://github.com/Microsoft/sql-server-samples/releases/download/adventureworks/AdventureWorks2014.bak' -Initialize -Validation string -Description 'Link to SQL sample DB for SQL 2014'
 Set-PSFConfig -Module 'AutomatedLab' -Name SQLServer2016 -Value 'https://github.com/Microsoft/sql-server-samples/releases/download/wide-world-importers-v1.0/WideWorldImporters-Full.bak' -Initialize -Validation string -Description 'Link to SQL sample DB for SQL 2016'
@@ -302,14 +291,14 @@ Set-PSFConfig -Module 'AutomatedLab' -Name SQLServer2022 -Value 'https://github.
 #Access Database Engine
 Set-PSFConfig -Module 'AutomatedLab' -Name AccessDatabaseEngine2016x86 -Value 'https://download.microsoft.com/download/3/5/C/35C84C36-661A-44E6-9324-8786B8DBE231/AccessDatabaseEngine.exe' -Initialize -Validation string -Description 'Link to Access Database Engine (required for DSC Pull)'
 #TFS Build Agent
-Set-PSFConfig -Module 'AutomatedLab' -Name BuildAgentUri -Value 'https://vstsagentpackage.azureedge.net/agent/2.153.1/vsts-agent-win-x64-2.153.1.zip' -Initialize -Validation string -Description 'Link to Azure DevOps/VSTS Build Agent'
+Set-PSFConfig -Module 'AutomatedLab' -Name BuildAgentUri -Value 'https://download.agent.dev.azure.com/agent/4.258.1/vsts-agent-win-x64-4.258.1.zip' -Initialize -Validation string -Description 'Link to Azure DevOps/VSTS Build Agent'
 
 # SCVMM
-Set-PSFConfig -Module 'AutomatedLab' -Name SqlOdbc11 -Value 'https://download.microsoft.com/download/5/7/2/57249A3A-19D6-4901-ACCE-80924ABEB267/ENU/x64/msodbcsql.msi'
-Set-PSFConfig -Module 'AutomatedLab' -Name SqlOdbc13 -Value 'https://download.microsoft.com/download/D/5/E/D5EEF288-A277-45C8-855B-8E2CB7E25B96/x64/msodbcsql.msi'
-Set-PSFConfig -Module 'AutomatedLab' -Name SqlCommandLineUtils -Value 'https://download.microsoft.com/download/C/8/8/C88C2E51-8D23-4301-9F4B-64C8E2F163C5/x64/MsSqlCmdLnUtils.msi'
-Set-PSFConfig -Module 'AutomatedLab' -Name WindowsAdk -Value 'https://download.microsoft.com/download/8/6/c/86c218f3-4349-4aa5-beba-d05e48bbc286/adk/adksetup.exe'
-Set-PSFConfig -Module 'AutomatedLab' -Name WindowsAdkPe -Value 'https://download.microsoft.com/download/3/c/2/3c2b23b2-96a0-452c-b9fd-6df72266e335/adkwinpeaddons/adkwinpesetup.exe'
+Set-PSFConfig -Module 'AutomatedLab' -Name SqlOdbc11 -Value 'https://download.microsoft.com/download/5/7/2/57249A3A-19D6-4901-ACCE-80924ABEB267/ENU/x64/msodbcsql.msi' -Initialize -Validation string
+Set-PSFConfig -Module 'AutomatedLab' -Name SqlOdbc13 -Value 'https://download.microsoft.com/download/D/5/E/D5EEF288-A277-45C8-855B-8E2CB7E25B96/x64/msodbcsql.msi' -Initialize -Validation string
+Set-PSFConfig -Module 'AutomatedLab' -Name SqlCommandLineUtils -Value 'https://download.microsoft.com/download/C/8/8/C88C2E51-8D23-4301-9F4B-64C8E2F163C5/x64/MsSqlCmdLnUtils.msi' -Initialize -Validation string
+Set-PSFConfig -Module 'AutomatedLab' -Name WindowsAdk -Value 'https://download.microsoft.com/download/2/d/9/2d9c8902-3fcd-48a6-a22a-432b08bed61e/ADK/adksetup.exe' -Initialize -Validation string
+Set-PSFConfig -Module 'AutomatedLab' -Name WindowsAdkPe -Value 'https://download.microsoft.com/download/5/5/6/556e01ec-9d78-417d-b1e1-d83a2eff20bc/ADKWinPEAddons/adkwinpesetup.exe' -Initialize -Validation string
 
 # SCOM
 Set-PSFConfig -Module AutomatedLab -Name SqlClrType2014 -Value 'https://download.microsoft.com/download/6/7/8/67858AF1-B1B3-48B1-87C4-4483503E71DC/ENU/x64/SQLSysClrTypes.msi' -Initialize -Validation string
@@ -385,7 +374,7 @@ Set-PSFConfig -Module AutomatedLab -Name SharePoint2016Prerequisites -Value @(
     "https://download.microsoft.com/download/A/6/7/A678AB47-496B-4907-B3D4-0A2D280A13C0/WindowsServerAppFabricSetup_x64.exe",
     "https://download.microsoft.com/download/F/1/0/F1093AF6-E797-4CA8-A9F6-FC50024B385C/AppFabric-KB3092423-x64-ENU.exe",
     'https://download.microsoft.com/download/5/7/2/57249A3A-19D6-4901-ACCE-80924ABEB267/ENU/x64/msodbcsql.msi'
-    'https://download.microsoft.com/download/F/9/4/F942F07D-F26F-4F30-B4E3-EBD54FABA377/NDP462-KB3151800-x86-x64-AllOS-ENU.exe'
+    'https://download.microsoft.com/download/8/b/7/8b79adc2-162c-4cf4-a200-3aeaadc455bf/NDP462-KB3151800-x86-x64-AllOS-ENU.exe'
 ) -Initialize -Description 'List of prerequisite urls for SP2013' -Validation stringarray
 
 Set-PSFConfig -Module AutomatedLab -Name SharePoint2019Prerequisites -Value @(
@@ -397,7 +386,7 @@ Set-PSFConfig -Module AutomatedLab -Name SharePoint2019Prerequisites -Value @(
     'https://download.microsoft.com/download/A/6/7/A678AB47-496B-4907-B3D4-0A2D280A13C0/WindowsServerAppFabricSetup_x64.exe',
     'https://download.microsoft.com/download/F/1/0/F1093AF6-E797-4CA8-A9F6-FC50024B385C/AppFabric-KB3092423-x64-ENU.exe',
     'https://download.microsoft.com/download/5/7/2/57249A3A-19D6-4901-ACCE-80924ABEB267/ENU/x64/msodbcsql.msi',
-    'https://download.visualstudio.microsoft.com/download/pr/1f5af042-d0e4-4002-9c59-9ba66bcf15f6/089f837de42708daacaae7c04b7494db/ndp472-kb4054530-x86-x64-allos-enu.exe'
+    'https://download.microsoft.com/download/f/3/a/f3a6af84-da23-40a5-8d1c-49cc10c8e76f/NDP472-KB4054530-x86-x64-AllOS-ENU.exe'
 ) -Initialize -Description 'List of prerequisite urls for SP2013' -Validation stringarray
 
 # Dynamics 365 CRM
@@ -414,15 +403,17 @@ Set-PSFConfig -Module AutomatedLab -Name Exchange2016DownloadUrl -Value 'https:/
 Set-PSFConfig -Module AutomatedLab -Name Exchange2019DownloadUrl -Value 'https://download.microsoft.com/download/b/c/7/bc766694-8398-4258-8e1e-ce4ddb9b3f7d/ExchangeServer2019-x64-CU12.ISO'
 
 # ConfigMgr
-Set-PSFConfig -Module AutomatedLab -Name ConfigurationManagerWmiExplorer -Value 'https://github.com/vinaypamnani/wmie2/releases/download/v2.0.0.2/WmiExplorer_2.0.0.2.zip'
-Set-PSFConfig -Module AutomatedLab -Name ConfigurationManagerUrl1902CB -Value 'http://download.microsoft.com/download/1/B/C/1BCADBD7-47F6-40BB-8B1F-0B2D9B51B289/SC_Configmgr_SCEP_1902.exe'
-Set-PSFConfig -Module AutomatedLab -Name ConfigurationManagerUrl1902TP -Value 'http://download.microsoft.com/download/1/B/C/1BCADBD7-47F6-40BB-8B1F-0B2D9B51B289/SC_Configmgr_SCEP_1902.exe'
-Set-PSFConfig -Module AutomatedLab -Name ConfigurationManagerUrl2002CB -Value "https://download.microsoft.com/download/e/0/a/e0a2dd5e-2b96-47e7-9022-3030f8a1807b/MEM_Configmgr_2002.exe"
-Set-PSFConfig -Module AutomatedLab -Name ConfigurationManagerUrl2002TP -Value "https://download.microsoft.com/download/D/8/E/D8E795CE-44D7-40B7-9067-D3D1313865E5/Configmgr_TechPreview2010.exe"
-Set-PSFConfig -Module AutomatedLab -Name ConfigurationManagerUrl2103CB -Value "https://download.microsoft.com/download/8/8/8/888d525d-5523-46ba-aca8-4709f54affa8/MEM_Configmgr_2103.exe"
-Set-PSFConfig -Module AutomatedLab -Name ConfigurationManagerUrl2103TP -Value "https://download.microsoft.com/download/D/8/E/D8E795CE-44D7-40B7-9067-D3D1313865E5/Configmgr_TechPreview2103.exe"
-Set-PSFConfig -Module AutomatedLab -Name ConfigurationManagerUrl2203CB -Value 'https://download.microsoft.com/download/f/5/5/f55e3b9c-781d-493b-932b-16aa1b2f6371/MEM_Configmgr_2203.exe'
-Set-PSFConfig -Module AutomatedLab -Name ConfigurationManagerUrl2210TP -Value "https://download.microsoft.com/download/D/8/E/D8E795CE-44D7-40B7-9067-D3D1313865E5/Configmgr_TechPreview2210.exe"
+Set-PSFConfig -Module AutomatedLab -Name ConfigurationManagerWmiExplorer -Value 'https://github.com/vinaypamnani/wmie2/releases/download/v2.0.0.2/WmiExplorer_2.0.0.2.zip' -Description 'Link to WMI explorer' -Validation string
+Set-PSFConfig -Module AutomatedLab -Name ConfigurationManagerUrl1902CB -Value 'http://download.microsoft.com/download/1/B/C/1BCADBD7-47F6-40BB-8B1F-0B2D9B51B289/SC_Configmgr_SCEP_1902.exe' -Description 'Link to ConfigMgr 1902 CB' -Validation string
+#Set-PSFConfig -Module AutomatedLab -Name ConfigurationManagerUrl1902TP -Value 'http://download.microsoft.com/download/1/B/C/1BCADBD7-47F6-40BB-8B1F-0B2D9B51B289/SC_Configmgr_SCEP_1902.exe'
+Set-PSFConfig -Module AutomatedLab -Name ConfigurationManagerUrl2002CB -Value "https://download.microsoft.com/download/e/0/a/e0a2dd5e-2b96-47e7-9022-3030f8a1807b/MEM_Configmgr_2002.exe" -Description 'Link to ConfigMgr 2002 CB' -Validation string
+#Set-PSFConfig -Module AutomatedLab -Name ConfigurationManagerUrl2002TP -Value "https://download.microsoft.com/download/D/8/E/D8E795CE-44D7-40B7-9067-D3D1313865E5/Configmgr_TechPreview2010.exe"
+Set-PSFConfig -Module AutomatedLab -Name ConfigurationManagerUrl2103CB -Value "https://download.microsoft.com/download/8/8/8/888d525d-5523-46ba-aca8-4709f54affa8/MEM_Configmgr_2103.exe" -Description 'Link to ConfigMgr 2103 CB' -Validation string
+#Set-PSFConfig -Module AutomatedLab -Name ConfigurationManagerUrl2103TP -Value "https://download.microsoft.com/download/D/8/E/D8E795CE-44D7-40B7-9067-D3D1313865E5/Configmgr_TechPreview2103.exe"
+Set-PSFConfig -Module AutomatedLab -Name ConfigurationManagerUrl2203CB -Value 'https://download.microsoft.com/download/f/5/5/f55e3b9c-781d-493b-932b-16aa1b2f6371/MEM_Configmgr_2203.exe' -Description 'Link to ConfigMgr 2203 CB' -Validation string
+#Set-PSFConfig -Module AutomatedLab -Name ConfigurationManagerUrl2210TP -Value "https://download.microsoft.com/download/D/8/E/D8E795CE-44D7-40B7-9067-D3D1313865E5/Configmgr_TechPreview2210.exe"
+Set-PSFConfig -Module AutomatedLab -Name ConfigurationManagerUrl2411TP -Value "https://download.microsoft.com/download/D/8/E/D8E795CE-44D7-40B7-9067-D3D1313865E5/ConfigMgr_TechPreview2411.exe" -Description 'Link to ConfigMgr 2411 TP' -Validation string
+
 # Validation
 Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
     ValidRoleProperties     = @{
@@ -832,8 +823,7 @@ Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
 # Product key file path
 $fPath = Join-Path -Path (Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot) -ChildPath 'Assets/ProductKeys.xml'
 $fcPath = Join-Path -Path (Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot) -ChildPath 'Assets/ProductKeysCustom.xml'
-if (-not (Test-Path -Path $fPath -ErrorAction SilentlyContinue))
-{
+if (-not (Test-Path -Path $fPath -ErrorAction SilentlyContinue)) {
     $null = if (-not (Test-Path -Path (Split-Path $fPath -Parent))) { New-Item -Path (Split-Path $fPath -Parent) -ItemType Directory } 
     Copy-Item -Path "$PSScriptRoot/ProductKeys.xml" -Destination $fPath -Force -ErrorAction SilentlyContinue
 }
@@ -846,8 +836,7 @@ Set-PSFConfig -Module AutomatedLab -Name ProductKeyFilePathCustom -Value $fcPath
 #endregion
 
 #region Linux folder
-if ($IsLinux -or $IsMacOs -and -not (Test-Path (Join-Path -Path (Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot) -ChildPath 'Stores')))
-{
+if ($IsLinux -or $IsMacOs -and -not (Test-Path (Join-Path -Path (Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot) -ChildPath 'Stores'))) {
     $null = New-Item -ItemType Directory -Path (Join-Path -Path (Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot) -ChildPath 'Stores')
 }
 #endregion
@@ -856,24 +845,10 @@ if ($IsLinux -or $IsMacOs -and -not (Test-Path (Join-Path -Path (Get-PSFConfigVa
 
 #download the ProductKeys.xml file if it does not exist. The installer puts the file into 'C:\ProgramData\AutomatedLab\Assets'
 #but when installing AL using the PowerShell Gallery, this file is missing.
-$productKeyFileLink = 'https://raw.githubusercontent.com/AutomatedLab/AutomatedLab/master/Assets/ProductKeys.xml'
-$productKeyFileName = 'ProductKeys.xml'
-$productKeyFilePath = Get-PSFConfigValue AutomatedLab.ProductKeyFilePath
-
-if (-not (Test-Path -Path (Split-Path $productKeyFilePath -Parent)))
-{
-    New-Item -Path (Split-Path $productKeyFilePath -Parent) -ItemType Directory | Out-Null
-}
-
-if (-not (Test-Path -Path $productKeyFilePath))
-{
-    try { Invoke-RestMethod -Method Get -Uri $productKeyFileLink -OutFile $productKeyFilePath -ErrorAction Stop } catch {}
-}
 
 $productKeyCustomFilePath = Get-PSFConfigValue AutomatedLab.ProductKeyFilePathCustom
 
-if (-not (Test-Path -Path $productKeyCustomFilePath))
-{
+if (-not (Test-Path -Path $productKeyCustomFilePath)) {
     $store = New-Object 'AutomatedLab.ListXmlStore[AutomatedLab.ProductKey]'
 
     $dummyProductKey = New-Object AutomatedLab.ProductKey -Property @{ Key = '123'; OperatingSystemName = 'OS'; Version = '1.0' }
@@ -888,12 +863,10 @@ Register-PSFTeppScriptblock -Name AutomatedLab-NotificationProviders -ScriptBloc
 }
 
 Register-PSFTeppScriptblock -Name AutomatedLab-OperatingSystem -ScriptBlock {
-    $lab = if (Get-Lab -ErrorAction SilentlyContinue)
-    {
+    $lab = if (Get-Lab -ErrorAction SilentlyContinue) {
         Get-Lab -ErrorAction SilentlyContinue
     }
-    elseif (Get-LabDefinition -ErrorAction SilentlyContinue)
-    {
+    elseif (Get-LabDefinition -ErrorAction SilentlyContinue) {
         Get-LabDefinition -ErrorAction SilentlyContinue
     }
 
@@ -902,21 +875,17 @@ Register-PSFTeppScriptblock -Name AutomatedLab-OperatingSystem -ScriptBlock {
         NoDisplay    = $true
     }
 
-    if (-not $lab -or $lab -and $lab.DefaultVirtualizationEngine -eq 'HyperV')
-    {        
+    if (-not $lab -or $lab -and $lab.DefaultVirtualizationEngine -eq 'HyperV') {        
         $param['Path'] = "$labSources/ISOs"
     }
-    if ($lab.DefaultVirtualizationEngine -eq 'Azure')
-    {
+    if ($lab.DefaultVirtualizationEngine -eq 'Azure') {
         $param['Azure'] = $true
     }
-    if ($lab.DefaultVirtualizationEngine -eq 'Azure' -and $lab.AzureSettings.DefaultLocation)
-    {
+    if ($lab.DefaultVirtualizationEngine -eq 'Azure' -and $lab.AzureSettings.DefaultLocation) {
         $param['Location'] = $lab.AzureSettings.DefaultLocation.DisplayName
     }
 
-    if (-not $global:AL_OperatingSystems)
-    {
+    if (-not $global:AL_OperatingSystems) {
         $global:AL_OperatingSystems = Get-LabAvailableOperatingSystem @param
     }
 

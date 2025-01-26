@@ -15,6 +15,8 @@
 
         [bool]$UseAzureLabSourcesOnAzureVm = $true,
 
+        [pscredential]$Credential,
+
         [switch]$PassThru
     )
 
@@ -36,7 +38,14 @@
 
     foreach ($machine in $machines)
     {
-        $cred = $machine.GetCredential((Get-Lab))
+        if (-not $PSBoundParameters.ContainsKey('Credential'))
+        {
+            $cred = $machine.GetCredential((Get-Lab))
+        }
+        else
+        {
+            $cred = $Credential
+        }
 
         if ($machine.HostType -eq 'HyperV' -or
             (-not $UseAzureLabSourcesOnAzureVm -and $machine.HostType -eq 'Azure') -or
@@ -65,7 +74,16 @@
                     continue
                 }
 
-                $session = New-LabPSSession -ComputerName $machine -IgnoreAzureLabSources
+                $param = @{
+                    ComputerName = $machine
+                    IgnoreAzureLabSources = $true
+                }
+                if ($PSBoundParameters.ContainsKey('Credential'))
+                {
+                    $param.Add('Credential', $Credential)
+                }
+                $session = New-LabPSSession @param
+
                 foreach ($p in $Path)
                 {
 
