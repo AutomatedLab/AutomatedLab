@@ -2,9 +2,11 @@
 
 ## Unreleased (yyyy-MM-dd)
 
+## 5.56.0 (2025-01-26)
+
 ### Enhancements
 
-- Not all Skus with a restriction 'NotAvailableForSubscription' will be ignored, only the
+- Not all SKUs with a restriction 'NotAvailableForSubscription' will be ignored, only the
   ones that have a 'NotAvailableForSubscription'-restriction for the location.
 - Taking VM generation into account when selecting an Azure role size / image.
 - Added parameter 'UseAzureUrl' to 'Get-LabTfsFeed'.
@@ -16,7 +18,7 @@
 ### Bugs
 
 - Updated selection of Azure VM role sizes. It was outdated.
-- Fix regex pattern to match hostnames in remote URL for Azure deployments.
+- Fix regex pattern to match host names in remote URL for Azure deployments.
 - The SSH code in 'Remove-LabPSSession' has been removed, it needs to be revised.
 - Updated code for compatibility with Az.Storage 8.0.0.
 - 'Get-LWAzureWindowsFeature' did never work as the 'PassThru' switch was missing.
