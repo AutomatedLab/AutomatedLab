@@ -51,7 +51,7 @@
 
     foreach ($localItem in $localItems)
     {
-        $itemSource = Join-Path -Path $SourceFolderPath -ChildPath $localItem.Name
+        $itemSource = $ExecutionContext.SessionState.Path.Combine($SourceFolderPath, $localItem.Name)
         $newDestinationFolder = $itemSource.Replace($initialSourceParent, $initialDestinationFolderPath).Replace('\\', '\')
 
         if ($localItem.PSIsContainer)

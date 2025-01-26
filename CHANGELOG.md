@@ -2,6 +2,25 @@
 
 ## Unreleased (yyyy-MM-dd)
 
+## 5.57.0 (2025-06-09)
+
+### Enhancements
+
+### Bugs
+
+- Fix libmi errors on Linux with Get-LabWindowsFeature (#1717).
+- Fix module import issue on PS Core due to deprecation of X509Certificate2 ctor (#1720).
+- Fixes issue with disconnected Azure VMs not restarting (#1714).
+- Fixed issue with Get-LabAzureAvailableSku returning deprecated images (#1712).
+- Fixed cert import/removal issue in install/removal on Linux (#1707).
+- Fixed issue with Linux and Test-LabHostConnected sometimes not able to reliably ping.
+- Fixed issue in which Linux lab sources sync never worked... (#1705).
+- Fixed issue with Linux where ConvertFrom-String does not exist.
+- Fixed issue with Join-Path and non-existing source paths (#1709).
+- Fixed issue with Linux and Test-LabHostConnected sometimes not able to reliably ping
+- Removed WindowsAdminCenter custom role
+- Fixed WindowsAdminCenter built-in role to work with current InnoSetup-based installer (#1686)
+
 ## 5.56.0 (2025-01-26)
 
 ### Enhancements
@@ -14,6 +33,7 @@
 - Add *.azure.com to Local Intranet Zone in Azure VM initialization.
 - Renamed the parameter 'Detailed' of 'Show-LabDeploymentSummary' to 'Summary'
   and removed all references.
+- 'Test-LabAzureLabSourcesStorage' now checks also for storage account key access.
 
 ### Bugs
 

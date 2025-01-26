@@ -44,7 +44,7 @@
     }
 
     $officeDeploymentToolFileName = 'OfficeDeploymentTool.exe'
-    $officeDeploymentToolFilePath = Join-Path -Path $labSources\SoftwarePackages -ChildPath $officeDeploymentToolFileName
+    $officeDeploymentToolFilePath = $ExecutionContext.SessionState.Path.Combine($labSources, "SoftwarePackages/$officeDeploymentToolFileName")
     $officeDeploymentToolUri = Get-LabConfigurationItem -Name OfficeDeploymentTool
 
     if (-not (Test-Path -Path $officeDeploymentToolFilePath))

@@ -12,6 +12,13 @@
 
     if (-not $azureLabSources)
     {
+        Write-Warning "Azure LabSources storage '$($azureLabSources.StorageAccountName)' does not exist in the subscription '$($azureLabSources.SubscriptionName)'"
+        return $false
+    }
+
+    if (-not $azureLabSources.AllowSharedKeyAccess)
+    {
+        Write-Warning "Azure LabSources storage '$($azureLabSources.StorageAccountName)' does not allow shared key access"
         return $false
     }
 
