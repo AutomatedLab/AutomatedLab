@@ -251,8 +251,14 @@ $finalErrorCode = $LASTEXITCODE
         #Add *.windows.net to Local Intranet Zone
         $path = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\Domains\windows.net'
         New-Item -Path $path -Force
-
         New-ItemProperty $path -Name http -Value 1 -Type DWORD
+        New-ItemProperty $path -Name file -Value 1 -Type DWORD
+
+        #Add *.azure.com to Local Intranet Zone
+        $path = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\Domains\azure.com'
+        New-Item -Path $path -Force
+        New-ItemProperty $path -Name http -Value 1 -Type DWORD
+        New-ItemProperty $path -Name https -Value 1 -Type DWORD
         New-ItemProperty $path -Name file -Value 1 -Type DWORD
 
         if (-not $Disks) { $null = try { Stop-Transcript -ErrorAction Stop } catch { }; return }

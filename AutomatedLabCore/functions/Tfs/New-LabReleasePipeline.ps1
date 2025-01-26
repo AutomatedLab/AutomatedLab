@@ -76,7 +76,7 @@
     if ($CodeUploadMethod -eq 'git' -and -not $tfsVm.SkipDeployment -and $(Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
     {
         $repository.remoteUrl = $repository.remoteUrl -replace $originalPort, $defaultParam.Port
-        if ($repository.remoteUrl -match 'http(s?)://(?<Host>[\w\.]+):')
+        if ($repository.remoteUrl -match 'http(s?)://(?<Host>[\w\.-]+):')
         {
             $repository.remoteUrl = $repository.remoteUrl.Replace($Matches.Host, $tfsVm.AzureConnectionInfo.DnsName)
         }
@@ -84,7 +84,7 @@
 
     if ($CodeUploadMethod -eq 'FileCopy' -and -not $tfsVm.SkipDeployment -and $(Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
     {
-        if ($repository.remoteUrl -match 'http(s?)://(?<Host>[\w\.]+):')
+        if ($repository.remoteUrl -match 'http(s?)://(?<Host>[\w\.-]+):')
         {
             $repository.remoteUrl = $repository.remoteUrl.Replace($Matches.Host, $tfsVm.FQDN)
         }

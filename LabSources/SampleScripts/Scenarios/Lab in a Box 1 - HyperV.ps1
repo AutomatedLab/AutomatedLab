@@ -79,4 +79,4 @@ Invoke-LabCommand -ActivityName 'Deploy Test Lab' -ComputerName $alServers -Scri
 
 }
 
-Show-LabDeploymentSummary -Detailed
+Show-LabDeploymentSummary

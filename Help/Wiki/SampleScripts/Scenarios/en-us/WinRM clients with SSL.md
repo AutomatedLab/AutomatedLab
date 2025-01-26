@@ -53,5 +53,5 @@ Invoke-LabCommand -ActivityName EnableSsl -ComputerName $vms -ScriptBlock {
     New-WSManInstance winrm/config/Listener	-SelectorSet @{ Address="*"; Transport="HTTPS" }
 }
 
-Show-LabDeploymentSummary -Detailed
+Show-LabDeploymentSummary
 ```

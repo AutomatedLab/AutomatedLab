@@ -64,4 +64,4 @@ Add-LabMachineDefinition -Name F3DC1 -IpAddress 192.168.43.10 -Network Forest3 -
 
 Install-Lab
 
-Show-LabDeploymentSummary -Detailed
+Show-LabDeploymentSummary

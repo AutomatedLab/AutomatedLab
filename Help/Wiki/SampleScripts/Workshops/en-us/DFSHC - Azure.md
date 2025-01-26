@@ -639,5 +639,5 @@ if ($runBreakScripts)
 #stop all machines to save money
 Stop-LabVM -All -Wait
 
-Show-LabDeploymentSummary -Detailed
+Show-LabDeploymentSummary
 ```

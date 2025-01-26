@@ -26,6 +26,6 @@ Add-LabMachineDefinition -Name Client1 -OperatingSystem 'Windows 10 Pro'
 
 Install-Lab
 
-Show-LabDeploymentSummary -Detailed
+Show-LabDeploymentSummary
 
 ```

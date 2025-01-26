@@ -51,5 +51,5 @@ Add-LabMachineDefinition -Name NUG01 -Memory 2GB -Roles WebServer -PostInstallat
 
 Install-Lab
 
-Show-LabDeploymentSummary -Detailed
+Show-LabDeploymentSummary
 ```

@@ -2,6 +2,28 @@
 
 ## Unreleased (yyyy-MM-dd)
 
+## 5.56.0 (2025-01-26)
+
+### Enhancements
+
+- Not all SKUs with a restriction 'NotAvailableForSubscription' will be ignored, only the
+  ones that have a 'NotAvailableForSubscription'-restriction for the location.
+- Taking VM generation into account when selecting an Azure role size / image.
+- Added parameter 'UseAzureUrl' to 'Get-LabTfsFeed'.
+- Added parameter 'UseAzureUrl' to 'Install-LabBuildWorker' because of unexpected results in the DscWorkshop.
+- Add *.azure.com to Local Intranet Zone in Azure VM initialization.
+- Renamed the parameter 'Detailed' of 'Show-LabDeploymentSummary' to 'Summary'
+  and removed all references.
+
+### Bugs
+
+- Updated selection of Azure VM role sizes. It was outdated.
+- Fix regex pattern to match host names in remote URL for Azure deployments.
+- The SSH code in 'Remove-LabPSSession' has been removed, it needs to be revised.
+- Updated code for compatibility with Az.Storage 8.0.0.
+- 'Get-LWAzureWindowsFeature' did never work as the 'PassThru' switch was missing.
+- Do not remove / re-import already imported Az* modules to allow the user some control.
+
 ## 5.55.0 (2024-12-31)
 
 ### Enhancements

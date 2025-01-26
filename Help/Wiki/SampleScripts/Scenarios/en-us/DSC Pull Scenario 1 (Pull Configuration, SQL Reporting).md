@@ -90,6 +90,6 @@ Invoke-LabCommand -ActivityName 'Create SQL Database for DSC Reporting' -Compute
 
 Install-LabDscClient -All
 
-Show-LabDeploymentSummary -Detailed
+Show-LabDeploymentSummary
 
 ```

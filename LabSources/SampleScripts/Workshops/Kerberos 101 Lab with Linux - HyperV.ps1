@@ -103,7 +103,7 @@ Install-LabSoftwarePackage -ComputerName KerbClient2 -Path "$labSources\Software
 Get-Job -Name 'Installation of*' | Wait-Job | Out-Null
 
 Checkpoint-LabVM -All -SnapshotName AfterInstall
-Show-LabDeploymentSummary -Detailed
+Show-LabDeploymentSummary
 
 $fileServers = Get-LabVM -Role FileServer
 Install-LabWindowsFeature -FeatureName FS-SMB1 -ComputerName $fileServers -IncludeAllSubFeature

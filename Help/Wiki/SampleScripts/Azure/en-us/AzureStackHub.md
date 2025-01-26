@@ -114,5 +114,5 @@ Add-LabMachineDefinition -Name ALWBOnAzS -Memory 4GB -DomainName contoso.com -Op
 
 Install-Lab
 
-Show-LabDeploymentSummary -Detailed
+Show-LabDeploymentSummary
 ```

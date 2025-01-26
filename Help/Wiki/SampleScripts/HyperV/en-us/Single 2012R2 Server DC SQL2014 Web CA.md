@@ -35,6 +35,6 @@ Install-LabSoftwarePackage -ComputerName (Get-LabVM) -Path $labSources\SoftwareP
 
 Enable-LabCertificateAutoenrollment -Computer -User -CodeSigning
 
-Show-LabDeploymentSummary -Detailed
+Show-LabDeploymentSummary
 
 ```

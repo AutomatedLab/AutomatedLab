@@ -28,6 +28,6 @@ Add-LabMachineDefinition -Name S1Server1 -Memory 512MB -Network $labName -IpAddr
 
 Install-Lab
 
-Show-LabDeploymentSummary -Detailed
+Show-LabDeploymentSummary
 
 ```

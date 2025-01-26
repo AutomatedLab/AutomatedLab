@@ -11,4 +11,4 @@ Add-LabMachineDefinition -Name Win10 -Memory 4GB -Network $labName -OperatingSys
 
 Install-Lab
 
-Show-LabDeploymentSummary -Detailed
+Show-LabDeploymentSummary

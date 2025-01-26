@@ -93,4 +93,4 @@ Invoke-LabCommand -ActivityName 'Deploy Test Lab' -ComputerName $alServers -Scri
 
 Stop-LabVM -All -Wait #stop and deallocate all machines for cost reasons
 
-Show-LabDeploymentSummary -Detailed
+Show-LabDeploymentSummary
