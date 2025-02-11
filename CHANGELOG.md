@@ -2,6 +2,12 @@
 
 ## Unreleased (yyyy-MM-dd)
 
+### Enhancements
+
+### Bugs
+
+- Bugfix in AutomatedLabSQL.psm1 to separate domain- & username.
+
 ## 5.56.0 (2025-01-26)
 
 ### Enhancements
