@@ -116,8 +116,8 @@
 
         if ($kvp.Key.Contains("\"))
         {
-            $domain = ($kvp.Key -split "\\")[0]
-            $user = ($kvp.Key -split "\\")[1]
+            $domain = ($kvp.Key -split "\\\\")[0]
+            $user = ($kvp.Key -split "\\\\")[1]
         }
 
         if ($kvp.Key.Contains("@"))
@@ -171,8 +171,8 @@
     {
         if ($group.Contains("\"))
         {
-            $domain = ($group -split "\\")[0]
-            $groupName = ($group -split "\\")[1]
+            $domain = ($group -split "\\\\")[0]
+            $groupName = ($group -split "\\\\")[1]
         }
         elseif ($group.Contains("@"))
         {
