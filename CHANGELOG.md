@@ -2,6 +2,12 @@
 
 ## Unreleased (yyyy-MM-dd)
 
+### Enhancements
+
+- Fixed issue with Linux and Test-LabHostConnected sometimes not able to reliably ping
+
+### Bugs
+
 ## 5.56.0 (2025-01-26)
 
 ### Enhancements
