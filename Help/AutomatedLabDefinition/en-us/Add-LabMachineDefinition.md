@@ -94,7 +94,7 @@ Memory will be set to 2GB (static).
 
 ### Example 4
 ```powershell
-Add-MachineDefinition -Name Server1 -OperatingSystem 'Windows Server 2012 R2 Datacenter (Server with a GUI)' -VirtualizationHost HyperV -DefaultDomain -ProductKey 'ABCDE-ABCDE-ABCDE-ABCDE-ABCDE'
+Add-MachineDefinition -Name Server1 -OperatingSystem 'Windows Server 2012 R2 Datacenter (Server with a GUI)' -VirtualizationHost HyperV -DefaultDomain
 ```
 
 Adds a definition of a Hyper-V machine with the name 'Server1' with the operating system of 'Windows Server 2012 R2 Datacenter (Server with a GUI)'.
