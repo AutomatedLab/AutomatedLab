@@ -20,6 +20,7 @@
 - Add *.azure.com to Local Intranet Zone in Azure VM initialization.
 - Renamed the parameter 'Detailed' of 'Show-LabDeploymentSummary' to 'Summary'
   and removed all references.
+- 'Test-LabAzureLabSourcesStorage' now checks also for storage account key access.
 
 ### Bugs
 
