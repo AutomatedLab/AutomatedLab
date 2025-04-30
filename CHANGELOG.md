@@ -8,6 +8,8 @@
 
 ### Bugs
 
+- Fixed issue with Linux where ConvertFrom-String does not exist
+
 ## 5.56.0 (2025-01-26)
 
 ### Enhancements
