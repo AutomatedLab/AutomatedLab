@@ -17,12 +17,12 @@
     if ($machines)
     {
         Start-LabVM -ComputerName $machines -Wait
-        $wacDownload = Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name WacDownloadUrl) -Path "$labSources\SoftwarePackages" -FileName WAC.msi -PassThru -NoDisplay
+        $wacDownload = Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name WacDownloadUrl) -Path "$labSources\SoftwarePackages" -FileName WAC.exe -PassThru -NoDisplay
         Copy-LabFileItem -Path $wacDownload.FullName -ComputerName $machines
 
         $jobs = foreach ($labMachine in $machines)
         {
-            if ((Invoke-LabCommand -ComputerName $labMachine -ScriptBlock { Get-Service -Name ServerManagementGateway -ErrorAction SilentlyContinue } -PassThru -NoDisplay))
+            if ((Invoke-LabCommand -ComputerName $labMachine -ScriptBlock { Get-Service -Name WindowsAdminCenter -ErrorAction SilentlyContinue } -PassThru -NoDisplay))
             {
                 Write-ScreenInfo -Type Verbose -Message "$labMachine already has Windows Admin Center installed"
                 continue
@@ -55,6 +55,9 @@
                 $Port = $role.Properties['Port']
             }
 
+            Write-ScreenInfo -Type Verbose -Message "Starting installation of Windows Admin Center on $labMachine"
+            Install-LabSoftwarePackage -LocalPath C:\WAC.exe -CommandLine '/verysilent' -ComputerName $labMachine -ExpectedReturnCodes 0, 3010 -AsJob -PassThru -NoDisplay
+
             $arguments = @(
                 '/qn'
                 '/L*v C:\wacLoc.txt'
@@ -76,7 +79,7 @@
                 $arguments += "SSL_CERTIFICATE_OPTION=generate"
             }
 
-            if (-not $machine.SkipDeployment -and $lab.DefaultVirtualizationEngine -eq 'Azure')
+            if ($lab.DefaultVirtualizationEngine -eq 'Azure')
             {
                 if (-not (Get-LabAzureLoadBalancedPort -DestinationPort $Port -ComputerName $labMachine))
                 {
@@ -92,9 +95,6 @@
                 Write-Verbose -Message 'Adding support for TLS 1.2'
                 [Net.ServicePointManager]::SecurityProtocol += [Net.SecurityProtocolType]::Tls12
             }
-
-            Write-ScreenInfo -Type Verbose -Message "Starting installation of Windows Admin Center on $labMachine"
-            Install-LabSoftwarePackage -LocalPath C:\WAC.msi -CommandLine $($arguments -join ' ') -ComputerName $labMachine -ExpectedReturnCodes 0, 3010 -AsJob -PassThru -NoDisplay
         }
 
         if ($jobs)
