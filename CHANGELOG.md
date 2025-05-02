@@ -8,6 +8,8 @@
 
 ### Bugs
 
+- Fixed issue with Join-Path and non-existing source paths (#1709)
+
 ## 5.56.0 (2025-01-26)
 
 ### Enhancements
