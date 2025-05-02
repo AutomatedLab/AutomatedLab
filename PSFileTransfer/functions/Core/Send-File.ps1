@@ -41,7 +41,7 @@
         $chunk = New-Object -TypeName byte[] -ArgumentList $remaining
         [void]$sourceFileStream.Read($chunk, 0, $remaining)
 
-        $destinationFullName = Join-Path -Path $DestinationFolderPath -ChildPath (Split-Path -Path $SourceFilePath -Leaf)
+        $destinationFullName = $ExecutionContext.SessionState.Path.Combine($DestinationFolderPath, (Split-Path -Path $SourceFilePath -Leaf))
 
         try
         {
