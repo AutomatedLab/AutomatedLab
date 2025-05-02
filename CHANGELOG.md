@@ -8,6 +8,8 @@
 
 ### Bugs
 
+- Fixed cert import/removal issue in install/removal on Linux (#1707)
+
 ## 5.56.0 (2025-01-26)
 
 ### Enhancements
