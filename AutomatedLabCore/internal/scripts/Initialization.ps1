@@ -567,7 +567,7 @@ Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
             'Organisation'
             'Capabilities'
         )
-        WindowsAdminCenter       = @('Port', 'EnableDevMode', 'ConnectedNode', 'UseSsl')
+        WindowsAdminCenter       = @('Port', 'ConnectedNode')
         Scvmm2016                = @(
             'MUOptIn'
             'SqlMachineName'
