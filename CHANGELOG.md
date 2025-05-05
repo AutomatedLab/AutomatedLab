@@ -8,6 +8,8 @@
 
 ### Bugs
 
+- Fixed issue with Get-LabAzureAvailableSku returning deprecated images (#1712)
+
 ## 5.56.0 (2025-01-26)
 
 ### Enhancements
