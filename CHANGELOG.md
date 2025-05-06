@@ -8,6 +8,8 @@
 
 ### Bugs
 
+- Fixes issue with disconnected Azure VMs not restarting (#1714)
+
 ## 5.56.0 (2025-01-26)
 
 ### Enhancements
