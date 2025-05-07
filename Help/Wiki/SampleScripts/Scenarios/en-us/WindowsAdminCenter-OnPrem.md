@@ -38,8 +38,6 @@ Add-LabMachineDefinition -Name WACCA1 -Memory 1GB -Roles CARoot
 $role = Get-LabMachineRoleDefinition -Role WindowsAdminCenter <#-Properties @{
     # Optional, defaults to 443
     Port = 8080
-    # Optional, indicates that the developer mode should be enabled, i.e. to develop extensions
-    EnableDevMode   = 'True'
     # Optional, defaults to all lab VMs except the WAC host. Needs to be JSON string!
     ConnectedNode = '["WACHO1","WACHO3"]'
 }#>
@@ -48,7 +46,6 @@ Add-LabMachineDefinition -Name WACWAC1 -Memory 1GB -Roles $role
 # WAC server on-prem -SkipDeployment means it is not removed when the lab is removed, but we will connect other Lab VMs to it
 $role = Get-LabMachineRoleDefinition -Role WindowsAdminCenter -Properties @{
     Port = '4711'
-    UseSsl = 'False'
     ConnectedNode = '["WACHO1","WACHO3"]'
 }
 $instCred = [pscredential]::new('fabrikam\OtherUser' , ('Other Password' | ConvertTo-SecureString -AsPlain -Force)
@@ -57,7 +54,6 @@ Add-LabMachineDefinition -Name WACWAC2.fabrikam.com -SkipDeployment -Roles $role
 # or to connect to your local installation
 $role = Get-LabMachineRoleDefinition -Role WindowsAdminCenter -Properties @{
     Port = '6516'
-    UseSsl = 'False'
     ConnectedNode = '["WACHO1","WACHO3"]'
 }
 $instCred = Get-Credential -UserName $env:USERNAME

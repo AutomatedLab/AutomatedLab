@@ -33,8 +33,6 @@ Add-LabMachineDefinition -Name WACCA1 -Memory 1GB -Roles CARoot
 $role = Get-LabMachineRoleDefinition -Role WindowsAdminCenter <#-Properties @{
     # Optional, defaults to 443
     Port = 8080
-    # Optional, indicates that the developer mode should be enabled, i.e. to develop extensions
-    EnableDevMode   = 'True'
     # Optional, defaults to all lab VMs except the WAC host. Needs to be JSON string!
     ConnectedNode = '["WACHO1","WACHO3"]'
 }#>
