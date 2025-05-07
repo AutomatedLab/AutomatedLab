@@ -28,17 +28,7 @@
             $machine.GetCredential($lab)
         }
 
-        $useSsl = $true
-        if ($role.Properties.ContainsKey('UseSsl'))
-        {
-            $useSsl = [Convert]::ToBoolean($role.Properties['UseSsl'])
-        }
-
         $Port = 443
-        if (-not $useSsl)
-        {
-            $Port = 80
-        }
         if ($role.Properties.ContainsKey('Port'))
         {
             $Port = $role.Properties['Port']
@@ -74,7 +64,7 @@
             $machine.FQDN
         }
         Write-ScreenInfo -Message "Adding $($filteredHosts.Count) hosts to the admin center for user $($wacCredential.UserName)"
-        $apiEndpoint = "http$(if($useSsl){'s'})://$($wachostname):$Port/api/connections"
+        $apiEndpoint = "https://$($wachostname):$Port/api/connections"
 
         $bodyHash = foreach ($vm in $filteredHosts)
         {
