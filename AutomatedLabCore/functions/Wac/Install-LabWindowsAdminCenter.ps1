@@ -3,6 +3,7 @@
     param
     ( )
 
+    Write-LogFunctionEntry
     $lab = Get-Lab -ErrorAction SilentlyContinue
 
     if (-not $lab) {
@@ -62,12 +63,13 @@
         }
     }
 
+    $wacHosts = [System.Collections.Generic.List[string]]::new()
     foreach ($labMachine in $machines) {
         $machSession = Get-LabPSSession -ComputerName $labMachine
         if ($machSession.Transport -eq 'SSH') {
             Invoke-LabCommand -NoDisplay -ComputerName $labMachine -ScriptBlock {
                 Enable-PSRemoting -Force -WarningAction SilentlyContinue
-            }
+            } -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
         }
 
         Remove-LabPSSession -Machine $labMachine
@@ -122,7 +124,23 @@
                 $Port = $remotePort
             }
         }
+
+        $wachostname = if (-not $labMachine.SkipDeployment -and $lab.DefaultVirtualizationEngine -eq 'Azure') 
+        {
+            $labMachine.AzureConnectionInfo.DnsName
+        }
+        elseif ($labMachine.SkipDeployment)
+        {
+            $labMachine.Name
+        }
+        else
+        {
+            $labMachine.FQDN
+        }
+        $wacHosts.Add("https://$($wachostname):$Port")
     }
 
-    Add-LabWacManagedNode
+    Write-ScreenInfo -Type Info -Message "WAC hosts configured: $($wacHosts -join ', ')"
+
+    Write-LogFunctionExit
 }
