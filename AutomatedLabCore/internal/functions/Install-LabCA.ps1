@@ -49,8 +49,8 @@
     $jobs = @()
     foreach ($caRootMachine in $caRootMachines)
     {
-        $caFeature = Invoke-LabCommand -ComputerName $caRootMachine -ActivityName "Check if CA is already installed on '$caRootMachine'" -ScriptBlock { (Get-WindowsFeature -Name 'ADCS-Cert-Authority') } -PassThru -NoDisplay
-        if ($caFeature.Installed)
+        $caFeature = Invoke-LabCommand -ComputerName $caRootMachine -ActivityName "Check if CA is already installed on '$caRootMachine'" -ScriptBlock { (Get-WindowsFeature -Name 'ADCS-Cert-Authority').Installed } -PassThru -NoDisplay
+        if ($caFeature)
         {
             Write-ScreenInfo -Message "Root CA '$caRootMachine' is already installed" -Type Warning
         }
@@ -105,8 +105,8 @@
         $jobs = @()
         foreach ($caSubordinateMachine in $caSubordinateMachines)
         {
-            $caFeature = Invoke-LabCommand -ComputerName $caSubordinateMachine -ActivityName "Check if CA is already installed on '$caSubordinateMachine'" -ScriptBlock { (Get-WindowsFeature -Name 'ADCS-Cert-Authority') } -PassThru -NoDisplay
-            if ($caFeature.Installed)
+            $caFeature = Invoke-LabCommand -ComputerName $caSubordinateMachine -ActivityName "Check if CA is already installed on '$caSubordinateMachine'" -ScriptBlock { (Get-WindowsFeature -Name 'ADCS-Cert-Authority').Installed } -PassThru -NoDisplay
+            if ($caFeature)
             {
                 Write-ScreenInfo -Message "Subordinate CA '$caSubordinateMachine' is already installed" -Type Warning
             }

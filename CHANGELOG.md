@@ -8,6 +8,8 @@
 
 ### Bugs
 
+- Fix libmi errors on Linux with Get-LabWindowsFeature (#1717)
+
 ## 5.56.0 (2025-01-26)
 
 ### Enhancements
