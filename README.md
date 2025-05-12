@@ -17,7 +17,8 @@ AutomatedLab (AL) enables you to setup test and lab environments on Hyper-v or A
 
 Huge thanks to our regular sponsor [@chocolatey](https://github.com/chocolatey)! In case you have lived under a rock (or worked mainly on non-Windows systems) for the past decade, Chocolatey
 is a brilliant package management system with a public binary package gallery as well as self-hosted options complete with enterprise-grade support. Give it a try with
-a local lab environment - it could not be easier 😊 Start with a Domain Controller and a Certificate Authority to validate not only package distribution, but also digital signatures.
+a local lab environment - it could not be easier 😊 Start with a Domain Controller and a Certificate Authority to validate not only package distribution, but also digital signatures. Our samples
+such as the [NuGet server](https://automatedlab.org/en/latest/Wiki/SampleScripts/Scenarios/en-us/NuGetServer/) or [Azure DevOps](https://github.com/dsccommunity/DscWorkshop/tree/main/Lab) all include galleries that Chocolatey can use for publishing and downloading packages.
 
 ### Requirements
 
