@@ -8,6 +8,8 @@
 
 ### Bugs
 
+- Fix module import issue on PS Core due to deprecation of X509Certificate2 ctor (#1720)
+
 ## 5.56.0 (2025-01-26)
 
 ### Enhancements
