@@ -23,8 +23,26 @@
         if ((Get-LabVmStatus -ComputerName $machine) -ne 'Started' ) {continue}
         if ($lab.DefaultVirtualizationEngine -eq 'Azure')
         {
-            $keyScanHosts = ssh-keyscan -p $machine.LoadBalancerSshPort $machine.AzureConnectionInfo.DnsName 2>$null | ConvertFrom-String -Delimiter ' ' -PropertyNames ComputerName,Cipher,Fingerprint -ErrorAction SilentlyContinue
-            $keyScanIps = ssh-keyscan -p $machine.LoadBalancerSshPort $machine.AzureConnectionInfo.VIP 2>$null | ConvertFrom-String -Delimiter ' ' -PropertyNames ComputerName,Cipher,Fingerprint -ErrorAction SilentlyContinue
+            $keyScanHosts = ssh-keyscan -p $machine.LoadBalancerSshPort $machine.AzureConnectionInfo.DnsName 2>$null |
+            Where-Object { -not $_.StartsWith('#') } |
+            ForEach-Object{
+                $keyScanValues = $_ -split ' '
+                [pscustomobject]@{
+                    ComputerName = $keyScanValues[0]
+                    Cipher       = $keyScanValues[1]
+                    Fingerprint  = $keyScanValues[2]
+                }
+            }
+            $keyScanIps = ssh-keyscan -p $machine.LoadBalancerSshPort $machine.AzureConnectionInfo.VIP 2>$null |
+            Where-Object { -not $_.StartsWith('#') } |
+            ForEach-Object{
+                $keyScanValues = $_ -split ' '
+                [pscustomobject]@{
+                    ComputerName = $keyScanValues[0]
+                    Cipher       = $keyScanValues[1]
+                    Fingerprint  = $keyScanValues[2]
+                }
+            }
 
             foreach ($keyScanHost in $keyScanHosts)
             {
@@ -64,7 +82,16 @@
         }
         else
         {
-            $keyScanHosts = ssh-keyscan -T 1 $machine.Name 2>$null | ConvertFrom-String -Delimiter ' ' -PropertyNames ComputerName,Cipher,Fingerprint -ErrorAction SilentlyContinue
+            $keyScanHosts = ssh-keyscan -T 1 $machine.Name 2>$null |
+            Where-Object { -not $_.StartsWith('#') } |
+            ForEach-Object{
+                $keyScanValues = $_ -split ' '
+                [pscustomobject]@{
+                    ComputerName = $keyScanValues[0]
+                    Cipher       = $keyScanValues[1]
+                    Fingerprint  = $keyScanValues[2]
+                }
+            }
             foreach ($keyScanHost in $keyScanHosts)
             {
                 $sshHostEntry = $knownHostContent | Where-Object {$_.ComputerName -eq $machine.Name -and $_.Cipher -eq $keyScanHost.Cipher}
@@ -84,7 +111,16 @@
             }
             if ($machine.IpV4Address)
             {
-                $keyScanIps = ssh-keyscan -T 1 $machine.IpV4Address 2>$null | ConvertFrom-String -Delimiter ' ' -PropertyNames ComputerName,Cipher,Fingerprint -ErrorAction SilentlyContinue
+                $keyScanIps = ssh-keyscan -T 1 $machine.IpV4Address 2>$null |
+                Where-Object { -not $_.StartsWith('#') } |
+                ForEach-Object{
+                    $keyScanValues = $_ -split ' '
+                    [pscustomobject]@{
+                        ComputerName = $keyScanValues[0]
+                        Cipher       = $keyScanValues[1]
+                        Fingerprint  = $keyScanValues[2]
+                    }
+                }
                 foreach ($keyScanIp in $keyScanIps)
                 {
                     $sshHostEntryIp = $knownHostContent | Where-Object {$_.ComputerName -eq $machine.IpV4Address -and $_.Cipher -eq $keyScanIp.Cipher}
