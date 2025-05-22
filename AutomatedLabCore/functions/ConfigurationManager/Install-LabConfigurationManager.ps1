@@ -20,10 +20,10 @@
     }
     else
     {
-        Start-Process -FilePath $adkFile.FullName -ArgumentList "/quiet /layout $(Join-Path $labSources SoftwarePackages/ADKoffline)" -Wait -NoNewWindow
-        Start-Process -FilePath $adkpeFile.FullName -ArgumentList " /quiet /layout $(Join-Path $labSources SoftwarePackages/ADKPEoffline)" -Wait -NoNewWindow
-        Copy-LabFileItem -Path (Join-Path $labSources SoftwarePackages/ADKoffline) -ComputerName $vms
-        Copy-LabFileItem -Path (Join-Path $labSources SoftwarePackages/ADKPEoffline) -ComputerName $vms
+        Start-Process -FilePath $adkFile.FullName -ArgumentList "/quiet /layout $($ExecutionContext.SessionState.Path.Combine($labSources, 'SoftwarePackages/ADKoffline'))" -Wait -NoNewWindow
+        Start-Process -FilePath $adkpeFile.FullName -ArgumentList " /quiet /layout $($ExecutionContext.SessionState.Path.Combine($labSources, 'SoftwarePackages/ADKPEoffline'))" -Wait -NoNewWindow
+        Copy-LabFileItem -Path ($ExecutionContext.SessionState.Path.Combine($labSources, 'SoftwarePackages/ADKoffline')) -ComputerName $vms
+        Copy-LabFileItem -Path ($ExecutionContext.SessionState.Path.Combine($labSources, 'SoftwarePackages/ADKPEoffline')) -ComputerName $vms
     }
     
     Install-LabSoftwarePackage -LocalPath C:\ADKOffline\adksetup.exe -ComputerName $vms -CommandLine '/norestart /q /ceip off /features OptionId.DeploymentTools OptionId.UserStateMigrationTool OptionId.ImagingAndConfigurationDesigner' -NoDisplay
