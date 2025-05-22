@@ -6,6 +6,7 @@
 
 ### Bugs
 
+- Fixes issue with disconnected Azure VMs not restarting (#1714).
 - Fixed issue with Get-LabAzureAvailableSku returning deprecated images (#1712).
 - Fixed cert import/removal issue in install/removal on Linux (#1707).
 - Fixed issue with Linux and Test-LabHostConnected sometimes not able to reliably ping.

@@ -693,8 +693,8 @@
     if ($lab.DefaultVirtualizationEngine -eq 'Azure')
     {
         $azvms = Get-LabVm | Where-Object SkipDeployment -eq $false
-        $disconnectedVms = Invoke-LabCommand -PassThru -NoDisplay -ComputerName $azvms -ScriptBlock { $null -eq (Get-NetConnectionProfile -IPv4Connectivity Internet -ErrorAction SilentlyContinue) } | Where-Object { $_}
-        if ($disconnectedVms) { Restart-LabVm $disconnectedVms.PSComputerName -Wait -NoDisplay -NoNewLine }
+        $disconnectedVms = Invoke-LabCommand -PassThru -NoDisplay -ComputerName $azvms -ScriptBlock { if($null -eq (Get-NetConnectionProfile -IPv4Connectivity Internet -ErrorAction SilentlyContinue)) { $env:COMPUTERNAME } } | Where-Object { $_}
+        if ($disconnectedVms) { Restart-LabVm $disconnectedVms -Wait -NoDisplay -NoNewLine }
     }
 
     if (($PostInstallations -or $performAll) -and (Get-LabVM | Where-Object -Property SkipDeployment -eq $false))
