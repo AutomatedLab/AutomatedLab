@@ -286,28 +286,24 @@ namespace Pki.Certificates
 
         public CertificateInfo(byte[] bytes)
         {
-            rawContentBytes = bytes;
-            certificate = new X509Certificate2(rawContentBytes);
+            certificate = X509CertificateLoader.LoadCertificate(bytes);
         }
 
         public CertificateInfo(byte[] bytes, SecureString password)
         {
-            rawContentBytes = bytes;
-            certificate = new X509Certificate2(rawContentBytes, password, X509KeyStorageFlags.Exportable);
             Password = ConvertToString(password);
+            certificate = X509CertificateLoader.LoadPkcs12(bytes, Password, X509KeyStorageFlags.Exportable);
         }
 
         public CertificateInfo(string fileName)
         {
-            rawContentBytes = File.ReadAllBytes(fileName);
-            certificate = new X509Certificate2(rawContentBytes);
+            certificate = X509CertificateLoader.LoadCertificateFromFile(fileName);
         }
 
         public CertificateInfo(string fileName, SecureString password)
         {
-            rawContentBytes = File.ReadAllBytes(fileName);
-            certificate = new X509Certificate2(rawContentBytes, password, X509KeyStorageFlags.Exportable);
             Password = ConvertToString(password);
+            certificate = X509CertificateLoader.LoadPkcs12FromFile(fileName, Password, X509KeyStorageFlags.Exportable);
         }
 
         public X509ContentType Type
