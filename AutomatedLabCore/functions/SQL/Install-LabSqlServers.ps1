@@ -177,7 +177,7 @@ GO
                 if ($role.Properties.ContainsKey('ConfigurationFile'))
                 {
                     $global:setupArguments = ''
-                    $fileName = Join-Path -Path 'C:\' -ChildPath (Split-Path -Path $role.Properties.ConfigurationFile -Leaf)
+                    $fileName = $ExecutionContext.SessionState.Path.Combine('C:\', (Split-Path -Path $role.Properties.ConfigurationFile -Leaf))
                     $confPath = if ($lab.DefaultVirtualizationEngine -eq 'Azure' -and (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $role.Properties.ConfigurationFile))
                     {
                         $blob = Get-LabAzureLabSourcesContent -Path $role.Properties.ConfigurationFile.Replace($labSources,'')
@@ -436,7 +436,7 @@ GO
             Write-ScreenInfo -Message "No SSRS URI available for $server. Please provide a valid URI in AutomatedLab.psd1 and try again. Skipping..." -Type Warning
             continue
         }
-        $downloadFolder = Join-Path -Path $global:labSources\SoftwarePackages -ChildPath "SQL$($server.SqlVersion)"
+        $downloadFolder = $ExecutionContext.SessionState.Path.Combine($global:labSources, "SoftwarePackages/SQL$($server.SqlVersion)")
 
         if ($lab.DefaultVirtualizationEngine -ne 'Azure' -and -not (Test-Path $downloadFolder))
         {
@@ -470,8 +470,8 @@ GO
             continue
         }
 
-        $downloadFolder = Join-Path -Path $global:labSources\SoftwarePackages -ChildPath "SQL$($server.SqlVersion)"
-        $downloadPath = Join-Path -Path $downloadFolder -ChildPath 'SSMS-Setup-ENU.exe'
+        $downloadFolder = $ExecutionContext.SessionState.Path.Combine($global:labSources, "SoftwarePackages/SQL$($server.SqlVersion)")
+        $downloadPath = $ExecutionContext.SessionState.Path.Combine($downloadFolder,  'SSMS-Setup-ENU.exe')
 
         if ($lab.DefaultVirtualizationEngine -ne 'Azure' -and -not (Test-Path $downloadFolder))
         {

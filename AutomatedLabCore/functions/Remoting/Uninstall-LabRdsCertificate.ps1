@@ -3,6 +3,8 @@
     [CmdletBinding()]
     param ( )
 
+    if ($IsLinux -or $IsMacOs) { return }
+
     $lab = Get-Lab
     if (-not $lab)
     {
