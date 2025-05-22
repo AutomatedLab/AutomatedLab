@@ -6,6 +6,7 @@
 
 ### Bugs
 
+- Fix libmi errors on Linux with Get-LabWindowsFeature (#1717).
 - Fix module import issue on PS Core due to deprecation of X509Certificate2 ctor (#1720).
 - Fixes issue with disconnected Azure VMs not restarting (#1714).
 - Fixed issue with Get-LabAzureAvailableSku returning deprecated images (#1712).
