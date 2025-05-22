@@ -4,10 +4,10 @@
 
 ### Enhancements
 
-- Fixed issue with Linux and Test-LabHostConnected sometimes not able to reliably ping
-
 ### Bugs
 
+- Fixed issue with Linux and Test-LabHostConnected sometimes not able to reliably ping.
+- Fixed issue in which Linux lab sources sync never worked... (#1705).
 - Fixed issue with Linux where ConvertFrom-String does not exist.
 - Fixed issue with Join-Path and non-existing source paths (#1709).
 
