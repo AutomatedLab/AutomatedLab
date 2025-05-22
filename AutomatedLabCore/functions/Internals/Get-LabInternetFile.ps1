@@ -35,7 +35,7 @@
 
         if (Test-Path -Path $Path -PathType Container)
         {
-            $Path = Join-Path -Path $Path -ChildPath $FileName
+            $Path = $ExecutionContext.SessionState.Path.Combine($Path, $FileName)
         }
 
         if ((Test-Path -Path $Path -PathType Leaf) -and -not $Force)
