@@ -30,8 +30,8 @@
     Get-AzVMImageSku |
     Get-AzVMImage |
     Group-Object -Property Skus, Offer |
-    ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 | Get-AzVmImage } |
-    Where-Object PurchasePlan -eq $null
+    ForEach-Object { $_.Group | Sort-Object -Property {$_.Version -as [Version]} -Descending | Select-Object -First 1 | Get-AzVmImage } |
+    Where-Object {$_.PurchasePlan -eq $null -and $_.ImageDeprecationStatus.ImageState -eq 'Active'}
 
     # Linux
     # Ubuntu - official
@@ -43,8 +43,8 @@
     Where-Object Skus -notmatch 'arm64' |
     Get-AzVMImage |
     Group-Object -Property Skus, Offer |
-    ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 | Get-AzVmImage } |
-    Where-Object PurchasePlan -eq $null
+    ForEach-Object { $_.Group | Sort-Object -Property {$_.Version -as [Version]} -Descending | Select-Object -First 1 | Get-AzVmImage } |
+    Where-Object {$_.PurchasePlan -eq $null -and $_.ImageDeprecationStatus.ImageState -eq 'Active'}
 
     # RedHat - official
     $publishers |
@@ -55,8 +55,8 @@
     Where-Object Skus -notmatch '(RAW|LVM|CI)' |
     Get-AzVMImage |
     Group-Object -Property Skus, Offer |
-    ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 | Get-AzVmImage } |
-    Where-Object PurchasePlan -eq $null
+    ForEach-Object { $_.Group | Sort-Object -Property {$_.Version -as [Version]} -Descending | Select-Object -First 1 | Get-AzVmImage } |
+    Where-Object {$_.PurchasePlan -eq $null -and $_.ImageDeprecationStatus.ImageState -eq 'Active'}
 
     # CentOS - Roguewave, sounds slightly suspicious
     $publishers |
@@ -66,8 +66,8 @@
     Get-AzVMImageSku |
     Get-AzVMImage |
     Group-Object -Property Skus, Offer |
-    ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 | Get-AzVmImage } |
-    Where-Object PurchasePlan -eq $null
+    ForEach-Object { $_.Group | Sort-Object -Property {$_.Version -as [Version]} -Descending | Select-Object -First 1 | Get-AzVmImage } |
+    Where-Object {$_.PurchasePlan -eq $null -and $_.ImageDeprecationStatus.ImageState -eq 'Active'}
 
     # Kali
     $publishers |
@@ -76,8 +76,8 @@
     Get-AzVMImageSku |
     Get-AzVMImage |
     Group-Object -Property Skus, Offer |
-    ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 | Get-AzVmImage } |
-    Where-Object PurchasePlan -eq $null
+    ForEach-Object { $_.Group | Sort-Object -Property {$_.Version -as [Version]} -Descending | Select-Object -First 1 | Get-AzVmImage } |
+    Where-Object {$_.PurchasePlan -eq $null -and $_.ImageDeprecationStatus.ImageState -eq 'Active'}
 
     # Desktop
     $publishers |
@@ -86,8 +86,8 @@
     Get-AzVMImageSku |
     Get-AzVMImage |
     Group-Object -Property Skus, Offer |
-    ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 | Get-AzVmImage } |
-    Where-Object PurchasePlan -eq $null
+    ForEach-Object { $_.Group | Sort-Object -Property {$_.Version -as [Version]} -Descending | Select-Object -First 1 | Get-AzVmImage } |
+    Where-Object {$_.PurchasePlan -eq $null -and $_.ImageDeprecationStatus.ImageState -eq 'Active'}
 
     # SQL
     $publishers |
@@ -97,8 +97,8 @@
     Get-AzVMImage |
     Where-Object Skus -in 'Standard','Enterprise' |
     Group-Object -Property Skus, Offer |
-    ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 | Get-AzVmImage } |
-    Where-Object PurchasePlan -eq $null
+    ForEach-Object { $_.Group | Sort-Object -Property {$_.Version -as [Version]} -Descending | Select-Object -First 1 | Get-AzVmImage } |
+    Where-Object {$_.PurchasePlan -eq $null -and $_.ImageDeprecationStatus.ImageState -eq 'Active'}
 
     # VisualStudio
     $publishers |
@@ -108,8 +108,8 @@
     Get-AzVMImage |
     Where-Object Offer -eq 'VisualStudio' |
     Group-Object -Property Skus, Offer |
-    ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 | Get-AzVmImage } |
-    Where-Object PurchasePlan -eq $null
+    ForEach-Object { $_.Group | Sort-Object -Property {$_.Version -as [Version]} -Descending | Select-Object -First 1 | Get-AzVmImage } |
+    Where-Object {$_.PurchasePlan -eq $null -and $_.ImageDeprecationStatus.ImageState -eq 'Active'}
 
     # Client OS
     $publishers |
@@ -119,8 +119,8 @@
     Get-AzVMImage |
     Where-Object Offer -eq 'Windows' |
     Group-Object -Property Skus, Offer |
-    ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 | Get-AzVmImage } |
-    Where-Object PurchasePlan -eq $null
+    ForEach-Object { $_.Group | Sort-Object -Property {$_.Version -as [Version]} -Descending | Select-Object -First 1 | Get-AzVmImage } |
+    Where-Object {$_.PurchasePlan -eq $null -and $_.ImageDeprecationStatus.ImageState -eq 'Active'}
 
     # Sharepoint 2013 and 2016
     $publishers |
@@ -130,6 +130,6 @@
     Get-AzVMImage |
     Where-Object Offer -eq 'MicrosoftSharePointServer' |
     Group-Object -Property Skus, Offer |
-    ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 | Get-AzVmImage } |
-    Where-Object PurchasePlan -eq $null
+    ForEach-Object { $_.Group | Sort-Object -Property {$_.Version -as [Version]} -Descending | Select-Object -First 1 | Get-AzVmImage } |
+    Where-Object {$_.PurchasePlan -eq $null -and $_.ImageDeprecationStatus.ImageState -eq 'Active'}
 }
