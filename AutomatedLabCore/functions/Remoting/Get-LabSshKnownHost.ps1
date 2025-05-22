@@ -5,5 +5,12 @@
 
     if (-not (Test-Path -Path $home/.ssh/known_hosts)) { return }
 
-    Get-Content -Path $home/.ssh/known_hosts | ConvertFrom-String -Delimiter ' ' -PropertyNames ComputerName,Cipher,Fingerprint -ErrorAction SilentlyContinue
+    foreach ($line in (Get-Content -Path $home/.ssh/known_hosts)) {
+        $values = $line -split '\s'
+        [pscustomobject]@{
+            ComputerName = $values[0]
+            Cipher       = $values[1]
+            Fingerprint  = $values[2]
+        }
+    }
 }

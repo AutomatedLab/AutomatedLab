@@ -71,7 +71,8 @@
             }
         }
 
-        $fileName = $file.FullName.Replace("$($localLabSources)\", '')
+        $sepp = [IO.Path]::DirectorySeparatorChar
+        $fileName = $file.FullName.Replace("$($localLabSources)$($sepp)", '')
 
         $azureFile = Get-AzStorageFile -ShareClient $share.ShareClient -Context $share.Context -Path $fileName -ErrorAction SilentlyContinue
         if ($azureFile) {

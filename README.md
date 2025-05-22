@@ -13,6 +13,13 @@ Master | [![Build status](https://ci.appveyor.com/api/projects/status/9yynk81k3k
 
 AutomatedLab (AL) enables you to setup test and lab environments on Hyper-v or Azure with multiple products or just a single VM in a very short time. There are only two requirements you need to make sure: You need the DVD ISO images and a Hyper-V host or an Azure subscription.
 
+## Sponsors
+
+Huge thanks to our regular sponsor [@chocolatey](https://github.com/chocolatey)! In case you have lived under a rock (or worked mainly on non-Windows systems) for the past decade, Chocolatey
+is a brilliant package management system with a public binary package gallery as well as self-hosted options complete with enterprise-grade support. Give it a try with
+a local lab environment - it could not be easier 😊 Start with a Domain Controller and a Certificate Authority to validate not only package distribution, but also digital signatures. Our samples
+such as the [NuGet server](https://automatedlab.org/en/latest/Wiki/SampleScripts/Scenarios/en-us/NuGetServer/) or [Azure DevOps](https://github.com/dsccommunity/DscWorkshop/tree/main/Lab) all include galleries that Chocolatey can use for publishing and downloading packages.
+
 ### Requirements
 
 Apart from the module itself your system needs to meet the following requirements:

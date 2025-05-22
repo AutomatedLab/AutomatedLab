@@ -44,9 +44,9 @@
 
     foreach ($remoteItem in $remoteItems)
     {
-        $itemSource = Join-Path -Path $SourceFolderPath -ChildPath $remoteItem.Name
+        $itemSource = $ExecutionContext.SessionState.Path.Combine($SourceFolderPath, $remoteItem.Name)
 
-        $itemDestination = Join-Path -Path $DestinationFolderPath -ChildPath $remoteItem.Name
+        $itemDestination = $ExecutionContext.SessionState.Path.Combine($DestinationFolderPath, $remoteItem.Name)
         if ($remoteItem.PSIsContainer)
         {
             $null = Receive-Directory -SourceFolderPath $itemSource -DestinationFolderPath $itemDestination -Session $Session
