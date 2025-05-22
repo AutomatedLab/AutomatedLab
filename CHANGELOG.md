@@ -6,6 +6,7 @@
 
 ### Bugs
 
+- Fixed cert import/removal issue in install/removal on Linux (#1707).
 - Fixed issue with Linux and Test-LabHostConnected sometimes not able to reliably ping.
 - Fixed issue in which Linux lab sources sync never worked... (#1705).
 - Fixed issue with Linux where ConvertFrom-String does not exist.
