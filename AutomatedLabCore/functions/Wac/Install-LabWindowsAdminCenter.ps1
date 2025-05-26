@@ -59,7 +59,7 @@
                 Failure = if (-not (Get-Command Test-WACInstallationFailure -ErrorAction SilentlyContinue)) {
                     $true
                 }
-                else { [bool](Test-WACInstallationFailure C:\DeployDebug\WACSetup.log) }
+                else { [bool](Test-WACInstallationFailure C:\DeployDebug\WACSetup.log -ErrorAction SilentlyContinue) }
             }
         }
 
