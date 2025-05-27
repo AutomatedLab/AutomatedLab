@@ -116,10 +116,6 @@
         $generalInfo = $Matches.0 -replace ';.*' -split "`n" | ConvertFrom-StringData
         $version = $generalInfo.version
         $name = $generalInfo.name
-        if (-not $name -and $generalInfo.family -match 'Oracle Linux') {
-            # Oracle Linux 6.x does not have "name" in "[general]"
-            $name = "Oracle Linux $version"
-        }
         $variant = $generalInfo.variant
         $versionInfo = if (-not $version) { [Version]::new(1, 0, 0, 0) } elseif ($version.Contains('.')) { $version -as [Version] } else { [Version]::new($version, 0) }
         $arch = if ($generalInfo.arch -eq 'x86_64') { 'x64' } else { 'x86' }
