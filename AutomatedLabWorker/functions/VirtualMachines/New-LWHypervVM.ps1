@@ -372,9 +372,9 @@
         }
 
         # Copy Unattend-Stuff here
-        if ($Machine.LinuxType -eq 'RedHat')
+        if ($machine.LinuxType -eq 'RedHat')
         {
-            Export-UnattendedFile -Path (Join-Path -Path $drive.RootDirectory -ChildPath ks.cfg)
+            Export-UnattendedFile -Path (Join-Path -Path $drive.RootDirectory -ChildPath ks.cfg) -Version $machine.OperatingSystem.Version.Major
             Copy-Item -Path (Join-Path -Path $drive.RootDirectory -ChildPath ks.cfg) -Destination (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath "ks_$($Machine.Name).cfg")
         }
         elseif ($Machine.LinuxType -eq 'Suse')

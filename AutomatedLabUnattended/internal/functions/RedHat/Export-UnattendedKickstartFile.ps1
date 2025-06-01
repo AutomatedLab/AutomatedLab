@@ -2,7 +2,8 @@ function Export-UnattendedKickstartFile
 {
     param (
         [Parameter(Mandatory = $true)]
-        [string]$Path
+        [string]$Path,
+        [string]$Version
     )
 
     $idx = $script:un.IndexOf('%post')
@@ -21,7 +22,7 @@ function Export-UnattendedKickstartFile
 
     try
     {
-        $repoContent = (Invoke-RestMethod -Method Get -Uri 'https://packages.microsoft.com/config/rhel/7/prod.repo' -ErrorAction Stop) -split "`n"
+        $repoContent = (Invoke-RestMethod -Method Get -Uri "https://packages.microsoft.com/config/rhel/$Version/prod.repo" -ErrorAction Stop) -split "`n"
     }
     catch { }
 
