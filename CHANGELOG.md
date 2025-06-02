@@ -4,6 +4,8 @@
 
 ### Enhancements
 
+- Support Oracle Linux 7 and 8. Oracle Linux 9 does not yet work (#1722).
+
 ### Bugs
 
 - Fix libmi errors on Linux with Get-LabWindowsFeature (#1717).
