@@ -2,6 +2,8 @@
 
 ## Unreleased (yyyy-MM-dd)
 
+## 5.57.0 (2025-06-09)
+
 ### Enhancements
 
 ### Bugs
