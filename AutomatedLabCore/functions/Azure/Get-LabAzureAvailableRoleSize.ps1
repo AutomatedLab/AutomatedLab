@@ -45,7 +45,6 @@
     foreach ($vms in (Get-AzComputeResourceSku -Location $azLocation.Location | Where-Object -Property Name -in $availableRoleSizes.Name))
     {
         $rsInfo = $availableRoleSizes | Where-Object Name -eq $vms.Name
-        Write-Host "$($vms.Name) - $($rsInfo.Capabilities.Where({$_.Name -eq 'HyperVGenerations'}).Value)"
 
         [AutomatedLab.Azure.AzureRmVmSize]@{
             NumberOfCores        = $rsInfo.Capabilities.Where({ $_.Name -eq 'vCPUs' }).Value
