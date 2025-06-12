@@ -42,19 +42,20 @@
         $_.ResourceType -eq 'virtualMachines' -and ($_.Restrictions | Where-Object Type -eq Location).ReasonCode -ne 'NotAvailableForSubscription' -and ($_.Capabilities | Where-Object Name -eq CpuArchitectureType).Value -notlike '*arm*'
     }
 
-    foreach ($vms in (Get-AzVMSize -Location $azLocation.Location | Where-Object -Property Name -in $availableRoleSizes.Name))
+    foreach ($vms in (Get-AzComputeResourceSku -Location $azLocation.Location | Where-Object -Property Name -in $availableRoleSizes.Name))
     {
         $rsInfo = $availableRoleSizes | Where-Object Name -eq $vms.Name
+        Write-Host "$($vms.Name) - $($rsInfo.Capabilities.Where({$_.Name -eq 'HyperVGenerations'}).Value)"
 
         [AutomatedLab.Azure.AzureRmVmSize]@{
-            NumberOfCores = $vms.NumberOfCores
-            MemoryInMB = $vms.MemoryInMB
-            Name = $vms.Name
-            MaxDataDiskCount = $vms.MaxDataDiskCount
-            ResourceDiskSizeInMB = $vms.ResourceDiskSizeInMB
-            OSDiskSizeInMB = $vms.OSDiskSizeInMB
-            Gen1Supported = ($rsInfo.Capabilities | Where-Object Name -eq HyperVGenerations).Value -like '*v1*'
-            Gen2Supported = ($rsInfo.Capabilities | Where-Object Name -eq HyperVGenerations).Value -like '*v2*'
+            NumberOfCores        = $rsInfo.Capabilities.Where({ $_.Name -eq 'vCPUs' }).Value
+            MemoryInMB           = [int]($rsInfo.Capabilities.Where({ $_.Name -eq 'MemoryGB' }).Value) * 1024
+            Name                 = $vms.Name
+            MaxDataDiskCount     = $rsInfo.Capabilities.Where({ $_.Name -eq 'MaxDataDiskCount' }).Value
+            ResourceDiskSizeInMB = $rsInfo.Capabilities.Where({ $_.Name -eq 'MaxResourceVolumeMB' }).Value
+            OSDiskSizeInMB       = $rsInfo.Capabilities.Where({ $_.Name -eq 'OSVhdSizeMB' }).Value
+            Gen1Supported        = $rsInfo.Capabilities.Where({ $_.Name -eq 'HyperVGenerations' }).Value -like '*v1*'
+            Gen2Supported        = $rsInfo.Capabilities.Where({ $_.Name -eq 'HyperVGenerations' }).Value -like '*v2*'
         }
     }
 }
