@@ -2,6 +2,10 @@
 
 ## Unreleased (yyyy-MM-dd)
 
+### Enhancements
+
+- The `Az.Compute` cmdlet `Get-AzVMSize` got replaced by `Get-AzComputeResourceSku`. Making the necessary changes.
+
 ## 5.57.0 (2025-06-09)
 
 ### Enhancements
