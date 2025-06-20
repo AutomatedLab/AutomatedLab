@@ -168,6 +168,7 @@ Set-PSFConfig -Module 'AutomatedLab' -Name CreateOnlyReferencedDisks -Value $tru
 
 #Admin Center
 Set-PSFConfig -Module 'AutomatedLab' -Name WacDownloadUrl -Value 'http://aka.ms/WACDownload' -Validation string -Initialize -Description 'Windows Admin Center Download URL'
+Set-PSFConfig -Module 'AutomatedLab' -Name WacMsIntermediateCaCert -Value 'https://www.microsoft.com/pkiops/certs/MicCodSigPCA2011_2011-07-08.crt' -Validation string -Initialize -Description 'Windows Admin Center Code-Signing Cert Intermediate CA cert URL'
 
 #Host Settings
 Set-PSFConfig -Module 'AutomatedLab' -Name DiskDeploymentInProgressPath -Value (Join-Path -Path (Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot) -ChildPath "LabDiskDeploymentInProgress.txt") -Initialize -Validation string -Description 'The file indicating that Hyper-V disks are being configured to reduce disk congestion'
@@ -567,7 +568,7 @@ Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
             'Organisation'
             'Capabilities'
         )
-        WindowsAdminCenter       = @('Port', 'EnableDevMode', 'ConnectedNode', 'UseSsl')
+        WindowsAdminCenter       = @('Port')
         Scvmm2016                = @(
             'MUOptIn'
             'SqlMachineName'

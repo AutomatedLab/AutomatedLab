@@ -89,8 +89,8 @@ namespace AutomatedLab
             };
         private Dictionary<string, string> isoNameToAzureSku;
 
-        private static ListXmlStore<ProductKey> productKeys = null;
-        private static ListXmlStore<ProductKey> productKeysCustom = null;
+        private static ListXmlStore<ProductKey> productKeys = new ListXmlStore<ProductKey>();
+        private static ListXmlStore<ProductKey> productKeysCustom = new ListXmlStore<ProductKey>();
 
         public Architecture Architecture { get; set; }
         public string OperatingSystemName

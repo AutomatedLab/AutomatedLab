@@ -5,6 +5,11 @@
 ### Enhancements
 
 - Support Oracle Linux 7 and 8. Oracle Linux 9 does not yet work (#1722).
+- The `Az.Compute` cmdlet `Get-AzVMSize` got replaced by `Get-AzComputeResourceSku`. Making the necessary changes.
+
+## 5.57.0 (2025-06-09)
+
+### Enhancements
 
 ### Bugs
 
@@ -17,6 +22,9 @@
 - Fixed issue in which Linux lab sources sync never worked... (#1705).
 - Fixed issue with Linux where ConvertFrom-String does not exist.
 - Fixed issue with Join-Path and non-existing source paths (#1709).
+- Fixed issue with Linux and Test-LabHostConnected sometimes not able to reliably ping
+- Removed WindowsAdminCenter custom role
+- Fixed WindowsAdminCenter built-in role to work with current InnoSetup-based installer (#1686)
 
 ## 5.56.0 (2025-01-26)
 
