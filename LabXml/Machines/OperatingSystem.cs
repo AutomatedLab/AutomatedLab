@@ -355,7 +355,7 @@ namespace AutomatedLab
         {
             get
             {
-                if (System.Text.RegularExpressions.Regex.IsMatch(OperatingSystemName, "CentOS|Red Hat|Fedora")) return LinuxType.RedHat;
+                if (System.Text.RegularExpressions.Regex.IsMatch(OperatingSystemName, "CentOS|Red Hat|Fedora|Oracle")) return LinuxType.RedHat;
                 if (System.Text.RegularExpressions.Regex.IsMatch(OperatingSystemName, "Suse")) return LinuxType.SuSE;
                 if (System.Text.RegularExpressions.Regex.IsMatch(OperatingSystemName, "Ubuntu|Kali")) return LinuxType.Ubuntu;
 
@@ -435,7 +435,7 @@ namespace AutomatedLab
         {
             get
             {
-                var exp = @"(?:Windows Server )?(\d{4})(( )?R2)?|(?:Windows )?((\d){1,2}(\.\d)?)|(?:(CentOS |Fedora |Red Hat Enterprise Linux |openSUSE Leap |SUSE Linux Enterprise Server ))?(\d+\.?\d?)((?: )?SP\d)?";
+                var exp = @"(?:Windows Server )?(\d{4})(( )?R2)?|(?:Windows )?((\d){1,2}(\.\d)?)|(?:(CentOS |Fedora |Red Hat Enterprise Linux |Oracle Linux |openSUSE Leap |SUSE Linux Enterprise Server ))?(\d+\.?\d?)((?: )?SP\d)?";
 
                 var match = System.Text.RegularExpressions.Regex.Match(operatingSystemName, exp, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
 

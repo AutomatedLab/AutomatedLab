@@ -9,6 +9,10 @@
         [string]$Path,
 
         [Parameter(ParameterSetName='Kickstart')]
+        [string]
+        $Version,
+
+        [Parameter(ParameterSetName='Kickstart')]
         [switch]
         $IsKickstart,
 
