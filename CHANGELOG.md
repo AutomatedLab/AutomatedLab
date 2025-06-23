@@ -4,6 +4,12 @@
 
 ### Enhancements
 
+- The `Az.Compute` cmdlet `Get-AzVMSize` got replaced by `Get-AzComputeResourceSku`. Making the necessary changes.
+
+## 5.57.0 (2025-06-09)
+
+### Enhancements
+
 ### Bugs
 
 - Fix libmi errors on Linux with Get-LabWindowsFeature (#1717).
@@ -16,6 +22,9 @@
 - Fixed issue with Linux where ConvertFrom-String does not exist.
 - Fixed issue with Join-Path and non-existing source paths (#1709).
 - Fix issue with Get-AzStorageAccount returning nullable booleans as NULL now
+- Fixed issue with Linux and Test-LabHostConnected sometimes not able to reliably ping
+- Removed WindowsAdminCenter custom role
+- Fixed WindowsAdminCenter built-in role to work with current InnoSetup-based installer (#1686)
 
 ## 5.56.0 (2025-01-26)
 

@@ -252,13 +252,23 @@
         }
     }
 
+    $resultPath = if ($IsLinux -or $IsMacOS)
+    {
+        $normalizedPath = $Path.TrimEnd('/')
+        [IO.Path]::Combine($normalizedPath, (?? { $FileName } { $FileName } { $result.FileName }))
+    }
+    else
+    {
+        Join-Path -Path $Path -ChildPath (?? { $FileName } { $FileName } { $result.FileName })
+    }
+
     if ($PassThru)
     {
         New-Object PSObject -Property @{
             Uri      = $Uri
             Path     = $Path
             FileName = ?? { $FileName } { $FileName } { $result.FileName }
-            FullName = Join-Path -Path $Path -ChildPath (?? { $FileName } { $FileName } { $result.FileName })
+            FullName = $resultPath
             Length   = $result.ContentLength
         }
     }

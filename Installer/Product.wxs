@@ -1182,9 +1182,6 @@
         <File Id="fil342BDDCDD4734ECC9B26FD76634CA36D" Source="$(var.SolutionDir)\LabSources\CustomRoles\SCCM\DownloadSCCM.ps1" />
         <File Id="fil566509688A384CCDA6EB4A512EBB9BA4" Source="$(var.SolutionDir)\LabSources\CustomRoles\SCCM\InstallSCCM.ps1" />
       </Component>
-      <Component Id="cmp31E714FCC0CE42BB89D1E9EDDAFFEF64" Directory="dir1ED29293F8F64AE8983DE482FEC3A5EB" Guid="f20c6f66-1909-4bb2-9603-bb466c19a0ad">
-        <File Id="filC97331127C04463994C815D992DFF5BC" Source="$(var.SolutionDir)\LabSources\CustomRoles\WindowsAdminCenter\HostStart.ps1" />
-      </Component>
       <Component Id="cmpAC53BE1435E54EA2B6C138AC6F7B4D01" Directory="dirB373F64E5AF4425A852A91AF628C1053" Guid="bc9fb53b-c471-41bf-b74c-0319b4320284">
         <File Id="fil611A290B504B40AC8067CF36E9A1FE16" KeyPath="yes" Source="$(var.SolutionDir)\LabSources\CustomRoles\DemoCustomRole\DemoCustomRole.ps1" />
         <File Id="filBE11AC3DC999442C9450DAD98FF51265" Source="$(var.SolutionDir)\LabSources\CustomRoles\DemoCustomRole\HostEnd.ps1" />
@@ -1442,11 +1439,6 @@
   <Fragment>
     <DirectoryRef Id="dirE3A2F6A6AFF66E7DBE85D5202BCC2B39">
       <Directory Id="dirD5857EAD5CA449FAA8DEB6655159C72F" Name="SCCM" />
-    </DirectoryRef>
-  </Fragment>
-  <Fragment>
-    <DirectoryRef Id="dirE3A2F6A6AFF66E7DBE85D5202BCC2B39">
-      <Directory Id="dir1ED29293F8F64AE8983DE482FEC3A5EB" Name="WindowsAdminCenter" />
     </DirectoryRef>
   </Fragment>
   <Fragment>
