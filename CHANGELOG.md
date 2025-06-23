@@ -15,6 +15,7 @@
 - Fixed issue in which Linux lab sources sync never worked... (#1705).
 - Fixed issue with Linux where ConvertFrom-String does not exist.
 - Fixed issue with Join-Path and non-existing source paths (#1709).
+- Fix issue with Get-AzStorageAccount returning nullable booleans as NULL now
 
 ## 5.56.0 (2025-01-26)
 

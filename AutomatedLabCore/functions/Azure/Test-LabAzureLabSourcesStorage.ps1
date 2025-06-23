@@ -16,7 +16,8 @@
         return $false
     }
 
-    if (-not $azureLabSources.AllowSharedKeyAccess)
+    # Fun times - if the property is null, we have to assume the default, which is true
+    if ($azureLabSources.AllowSharedKeyAccess -ne $null -and -not $azureLabSources.AllowSharedKeyAccess)
     {
         Write-Warning "Azure LabSources storage '$($azureLabSources.StorageAccountName)' does not allow shared key access"
         return $false
