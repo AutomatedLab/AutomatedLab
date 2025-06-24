@@ -1,6 +1,6 @@
 # AutomatedLab
 
-![Image](AutomatedLab-GIF250-whitebg-lossy25.gif)
+![Image](Automated-Lab_icon256.png)
 
 AutomatedLab (AL) enables you to
 
