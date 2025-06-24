@@ -7,6 +7,7 @@
 - Support Oracle Linux 7 and 8. Oracle Linux 9 does not yet work (#1722).
 - The `Az.Compute` cmdlet `Get-AzVMSize` got replaced by `Get-AzComputeResourceSku`. Making the necessary changes.
 - Update Az module versions for public Azure
+- Update `Get-LabMachineRoleDefinition` to have a `List` parameter (#1733)
 
 ### Bugs
 

@@ -38,13 +38,28 @@ Returns all possible parameter for the specified role
 
 ## PARAMETERS
 
+### -List
+Indicates that all available roles should be returned.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: List
+Aliases:
+
+Required: False
+Position: 1
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -Properties
 The properties for one role definition that can be set for the role, e.g.
 $role = Get-LabMachineRoleDefinition -Role FirstChildDC -Properties @{ ParentDomain = 'contoso.com'; NewDomain = 'child' }
 
 ```yaml
 Type: Hashtable
-Parameter Sets: (All)
+Parameter Sets: Role
 Aliases:
 
 Required: False
@@ -60,7 +75,7 @@ or <https://automatedlab.org/en/latest/Wiki/Roles/roles/> for more information.
 
 ```yaml
 Type: Roles
-Parameter Sets: (All)
+Parameter Sets: Role
 Aliases:
 Accepted values: RootDC, FirstChildDC, DC, ADDS, FileServer, WebServer, DHCP, Routing, CaRoot, CaSubordinate, SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016, VisualStudio2013, VisualStudio2015, SharePoint2013, SharePoint2016, Orchestrator2012, SQLServer2017, DSCPullServer, Office2013, Office2016, ADFS, ADFSWAP, ADFSProxy, SQLServer2019, FailoverStorage, FailoverNode, Tfs2015, Tfs2017, TfsBuildWorker, Tfs2018, HyperV, AzDevOps, SharePoint2019, SharePoint, WindowsAdminCenter, Scvmm2016, Scvmm2019, ScomManagement, ScomConsole, ScomWebConsole, ScomReporting, ScomGateway, SCOM, DynamicsFull, DynamicsFrontend, DynamicsBackend, DynamicsAdmin, Dynamics, RemoteDesktopGateway, RemoteDesktopWebAccess, RemoteDesktopSessionHost, RemoteDesktopConnectionBroker, RemoteDesktopLicensing, RemoteDesktopVirtualizationHost, RDS, ConfigurationManager, Scvmm2022, SCVMM, SQLServer2022, SQLServer
 
@@ -76,7 +91,7 @@ Indicates that Property-Syntax should be returned
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: (All)
+Parameter Sets: Role
 Aliases:
 
 Required: False
