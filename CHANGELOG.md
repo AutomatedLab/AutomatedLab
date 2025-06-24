@@ -8,6 +8,10 @@
 - The `Az.Compute` cmdlet `Get-AzVMSize` got replaced by `Get-AzComputeResourceSku`. Making the necessary changes.
 - Update Az module versions for public Azure
 
+### Bugs
+
+- Fix issue with BinarySerializer in Lab Snippets (Get-TopologicalSort #1732)
+
 ## 5.57.0 (2025-06-09)
 
 ### Enhancements
