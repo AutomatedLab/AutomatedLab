@@ -7,7 +7,7 @@ if ($PSEdition -eq 'Core') {
     $requiredModulesImplicit = @('International') # These modules should be imported via implicit remoting. Might suffer from implicit sessions getting removed though
 
     $ipmoErr = $null # Initialize, otherwise Import-MOdule -Force will extend this variable indefinitely
-    if ($requiredModulesImplicit) {
+    if ($requiredModulesImplicit -and $IsWindows) {
         try {
             if ((Get-Command Import-Module).Parameters.ContainsKey('UseWindowsPowerShell')) {
                 Import-Module -Name $requiredModulesImplicit -UseWindowsPowerShell -WarningAction SilentlyContinue -ErrorAction Stop -Force -ErrorVariable +ipmoErr
@@ -32,7 +32,7 @@ if ($PSEdition -eq 'Core') {
         }
     }
 
-    if ($requiredModules) {
+    if ($requiredModules -and $IsWindows) {
         Import-Module -Name $requiredModules -SkipEditionCheck -WarningAction SilentlyContinue -ErrorAction SilentlyContinue -Force -ErrorVariable +ipmoErr
     }
 
