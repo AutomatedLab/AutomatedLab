@@ -9,6 +9,7 @@
 - Update Az module versions for public Azure
 - Update `Get-LabMachineRoleDefinition` to have a `List` parameter (#1733)
 - Skip init of initialized VMs
+- Grab OSX/macOS (???) CPU info using sysctl
 
 ### Bugs
 
