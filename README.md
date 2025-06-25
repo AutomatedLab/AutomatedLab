@@ -26,32 +26,36 @@ Apart from the module itself your system needs to meet the following requirement
 
 - Windows Management Framework 5+ (Windows)
 - .NET 4.7.1 (Windows PowerShell) or .NET Core 2.x (PowerShell 6+)
-- Windows Server 2012 R2+/Windows 8.1+ (Hyper-V, Azure) or Linux (Azure)
+- OS
+  - Windows Server 2012 R2+/Windows 8.1+ (Hyper-V, Azure)
+  - Linux (Azure)
+  - macOS (Azure, best-effort support since neither @raandree nor @nyanhp have Apple devices)
 - Recommended OS language is en-us
-- Admin privileges are required
-- ISO files for all operating systems and roles to be deployed
+- Admin privileges are required on Windows
+- ISO files for all operating systems (Hyper-V only) and roles to be deployed (Hyper-V, Azure)
 - Intel VT-x or AMD/V capable CPU
 - A decent amount of RAM
 - Low-Latency high-throughput storage (No spinning disks please, as there are issues related to them)
 
 #### Windows
 
-- Windows Management Framework 5+
+- Windows Management Framework 5+ or ideally PowerShell 7
 - Windows Server 2012 R2+/Windows 8.1+
 - Recommended OS language is en-us
 - Admin privileges are required
 
-#### Linux
+#### Linux, macOS
 
-- Ubuntu, Ubuntu WSL & Azure Cloud Shell supported
-- Tested on Ubuntu. Due to fragmented nature of Linux distributions, we cannot support anything else.
+- Fedora, Ubuntu, Ubuntu WSL & Azure Cloud Shell supported
+- macOS supported on best effort due to lack of Apple devices - feel free to sponsor two though :D
+- Tested on Ubuntu and Fedora. Due to fragmented nature of Linux distributions, we cannot support much else.
 - PowerShell Core 6+
-- gss-ntlmssp to enable remoting (*mandatory - no remoting, no way for AutomatedLab to do its thing*)
+- SSH or gss-ntlmssp to enable remoting (*mandatory - no remoting, no way for AutomatedLab to do its thing*)
   - If in doubt, try to `Install-Module PSWSMAN; Install-WSMAN` - no success warranted
 - IP and route commands available
 - **Azure subscription**
-  - At the moment, AutomatedLab only works using Azure.
-  - KVM planned for a later date.
+  - At the moment, AutomatedLab only works using Azure when using Linux.
+  - KVM planned for a later date by virtue of libvirt.
 
 ### Download AutomatedLab
 
@@ -85,6 +89,8 @@ This solution supports setting up virtual machines with the following products
 - ProGet (Private PowerShell Gallery)
 - Office 2013, 2016, 2019
 - DSC Pull Server (with SQL Reporting)
+- Dynamics 365
+- Remote Desktop Services including HTML5 web client
 
 ### Feature List
 

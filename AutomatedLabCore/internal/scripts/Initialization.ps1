@@ -1,5 +1,4 @@
-if ($PSEdition -eq 'Core')
-{
+if ($PSEdition -eq 'Core') {
     Add-Type -Path $PSScriptRoot/lib/core/AutomatedLab.dll
 
     # These modules SHOULD be marked as Core compatible, as tested with Windows 10.0.18362.113
@@ -8,56 +7,44 @@ if ($PSEdition -eq 'Core')
     $requiredModulesImplicit = @('International') # These modules should be imported via implicit remoting. Might suffer from implicit sessions getting removed though
 
     $ipmoErr = $null # Initialize, otherwise Import-MOdule -Force will extend this variable indefinitely
-    if ($requiredModulesImplicit)
-    {
-        try
-        {
-            if ((Get-Command Import-Module).Parameters.ContainsKey('UseWindowsPowerShell'))
-            {
+    if ($requiredModulesImplicit) {
+        try {
+            if ((Get-Command Import-Module).Parameters.ContainsKey('UseWindowsPowerShell')) {
                 Import-Module -Name $requiredModulesImplicit -UseWindowsPowerShell -WarningAction SilentlyContinue -ErrorAction Stop -Force -ErrorVariable +ipmoErr
             }
-            else
-            {
+            else {
                 Import-WinModule -Name $requiredModulesImplicit -WarningAction SilentlyContinue -ErrorAction Stop -Force -ErrorVariable +ipmoErr
             }
         }
-        catch
-        {
+        catch {
             Remove-Module -Name $requiredModulesImplicit -Force -ErrorAction SilentlyContinue
             Clear-Variable -Name ipmoErr -ErrorAction SilentlyContinue
-            foreach ($m in $requiredModulesImplicit)
-            {
+            foreach ($m in $requiredModulesImplicit) {
                 Get-ChildItem -Directory -Path ([IO.Path]::GetTempPath()) -Filter "RemoteIpMoProxy_$($m)*_localhost_*" | Remove-Item -Recurse -Force
             }
 
-            if ((Get-Command Import-Module).Parameters.ContainsKey('UseWindowsPowerShell'))
-            {
+            if ((Get-Command Import-Module).Parameters.ContainsKey('UseWindowsPowerShell')) {
                 Import-Module -Name $requiredModulesImplicit -UseWindowsPowerShell -WarningAction SilentlyContinue -ErrorAction SilentlyContinue -Force -ErrorVariable +ipmoErr
             }
-            else
-            {
+            else {
                 Import-WinModule -Name $requiredModulesImplicit -WarningAction SilentlyContinue -ErrorAction SilentlyContinue -Force -ErrorVariable +ipmoErr
             }
         }
     }
 
-    if ($requiredModules)
-    {
+    if ($requiredModules) {
         Import-Module -Name $requiredModules -SkipEditionCheck -WarningAction SilentlyContinue -ErrorAction SilentlyContinue -Force -ErrorVariable +ipmoErr
     }
 
-    if ($ipmoErr)
-    {
+    if ($ipmoErr) {
         Write-PSFMessage -Level Warning -Message "Could not import modules: $($ipmoErr.TargetObject -join ',') - your experience might be impacted."
     }
 }
-else
-{
+else {
     Add-Type -Path $PSScriptRoot/lib/full/AutomatedLab.dll
 }
 
-if ((Get-Module -ListAvailable Ships) -and (Get-Module -ListAvailable AutomatedLab.Ships))
-{
+if ((Get-Module -ListAvailable Ships) -and (Get-Module -ListAvailable AutomatedLab.Ships)) {
     Import-Module Ships, AutomatedLab.Ships
     [void] (New-PSDrive -PSProvider SHiPS -Name Labs -Root "AutomatedLab.Ships#LabHost" -WarningAction SilentlyContinue -ErrorAction SilentlyContinue)
 }
@@ -65,16 +52,20 @@ if ((Get-Module -ListAvailable Ships) -and (Get-Module -ListAvailable AutomatedL
 Set-Item -Path Env:\SuppressAzurePowerShellBreakingChangeWarnings -Value true
 
 #region Register default configuration if not present
-Set-PSFConfig -Module 'AutomatedLab' -Name LabAppDataRoot -Value (Join-Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath "AutomatedLab") -Initialize -Validation string -Description "Root folder to Labs, Assets and Stores"
+$labAppDataRoot = if (-not $IsLinux -and -not $IsMacOs) {
+    Join-Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath "AutomatedLab"
+}
+else {
+    Join-Path -Path $Home -ChildPath .automatedlab
+}
+Set-PSFConfig -Module 'AutomatedLab' -Name LabAppDataRoot -Value $labAppDataRoot -Initialize -Validation string -Description "Root folder to Labs, Assets and Stores"
 Set-PSFConfig -Module 'AutomatedLab' -Name 'DisableVersionCheck' -Value $false -Initialize -Validation bool -Description 'Set to true to skip checking GitHub for an updated AutomatedLab release'
 
-if (-not (Get-PSFConfigValue -FullName AutomatedLab.DisableVersionCheck))
-{
+if (-not (Get-PSFConfigValue -FullName AutomatedLab.DisableVersionCheck)) {
     $usedRelease = (Split-Path -Leaf -Path $PSScriptRoot) -as [version]
     $currentRelease = try { ((Invoke-RestMethod -Method Get -Uri https://api.github.com/repos/AutomatedLab/AutomatedLab/releases/latest -ErrorAction Stop).tag_Name -replace 'v') -as [Version] } catch {}
 
-    if ($currentRelease -and $usedRelease -lt $currentRelease)
-    {
+    if ($currentRelease -and $usedRelease -lt $currentRelease) {
         Write-PSFMessage -Level Host -Message "Your version of AutomatedLab is outdated. Consider updating to the recent version, $currentRelease"
     }
 }
@@ -113,12 +104,10 @@ Set-PSFConfig -Module 'AutomatedLab' -Name Timeout_VisualStudio2015Installation 
 Set-PSFConfig -Module 'AutomatedLab' -Name DefaultProgressIndicator -Value 10 -Initialize -Validation integer -Description 'After how many minutes will a progress indicator be written'
 Set-PSFConfig -Module 'AutomatedLab' -Name DisableConnectivityCheck -Value $false -Initialize -Validation bool -Description 'Indicates whether connectivity checks should be skipped. Certain systems like Azure DevOps build workers do not send ICMP packges and the method might always fail'
 Set-PSFConfig -Module 'AutomatedLab' -Name 'VmPath' -Value $null -Validation string -Initialize -Description 'VM storage location'
-$osroot = if ([System.Environment]::OSVersion.Platform -eq 'Win32NT')
-{
+$osroot = if ([System.Environment]::OSVersion.Platform -eq 'Win32NT') {
     'C:\'
 }
-else
-{
+else {
     '/'
 }
 Set-PSFConfig -Module 'AutomatedLab' -Name OsRoot -Value $osroot -Initialize -Validation string
@@ -832,8 +821,7 @@ Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
 # Product key file path
 $fPath = Join-Path -Path (Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot) -ChildPath 'Assets/ProductKeys.xml'
 $fcPath = Join-Path -Path (Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot) -ChildPath 'Assets/ProductKeysCustom.xml'
-if (-not (Test-Path -Path $fPath -ErrorAction SilentlyContinue))
-{
+if (-not (Test-Path -Path $fPath -ErrorAction SilentlyContinue)) {
     $null = if (-not (Test-Path -Path (Split-Path $fPath -Parent))) { New-Item -Path (Split-Path $fPath -Parent) -ItemType Directory } 
     Copy-Item -Path "$PSScriptRoot/ProductKeys.xml" -Destination $fPath -Force -ErrorAction SilentlyContinue
 }
@@ -846,8 +834,7 @@ Set-PSFConfig -Module AutomatedLab -Name ProductKeyFilePathCustom -Value $fcPath
 #endregion
 
 #region Linux folder
-if ($IsLinux -or $IsMacOs -and -not (Test-Path (Join-Path -Path (Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot) -ChildPath 'Stores')))
-{
+if ($IsLinux -or $IsMacOs -and -not (Test-Path (Join-Path -Path (Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot) -ChildPath 'Stores'))) {
     $null = New-Item -ItemType Directory -Path (Join-Path -Path (Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot) -ChildPath 'Stores')
 }
 #endregion
@@ -856,24 +843,10 @@ if ($IsLinux -or $IsMacOs -and -not (Test-Path (Join-Path -Path (Get-PSFConfigVa
 
 #download the ProductKeys.xml file if it does not exist. The installer puts the file into 'C:\ProgramData\AutomatedLab\Assets'
 #but when installing AL using the PowerShell Gallery, this file is missing.
-$productKeyFileLink = 'https://raw.githubusercontent.com/AutomatedLab/AutomatedLab/master/Assets/ProductKeys.xml'
-$productKeyFileName = 'ProductKeys.xml'
-$productKeyFilePath = Get-PSFConfigValue AutomatedLab.ProductKeyFilePath
-
-if (-not (Test-Path -Path (Split-Path $productKeyFilePath -Parent)))
-{
-    New-Item -Path (Split-Path $productKeyFilePath -Parent) -ItemType Directory | Out-Null
-}
-
-if (-not (Test-Path -Path $productKeyFilePath))
-{
-    try { Invoke-RestMethod -Method Get -Uri $productKeyFileLink -OutFile $productKeyFilePath -ErrorAction Stop } catch {}
-}
 
 $productKeyCustomFilePath = Get-PSFConfigValue AutomatedLab.ProductKeyFilePathCustom
 
-if (-not (Test-Path -Path $productKeyCustomFilePath))
-{
+if (-not (Test-Path -Path $productKeyCustomFilePath)) {
     $store = New-Object 'AutomatedLab.ListXmlStore[AutomatedLab.ProductKey]'
 
     $dummyProductKey = New-Object AutomatedLab.ProductKey -Property @{ Key = '123'; OperatingSystemName = 'OS'; Version = '1.0' }
@@ -888,12 +861,10 @@ Register-PSFTeppScriptblock -Name AutomatedLab-NotificationProviders -ScriptBloc
 }
 
 Register-PSFTeppScriptblock -Name AutomatedLab-OperatingSystem -ScriptBlock {
-    $lab = if (Get-Lab -ErrorAction SilentlyContinue)
-    {
+    $lab = if (Get-Lab -ErrorAction SilentlyContinue) {
         Get-Lab -ErrorAction SilentlyContinue
     }
-    elseif (Get-LabDefinition -ErrorAction SilentlyContinue)
-    {
+    elseif (Get-LabDefinition -ErrorAction SilentlyContinue) {
         Get-LabDefinition -ErrorAction SilentlyContinue
     }
 
@@ -902,21 +873,17 @@ Register-PSFTeppScriptblock -Name AutomatedLab-OperatingSystem -ScriptBlock {
         NoDisplay    = $true
     }
 
-    if (-not $lab -or $lab -and $lab.DefaultVirtualizationEngine -eq 'HyperV')
-    {        
+    if (-not $lab -or $lab -and $lab.DefaultVirtualizationEngine -eq 'HyperV') {        
         $param['Path'] = "$labSources/ISOs"
     }
-    if ($lab.DefaultVirtualizationEngine -eq 'Azure')
-    {
+    if ($lab.DefaultVirtualizationEngine -eq 'Azure') {
         $param['Azure'] = $true
     }
-    if ($lab.DefaultVirtualizationEngine -eq 'Azure' -and $lab.AzureSettings.DefaultLocation)
-    {
+    if ($lab.DefaultVirtualizationEngine -eq 'Azure' -and $lab.AzureSettings.DefaultLocation) {
         $param['Location'] = $lab.AzureSettings.DefaultLocation.DisplayName
     }
 
-    if (-not $global:AL_OperatingSystems)
-    {
+    if (-not $global:AL_OperatingSystems) {
         $global:AL_OperatingSystems = Get-LabAvailableOperatingSystem @param
     }
 
