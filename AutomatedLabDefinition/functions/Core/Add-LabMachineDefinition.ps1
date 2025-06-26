@@ -942,10 +942,14 @@
             $processors = 1
             if (-not $script:processors)
             {
-                $script:processors = if ($IsLinux -or $IsMacOs)
+                $script:processors = if ($IsLinux)
                 {
                     $coreInf = Get-Content /proc/cpuinfo | Select-String 'siblings\s+:\s+\d+' | Select-Object -Unique
                     [int]($coreInf -replace 'siblings\s+:\s+')
+                }
+                elseif ($IsMacOs)
+                {
+                    sysctl -n machdep.cpu.core_count
                 }
                 else
                 {
