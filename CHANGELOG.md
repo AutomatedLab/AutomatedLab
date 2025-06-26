@@ -18,6 +18,7 @@
 ### Bugs
 
 - Fix issue with BinarySerializer in Lab Snippets (Get-TopologicalSort #1732)
+- Update ADK download links, thank you @TKiller609 (#1740)
 
 ## 5.57.0 (2025-06-09)
 
