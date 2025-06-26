@@ -254,12 +254,9 @@ namespace AutomatedLab
 
         static OperatingSystem()
         {
-            string path = (string)PowerShellHelper.InvokeCommand("Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot").FirstOrDefault().BaseObject;
+            string productKeysXmlFilePath = (string)PowerShellHelper.InvokeCommand("Get-PSFConfigValue -FullName AutomatedLab.ProductKeyFilePath").FirstOrDefault().BaseObject;
+            string productKeysCustomXmlFilePath = (string)PowerShellHelper.InvokeCommand("Get-PSFConfigValue -FullName AutomatedLab.ProductKeyFilePathCustom").FirstOrDefault().BaseObject;
 
-            string productKeysXmlFilePath = $@"{path}/Assets/ProductKeys.xml";
-            string productKeysCusomXmlFilePath = string.Format(@"{0}/{1}",
-                    path,
-                    @"Assets/ProductKeysCustom.xml");
             try
             {
                 productKeys = ListXmlStore<ProductKey>.Import(productKeysXmlFilePath);
@@ -271,7 +268,7 @@ namespace AutomatedLab
 
             try
             {
-                productKeysCustom = ListXmlStore<ProductKey>.Import(productKeysCusomXmlFilePath);
+                productKeysCustom = ListXmlStore<ProductKey>.Import(productKeysCustomXmlFilePath);
             }
             catch (Exception)
             {
