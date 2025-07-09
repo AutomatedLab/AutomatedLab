@@ -9,11 +9,9 @@
 - Update Az module versions for public Azure
 - Update `Get-LabMachineRoleDefinition` to have a `List` parameter (#1733)
 - Skip init of initialized VMs
-<<<<<<< bug/1742
 - Grab OSX/macOS (???) CPU info using sysctl
-=======
 - Make lab paths user-writeable by default, remove unused code to retrieve ProductKeys which are packaged with module (#1741)
->>>>>>> develop
+- Add URI tests to all configuration items beginning with http (#1746)
 
 ### Bugs
 
