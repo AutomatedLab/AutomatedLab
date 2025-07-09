@@ -2,6 +2,10 @@
 
 ## Unreleased (yyyy-MM-dd)
 
+### Bugs
+
+- Fixed a typo in DSC SQL DB setup script.
+
 ### Enhancements
 
 - Support Oracle Linux 7 and 8. Oracle Linux 9 does not yet work (#1722).

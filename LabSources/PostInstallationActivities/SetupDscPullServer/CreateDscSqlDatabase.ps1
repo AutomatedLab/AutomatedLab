@@ -4,7 +4,7 @@
 	$DomainAndComputerName,
 
 	[bool]
-	$UseNwFeature = $false
+	$UseNewFeature = $false
 )
 
 [string]$createDbQuery = @'
