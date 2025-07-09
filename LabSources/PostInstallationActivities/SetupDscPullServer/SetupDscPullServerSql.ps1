@@ -1,17 +1,21 @@
 ﻿param
 (
-    [string]$ComputerName,
+    [Parameter()]
+    [string]$ComputerName = 'localhost',
 
+    [Parameter()]
     [string]$CertificateThumbPrint,
 
-    [Parameter(Mandatory)]
+    [Parameter(Mandatory = $true)]
+    [ValidateNotNullOrEmpty()]
     [string]$RegistrationKey,
 
-    [Parameter(Mandatory)]
+    [Parameter(Mandatory = $true)]
     [string]$SqlServer,
 
-    [Parameter(Mandatory)]
-    [string]$DatabaseName
+    #The database name should be left as 'DSC'.
+    [Parameter()]
+    [string]$DatabaseName = 'DSC'
 )
 
 Import-Module -Name xPSDesiredStateConfiguration, PSDesiredStateConfiguration
@@ -34,7 +38,7 @@ Configuration SetupDscPullServer
         [string]$DatabaseName
     )
 
-    Import-DSCResource -ModuleName xPSDesiredStateConfiguration, PSDesiredStateConfiguration, xWebAdministration
+    Import-DSCResource -ModuleName xPSDesiredStateConfiguration, PSDesiredStateConfiguration
 
     Node $NodeName
     {
@@ -52,6 +56,12 @@ Configuration SetupDscPullServer
             Name   = 'DSC-Service'
         }
 
+        WindowsFeature WebMgmtConsole
+        {
+            Ensure = 'Present'
+            Name   = 'Web-Mgmt-Console'
+        }  
+
         $sqlConnectionString = "Provider=SQLOLEDB.1;Integrated Security=SSPI;Persist Security Info=False;Initial Catalog=$DatabaseName;Data Source=$SqlServer"
 
         xDscWebService PSDSCPullServer
@@ -64,7 +74,7 @@ Configuration SetupDscPullServer
             ModulePath                   = "$env:PROGRAMFILES\WindowsPowerShell\DscService\Modules"
             ConfigurationPath            = "$env:PROGRAMFILES\WindowsPowerShell\DscService\Configuration"
             State                        = 'Started'
-            UseSecurityBestPractices     = $true
+            UseSecurityBestPractices     = $false
             AcceptSelfSignedCertificates = $true
             SqlProvider                  = $true
             SqlConnectionString          = $sqlConnectionString
@@ -77,15 +87,6 @@ Configuration SetupDscPullServer
             Type            = 'File'
             DestinationPath = "$env:ProgramFiles\WindowsPowerShell\DscService\RegistrationKeys.txt"
             Contents        = $RegistrationKey
-        }
-
-        xWebConfigKeyValue CorrectDBProvider
-        {
-            ConfigSection = 'AppSettings'
-            Key = 'dbprovider'
-            Value = 'System.Data.OleDb'
-            WebsitePath = 'IIS:\sites\PSDSCPullServer'
-            DependsOn = '[xDSCWebService]PSDSCPullServer'
         }
 
     }
@@ -108,4 +109,4 @@ if ($ComputerName)
 
 SetupDscPullServer @params | Out-Null
 
-Start-DscConfiguration -Path C:\Dsc -Wait
+Start-DscConfiguration -Path C:\Dsc -Wait -Force -Verbose
