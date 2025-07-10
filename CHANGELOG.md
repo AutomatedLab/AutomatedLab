@@ -16,6 +16,7 @@
 - Grab OSX/macOS (???) CPU info using sysctl
 - Make lab paths user-writeable by default, remove unused code to retrieve ProductKeys which are packaged with module (#1741)
 - Add URI tests to all configuration items beginning with http (#1746)
+- Added Parameter $Encryp and $ServerInstance used in/for the Invoke-Sqlcmd Comandlet
 - Updated DSC Pull Server setup scripts.
 
 ### Bugs
