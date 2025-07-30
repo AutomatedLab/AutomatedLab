@@ -42,11 +42,18 @@
         return
     }
 
-    $variables = Get-Variable -Name KeyUsage, ExtendedKeyUsages, ApplicationPolicies, pkiInternalsTypes, PSBoundParameters
+    $variables = Get-Variable -Name KeyUsage, ExtendedKeyUsages, ApplicationPolicies, pkiInternalsTypes5, pkiInternalsTypes7, PSBoundParameters
     $functions = Get-Command -Name New-CATemplate, Add-CATemplateStandardPermission, Publish-CATemplate, Get-NextOid, Sync-Parameter, Find-CertificateAuthority
 
     Invoke-LabCommand -ActivityName "Duplicating CA template $SourceTemplateName -> $TemplateName" -ComputerName $computerName -ScriptBlock {
-        Add-Type -TypeDefinition $pkiInternalsTypes
+        if ($PSVersionTable.PSEdition -eq 'Desktop')
+        {
+            Add-Type -TypeDefinition $pkiInternalsTypes5
+        }
+        else
+        {
+            Add-Type -TypeDefinition $pkiInternalsTypes7
+        }
 
         $p = Sync-Parameter -Command (Get-Command -Name New-CATemplate) -Parameters $ALBoundParameters
         New-CATemplate @p -ErrorVariable e

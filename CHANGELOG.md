@@ -5,6 +5,7 @@
 ### Bugs
 
 - Fixed a typo in DSC SQL DB setup script.
+- Fixed a .net type issue (#1754).
 
 ### Enhancements
 
