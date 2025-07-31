@@ -2,6 +2,10 @@
 
 ## Unreleased (yyyy-MM-dd)
 
+### Removed
+
+- Removed support for SQL Server 2008 and 2008 R2.
+
 ### Bugs
 
 - Fixed a typo in DSC SQL DB setup script.
