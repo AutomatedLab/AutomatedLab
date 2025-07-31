@@ -1,6 +1,6 @@
 ﻿# SQL Server
 
-The SQL Server role can be used to deploy any SQL Server version starting from SQL Server 2008 to 2019 on Windows. The installation can be customized like a normal SQL Server setup by using all available parameters or a configuration file.
+The SQL Server role can be used to deploy any SQL Server version starting from SQL Server 2012 to 2022 on Windows. The installation can be customized like a normal SQL Server setup by using all available parameters or a configuration file.
 
 During the installation, all service accounts that are referenced will be created automatically unless they already exist. On Azure, by default a managed instance is deployed, unless role parameters are used that would prevent this. If for instance different service accounts are configured, a normal IaaS VM will be deployed and SQL will be installed from an ISO file that needs to be present in your LabSources folder on Azure.
 

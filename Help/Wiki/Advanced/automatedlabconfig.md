@@ -3,6 +3,7 @@
 Since AutomatedLab version 5 we are using user-specific and global settings, managed with the module [PSFramework](https://github.com/PowerShellFrameworkCollective/PSFramework).
 
 To view all settings, you may use the `Get-LabConfigurationItem` cmdlet. For a bit of documentation, refer to `Get-PSFConfig -Module AutomatedLab` instead. If you don't know what a setting does, please do not set it. If you do know what the setting does, feel free to do so:  
+
 ```powershell
 # One session only, then reset to default
 Set-PSFConfig -Module AutomatedLab -Name MacAddressPrefix -Value '0017FC'
@@ -46,8 +47,6 @@ The default address space for a lab, e.g. 192.168.10.0/24
 The default Azure VM role size class to use, e.g. D. AutomatedLab tries to find the next best role size fitting your VM processor and memory requirements.
 
 ### DefaultProgressIndicator
-
-
 
 ### DisableWindowsDefender
 
@@ -104,6 +103,7 @@ The name of the lab XML configuration file.
 ### Logging
 
 This key contains logging options:  
+
 - TruncateLength: How long can a line be?
 - TruncateTypes: Which .NET types should be truncated?
 - DefaultFolder: The default log folder
@@ -121,18 +121,31 @@ The machine definition file for a lab.
 The maximum number of WinRM session for each lab VM
 
 ### MemoryWeight_CARoot
+
 ### MemoryWeight_CASubordinate
+
 ### MemoryWeight_ConfigManager
+
 ### MemoryWeight_DC
+
 ### MemoryWeight_DevTools
+
 ### MemoryWeight_ExchangeServer
+
 ### MemoryWeight_FileServer
+
 ### MemoryWeight_FirstChildDC
+
 ### MemoryWeight_OpsMgr
+
 ### MemoryWeight_Orchestrator
+
 ### MemoryWeight_RootDC
+
 ### MemoryWeight_SQLServer2012
+
 ### MemoryWeight_SQLServer2014
+
 ### MemoryWeight_WebServer
 
 ### MinimumAzureModuleVersion
@@ -142,6 +155,7 @@ The minimum version of Azure modules required to run. Do not change this to a lo
 ### NotificationProviders
 
 This setting controls which notifications to display:
+
 - NotificationProviders: Contains all provider-specific settings
   - Ifttt: Specify key and eventname to trigger an event on IFTTT
   - Mail: Specify port, server, to, from, prio and CC
@@ -156,7 +170,6 @@ Not currently in use: The URL to download OpenSsh from if the binary cannot be f
 
 ### SetLocalIntranetSites
 
-
 ### Sql2016ManagementStudio
 
 The download link to SSMS 2016
@@ -165,29 +178,17 @@ The download link to SSMS 2016
 
 The download link to SSMS 2017
 
-### SQLServer2008
-
-The sample database for SQL Server 2008
-
-### SQLServer2008R2
-
-The sample database for SQL Server 2008 R2
-
-
 ### SQLServer2012
 
 The sample database for SQL Server 2012
-
 
 ### SQLServer2014
 
 The sample database for SQL Server 2014
 
-
 ### SQLServer2016
 
 The sample database for SQL Server 2016
-
 
 ### SQLServer2017
 
@@ -196,7 +197,6 @@ The sample database for SQL Server 2017
 ### SQLServer2019
 
 The sample database for SQL Server 2019
-
 
 ### SubscribedProviders
 
@@ -230,19 +230,13 @@ The timeout in minutes the installation of a Certificate Authority may take.
 
 The timeout in minutes to wait for the shutdown of a lab VM during ```Restart-LabVm```, which stops and then starts the VM.
 
-### Timeout_Sql2008Installation
-
-The timeout in minutes to wait for the SQL Server 2008 installation to finish.
-
 ### Timeout_Sql2012Installation
 
 The timeout in minutes to wait for the SQL Server 2012 installation to finish.
 
-
 ### Timeout_Sql2014Installation
 
 The timeout in minutes to wait for the SQL Server 2014 installation to finish.
-
 
 ### Timeout_StartLabMachine_Online
 
