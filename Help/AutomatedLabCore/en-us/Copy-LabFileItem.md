@@ -47,6 +47,21 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -Credential
+The credential that should be used
+
+```yaml
+Type: PSCredential
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -DestinationFolderPath
 The destination folder path where the data should be copied to
 
