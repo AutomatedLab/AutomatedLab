@@ -2,6 +2,8 @@
 
 ## Unreleased (yyyy-MM-dd)
 
+## 5.59.0 (2025-08-18)
+
 ### Removed
 
 - Removed support for SQL Server 2008 and 2008 R2.
@@ -15,20 +17,30 @@
 
 - Support Oracle Linux 7 and 8. Oracle Linux 9 does not yet work (#1722).
 - The `Az.Compute` cmdlet `Get-AzVMSize` got replaced by `Get-AzComputeResourceSku`. Making the necessary changes.
-- Update Az module versions for public Azure
-- Update `Get-LabMachineRoleDefinition` to have a `List` parameter (#1733)
-- Skip init of initialized VMs
-- Grab OSX/macOS (???) CPU info using sysctl
-- Make lab paths user-writeable by default, remove unused code to retrieve ProductKeys which are packaged with module (#1741)
+- Update Az module versions for public Azure.
+- Update `Get-LabMachineRoleDefinition` to have a `List` parameter (#1733).
+- Skip init of initialized VMs.
+- Grab OSX/macOS (???) CPU info using sysctl.
+- Make lab paths user-writeable by default, remove unused code to retrieve ProductKeys which are packaged with module (#1741).
 - Add URI tests to all configuration items beginning with http (#1746)
-- Added Parameter `Encrypt` and $ServerInstance used in/for the Invoke-Sqlcmd cmdlet.
+- Added Parameter `Encrypt` and $ServerInstance used in/for the `Invoke-Sqlcmd` cmdlet.
 - Updated DSC Pull Server setup scripts.
 - Added `Credential` parameter to `Copy-LabFileItem`.
 
 ### Bugs
 
-- Fix issue with BinarySerializer in Lab Snippets (Get-TopologicalSort #1732)
-- Update ADK download links, thank you @TKiller609 (#1740)
+- Fix issue with BinarySerializer in Lab Snippets (Get-TopologicalSort #1732).
+- Update ADK download links, thank you @TKiller609 (#1740).
+
+## 5.58.0 (2025-06-23)
+
+### Enhancements
+
+- The `Az.Compute` cmdlet `Get-AzVMSize` got replaced by `Get-AzComputeResourceSku`. Making the necessary changes.
+
+### Bugs
+
+- Fix issue with Get-AzStorageAccount returning nullable booleans as NULL now.
 
 ## 5.57.0 (2025-06-09)
 
