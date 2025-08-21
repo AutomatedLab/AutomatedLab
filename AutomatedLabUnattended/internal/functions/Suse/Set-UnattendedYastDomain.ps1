@@ -29,10 +29,14 @@
     $joinPasswordNode = $script:un.CreateElement('password', $script:nsm.LookupNamespace('un'))
     $homedirNode = $script:un.CreateElement('mkhomedir', $script:nsm.LookupNamespace('un'))
     $winbindNode = $script:un.CreateElement('winbind', $script:nsm.LookupNamespace('un'))
+    $mapAttr = $script:un.CreateAttribute('t')
+    $mapAttr.InnerText = 'map'
 
     $null = $disableDhcp.Attributes.Append($boolAttrib)
     $null = $homedirNode.Attributes.Append($boolAttrib)
     $null = $winbindNode.Attributes.Append($boolAttrib)
+    $null = $smbClientNode.Attributes.Append($mapAttr)
+    $null = $adNode.Attributes.Append($mapAttr)
 
     $kdc.InnerText = $DomainName
 
@@ -130,6 +134,7 @@
     }
 
     $authClientNode = $script:un.CreateElement('auth-client', $script:nsm.LookupNamespace('un'))
+    $null = $authClientNode.Attributes.Append($mapAttr)
     $sssdConf = $script:un.CreateElement('conf_json', $script:nsm.LookupNamespace('un'))
     $sssdConf.InnerText = $sssdHash | ConvertTo-Json -Depth 42 -Compress
     $authClientNode.AppendChild($sssdConf)
