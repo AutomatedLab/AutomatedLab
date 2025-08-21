@@ -282,6 +282,10 @@
 
             if ($Machine.OperatingSystemType -eq 'Linux')
             {
+                if ($Machine.LinuxType -eq 'Suse') {
+                    Set-UnattendedPackage -Package 'sssd', 'sssd-krb5', 'sssd-ldap', 'samba-winbind', 'samba-ldp-ldap', 'samba-gpupdate'
+                }
+
                 $sudoParam = @{
                     Command = "sed -i '/^%wheel.*/a %$($Machine.DomainName.ToUpper())\\\\domain\\ admins ALL=(ALL) NOPASSWD: ALL' /etc/sudoers"
                     Description = 'Enable domain admin as sudoer without password'
