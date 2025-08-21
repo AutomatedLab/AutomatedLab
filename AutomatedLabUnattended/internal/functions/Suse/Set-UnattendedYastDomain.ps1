@@ -137,6 +137,6 @@
     $null = $authClientNode.Attributes.Append($mapAttr)
     $sssdConf = $script:un.CreateElement('conf_json', $script:nsm.LookupNamespace('un'))
     $sssdConf.InnerText = $sssdHash | ConvertTo-Json -Depth 42 -Compress
-    $authClientNode.AppendChild($sssdConf)
+    $null = $authClientNode.AppendChild($sssdConf)
     $script:un.DocumentElement.AppendChild($authClientNode)
 }
