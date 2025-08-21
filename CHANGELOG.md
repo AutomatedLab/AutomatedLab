@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased (yyyy-MM-dd)
+## Unreleased (2025-08-21)
+
+- Updated `Invoke-LabPester` to scan the `$global:LabSources\CustomRoles` directory for Pester tests (#1764)
 
 ## 5.59.0 (2025-08-18)
 
