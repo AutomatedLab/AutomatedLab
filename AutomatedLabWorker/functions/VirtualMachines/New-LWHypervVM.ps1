@@ -400,8 +400,8 @@
             $grubFile = Get-ChildItem -Recurse -Path $drive.RootDirectory.FullName -Filter 'grub.cfg'
             $isolinuxFile = Get-ChildItem -Recurse -Path $drive.RootDirectory.FullName -Filter 'isolinux.cfg'
 
-            ($grubFile | Get-Content -Raw) -replace "splash=silent", "splash=silent textmode=1 autoyast=device:///autoinst.xml" | Set-Content -Path $grubFile.FullName
-            ($isolinuxFile | Get-Content -Raw) -replace "splash=silent", "splash=silent textmode=1 autoyast=device:///autoinst.xml" | Set-Content -Path $isolinuxFile.FullName
+            ($grubFile | Get-Content -Raw) -replace "splash=silent", "splash=silent textmode=1 YAST_SKIP_XML_VALIDATION=1 autoyast=device:///autoinst.xml" | Set-Content -Path $grubFile.FullName
+            ($isolinuxFile | Get-Content -Raw) -replace "splash=silent", "splash=silent textmode=1 YAST_SKIP_XML_VALIDATION=1 autoyast=device:///autoinst.xml" | Set-Content -Path $isolinuxFile.FullName
         }
         elseif ($machine.LinuxType -eq 'Ubuntu')
         {
