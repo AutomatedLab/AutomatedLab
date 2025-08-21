@@ -2,6 +2,10 @@
 
 ## Unreleased (yyyy-MM-dd)
 
+### Bugs
+
+- Fixed issue with case-sensitive Linux OS name matching (#1766)
+
 ## 5.59.0 (2025-08-18)
 
 ### Removed
