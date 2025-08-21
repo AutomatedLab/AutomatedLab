@@ -14,8 +14,6 @@
     )
 
     $smbClientNode = $script:un.CreateElement('samba-client', $script:nsm.LookupNamespace('un'))
-    $boolAttrib = $script:un.CreateAttribute('config', 'type', $script:nsm.LookupNamespace('config'))
-    $boolAttrib.InnerText = 'boolean'
     $adNode = $script:un.CreateElement('active_directory', $script:nsm.LookupNamespace('un'))
     $kdc = $script:un.CreateElement('kdc', $script:nsm.LookupNamespace('un'))
     $disableDhcp = $script:un.CreateElement('disable_dhcp_hostname', $script:nsm.LookupNamespace('un'))
@@ -29,13 +27,21 @@
     $joinPasswordNode = $script:un.CreateElement('password', $script:nsm.LookupNamespace('un'))
     $homedirNode = $script:un.CreateElement('mkhomedir', $script:nsm.LookupNamespace('un'))
     $winbindNode = $script:un.CreateElement('winbind', $script:nsm.LookupNamespace('un'))
+
+    $boolAttrib = $script:un.CreateAttribute('config', 'type', $script:nsm.LookupNamespace('config'))
+    $boolAttrib.InnerText = 'boolean'
+    $null = $disableDhcp.Attributes.Append($boolAttrib)
+    $boolAttrib = $script:un.CreateAttribute('config', 'type', $script:nsm.LookupNamespace('config'))
+    $boolAttrib.InnerText = 'boolean'
+    $null = $homedirNode.Attributes.Append($boolAttrib)
+    $boolAttrib = $script:un.CreateAttribute('config', 'type', $script:nsm.LookupNamespace('config'))
+    $boolAttrib.InnerText = 'boolean'
+    $null = $winbindNode.Attributes.Append($boolAttrib)
     $mapAttr = $script:un.CreateAttribute('t')
     $mapAttr.InnerText = 'map'
-
-    $null = $disableDhcp.Attributes.Append($boolAttrib)
-    $null = $homedirNode.Attributes.Append($boolAttrib)
-    $null = $winbindNode.Attributes.Append($boolAttrib)
     $null = $smbClientNode.Attributes.Append($mapAttr)
+    $mapAttr = $script:un.CreateAttribute('t')
+    $mapAttr.InnerText = 'map'
     $null = $adNode.Attributes.Append($mapAttr)
 
     $kdc.InnerText = $DomainName
@@ -134,9 +140,11 @@
     }
 
     $authClientNode = $script:un.CreateElement('auth-client', $script:nsm.LookupNamespace('un'))
+    $mapAttr = $script:un.CreateAttribute('t')
+    $mapAttr.InnerText = 'map'
     $null = $authClientNode.Attributes.Append($mapAttr)
     $sssdConf = $script:un.CreateElement('conf_json', $script:nsm.LookupNamespace('un'))
     $sssdConf.InnerText = $sssdHash | ConvertTo-Json -Depth 42 -Compress
     $null = $authClientNode.AppendChild($sssdConf)
-    $script:un.DocumentElement.AppendChild($authClientNode)
+    $null = $script:un.DocumentElement.AppendChild($authClientNode)
 }
