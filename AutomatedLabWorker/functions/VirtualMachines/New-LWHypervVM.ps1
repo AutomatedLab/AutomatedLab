@@ -65,6 +65,11 @@
         $addOnNode = (Get-UnattendedContent).SelectSingleNode('/un:profile/un:add-on/un:add_on_others', $nsm)
         $addOnNode.RemoveAll()
 
+        # Restore attribute after clearing the node
+        $listAttr = (Get-UnattendedContent).CreateAttribute('t')
+        $listAttr.InnerText = 'list'
+        $null = $addOnNode.Attributes.Append($listAttr)
+
         $listNodeUpdate = (Get-UnattendedContent).CreateElement('listentry', $nsm.LookupNamespace('un'))
         $mapAttr = (Get-UnattendedContent).CreateAttribute('t')
         $mapAttr.InnerText = 'map'
