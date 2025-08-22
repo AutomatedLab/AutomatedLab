@@ -13,6 +13,9 @@
         [string]$OrganizationalUnit
     )
 
+    $component = $script:un.SelectSingleNode('/un:profile/un:networking/un:dns/un:hostname', $script:nsm)
+    $component.InnerText = '{0}.{1}' -f $component.InnerText, $DomainName
+
     <# SSSD configuration JSON - generated on running OpenSUSE client
     According to what docs I found this is also valid for older editions
     #>
