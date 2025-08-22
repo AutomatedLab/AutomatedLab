@@ -557,7 +557,6 @@ $autoyastContent = @"
     <package>iputils</package>
     <package>vim</package>
     <package>less</package>
-    <package>yast2-auth-client</package>
   </packages>
 </software>
 <services-manager t="map">

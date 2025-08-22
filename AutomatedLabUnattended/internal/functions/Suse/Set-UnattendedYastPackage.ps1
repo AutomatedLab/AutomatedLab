@@ -19,7 +19,7 @@
             $null = $patternsNode.AppendChild($patternNode)
         }
         else {
-            $packageNode = $script:un.CreateElement('pattern', $script:nsm.LookupNamespace('un'))
+            $packageNode = $script:un.CreateElement('package', $script:nsm.LookupNamespace('un'))
             $packageNode.InnerText = $p
             $null = $packagesNode.AppendChild($packageNode)
         }
