@@ -59,21 +59,24 @@
 
     # Ensure package selection works
     if ($Machine.LinuxType -eq 'Suse' -and $Machine.OperatingSystem.OperatingSystemName -match 'Tumbleweed') {
-        $addOnNode = (Get-UnattendedContent).SelectSingleNode('/un:profile/un:add-on/un:add_on_others', $script:nsm)
+        $nsm = [System.Xml.XmlNamespaceManager]::new($script:un.NameTable)
+        $nsm.AddNamespace('un', "http://www.suse.com/1.0/yast2ns")
+        $nsm.AddNamespace('config', "http://www.suse.com/1.0/configns" )
+        $addOnNode = (Get-UnattendedContent).SelectSingleNode('/un:profile/un:add-on/un:add_on_others', $nsm)
         $addOnNode.RemoveAll()
 
-        $listNodeUpdate = (Get-UnattendedContent).CreateElement('listentry', $script:nsm.LookupNamespace('un'))
+        $listNodeUpdate = (Get-UnattendedContent).CreateElement('listentry', $nsm.LookupNamespace('un'))
         $mapAttr = (Get-UnattendedContent).CreateAttribute('t')
         $mapAttr.InnerText = 'map'
-        $aliasNode = (Get-UnattendedContent).CreateElement('alias', $script:nsm.LookupNamespace('un'))
+        $aliasNode = (Get-UnattendedContent).CreateElement('alias', $nsm.LookupNamespace('un'))
         $aliasNode.InnerText = 'repo-update'
-        $mediaUrlNode = (Get-UnattendedContent).CreateElement('media_url', $script:nsm.LookupNamespace('un')) 
+        $mediaUrlNode = (Get-UnattendedContent).CreateElement('media_url', $nsm.LookupNamespace('un')) 
         $mediaUrlNode.InnerText = 'https://download.opensuse.org/update/tumbleweed/'
-        $nameNode = (Get-UnattendedContent).CreateElement('name', $script:nsm.LookupNamespace('un'))
+        $nameNode = (Get-UnattendedContent).CreateElement('name', $nsm.LookupNamespace('un'))
         $nameNode.InnerText = 'Update'
-        $priorityNode = (Get-UnattendedContent).CreateElement('priority', $script:nsm.LookupNamespace('un'))
+        $priorityNode = (Get-UnattendedContent).CreateElement('priority', $nsm.LookupNamespace('un'))
         $priorityNode.InnerText = '99'
-        $productDirNode = (Get-UnattendedContent).CreateElement('product_dir', $script:nsm.LookupNamespace('un'))
+        $productDirNode = (Get-UnattendedContent).CreateElement('product_dir', $nsm.LookupNamespace('un'))
         $productDirNode.InnerText = '/'
         $null = $listNodeUpdate.AppendChild($aliasNode)
         $null = $listNodeUpdate.AppendChild($mediaUrlNode)
@@ -84,18 +87,18 @@
         $null = $addOnNode.AppendChild($listNodeUpdate)
 
 
-        $listNodeNonOss = (Get-UnattendedContent).CreateElement('listentry', $script:nsm.LookupNamespace('un'))
+        $listNodeNonOss = (Get-UnattendedContent).CreateElement('listentry', $nsm.LookupNamespace('un'))
         $mapAttr = (Get-UnattendedContent).CreateAttribute('t')
         $mapAttr.InnerText = 'map'
-        $aliasNode = (Get-UnattendedContent).CreateElement('alias', $script:nsm.LookupNamespace('un'))
+        $aliasNode = (Get-UnattendedContent).CreateElement('alias', $nsm.LookupNamespace('un'))
         $aliasNode.InnerText = 'repo-update'
-        $mediaUrlNode = (Get-UnattendedContent).CreateElement('media_url', $script:nsm.LookupNamespace('un')) 
+        $mediaUrlNode = (Get-UnattendedContent).CreateElement('media_url', $nsm.LookupNamespace('un')) 
         $mediaUrlNode.InnerText = 'https://download.opensuse.org/tumbleweed/repo/non-oss/'
-        $nameNode = (Get-UnattendedContent).CreateElement('name', $script:nsm.LookupNamespace('un'))
+        $nameNode = (Get-UnattendedContent).CreateElement('name', $nsm.LookupNamespace('un'))
         $nameNode.InnerText = 'Update'
-        $priorityNode = (Get-UnattendedContent).CreateElement('priority', $script:nsm.LookupNamespace('un'))
+        $priorityNode = (Get-UnattendedContent).CreateElement('priority', $nsm.LookupNamespace('un'))
         $priorityNode.InnerText = '99'
-        $productDirNode = (Get-UnattendedContent).CreateElement('product_dir', $script:nsm.LookupNamespace('un'))
+        $productDirNode = (Get-UnattendedContent).CreateElement('product_dir', $nsm.LookupNamespace('un'))
         $productDirNode.InnerText = '/'
         $null = $listNodeNonOss.AppendChild($aliasNode)
         $null = $listNodeNonOss.AppendChild($mediaUrlNode)

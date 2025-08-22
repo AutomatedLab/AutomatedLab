@@ -558,7 +558,7 @@ $autoyastContent = @"
     <keymap>english-us</keymap>
 </keyboard>
 <add-on t="map">
-    <add_on_others t="map">
+    <add_on_others t="list">
         <listentry t="map">
             <alias>repo-backports-update</alias>
             <media_url>http://download.opensuse.org/update/leap/SUSEVERSION/backports/</media_url>
