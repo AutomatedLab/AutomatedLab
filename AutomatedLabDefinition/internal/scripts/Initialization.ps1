@@ -498,28 +498,28 @@ $autoyastContent = @"
         <partitions t="list">
             <partition t="map">
                 <create t="boolean">true</create>
-                <format t="boolean">true</create>
+                <format t="boolean">true</format>
                 <filesystem t="symbol">vfat</filesystem>
                 <mount>/boot</mount>
                 <size>1G</size>
             </partition>
             <partition t="map">
                 <create t="boolean">true</create>
-                <format t="boolean">true</create>
+                <format t="boolean">true</format>
                 <filesystem t="symbol">vfat</filesystem>
                 <mount>/boot/efi</mount>
                 <size>1G</size>
             </partition>
             <partition t="map">
                 <create t="boolean">true</create>
-                <format t="boolean">true</create>
+                <format t="boolean">true</format>
                 <filesystem t="symbol">swap</filesystem>
                 <mount>/swap</mount>
                 <size>auto</size>
             </partition>
             <partition t="map">
                 <create t="boolean">true</create>
-                <format t="boolean">true</create>
+                <format t="boolean">true</format>
                 <filesystem t="symbol">ext4</filesystem>
                 <mount>/</mount>
                 <size>auto</size>
