@@ -15,7 +15,7 @@
 
         if ($p -match "^pattern_") {
             $patternNode = $script:un.CreateElement('pattern', $script:nsm.LookupNamespace('un'))
-            $patternNode.InnerText = $p
+            $patternNode.InnerText = $p -replace '^pattern_'
             $null = $patternsNode.AppendChild($patternNode)
         }
         else {

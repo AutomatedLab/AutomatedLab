@@ -16,7 +16,7 @@
     $mapAttr.InnerText = 'map'
     $null = $scriptNode.Attributes.Append($mapAttr)
     
-    $fileNameNode = $script:un.CreateElement('file-name', $script:nsm.LookupNamespace('un'))
+    $fileNameNode = $script:un.CreateElement('filename', $script:nsm.LookupNamespace('un'))
     $fileNameNode.InnerText = [guid]::NewGuid().ToString()
     $null = $scriptNode.AppendChild($fileNameNode)
 

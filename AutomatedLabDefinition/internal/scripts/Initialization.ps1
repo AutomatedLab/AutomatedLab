@@ -552,6 +552,7 @@ $autoyastContent = @"
     <pattern>enhanced_base</pattern>
   </patterns>
   <install_recommended t="boolean">true</install_recommended>
+  <do_online_update t="boolean">true</do_online_update>
   <packages t="list">
     <package>iputils</package>
     <package>vim</package>
@@ -568,6 +569,9 @@ $autoyastContent = @"
   </services>
 </services-manager>
 <networking t="map">
+<backend>wicked</backend>
+<setup_before_proposal t="boolean">true</setup_before_proposal>
+<start_immediately config:type="boolean">true</start_immediately>
 <interfaces t="list">
 </interfaces>
 <net-udev t="list">
@@ -595,7 +599,7 @@ $autoyastContent = @"
 <scripts t="map">
     <init-scripts t="list">
       <script t="map">
-        <file-name>installpwsh.sh</file-name>
+        <filename>installpwsh.sh</filename>
         <source>
         <![CDATA[
             rpm --import https://packages.microsoft.com/keys/microsoft.asc

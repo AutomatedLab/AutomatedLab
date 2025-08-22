@@ -282,10 +282,6 @@
 
             if ($Machine.OperatingSystemType -eq 'Linux')
             {
-                if ($Machine.LinuxType -eq 'Suse') {
-                    Set-UnattendedPackage -Package 'sssd', 'sssd-krb5', 'sssd-ldap', 'adcli', 'sssd-ad', 'sssd-tools', 'krb5-client'
-                }
-
                 $sudoParam = @{
                     Command = "sed -i '/^%wheel.*/a %$($Machine.DomainName.ToUpper())\\\\domain\\ admins ALL=(ALL) NOPASSWD: ALL' /etc/sudoers"
                     Description = 'Enable domain admin as sudoer without password'
@@ -350,7 +346,7 @@
         {
             $size = 100MB
         }
-        $label = if ($Machine.LinuxType -eq 'RedHat') { 'OEMDRV' } else { 'CIDATA' }
+        $label = if ($Machine.LinuxType -in 'Suse','RedHat') { 'OEMDRV' } else { 'CIDATA' }
         $unattendPartition = $mountedOsDisk | New-Partition -Size $size
 
         # Use a small FAT32 partition to hold AutoYAST and Kickstart configuration
@@ -391,9 +387,6 @@
             # Copy data
             Copy-Item -Path "$($isoDrive.RootDirectory.FullName)*" -Destination $drive.RootDirectory.FullName -Recurse -Force -PassThru |
             Where-Object IsReadOnly | Set-ItemProperty -name IsReadOnly -Value $false
-
-            # Unmount ISO
-            [void] (Dismount-DiskImage -ImagePath $Machine.OperatingSystem.IsoPath)
 
             # AutoYast XML file is not picked up properly without modifying bootloader config
             # Change grub and isolinux configuration
