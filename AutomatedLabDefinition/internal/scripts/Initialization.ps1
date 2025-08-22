@@ -463,6 +463,10 @@ clearpart --all
 autopart
 "@
 
+# Big XML, replace SUSEVERSION with Major.Minor and Codename with e.g. Leap
+# Tumbleweed has different repos (only non-oss and update with urls like https://download.opensuse.org/update/tumbleweed/)
+# Tumbleweed uses selinux instead of apparmor, bootload should be security=selinux selinux=1
+# SecureBoot can remain on, even if off or gen1
 $autoyastContent = @"
 <?xml version="1.0"?>
 <!DOCTYPE profile>
@@ -529,9 +533,16 @@ $autoyastContent = @"
 </partitioning>
 <bootloader t="map">
   <loader_type>grub2-efi</loader_type>
-  <global>
-    <activate t="boolean">true</activate>
-    <boot_boot>true</boot_boot>
+  <global t="map">
+    <append>splash=silent mitigations=auto preempt=full quiet security=apparmor</append>
+    <cpu_mitigations>auto</cpu_mitigations>
+    <gfxmode>auto</gfxmode>
+    <hiddenmenu>false</hiddenmenu>
+    <os_prober>true</os_prober>
+    <secure_boot>true</secure_boot>
+    <terminal>gfxterm</terminal>
+    <timeout t="integer">5</timeout>
+    <update_nvram>true</update_nvram>
   </global>
  </bootloader>
 <language t="map">
@@ -546,6 +557,45 @@ $autoyastContent = @"
 <!-- https://raw.githubusercontent.com/yast/yast-country/master/keyboard/src/data/keyboard_raw.ycp -->
     <keymap>english-us</keymap>
 </keyboard>
+<add-on t="map">
+    <add_on_others t="map">
+        <listentry t="map">
+            <alias>repo-backports-update</alias>
+            <media_url>http://download.opensuse.org/update/leap/SUSEVERSION/backports/</media_url>
+            <name>Backports Update</name>
+            <priority t="integer">99</priority>
+            <product_dir>/</product_dir>
+        </listentry>
+        <listentry t="map">
+            <alias>repo-non-oss</alias>
+            <media_url>http://download.opensuse.org/distribution/leap/SUSEVERSION/repo/non-oss/</media_url>
+            <name>Non-OSS Repository</name>
+            <priority t="integer">99</priority>
+            <product_dir>/</product_dir>
+        </listentry>
+        <listentry t="map">
+            <alias>repo-sle-update</alias>
+            <media_url>http://download.opensuse.org/update/leap/SUSEVERSION/repo/sle/</media_url>
+            <name>Update from SLES</name>
+            <priority t="integer">99</priority>
+            <product_dir>/</product_dir>
+        </listentry>
+        <listentry t="map">
+            <alias>repo-update</alias>
+            <media_url>http://download.opensuse.org/update/leap/SUSEVERSION/repo/oss/</media_url>
+            <name>Main Update Repository</name>
+            <priority t="integer">99</priority>
+            <product_dir>/</product_dir>
+        </listentry>
+        <listentry t="map">
+            <alias>repo-updatenon-oss</alias>
+            <media_url>http://download.opensuse.org/update/leap/SUSEVERSION/repo/non-oss/</media_url>
+            <name>Non-OSS Update Repository</name>
+            <priority t="integer">99</priority>
+            <product_dir>/</product_dir>
+        </listentry>
+    </add_on_others>
+</add-on>
 <software t="map">
     <patterns t="list">
     <pattern>base</pattern>

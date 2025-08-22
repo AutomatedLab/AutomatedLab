@@ -46,7 +46,65 @@
         $Machine.ProductKey = $Machine.OperatingSystem.ProductKey
     }
 
-    Import-UnattendedContent -Content $Machine.UnattendedXmlContent
+    $unattendContent = $Machine.UnattendedXmlContent
+    if ($Machine.LinuxType -eq 'Suse' -and $Machine.OperatingSystem.OperatingSystemName -match 'Leap') {
+        $unattendContent = $unattendContent -replace 'SUSEVERSION', "$($Machine.OperatingSystem.Version.Major).$($Machine.OperatingSystem.Version.Minor)"
+    }
+
+    if ($Machine.LinuxType -eq 'Suse' -and $Machine.OperatingSystem.OperatingSystemName -match 'Tumbleweed') {
+        $unattendContent = $unattendContent -replace 'preempt=full quiet security=apparmor', "security=selinux selinux=1"
+    }
+
+    Import-UnattendedContent -Content $unattendContent
+
+    # Ensure package selection works
+    if ($Machine.LinuxType -eq 'Suse' -and $Machine.OperatingSystem.OperatingSystemName -match 'Tumbleweed') {
+        $addOnNode = (Get-UnattendedContent).SelectSingleNode('/un:profile/un:add-on/un:add_on_others', $script:nsm)
+        $addOnNode.RemoveAll()
+
+        $listNodeUpdate = (Get-UnattendedContent).CreateElement('listentry', $script:nsm.LookupNamespace('un'))
+        $mapAttr = (Get-UnattendedContent).CreateAttribute('t')
+        $mapAttr.InnerText = 'map'
+        $aliasNode = (Get-UnattendedContent).CreateElement('alias', $script:nsm.LookupNamespace('un'))
+        $aliasNode.InnerText = 'repo-update'
+        $mediaUrlNode = (Get-UnattendedContent).CreateElement('media_url', $script:nsm.LookupNamespace('un')) 
+        $mediaUrlNode.InnerText = 'https://download.opensuse.org/update/tumbleweed/'
+        $nameNode = (Get-UnattendedContent).CreateElement('name', $script:nsm.LookupNamespace('un'))
+        $nameNode.InnerText = 'Update'
+        $priorityNode = (Get-UnattendedContent).CreateElement('priority', $script:nsm.LookupNamespace('un'))
+        $priorityNode.InnerText = '99'
+        $productDirNode = (Get-UnattendedContent).CreateElement('product_dir', $script:nsm.LookupNamespace('un'))
+        $productDirNode.InnerText = '/'
+        $null = $listNodeUpdate.AppendChild($aliasNode)
+        $null = $listNodeUpdate.AppendChild($mediaUrlNode)
+        $null = $listNodeUpdate.AppendChild($nameNode)
+        $null = $listNodeUpdate.AppendChild($priorityNode)
+        $null = $listNodeUpdate.AppendChild($productDirNode)
+        $null = $listNodeUpdate.Attributes.Append($mapAttr)
+        $null = $addOnNode.AppendChild($listNodeUpdate)
+
+
+        $listNodeNonOss = (Get-UnattendedContent).CreateElement('listentry', $script:nsm.LookupNamespace('un'))
+        $mapAttr = (Get-UnattendedContent).CreateAttribute('t')
+        $mapAttr.InnerText = 'map'
+        $aliasNode = (Get-UnattendedContent).CreateElement('alias', $script:nsm.LookupNamespace('un'))
+        $aliasNode.InnerText = 'repo-update'
+        $mediaUrlNode = (Get-UnattendedContent).CreateElement('media_url', $script:nsm.LookupNamespace('un')) 
+        $mediaUrlNode.InnerText = 'https://download.opensuse.org/tumbleweed/repo/non-oss/'
+        $nameNode = (Get-UnattendedContent).CreateElement('name', $script:nsm.LookupNamespace('un'))
+        $nameNode.InnerText = 'Update'
+        $priorityNode = (Get-UnattendedContent).CreateElement('priority', $script:nsm.LookupNamespace('un'))
+        $priorityNode.InnerText = '99'
+        $productDirNode = (Get-UnattendedContent).CreateElement('product_dir', $script:nsm.LookupNamespace('un'))
+        $productDirNode.InnerText = '/'
+        $null = $listNodeNonOss.AppendChild($aliasNode)
+        $null = $listNodeNonOss.AppendChild($mediaUrlNode)
+        $null = $listNodeNonOss.AppendChild($nameNode)
+        $null = $listNodeNonOss.AppendChild($priorityNode)
+        $null = $listNodeNonOss.AppendChild($productDirNode)
+        $null = $listNodeNonOss.Attributes.Append($mapAttr)
+        $null = $addOnNode.AppendChild($listNodeNonOss)
+    }
     #endregion
 
     #region network adapter settings
