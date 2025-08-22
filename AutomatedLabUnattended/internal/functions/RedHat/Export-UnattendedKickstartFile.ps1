@@ -1,5 +1,4 @@
-function Export-UnattendedKickstartFile
-{
+function Export-UnattendedKickstartFile {
     param (
         [Parameter(Mandatory = $true)]
         [string]$Path,
@@ -8,8 +7,7 @@ function Export-UnattendedKickstartFile
 
     $idx = $script:un.IndexOf('%post')
 
-    if ($idx -eq -1)
-    {
+    if ($idx -eq -1) {
         $script:un.Add('%post')
         $idx = $script:un.IndexOf('%post')
     }
@@ -20,21 +18,24 @@ function Export-UnattendedKickstartFile
     catch
     { '104.214.230.139' }
 
-    try
-    {
+    try {
         $repoContent = (Invoke-RestMethod -Method Get -Uri "https://packages.microsoft.com/config/rhel/$Version/prod.repo" -ErrorAction Stop) -split "`n"
     }
     catch { }
 
-    if ($script:un[$idx + 1] -ne '#start')
-    {
+    $pwshRelease = ((Invoke-RestMethod -Uri 'https://api.github.com/repos/PowerShell/PowerShell/releases/latest' -ErrorAction SilentlyContinue).assets | Where-Object Name -match 'rh\.x86_64\.rpm').browser_download_url
+    if (-not $pwshRelease) {
+        $pwshRelease = 'https://github.com/PowerShell/PowerShell/releases/download/v7.5.2/powershell-7.5.2-1.rh.x86_64.rpm'
+    }
+
+
+    if ($script:un[$idx + 1] -ne '#start') {
         @(
             '#start'
             '. /etc/os-release'
-            foreach ($line in $repoContent)
-            {
+            foreach ($line in $repoContent) {
                 if (-not $line) { continue }
-                if ($line -like '*gpgcheck*') {$line = 'gpgcheck=0'}
+                if ($line -like '*gpgcheck*') { $line = 'gpgcheck=0' }
                 'echo "{0}" >> /etc/yum.repos.d/microsoft.repo' -f $line
             }
             'echo "{0} packages.microsoft.com" >> /etc/hosts' -f $repoIp
@@ -45,8 +46,7 @@ function Export-UnattendedKickstartFile
             'yum list installed "powershell" > /ksPowerShell'
             'yum list installed "omi-psrp-server" > /ksOmi'
             'rm /etc/yum.repos.d/microsoft.repo'
-            foreach ($line in $repoContent)
-            {
+            foreach ($line in $repoContent) {
                 if (-not $line) { continue }
                 'echo "{0}" >> /etc/yum.repos.d/microsoft.repo' -f $line
             }
@@ -54,6 +54,11 @@ function Export-UnattendedKickstartFile
             'systemctl restart sssd'
             'echo "Subsystem powershell /usr/bin/pwsh -sshs -NoLogo" >> /etc/ssh/sshd_config'
             'systemctl restart sshd'
+            'if (! command -v pwsh >/dev/null 2>&1)'
+            'then'
+            '    sudo dnf install -y {0} >/dev/null 2>&1' -f $pwshRelease
+            '    sudo yum install -y {0} >/dev/null 2>&1' -f $pwshRelease
+            'fi'
         ) | ForEach-Object -Process {
             $idx++
             $script:un.Insert($idx, $_)
@@ -65,12 +70,10 @@ function Export-UnattendedKickstartFile
         $idxPackage = $script:un.IndexOf('%packages --ignoremissing')
         $idxPost = $script:un.IndexOf('%post')
 
-        $idxEnd = if (-1 -ne $idxPackage -and $idxPost -lt $idxPackage)
-        {
+        $idxEnd = if (-1 -ne $idxPackage -and $idxPost -lt $idxPackage) {
             $idxPackage
         }
-        else
-        {
+        else {
             $script:un.Count
         }
 
