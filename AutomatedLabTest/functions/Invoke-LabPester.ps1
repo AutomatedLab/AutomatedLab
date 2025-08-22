@@ -47,7 +47,7 @@
                 $config_paths += Join-Path -Path $global:LabSources\CustomRoles -ChildPath $role
             }
         }
-        $configuration.Run.Path = $config_paths
+        $configuration.Run.Path = $config_paths | Sort-Object -Unique
         $configuration.Filter.Tag = $tags
         $configuration.Should.ErrorAction = 'Continue'
         $configuration.TestResult.Enabled = $true
