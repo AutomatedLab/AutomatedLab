@@ -283,7 +283,7 @@
             if ($Machine.OperatingSystemType -eq 'Linux')
             {
                 if ($Machine.LinuxType -eq 'Suse') {
-                    Set-UnattendedPackage -Package 'sssd', 'sssd-krb5', 'sssd-ldap', 'samba-winbind', 'samba-ldp-ldap', 'samba-gpupdate'
+                    Set-UnattendedPackage -Package 'sssd', 'sssd-krb5', 'sssd-ldap', 'adcli', 'sssd-ad', 'sssd-tools', 'krb5-client'
                 }
 
                 $sudoParam = @{

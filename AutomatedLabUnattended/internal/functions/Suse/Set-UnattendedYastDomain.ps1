@@ -13,101 +13,38 @@
         [string]$OrganizationalUnit
     )
 
-    $smbClientNode = $script:un.CreateElement('samba-client', $script:nsm.LookupNamespace('un'))
-    $adNode = $script:un.CreateElement('active_directory', $script:nsm.LookupNamespace('un'))
-    $kdc = $script:un.CreateElement('kdc', $script:nsm.LookupNamespace('un'))
-    $disableDhcp = $script:un.CreateElement('disable_dhcp_hostname', $script:nsm.LookupNamespace('un'))
-    $globalNode = $script:un.CreateElement('global', $script:nsm.LookupNamespace('un'))
-    $securityNode = $script:un.CreateElement('security', $script:nsm.LookupNamespace('un'))
-    $shellNode = $script:un.CreateElement('template_shell', $script:nsm.LookupNamespace('un'))
-    $guestNode = $script:un.CreateElement('usershare_allow_guests', $script:nsm.LookupNamespace('un'))
-    $domainNode = $script:un.CreateElement('workgroup', $script:nsm.LookupNamespace('un'))
-    $joinNode = $script:un.CreateElement('join', $script:nsm.LookupNamespace('un'))
-    $joinUserNode = $script:un.CreateElement('user', $script:nsm.LookupNamespace('un'))
-    $joinPasswordNode = $script:un.CreateElement('password', $script:nsm.LookupNamespace('un'))
-    $homedirNode = $script:un.CreateElement('mkhomedir', $script:nsm.LookupNamespace('un'))
-    $winbindNode = $script:un.CreateElement('winbind', $script:nsm.LookupNamespace('un'))
-
-    $boolAttrib = $script:un.CreateAttribute('config', 'type', $script:nsm.LookupNamespace('config'))
-    $boolAttrib.InnerText = 'boolean'
-    $null = $disableDhcp.Attributes.Append($boolAttrib)
-    $boolAttrib = $script:un.CreateAttribute('config', 'type', $script:nsm.LookupNamespace('config'))
-    $boolAttrib.InnerText = 'boolean'
-    $null = $homedirNode.Attributes.Append($boolAttrib)
-    $boolAttrib = $script:un.CreateAttribute('config', 'type', $script:nsm.LookupNamespace('config'))
-    $boolAttrib.InnerText = 'boolean'
-    $null = $winbindNode.Attributes.Append($boolAttrib)
-    $mapAttr = $script:un.CreateAttribute('t')
-    $mapAttr.InnerText = 'map'
-    $null = $smbClientNode.Attributes.Append($mapAttr)
-    $mapAttr = $script:un.CreateAttribute('t')
-    $mapAttr.InnerText = 'map'
-    $null = $adNode.Attributes.Append($mapAttr)
-
-    $kdc.InnerText = $DomainName
-
-    $disableDhcp.InnerText = 'true'
-    $securityNode.InnerText = 'ADS'
-    $shellNode.InnerText = '/bin/bash'
-    $guestNode.InnerText = 'no'
-    $domainNode.InnerText = $DomainName
-    $joinUserNode.InnerText = $Username
-    $joinPasswordNode.InnerText = $Password
-    $homedirNode.InnerText = 'true'
-    $winbindNode.InnerText = 'false'
-
-    $null = $adNode.AppendChild($kdc)
-    $null = $globalNode.AppendChild($securityNode)
-    $null = $globalNode.AppendChild($shellNode)
-    $null = $globalNode.AppendChild($guestNode)
-    $null = $globalNode.AppendChild($domainNode)
-    $null = $joinNode.AppendChild($joinUserNode)
-    $null = $joinNode.AppendChild($joinPasswordNode)
-    $null = $smbClientNode.AppendChild($disableDhcp)
-    $null = $smbClientNode.AppendChild($globalNode)
-    $null = $smbClientNode.AppendChild($adNode)
-    $null = $smbClientNode.AppendChild($joinNode)
-    $null = $smbClientNode.AppendChild($homedirNode)
-    $null = $smbClientNode.AppendChild($winbindNode)
-
-    $null = $script:un.DocumentElement.AppendChild($smbClientNode)
-
     <# SSSD configuration JSON - generated on running OpenSUSE client
     According to what docs I found this is also valid for older editions
     #>
     $sssdHash = @{
         "sssd" = @{
-            "conf"               = @{
-                "sssd" = @{
+            "conf"    = @{
+                "sssd"               = @{
                     "config_file_version" = "2"
                     "services"            = @(
+                        "nss",
                         "pam"
-                        "nss"
                     )
                     "domains"             = @(
                         $DomainName
                     )
                 }
-                "pam"  = @{}
-                "nss"  = @{}
+                "nss"                = @{}
+                "pam"                = @{}
+                "domain/contoso.com" = @{
+                    "id_provider"       = "ad"
+                    "auth_provider"     = "ad"
+                    "enumerate"         = "false"
+                    "cache_credentials" = "false"
+                    "case_sensitive"    = "true"
+                }
             }
-            "domain/$DomainName" = @{
-                "id_provider"          = "ldap"
-                "auth_provider"        = "ldap"
-                "ldap_schema"          = "rfc2307bis"
-                "enumerate"            = "false"
-                "cache_credentials"    = "false"
-                "case_sensitive"       = "true"
-                "ldap_use_tokengroups" = "true"
-                "ldap_uri"             = "ldap://$DomainName"
-                "ldap_tls_reqcert"     = "allow"
-            }
-            "pam"                = $true
-            "nss"                = @(
+            "pam"     = $true
+            "nss"     = @(
                 "passwd"
                 "group"
             )
-            "enabled"            = $true
+            "enabled" = $true
         }
         "ldap" = @{
             "pam" = $false
@@ -116,10 +53,38 @@
         "krb"  = @{
             "conf" = @{
                 "include"      = @()
-                "libdefaults"  = @{}
-                "realms"       = @{}
-                "domain_realm" = @{}
-                "logging"      = @{}
+                "libdefaults"  = @{
+                    "dns_canonicalize_hostname" = "false"
+                    "rdns"                      = "false"
+                    dns_lookup_kdc              = "true"
+                    "verify_ap_req_nofail"      = "true"
+                    "default_ccache_name"       = "KEYRING:persistent:%{uid}"
+                    "default_realm"             = $DomainName.ToUpper()
+                    "clockskew"                 = "300"
+                }
+                "realms"       = @{
+                    $DomainName.ToUpper() = @{
+                        "default_domain" = $DomainName
+                        "admin_server"   = $DomainName
+                    }
+                }
+                "domain_realm" = @{
+                    ".$DomainName" = $DomainName.ToUpper()
+                }
+                "logging"      = @{
+                    "kdc"          = "FILE:/var/log/krb5/krb5kdc.log"
+                    "admin_server" = "FILE:/var/log/krb5/kadmind.log"
+                    "default"      = "SYSLOG:NOTICE:DAEMON"
+                }
+                "appdefaults"  = @{
+                    "pam" = @{
+                        "ticket_lifetime" = "1d"
+                        "renew_lifetime"  = "1d"
+                        "forwardable"     = "true"
+                        "proxiable"       = "false"
+                        "minimum_uid"     = "1"
+                    }
+                }
             }
             "pam"  = $false
         }
@@ -129,10 +94,10 @@
             "mkhomedir" = $true
         }
         "ad"   = @{
-            "domain"             = ""
-            "user"               = ""
-            "ou"                 = ""
-            "pass"               = ""
+            "domain"             = $DomainName
+            "user"               = $Username
+            "ou"                 = $OrganizationalUnit
+            "pass"               = $Password
             "overwrite_smb_conf" = $false
             "update_dns"         = $true
             "dnshostname"        = ""
