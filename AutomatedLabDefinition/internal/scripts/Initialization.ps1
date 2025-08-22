@@ -497,7 +497,7 @@ $autoyastContent = @"
     <drive t="map">
         <disklabel>gpt</disklabel>
         <device>/dev/sda</device>
-        <use>free</use>
+        <use>all</use>
         <type t="symbol">CT_DISK</type>
         <partitions t="list">
             <partition t="map">
