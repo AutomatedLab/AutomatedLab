@@ -469,81 +469,90 @@ $autoyastContent = @"
 <profile
   xmlns="http://www.suse.com/1.0/yast2ns"
   xmlns:config="http://www.suse.com/1.0/configns">
-  <general>
-  <signature-handling>
-    <accept_unsigned_file config:type="boolean">true</accept_unsigned_file>
-    <accept_file_without_checksum config:type="boolean">true</accept_file_without_checksum>
-    <accept_verification_failed config:type="boolean">true</accept_verification_failed>
-    <accept_unknown_gpg_key config:type="boolean">true</accept_unknown_gpg_key>
-    <import_gpg_key config:type="boolean">true</import_gpg_key>
-    <accept_non_trusted_gpg_key config:type="boolean">true</accept_non_trusted_gpg_key>
+  <general t="map">
+    <signature-handling t="map">
+      <accept_unsigned_file t="boolean">true</accept_unsigned_file>
+      <accept_file_without_checksum t="boolean">true</accept_file_without_checksum>
+      <accept_verification_failed t="boolean">true</accept_verification_failed>
+      <accept_unknown_gpg_key t="boolean">true</accept_unknown_gpg_key>
+      <import_gpg_key t="boolean">true</import_gpg_key>
+      <accept_non_trusted_gpg_key t="boolean">true</accept_non_trusted_gpg_key>
     </signature-handling>
-    <self_update config:type="boolean">false</self_update>
-  <mode>
-    <halt config:type="boolean">false</halt>
-    <forceboot config:type="boolean">false</forceboot>
-    <final_reboot config:type="boolean">true</final_reboot>
-    <final_halt config:type="boolean">false</final_halt>
-    <confirm_base_product_license config:type="boolean">false</confirm_base_product_license>
-    <confirm config:type="boolean">false</confirm>
-    <second_stage config:type="boolean">true</second_stage>
+    <self_update t="boolean">false</self_update>
+  <mode t="map">
+    <halt t="boolean">false</halt>
+    <forceboot t="boolean">false</forceboot>
+    <final_reboot t="boolean">true</final_reboot>
+    <final_halt t="boolean">false</final_halt>
+    <confirm_base_product_license t="boolean">false</confirm_base_product_license>
+    <confirm t="boolean">false</confirm>
+    <second_stage t="boolean">true</second_stage>
   </mode>
   </general>
-  <partitioning config:type="list">
-    <drive>
+  <partitioning t="list">
+    <drive t="map">
         <disklabel>gpt</disklabel>
         <device>/dev/sda</device>
         <use>free</use>
-        <partitions config:type="list">
-            <partition>
-                <filesystem config:type="symbol">vfat</filesystem>
+        <type t="symbol">CT_DISK</type>
+        <partitions t="list">
+            <partition t="map">
+                <create t="boolean">true</create>
+                <format t="boolean">true</create>
+                <filesystem t="symbol">vfat</filesystem>
                 <mount>/boot</mount>
                 <size>1G</size>
             </partition>
-            <partition>
-                <filesystem config:type="symbol">vfat</filesystem>
+            <partition t="map">
+                <create t="boolean">true</create>
+                <format t="boolean">true</create>
+                <filesystem t="symbol">vfat</filesystem>
                 <mount>/boot/efi</mount>
                 <size>1G</size>
             </partition>
-            <partition>
-                <filesystem config:type="symbol">swap</filesystem>
+            <partition t="map">
+                <create t="boolean">true</create>
+                <format t="boolean">true</create>
+                <filesystem t="symbol">swap</filesystem>
                 <mount>/swap</mount>
                 <size>auto</size>
             </partition>
-            <partition>
-                <filesystem config:type="symbol">ext4</filesystem>
+            <partition t="map">
+                <create t="boolean">true</create>
+                <format t="boolean">true</create>
+                <filesystem t="symbol">ext4</filesystem>
                 <mount>/</mount>
                 <size>auto</size>
             </partition>
         </partitions>
     </drive>
 </partitioning>
-<bootloader>
+<bootloader t="map">
   <loader_type>grub2-efi</loader_type>
   <global>
-    <activate config:type="boolean">true</activate>
+    <activate t="boolean">true</activate>
     <boot_boot>true</boot_boot>
   </global>
  </bootloader>
-<language>
+<language t="map">
     <language>en_US</language>
 </language>
-<timezone>
+<timezone t="map">
 <!-- https://raw.githubusercontent.com/yast/yast-country/master/timezone/src/data/timezone_raw.ycp -->
     <hwclock>UTC</hwclock>
     <timezone>ETC/GMT</timezone>
 </timezone>
-<keyboard>
+<keyboard t="map">
 <!-- https://raw.githubusercontent.com/yast/yast-country/master/keyboard/src/data/keyboard_raw.ycp -->
     <keymap>english-us</keymap>
 </keyboard>
-<software>
-    <patterns config:type="list">
+<software t="map">
+    <patterns t="list">
     <pattern>base</pattern>
     <pattern>enhanced_base</pattern>
   </patterns>
-  <install_recommended config:type="boolean">true</install_recommended>
-  <packages config:type="list">
+  <install_recommended t="boolean">true</install_recommended>
+  <packages t="list">
     <package>iputils</package>
     <package>vim</package>
     <package>less</package>
@@ -551,42 +560,43 @@ $autoyastContent = @"
     <package>yast2-auth-client</package>
   </packages>
 </software>
-<services-manager>
+<services-manager t="map">
   <default_target>multi-user</default_target>
   <services>
-    <enable config:type="list">
+    <enable t="list">
       <service>sshd</service>
     </enable>
   </services>
 </services-manager>
-<networking>
-<interfaces config:type="list">
+<networking t="map">
+<interfaces t="list">
 </interfaces>
-<net-udev config:type="list">
+<net-udev t="list">
 </net-udev>
-<dns>
-    <nameservers config:type="list">
+<dns t="map">
+    <nameservers t="list">
     </nameservers>
 </dns>
-<routing>
-<routes config:type="list">
+<routing t="map">
+<routes t="list">
 </routes>
 </routing>
 </networking>
-<users config:type="list">
+<users t="list">
   <user>
     <username>root</username>
     <user_password>Password1</user_password>
-    <encrypted config:type="boolean">false</encrypted>
+    <encrypted t="boolean">false</encrypted>
   </user>
   </users>
-<firewall>
-  <enable_firewall config:type="boolean">true</enable_firewall>
-  <start_firewall config:type="boolean">true</start_firewall>
+<firewall t="map">
+  <enable_firewall t="boolean">true</enable_firewall>
+  <start_firewall t="boolean">true</start_firewall>
 </firewall>
-<scripts>
-    <init-scripts config:type="list">
-      <script>
+<scripts t="map">
+    <init-scripts t="list">
+      <script t="map">
+        <file-name>installpwsh.sh</file-name>
         <source>
         <![CDATA[
             rpm --import https://packages.microsoft.com/keys/microsoft.asc

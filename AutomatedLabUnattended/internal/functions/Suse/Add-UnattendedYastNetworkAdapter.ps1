@@ -137,6 +137,9 @@
         foreach ($gateway in $Gateways)
         {
             $routeNode = $script:un.CreateElement('route', $script:nsm.LookupNamespace('un'))
+            $mapAttr = $script:un.CreateAttribute('t')
+            $mapAttr.InnerText = 'map'
+            $null = $routeNode.Attributes.Append($mapAttr)
             $destinationNode = $script:un.CreateElement('destination', $script:nsm.LookupNamespace('un'))
             $deviceNode = $script:un.CreateElement('device', $script:nsm.LookupNamespace('un'))
             $gatewayNode = $script:un.CreateElement('gateway', $script:nsm.LookupNamespace('un'))
