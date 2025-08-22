@@ -59,7 +59,7 @@
 
     # Ensure package selection works
     if ($Machine.LinuxType -eq 'Suse' -and $Machine.OperatingSystem.OperatingSystemName -match 'Tumbleweed') {
-        $nsm = [System.Xml.XmlNamespaceManager]::new($script:un.NameTable)
+        $nsm = [System.Xml.XmlNamespaceManager]::new((Get-UnattendedContent).NameTable)
         $nsm.AddNamespace('un', "http://www.suse.com/1.0/yast2ns")
         $nsm.AddNamespace('config', "http://www.suse.com/1.0/configns" )
         $addOnNode = (Get-UnattendedContent).SelectSingleNode('/un:profile/un:add-on/un:add_on_others', $nsm)
