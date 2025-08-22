@@ -387,6 +387,9 @@
             # Copy data
             Copy-Item -Path "$($isoDrive.RootDirectory.FullName)*" -Destination $drive.RootDirectory.FullName -Recurse -Force -PassThru |
             Where-Object IsReadOnly | Set-ItemProperty -name IsReadOnly -Value $false
+            
+            # Unmount ISO
+            [void] (Dismount-DiskImage -ImagePath $Machine.OperatingSystem.IsoPath)
 
             # AutoYast XML file is not picked up properly without modifying bootloader config
             # Change grub and isolinux configuration
@@ -581,10 +584,12 @@
 
     Write-ProgressIndicator
 
-    if ( $Machine.OperatingSystemType -eq 'Linux' -and $Machine.LinuxType -in 'RedHat','Ubuntu')
+    if ( $Machine.OperatingSystemType -eq 'Linux')
     {
         $dvd = $vm | Add-VMDvdDrive -Path $Machine.OperatingSystem.IsoPath -Passthru
-        $vm | Set-VMFirmware -FirstBootDevice $dvd
+        if ( $Machine.LinuxType -in 'RedHat','Ubuntu') {
+            $vm | Set-VMFirmware -FirstBootDevice $dvd
+        }
     }
 
     if ( $Machine.OperatingSystemType -eq 'Windows')
