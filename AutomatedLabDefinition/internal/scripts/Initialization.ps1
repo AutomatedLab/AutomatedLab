@@ -595,20 +595,6 @@ $autoyastContent = @"
 </firewall>
 <scripts t="map">
     <init-scripts t="list">
-      <script t="map">
-        <filename>installpwsh.sh</filename>
-        <source>
-        <![CDATA[
-            rpm --import https://packages.microsoft.com/keys/microsoft.asc
-            rpm -Uvh https://packages.microsoft.com/config/sles/12/packages-microsoft-prod.rpm
-            zypper update
-            zypper -f -v install powershell omi openssl
-            systemctl enable omid
-            echo "Subsystem powershell /usr/bin/pwsh -sshs -NoLogo" >> /etc/ssh/sshd_config
-            systemctl restart sshd
-        ]]>
-        </source>
-      </script>
     </init-scripts>
   </scripts>
 </profile>
