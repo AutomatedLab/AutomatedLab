@@ -51,10 +51,6 @@
         $unattendContent = $unattendContent -replace 'SUSEVERSION', "$($Machine.OperatingSystem.Version.Major).$($Machine.OperatingSystem.Version.Minor)"
     }
 
-    if ($Machine.LinuxType -eq 'Suse' -and $Machine.OperatingSystem.OperatingSystemName -match 'Tumbleweed') {
-        $unattendContent = $unattendContent -replace 'preempt=full quiet security=apparmor', "security=selinux selinux=1"
-    }
-
     Import-UnattendedContent -Content $unattendContent
 
     # Ensure package selection works

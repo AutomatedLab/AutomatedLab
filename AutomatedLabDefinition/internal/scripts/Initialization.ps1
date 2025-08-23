@@ -493,58 +493,6 @@ $autoyastContent = @"
     <second_stage t="boolean">true</second_stage>
   </mode>
   </general>
-  <partitioning t="list">
-    <drive t="map">
-        <disklabel>gpt</disklabel>
-        <device>/dev/sda</device>
-        <use>all</use>
-        <type t="symbol">CT_DISK</type>
-        <partitions t="list">
-            <partition t="map">
-                <create t="boolean">true</create>
-                <format t="boolean">true</format>
-                <filesystem t="symbol">vfat</filesystem>
-                <mount>/boot</mount>
-                <size>1G</size>
-            </partition>
-            <partition t="map">
-                <create t="boolean">true</create>
-                <format t="boolean">true</format>
-                <filesystem t="symbol">vfat</filesystem>
-                <mount>/boot/efi</mount>
-                <size>1G</size>
-            </partition>
-            <partition t="map">
-                <create t="boolean">true</create>
-                <format t="boolean">true</format>
-                <filesystem t="symbol">swap</filesystem>
-                <mount>/swap</mount>
-                <size>auto</size>
-            </partition>
-            <partition t="map">
-                <create t="boolean">true</create>
-                <format t="boolean">true</format>
-                <filesystem t="symbol">ext4</filesystem>
-                <mount>/</mount>
-                <size>auto</size>
-            </partition>
-        </partitions>
-    </drive>
-</partitioning>
-<bootloader t="map">
-  <loader_type>grub2-efi</loader_type>
-  <global t="map">
-    <append>splash=silent mitigations=auto preempt=full quiet security=apparmor</append>
-    <cpu_mitigations>auto</cpu_mitigations>
-    <gfxmode>auto</gfxmode>
-    <hiddenmenu>false</hiddenmenu>
-    <os_prober>true</os_prober>
-    <secure_boot>true</secure_boot>
-    <terminal>gfxterm</terminal>
-    <timeout t="integer">5</timeout>
-    <update_nvram>true</update_nvram>
-  </global>
- </bootloader>
 <language t="map">
     <language>en_US</language>
 </language>
