@@ -308,7 +308,7 @@
             $pwshRelease = 'https://github.com/PowerShell/PowerShell/releases/download/v7.5.2/powershell-7.5.2-1.rh.x86_64.rpm'
         }
 
-        Add-UnattendedSynchronousCommand -Command "sudo zypper update -y && sudo zypper install -y libicu libopenssl3 && sudo zypper -n install --allow-unsigned-rpm --force $pwshRelease`necho `"Subsystem powershell /usr/bin/pwsh -sshs -NoLogo`" >> /etc/ssh/sshd_config`nsystemctl restart sshd" -Description 'Install PowerShell'
+        Add-UnattendedSynchronousCommand -Command "sudo zypper update -y && sudo zypper install -y libicu libopenssl3`nsudo rpm -i --nodeps $pwshRelease`necho `"Subsystem powershell /usr/bin/pwsh -sshs -NoLogo`" >> /etc/ssh/sshd_config`nsystemctl restart sshd`n" -Description 'Install PowerShell'
     }
     
     if ($Machine.OperatingSystemType -eq 'Linux' -and -not [string]::IsNullOrEmpty($Machine.SshPublicKey))
