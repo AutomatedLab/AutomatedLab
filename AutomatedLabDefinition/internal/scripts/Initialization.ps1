@@ -509,38 +509,33 @@ $autoyastContent = @"
     <add_on_others t="list">
         <listentry t="map">
             <alias>repo-backports-update</alias>
-            <media_url>https://download.opensuse.org/update/leap/SUSEVERSION/backports/</media_url>
+            <media_url>http://download.opensuse.org/update/leap/SUSEVERSION/backports/</media_url>
             <name>Backports Update</name>
-            <priority t="integer">99</priority>
-            <product_dir>/</product_dir>
+            <priority t="integer">3</priority>
         </listentry>
         <listentry t="map">
             <alias>repo-non-oss</alias>
-            <media_url>https://download.opensuse.org/distribution/leap/SUSEVERSION/repo/non-oss/</media_url>
+            <media_url>http://download.opensuse.org/distribution/leap/SUSEVERSION/repo/non-oss/</media_url>
             <name>Non-OSS Repository</name>
-            <priority t="integer">99</priority>
-            <product_dir>/</product_dir>
+            <priority t="integer">2</priority>
         </listentry>
         <listentry t="map">
             <alias>repo-sle-update</alias>
-            <media_url>https://download.opensuse.org/update/leap/SUSEVERSION/sle/</media_url>
+            <media_url>http://download.opensuse.org/update/leap/SUSEVERSION/sle/</media_url>
             <name>Update from SLES</name>
-            <priority t="integer">99</priority>
-            <product_dir>/</product_dir>
+            <priority t="integer">1</priority>
         </listentry>
         <listentry t="map">
             <alias>repo-update</alias>
-            <media_url>https://download.opensuse.org/update/leap/SUSEVERSION/oss/</media_url>
+            <media_url>http://download.opensuse.org/update/leap/SUSEVERSION/oss/</media_url>
             <name>Main Update Repository</name>
-            <priority t="integer">99</priority>
-            <product_dir>/</product_dir>
+            <priority t="integer">4</priority>
         </listentry>
         <listentry t="map">
             <alias>repo-updatenon-oss</alias>
             <media_url>http://download.opensuse.org/update/leap/SUSEVERSION/non-oss/</media_url>
             <name>Non-OSS Update Repository</name>
-            <priority t="integer">99</priority>
-            <product_dir>/</product_dir>
+            <priority t="integer">5</priority>
         </listentry>
     </add_on_others>
 </add-on>
@@ -550,7 +545,7 @@ $autoyastContent = @"
     <pattern>enhanced_base</pattern>
   </patterns>
   <install_recommended t="boolean">true</install_recommended>
-  <do_online_update t="boolean">true</do_online_update>
+  <do_online_update t="boolean">false</do_online_update>
   <packages t="list">
     <package>iputils</package>
     <package>vim</package>

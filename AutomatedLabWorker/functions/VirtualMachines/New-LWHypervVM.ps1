@@ -72,18 +72,15 @@
         $aliasNode = (Get-UnattendedContent).CreateElement('alias', $nsm.LookupNamespace('un'))
         $aliasNode.InnerText = 'repo-update'
         $mediaUrlNode = (Get-UnattendedContent).CreateElement('media_url', $nsm.LookupNamespace('un')) 
-        $mediaUrlNode.InnerText = 'https://download.opensuse.org/update/tumbleweed/'
+        $mediaUrlNode.InnerText = 'http://download.opensuse.org/update/tumbleweed/'
         $nameNode = (Get-UnattendedContent).CreateElement('name', $nsm.LookupNamespace('un'))
         $nameNode.InnerText = 'Update'
         $priorityNode = (Get-UnattendedContent).CreateElement('priority', $nsm.LookupNamespace('un'))
-        $priorityNode.InnerText = '99'
-        $productDirNode = (Get-UnattendedContent).CreateElement('product_dir', $nsm.LookupNamespace('un'))
-        $productDirNode.InnerText = '/'
+        $priorityNode.InnerText = '1'
         $null = $listNodeUpdate.AppendChild($aliasNode)
         $null = $listNodeUpdate.AppendChild($mediaUrlNode)
         $null = $listNodeUpdate.AppendChild($nameNode)
         $null = $listNodeUpdate.AppendChild($priorityNode)
-        $null = $listNodeUpdate.AppendChild($productDirNode)
         $null = $listNodeUpdate.Attributes.Append($mapAttr)
         $null = $addOnNode.AppendChild($listNodeUpdate)
 
@@ -94,18 +91,15 @@
         $aliasNode = (Get-UnattendedContent).CreateElement('alias', $nsm.LookupNamespace('un'))
         $aliasNode.InnerText = 'repo-update'
         $mediaUrlNode = (Get-UnattendedContent).CreateElement('media_url', $nsm.LookupNamespace('un')) 
-        $mediaUrlNode.InnerText = 'https://download.opensuse.org/tumbleweed/repo/non-oss/'
+        $mediaUrlNode.InnerText = 'http://download.opensuse.org/tumbleweed/repo/non-oss/'
         $nameNode = (Get-UnattendedContent).CreateElement('name', $nsm.LookupNamespace('un'))
         $nameNode.InnerText = 'Update'
         $priorityNode = (Get-UnattendedContent).CreateElement('priority', $nsm.LookupNamespace('un'))
-        $priorityNode.InnerText = '99'
-        $productDirNode = (Get-UnattendedContent).CreateElement('product_dir', $nsm.LookupNamespace('un'))
-        $productDirNode.InnerText = '/'
+        $priorityNode.InnerText = '2'
         $null = $listNodeNonOss.AppendChild($aliasNode)
         $null = $listNodeNonOss.AppendChild($mediaUrlNode)
         $null = $listNodeNonOss.AppendChild($nameNode)
         $null = $listNodeNonOss.AppendChild($priorityNode)
-        $null = $listNodeNonOss.AppendChild($productDirNode)
         $null = $listNodeNonOss.Attributes.Append($mapAttr)
         $null = $addOnNode.AppendChild($listNodeNonOss)
     }
