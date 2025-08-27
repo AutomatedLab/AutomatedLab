@@ -139,9 +139,12 @@
         }
     }
 
+    $adapterCount = 0
     foreach ($adapter in $adapters)
     {
         $ipSettings = @{}
+        $openSuseLinuxRcNetwork = [System.Text.StringBuilder]::new()
+        $null = $openSuseLinuxRcNetwork.Append("ifcfg=`"eth$($adapterCount)`"=")
 
         $prefixlength = 12 - $macAddressPrefix.Length
         $mac = "$macAddressPrefix{0:X$prefixLength}" -f $macIdx++
@@ -173,22 +176,33 @@
 
         $ipSettings.Add('Gateways', ($adapter.Ipv4Gateway + $adapter.Ipv6Gateway))
         $ipSettings.Add('DNSServers', ($adapter.Ipv4DnsServers + $adapter.Ipv6DnsServers))
+        
+        $null = $openSuseLinuxRcNetwork.Append($ipSettings.IpAddresses -join ' ')
+        $null = $openSuseLinuxRcNetwork.Append(' ')
+        $null = $openSuseLinuxRcNetwork.Append($ipSettings.Gateways -join ' ')
+        $null = $openSuseLinuxRcNetwork.Append(' ')
+        $null = $openSuseLinuxRcNetwork.Append($ipSettings.DNSServers -join ' ')
 
         if (-not $Machine.IsDomainJoined -and (-not $adapter.ConnectionSpecificDNSSuffix))
         {
             $rootDomainName = Get-LabVM -Role RootDC | Select-Object -First 1 | Select-Object -ExpandProperty DomainName
             $ipSettings.Add('DnsDomain', $rootDomainName)
+            $null = $openSuseLinuxRcNetwork.Append(" $rootDomainName")
         }
 
         if ($adapter.ConnectionSpecificDNSSuffix)
         {
             $ipSettings.Add('DnsDomain', $adapter.ConnectionSpecificDNSSuffix)
+            $null = $openSuseLinuxRcNetwork.Append(" $($adapter.ConnectionSpecificDNSSuffix)")
         }
+
         $ipSettings.Add('UseDomainNameDevolution', (([string]($adapter.AppendParentSuffixes)) = 'true'))
         if ($adapter.AppendDNSSuffixes)
         {
             $ipSettings.Add('DNSSuffixSearchOrder', $adapter.AppendDNSSuffixes -join ',')
+            $null = $openSuseLinuxRcNetwork.Append(" $($adapter.AppendDNSSuffixes -join ' ')")
         }
+
         $ipSettings.Add('EnableAdapterDomainNameRegistration', ([string]($adapter.DnsSuffixInDnsRegistration)).ToLower())
         $ipSettings.Add('DisableDynamicUpdate', ([string](-not $adapter.RegisterInDNS)).ToLower())
 
@@ -213,6 +227,7 @@
         }
 
         Add-UnattendedNetworkAdapter @ipSettings
+        $adapterCount++
     }
 
     $Machine.NetworkAdapters = $adapters
@@ -477,8 +492,8 @@ restorecon -R /$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/
             $grubFile = Get-ChildItem -Recurse -Path $drive.RootDirectory.FullName -Filter 'grub.cfg'
             $isolinuxFile = Get-ChildItem -Recurse -Path $drive.RootDirectory.FullName -Filter 'isolinux.cfg'
 
-            ($grubFile | Get-Content -Raw) -replace "splash=silent", "splash=silent textmode=1 YAST_SKIP_XML_VALIDATION=1 autoyast=device:///autoinst.xml" | Set-Content -Path $grubFile.FullName
-            ($isolinuxFile | Get-Content -Raw) -replace "splash=silent", "splash=silent textmode=1 YAST_SKIP_XML_VALIDATION=1 autoyast=device:///autoinst.xml" | Set-Content -Path $isolinuxFile.FullName
+            ($grubFile | Get-Content -Raw) -replace "splash=silent", "splash=silent textmode=1 $openSuseLinuxRcNetwork YAST_SKIP_XML_VALIDATION=1 autoyast=device:///autoinst.xml" | Set-Content -Path $grubFile.FullName
+            ($isolinuxFile | Get-Content -Raw) -replace "splash=silent", "splash=silent textmode=1 $openSuseLinuxRcNetwork YAST_SKIP_XML_VALIDATION=1 autoyast=device:///autoinst.xml" | Set-Content -Path $isolinuxFile.FullName
         }
         elseif ($machine.LinuxType -eq 'Ubuntu')
         {
