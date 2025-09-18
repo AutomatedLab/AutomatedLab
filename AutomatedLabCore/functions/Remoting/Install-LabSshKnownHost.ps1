@@ -9,7 +9,7 @@
         return
     }
 
-    $machines = Get-LabVM -All -IncludeLinux | Where-Object -FilterScript { -not $_.SkipDeployment }
+    $machines = Get-LabVM -All -IncludeLinux | Where-Object -FilterScript { -not $_.SkipDeployment -and $_.SshPublicKey }
     if (-not $machines)
     {
         return
