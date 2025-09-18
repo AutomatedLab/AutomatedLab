@@ -7,6 +7,7 @@
 ### Bugs
 
 - Fixed issue with case-sensitive Linux OS name matching (#1766)
+- Added filtering to Install-LabSshKnownHost in an attempt to speed up the function
 
 ## 5.59.0 (2025-08-18)
 
