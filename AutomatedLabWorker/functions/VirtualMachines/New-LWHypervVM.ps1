@@ -46,7 +46,63 @@
         $Machine.ProductKey = $Machine.OperatingSystem.ProductKey
     }
 
-    Import-UnattendedContent -Content $Machine.UnattendedXmlContent
+    $unattendContent = $Machine.UnattendedXmlContent
+    if ($Machine.LinuxType -eq 'Suse' -and $Machine.OperatingSystem.OperatingSystemName -match 'Leap') {
+        $unattendContent = $unattendContent -replace 'SUSEVERSION', "$($Machine.OperatingSystem.Version.Major).$($Machine.OperatingSystem.Version.Minor)"
+    }
+
+    Import-UnattendedContent -Content $unattendContent
+
+    # Ensure package selection works
+    if ($Machine.LinuxType -eq 'Suse' -and $Machine.OperatingSystem.OperatingSystemName -match 'Tumbleweed') {
+        $nsm = [System.Xml.XmlNamespaceManager]::new((Get-UnattendedContent).NameTable)
+        $nsm.AddNamespace('un', "http://www.suse.com/1.0/yast2ns")
+        $nsm.AddNamespace('config', "http://www.suse.com/1.0/configns" )
+        $addOnNode = (Get-UnattendedContent).SelectSingleNode('/un:profile/un:add-on/un:add_on_others', $nsm)
+        $addOnNode.RemoveAll()
+
+        # Restore attribute after clearing the node
+        $listAttr = (Get-UnattendedContent).CreateAttribute('t')
+        $listAttr.InnerText = 'list'
+        $null = $addOnNode.Attributes.Append($listAttr)
+
+        $listNodeUpdate = (Get-UnattendedContent).CreateElement('listentry', $nsm.LookupNamespace('un'))
+        $mapAttr = (Get-UnattendedContent).CreateAttribute('t')
+        $mapAttr.InnerText = 'map'
+        $aliasNode = (Get-UnattendedContent).CreateElement('alias', $nsm.LookupNamespace('un'))
+        $aliasNode.InnerText = 'repo-update'
+        $mediaUrlNode = (Get-UnattendedContent).CreateElement('media_url', $nsm.LookupNamespace('un')) 
+        $mediaUrlNode.InnerText = 'http://download.opensuse.org/update/tumbleweed/'
+        $nameNode = (Get-UnattendedContent).CreateElement('name', $nsm.LookupNamespace('un'))
+        $nameNode.InnerText = 'Update'
+        $priorityNode = (Get-UnattendedContent).CreateElement('priority', $nsm.LookupNamespace('un'))
+        $priorityNode.InnerText = '1'
+        $null = $listNodeUpdate.AppendChild($aliasNode)
+        $null = $listNodeUpdate.AppendChild($mediaUrlNode)
+        $null = $listNodeUpdate.AppendChild($nameNode)
+        $null = $listNodeUpdate.AppendChild($priorityNode)
+        $null = $listNodeUpdate.Attributes.Append($mapAttr)
+        $null = $addOnNode.AppendChild($listNodeUpdate)
+
+
+        $listNodeNonOss = (Get-UnattendedContent).CreateElement('listentry', $nsm.LookupNamespace('un'))
+        $mapAttr = (Get-UnattendedContent).CreateAttribute('t')
+        $mapAttr.InnerText = 'map'
+        $aliasNode = (Get-UnattendedContent).CreateElement('alias', $nsm.LookupNamespace('un'))
+        $aliasNode.InnerText = 'repo-update'
+        $mediaUrlNode = (Get-UnattendedContent).CreateElement('media_url', $nsm.LookupNamespace('un')) 
+        $mediaUrlNode.InnerText = 'http://download.opensuse.org/tumbleweed/repo/non-oss/'
+        $nameNode = (Get-UnattendedContent).CreateElement('name', $nsm.LookupNamespace('un'))
+        $nameNode.InnerText = 'Update'
+        $priorityNode = (Get-UnattendedContent).CreateElement('priority', $nsm.LookupNamespace('un'))
+        $priorityNode.InnerText = '2'
+        $null = $listNodeNonOss.AppendChild($aliasNode)
+        $null = $listNodeNonOss.AppendChild($mediaUrlNode)
+        $null = $listNodeNonOss.AppendChild($nameNode)
+        $null = $listNodeNonOss.AppendChild($priorityNode)
+        $null = $listNodeNonOss.Attributes.Append($mapAttr)
+        $null = $addOnNode.AppendChild($listNodeNonOss)
+    }
     #endregion
 
     #region network adapter settings
@@ -83,9 +139,12 @@
         }
     }
 
+    $adapterCount = 0
     foreach ($adapter in $adapters)
     {
         $ipSettings = @{}
+        $openSuseLinuxRcNetwork = [System.Text.StringBuilder]::new()
+        $null = $openSuseLinuxRcNetwork.Append("ifcfg=`"eth$($adapterCount)`"=")
 
         $prefixlength = 12 - $macAddressPrefix.Length
         $mac = "$macAddressPrefix{0:X$prefixLength}" -f $macIdx++
@@ -117,22 +176,33 @@
 
         $ipSettings.Add('Gateways', ($adapter.Ipv4Gateway + $adapter.Ipv6Gateway))
         $ipSettings.Add('DNSServers', ($adapter.Ipv4DnsServers + $adapter.Ipv6DnsServers))
+        
+        $null = $openSuseLinuxRcNetwork.Append($ipSettings.IpAddresses -join ' ')
+        $null = $openSuseLinuxRcNetwork.Append(' ')
+        $null = $openSuseLinuxRcNetwork.Append($ipSettings.Gateways -join ' ')
+        $null = $openSuseLinuxRcNetwork.Append(' ')
+        $null = $openSuseLinuxRcNetwork.Append($ipSettings.DNSServers -join ' ')
 
         if (-not $Machine.IsDomainJoined -and (-not $adapter.ConnectionSpecificDNSSuffix))
         {
             $rootDomainName = Get-LabVM -Role RootDC | Select-Object -First 1 | Select-Object -ExpandProperty DomainName
             $ipSettings.Add('DnsDomain', $rootDomainName)
+            $null = $openSuseLinuxRcNetwork.Append(" $rootDomainName")
         }
 
         if ($adapter.ConnectionSpecificDNSSuffix)
         {
             $ipSettings.Add('DnsDomain', $adapter.ConnectionSpecificDNSSuffix)
+            $null = $openSuseLinuxRcNetwork.Append(" $($adapter.ConnectionSpecificDNSSuffix)")
         }
+
         $ipSettings.Add('UseDomainNameDevolution', (([string]($adapter.AppendParentSuffixes)) = 'true'))
         if ($adapter.AppendDNSSuffixes)
         {
             $ipSettings.Add('DNSSuffixSearchOrder', $adapter.AppendDNSSuffixes -join ',')
+            $null = $openSuseLinuxRcNetwork.Append(" $($adapter.AppendDNSSuffixes -join ' ')")
         }
+
         $ipSettings.Add('EnableAdapterDomainNameRegistration', ([string]($adapter.DnsSuffixInDnsRegistration)).ToLower())
         $ipSettings.Add('DisableDynamicUpdate', ([string](-not $adapter.RegisterInDNS)).ToLower())
 
@@ -157,6 +227,7 @@
         }
 
         Add-UnattendedNetworkAdapter @ipSettings
+        $adapterCount++
     }
 
     $Machine.NetworkAdapters = $adapters
@@ -234,22 +305,39 @@
     }
 
     Set-UnattendedFirewallState -State $Machine.EnableWindowsFirewall
+
+    if ($Machine.LinuxType -eq 'Suse') {
+        try {
+            $repoContent = (Invoke-RestMethod -Method Get -Uri "https://packages.microsoft.com/config/rhel/$Version/prod.repo" -ErrorAction Stop) -split "`n"
+        }
+        catch { }
+
+        $pwshRelease = ((Invoke-RestMethod -Uri 'https://api.github.com/repos/PowerShell/PowerShell/releases/latest' -ErrorAction SilentlyContinue).assets | Where-Object Name -match 'rh\.x86_64\.rpm').browser_download_url
+        if (-not $pwshRelease) {
+            $pwshRelease = 'https://github.com/PowerShell/PowerShell/releases/download/v7.5.2/powershell-7.5.2-1.rh.x86_64.rpm'
+        }
+
+        Add-UnattendedSynchronousCommand -Command "sudo zypper update -y && sudo zypper install -y libicu libopenssl3`nsudo rpm -i --nodeps $pwshRelease`necho `"Subsystem powershell /usr/bin/pwsh -sshs -NoLogo`" >> /etc/ssh/sshd_config`nsystemctl restart sshd`n" -Description 'Install PowerShell'
+    }
     
     if ($Machine.OperatingSystemType -eq 'Linux' -and -not [string]::IsNullOrEmpty($Machine.SshPublicKey))
     {
-        Add-UnattendedSynchronousCommand -Command "restorecon -R /root/.ssh/" -Description 'Restore SELinux context'
-        Add-UnattendedSynchronousCommand -Command "restorecon -R /$($Machine.InstallationUser.UserName)/.ssh/" -Description 'Restore SELinux context'
-        Add-UnattendedSynchronousCommand -Command "sed -i 's|[#]*PubkeyAuthentication yes|PubkeyAuthentication yes|g' /etc/ssh/sshd_config" -Description 'PowerShell is so much better.'
-        Add-UnattendedSynchronousCommand -Command "sed -i 's|[#]*PasswordAuthentication yes|PasswordAuthentication no|g' /etc/ssh/sshd_config" -Description 'PowerShell is so much better.'
-        Add-UnattendedSynchronousCommand -Command "sed -i 's|[#]*GSSAPIAuthentication yes|GSSAPIAuthentication yes|g' /etc/ssh/sshd_config" -Description 'PowerShell is so much better.'
-        Add-UnattendedSynchronousCommand -Command "chmod 700 /home/$($Machine.InstallationUser.UserName)/.ssh && chmod 600 /home/$($Machine.InstallationUser.UserName)/.ssh/authorized_keys" -Description 'SSH'
-        Add-UnattendedSynchronousCommand -Command "chmod 700 /root/.ssh && chmod 600 /root/.ssh/authorized_keys" -Description 'SSH'
-        Add-UnattendedSynchronousCommand -Command "chown -R $($Machine.InstallationUser.UserName):$($Machine.InstallationUser.UserName) /home/$($Machine.InstallationUser.UserName)/.ssh" -Description 'SSH'
-        Add-UnattendedSynchronousCommand -Command "chown -R root:root /root/.ssh" -Description 'SSH'        
-        Add-UnattendedSynchronousCommand -Command "echo `"$($Machine.SshPublicKey)`" > /home/$($Machine.InstallationUser.UserName)/.ssh/authorized_keys" -Description 'SSH'
-        Add-UnattendedSynchronousCommand -Command "echo `"$($Machine.SshPublicKey)`" > /root/.ssh/authorized_keys" -Description 'SSH'
-        Add-UnattendedSynchronousCommand -Command "mkdir -p /home/$($Machine.InstallationUser.UserName)/.ssh" -Description 'SSH'
-        Add-UnattendedSynchronousCommand -Command "mkdir -p /root/.ssh" -Description 'SSH'
+        $command = @"
+mkdir -p /root/.ssh
+mkdir -p /home/$($Machine.InstallationUser.UserName)/.ssh
+echo "$($Machine.SshPublicKey)" > /root/.ssh/authorized_keys
+echo "$($Machine.SshPublicKey)" > /home/$($Machine.InstallationUser.UserName)/.ssh/authorized_keys
+chown -R root:root /root/.ssh
+chown -R $($Machine.InstallationUser.UserName):$($Machine.InstallationUser.UserName) /home/$($Machine.InstallationUser.UserName)/.ssh
+chmod 700 /root/.ssh && chmod 600 /root/.ssh/authorized_keys
+chmod 700 /home/$($Machine.InstallationUser.UserName)/.ssh && chmod 600 /home/$($Machine.InstallationUser.UserName)/.ssh/authorized_keys
+sed -i 's|[#]*GSSAPIAuthentication yes|GSSAPIAuthentication yes|g' /etc/ssh/sshd_config
+sed -i 's|[#]*PasswordAuthentication yes|PasswordAuthentication no|g' /etc/ssh/sshd_config
+sed -i 's|[#]*PubkeyAuthentication yes|PubkeyAuthentication yes|g' /etc/ssh/sshd_config
+restorecon -R /$($Machine.InstallationUser.UserName)/.ssh/
+restorecon -R /root/.ssh/
+"@
+        Add-UnattendedSynchronousCommand -Command $command -Description 'SSH'
     }
 
     if ($Machine.Roles.Name -contains 'RootDC' -or
@@ -282,6 +370,11 @@
 
             if ($Machine.OperatingSystemType -eq 'Linux')
             {
+                if ($Machine.LinuxType -eq 'Suse')
+                {
+                    Set-UnattendedPackage -Package sssd, samba
+                }
+
                 $sudoParam = @{
                     Command = "sed -i '/^%wheel.*/a %$($Machine.DomainName.ToUpper())\\\\domain\\ admins ALL=(ALL) NOPASSWD: ALL' /etc/sudoers"
                     Description = 'Enable domain admin as sudoer without password'
@@ -291,11 +384,14 @@
 
                 if (-not [string]::IsNullOrEmpty($Machine.SshPublicKey))
                 {
-                    Add-UnattendedSynchronousCommand -Command "restorecon -R /$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/" -Description 'Restore SELinux context'
-                    Add-UnattendedSynchronousCommand -Command "echo `"$($Machine.SshPublicKey)`" > /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/authorized_keys" -Description 'SSH'
-                    Add-UnattendedSynchronousCommand -Command "chmod 700 /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh && chmod 600 /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/authorized_keys" -Description 'SSH'
-                    Add-UnattendedSynchronousCommand -Command "chown -R $($Machine.InstallationUser.UserName)@$($Machine.DomainName):$($Machine.InstallationUser.UserName)@$($Machine.DomainName) /home/$($Machine.InstallationUser.UserName)@$($Machine.DomainName)/.ssh" -Description 'SSH'
-                    Add-UnattendedSynchronousCommand -Command "mkdir -p /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh" -Description 'SSH'
+                    $command = @"
+mkdir -p /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh
+chown -R $($Machine.InstallationUser.UserName)@$($Machine.DomainName):$($Machine.InstallationUser.UserName)@$($Machine.DomainName) /home/$($Machine.InstallationUser.UserName)@$($Machine.DomainName)/.ssh
+chmod 700 /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh && chmod 600 /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/authorized_keys
+echo "$($Machine.SshPublicKey)" > /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/authorized_keys
+restorecon -R /$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/
+"@
+                    Add-UnattendedSynchronousCommand -Command $command -Description 'SSH'
                 }
             }
         }
@@ -346,7 +442,7 @@
         {
             $size = 100MB
         }
-        $label = if ($Machine.LinuxType -eq 'RedHat') { 'OEMDRV' } else { 'CIDATA' }
+        $label = if ($Machine.LinuxType -in 'Suse','RedHat') { 'OEMDRV' } else { 'CIDATA' }
         $unattendPartition = $mountedOsDisk | New-Partition -Size $size
 
         # Use a small FAT32 partition to hold AutoYAST and Kickstart configuration
@@ -387,7 +483,7 @@
             # Copy data
             Copy-Item -Path "$($isoDrive.RootDirectory.FullName)*" -Destination $drive.RootDirectory.FullName -Recurse -Force -PassThru |
             Where-Object IsReadOnly | Set-ItemProperty -name IsReadOnly -Value $false
-
+            
             # Unmount ISO
             [void] (Dismount-DiskImage -ImagePath $Machine.OperatingSystem.IsoPath)
 
@@ -396,8 +492,8 @@
             $grubFile = Get-ChildItem -Recurse -Path $drive.RootDirectory.FullName -Filter 'grub.cfg'
             $isolinuxFile = Get-ChildItem -Recurse -Path $drive.RootDirectory.FullName -Filter 'isolinux.cfg'
 
-            ($grubFile | Get-Content -Raw) -replace "splash=silent", "splash=silent textmode=1 autoyast=device:///autoinst.xml" | Set-Content -Path $grubFile.FullName
-            ($isolinuxFile | Get-Content -Raw) -replace "splash=silent", "splash=silent textmode=1 autoyast=device:///autoinst.xml" | Set-Content -Path $isolinuxFile.FullName
+            ($grubFile | Get-Content -Raw) -replace "splash=silent", "splash=silent textmode=1 $openSuseLinuxRcNetwork YAST_SKIP_XML_VALIDATION=1 autoyast=device:///autoinst.xml" | Set-Content -Path $grubFile.FullName
+            ($isolinuxFile | Get-Content -Raw) -replace "splash=silent", "splash=silent textmode=1 $openSuseLinuxRcNetwork YAST_SKIP_XML_VALIDATION=1 autoyast=device:///autoinst.xml" | Set-Content -Path $isolinuxFile.FullName
         }
         elseif ($machine.LinuxType -eq 'Ubuntu')
         {
@@ -584,10 +680,12 @@
 
     Write-ProgressIndicator
 
-    if ( $Machine.OperatingSystemType -eq 'Linux' -and $Machine.LinuxType -in 'RedHat','Ubuntu')
+    if ( $Machine.OperatingSystemType -eq 'Linux')
     {
         $dvd = $vm | Add-VMDvdDrive -Path $Machine.OperatingSystem.IsoPath -Passthru
-        $vm | Set-VMFirmware -FirstBootDevice $dvd
+        if ( $Machine.LinuxType -in 'RedHat','Ubuntu') {
+            $vm | Set-VMFirmware -FirstBootDevice $dvd
+        }
     }
 
     if ( $Machine.OperatingSystemType -eq 'Windows')
