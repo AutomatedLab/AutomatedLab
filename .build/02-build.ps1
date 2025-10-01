@@ -173,7 +173,7 @@ foreach ($source in [IO.DirectoryInfo[]]@('./publish/AutomatedLab', './publish/A
     Copy-Item -Path $sourcePath -Destination $modulePath -Force -Recurse
 }
 
-Save-Module -Name AutomatedLab.Common, newtonsoft.json, Ships, PSFramework, xPSDesiredStateConfiguration, xDscDiagnostics, xWebAdministration -Path ./deb/automatedlab/usr/local/share/powershell/Modules
+Save-Module -Name AutomatedLab.Common, Ships, PSFramework, xPSDesiredStateConfiguration, xDscDiagnostics, xWebAdministration -Path ./deb/automatedlab/usr/local/share/powershell/Modules
 
 # Pre-configure LabSources for the user
 $confPath = "./deb/automatedlab/usr/local/share/powershell/Modules/AutomatedLab/$($env:APPVEYOR_BUILD_VERSION)/AutomatedLab.init.ps1"

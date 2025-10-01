@@ -6,6 +6,9 @@
 
 ### Bugs
 
+- Removed dependency to NewtonSoft.Json
+    - The module frequently hinders import on Linux, and apparently on Windows now as well (<https://github.com/AutomatedLab/AutomatedLab.Common/issues/132>)
+    - The module has not been updated since 2019
 - Fixed issue with case-sensitive Linux OS name matching (#1766)
 - Added filtering to Install-LabSshKnownHost in an attempt to speed up the function
 
