@@ -861,7 +861,7 @@
     }
 
     $templatePath = Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath "Labs/$($Lab.Name)/armtemplate.json"
-    $template | ConvertTo-JsonNewtonsoft | Set-Content -Path $templatePath
+    ConvertTo-Json -InputObject $template -Depth 42 | Set-Content -Path $templatePath
 
     Write-ScreenInfo -Message "Deploying new resource group with template $templatePath"
     # Without wait - unable to catch exception

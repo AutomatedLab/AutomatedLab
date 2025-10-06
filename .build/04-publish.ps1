@@ -22,7 +22,7 @@ if (-not $IsLinux)
     {
         Register-PSRepository -Name loc -SourceLocation $nugetpath -PublishLocation $nugetpath
         Publish-Module -Path (Join-Path -Path $modPath -ChildPath PSFileTransfer) -Repository loc
-        foreach ($req in @('newtonsoft.json', 'Pester', 'Ships', 'powershell-yaml', 'PSFramework', 'AutomatedLab.Common'))
+        foreach ($req in @('Pester', 'Ships', 'powershell-yaml', 'PSFramework', 'AutomatedLab.Common'))
         {
             Publish-Module -Name $req -Repository loc -WarningAction SilentlyContinue
         }
@@ -35,7 +35,6 @@ if (-not $IsLinux)
     }
 
     $surplus = @(
-        (Join-Path -Path $nugetpath -ChildPath *newtonsoft.json*)
         (Join-Path -Path $nugetpath -ChildPath *AutomatedLab.Common*)
         (Join-Path -Path $nugetpath -ChildPath *Pester*)
         (Join-Path -Path $nugetpath -ChildPath *Ships*)

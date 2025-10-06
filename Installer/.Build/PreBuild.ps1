@@ -4,7 +4,7 @@
 
     [Parameter()]
     [string[]]
-    $ExternalDependency = @('Pester', 'PSFramework', 'newtonsoft.json', 'SHiPS', 'AutomatedLab.Common', 'xPSDesiredStateConfiguration', 'xDscDiagnostics', 'xWebAdministration', 'powershell-yaml'),
+    $ExternalDependency = @('Pester', 'PSFramework', 'SHiPS', 'AutomatedLab.Common', 'xPSDesiredStateConfiguration', 'xDscDiagnostics', 'xWebAdministration', 'powershell-yaml'),
 
     [Parameter()]
     [string[]]
