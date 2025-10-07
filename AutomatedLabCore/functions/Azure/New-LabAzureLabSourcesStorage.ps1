@@ -10,6 +10,11 @@
 
     Test-LabHostConnected -Throw -Quiet
 
+    if (Get-LabConfigurationItem -Name AzureDisableLabSourcesStorage) {
+        Write-ScreenInfo -Message "User opted out of storage account creation."
+        return
+    }
+
     Write-LogFunctionEntry
 
     Test-LabAzureSubscription

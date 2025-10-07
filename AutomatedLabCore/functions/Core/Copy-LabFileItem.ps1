@@ -13,7 +13,7 @@
 
         [bool]$FallbackToPSSession = $true,
 
-        [bool]$UseAzureLabSourcesOnAzureVm = $true,
+        [bool]$UseAzureLabSourcesOnAzureVm = (-not (Get-LabConfigurationItem -Name AzureDisableLabSourcesStorage)),
 
         [pscredential]$Credential,
 
