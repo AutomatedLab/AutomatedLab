@@ -8,7 +8,6 @@ Start-PodeServer {
     Import-PodeModule -Name Pester
     Import-PodeModule -Name PSFramework
     Import-PodeModule -Name PSLog
-    Import-PodeModule -Name HostsFile
     Import-PodeModule -Name AutomatedLab.Common
     Import-PodeModule -Name AutomatedLabUnattended
     Import-PodeModule -Name AutomatedLabDefinition

@@ -23,12 +23,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{BF2C3317
 		LabSources\Tools\WinSATAPI.dll = LabSources\Tools\WinSATAPI.dll
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HostsFile", "HostsFile", "{02FAEEE2-57BE-41C6-85BB-6B60F9D1983A}"
-	ProjectSection(SolutionItems) = preProject
-		HostsFile\HostsFile.psd1 = HostsFile\HostsFile.psd1
-		HostsFile\HostsFile.psm1 = HostsFile\HostsFile.psm1
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutomatedLabWorker", "AutomatedLabWorker", "{B7B1933B-77D7-4310-9049-7744B1F07154}"
 	ProjectSection(SolutionItems) = preProject
 		AutomatedLabWorker\AutomatedLabAzureWorkerNetwork.psm1 = AutomatedLabWorker\AutomatedLabAzureWorkerNetwork.psm1

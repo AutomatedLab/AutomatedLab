@@ -13,6 +13,10 @@
 - Use Storage Account kind `storagev2` for all new lab sources storages
     - Storages will be upgraded automatically
 
+### Removed
+
+- HostsFile module removed and cmdlets integrated into AutomatedLab.Common
+
 ### Bugs
 
 - Removed dependency to NewtonSoft.Json

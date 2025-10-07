@@ -8,7 +8,7 @@
 
     [Parameter()]
     [string[]]
-    $InternalModules = @('AutomatedLab', 'AutomatedLabCore', 'AutomatedLab.Recipe', 'AutomatedLab.Ships', 'AutomatedLabDefinition', 'AutomatedLabNotifications', 'AutomatedLabTest', 'AutomatedLabUnattended', 'AutomatedLabWorker', 'HostsFile', 'PSFileTransfer', 'PSLog')
+    $InternalModules = @('AutomatedLab', 'AutomatedLabCore', 'AutomatedLab.Recipe', 'AutomatedLab.Ships', 'AutomatedLabDefinition', 'AutomatedLabNotifications', 'AutomatedLabTest', 'AutomatedLabUnattended', 'AutomatedLabWorker', 'PSFileTransfer', 'PSLog')
 )
 
 Write-Host "Init task - compiling help for Installer"

@@ -13,7 +13,7 @@ function BuildModule
         throw "Module name may not be empty"
     }
 
-    #region Handle Working Directory DefaultsHostsFile
+    #region Handle Working Directory Defaults
     $WorkingDirectory = Join-Path -Path $PSScriptRoot -ChildPath "..\$Name"
     $publishDir = New-Item -Path $PSScriptRoot -Name "..\publish" -ItemType Directory -Force
     #endregion Handle Working Directory Defaults
@@ -84,7 +84,7 @@ if (-not $env:PSModulePath.Contains($modpath))
     $env:PSModulePath = '{0}{1}{2}' -f $modPath, $sep, $env:PSModulePath
 }
 
-$modules = 'AutomatedLabCore', 'AutomatedLabUnattended', 'PSLog', 'PSFileTransfer', 'AutomatedLabDefinition', 'AutomatedLabWorker', 'HostsFile', 'AutomatedLabNotifications', 'AutomatedLabTest', 'AutomatedLab.Ships', 'AutomatedLab.Recipe', 'AutomatedLab'
+$modules = 'AutomatedLabCore', 'AutomatedLabUnattended', 'PSLog', 'PSFileTransfer', 'AutomatedLabDefinition', 'AutomatedLabWorker', 'AutomatedLabNotifications', 'AutomatedLabTest', 'AutomatedLab.Ships', 'AutomatedLab.Recipe', 'AutomatedLab'
 Write-Host "Building modules $($modules -join ',') to $modPath"
 foreach ($module in $modules)
 {
@@ -165,7 +165,7 @@ Installed-Size: $('{0:0}' -f ((Get-ChildItem -Path (Join-Path $buildFolder -Chil
 "@ | Set-Content -Path ./deb/automatedlab/DEBIAN/control -Encoding UTF8
 
 # Copy content
-foreach ($source in [IO.DirectoryInfo[]]@('./publish/AutomatedLab', './publish/AutomatedLab.Recipe', './publish/AutomatedLab.Ships', './publish/AutomatedLabDefinition', './publish/AutomatedLabNotifications', './publish/AutomatedLabTest', './publish/AutomatedLabUnattended', './publish/AutomatedLabWorker', './publish/HostsFile', './publish/PSLog', './publish/PSFileTransfer'))
+foreach ($source in [IO.DirectoryInfo[]]@('./publish/AutomatedLab', './publish/AutomatedLab.Recipe', './publish/AutomatedLab.Ships', './publish/AutomatedLabDefinition', './publish/AutomatedLabNotifications', './publish/AutomatedLabTest', './publish/AutomatedLabUnattended', './publish/AutomatedLabWorker', './publish/PSLog', './publish/PSFileTransfer'))
 {
     $sourcePath = Join-Path -Path $source -ChildPath '/*'
     $modulepath = Join-Path -Path ./deb/automatedlab/usr/local/share/powershell/Modules -ChildPath "$($source.Name)/$($env:APPVEYOR_BUILD_VERSION)"

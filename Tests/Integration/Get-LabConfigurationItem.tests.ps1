@@ -19,7 +19,6 @@
         'PSFileTransfer',
         'AutomatedLabDefinition',
         'AutomatedLabWorker',
-        'HostsFile',
         'AutomatedLabNotifications',
         'AutomatedLabCore'
     )
