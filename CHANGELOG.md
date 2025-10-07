@@ -2,7 +2,10 @@
 
 ## Unreleased (2025-08-21)
 
+### Changed
+
 - Updated `Invoke-LabPester` to scan the `$global:LabSources\CustomRoles` directory for Pester tests (#1764)
+- Use Storage Account kind `storagev2` for all new lab sources storages
 
 ### Bugs
 
