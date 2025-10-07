@@ -172,6 +172,7 @@ Set-PSFConfig -Module 'AutomatedLab' -Name AutoSyncLabSources -Value $false -Ini
 Set-PSFConfig -Module 'AutomatedLab' -Name LabSourcesSyncIntervalDays -Value 60 -Initialize -Validation integerpositive -Description 'Interval in days for lab sources auto-sync'
 Set-PSFConfig -Module 'AutomatedLab' -Name AzureDiskSkus -Value @('Standard_LRS', 'Premium_LRS', 'StandardSSD_LRS') # 'UltraSSD_LRS' is not allowed!
 Set-PSFConfig -Module 'AutomatedLab' -Name AzureEnableJit -Value $false -Initialize -Validation bool -Description 'Enable this setting to have AutomatedLab configure ports 22, 3389 and 5986 for JIT access. Can be done manually with Enable-LabAzureJitAccess and requested (after enabling) with Request-LabAzureJitAccess'
+Set-PSFConfig -Module 'AutomatedLab' -Name AzureDisableLabSourcesStorage -Value $false -Initialize -Validation bool -Description 'Enable this setting to opt out of creating Lab Sources storage. This will prolong your lab deployment times significantly, if ISOs have to be mounted or large files have to be copied.'
 Set-PSFConfig -Module 'AutomatedLab' -Name RequiredAzModules -Value @(
     # Syntax: Name, MinimumVersion, RequiredVersion
     @{

@@ -14,6 +14,11 @@
     $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
     $labSourcesStorageAccount = Get-LabAzureLabSourcesStorage -ErrorAction SilentlyContinue
 
+    if (Get-LabConfigurationItem -Name AzureDisableLabSourcesStorage) {
+        Write-ScreenInfo -Type Verbose -Message "User opted out of storage account creation."
+        return
+    }
+
     if ($Session.Runspace.ConnectionInfo.AuthenticationMechanism -notin 'CredSsp', 'Negotiate' -or -not $labSourcesStorageAccount)
     {
         return
