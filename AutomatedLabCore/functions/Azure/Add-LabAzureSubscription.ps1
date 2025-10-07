@@ -326,7 +326,7 @@
     $syncMaxSize = Get-LabConfigurationItem -Name LabSourcesMaxFileSizeMb
     $syncIntervalDays = Get-LabConfigurationItem -Name LabSourcesSyncIntervalDays
 
-    if (-not (Get-LabConfigurationItem -Name DoNotPrompt -Default $false) -and -not $lastchecked -and -not $AzureStack.IsPresent)
+    if (-not (Get-LabConfigurationItem -Name AzureDisableLabSourcesStorage) -and -not (Get-LabConfigurationItem -Name DoNotPrompt -Default $false) -and -not $lastchecked -and -not $AzureStack.IsPresent)
     {
         $lastchecked = [datetime]0
         $syncText = @"
