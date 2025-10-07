@@ -10,7 +10,6 @@
         'PSFileTransfer',
         'AutomatedLabDefinition',
         'AutomatedLabWorker',
-        'HostsFile',
         'AutomatedLabNotifications',
         'AutomatedLabCore',
         'AutomatedLab.Recipe')
