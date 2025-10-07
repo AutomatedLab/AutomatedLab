@@ -12,14 +12,19 @@
 
     if (-not $azureLabSources)
     {
-        Write-Warning "Azure LabSources storage '$($azureLabSources.StorageAccountName)' does not exist in the subscription '$($azureLabSources.SubscriptionName)'"
+        Write-ScreenInfo -Type Warning -Message "Azure LabSources storage '$($azureLabSources.StorageAccountName)' does not exist in the subscription '$($azureLabSources.SubscriptionName)'"
         return $false
+    }
+
+    if ($azureLabSources.Kind -ne 'StorageV2') {
+        Write-ScreenInfo -Type Warning -Message "Azure LabSources storage '$($azureLabSources.StorageAccountName)' is not of kind 'StorageV2' and will be upgraded now."
+        $null = $azureLabSources | Set-AzStorageAccount -UpgradeToStorageV2 -Force
     }
 
     # Fun times - if the property is null, we have to assume the default, which is true
     if ($azureLabSources.AllowSharedKeyAccess -ne $null -and -not $azureLabSources.AllowSharedKeyAccess)
     {
-        Write-Warning "Azure LabSources storage '$($azureLabSources.StorageAccountName)' does not allow shared key access"
+        Write-ScreenInfo -Type Warning -Message "Azure LabSources storage '$($azureLabSources.StorageAccountName)' does not allow shared key access"
         return $false
     }
 
