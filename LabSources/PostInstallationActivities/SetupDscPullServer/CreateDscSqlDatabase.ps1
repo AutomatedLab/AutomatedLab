@@ -1,19 +1,26 @@
 param (
-	[Parameter(Mandatory)]
-	[string]
-	$DomainAndComputerName,
+    [Parameter(Mandatory)]
+    [string]
+    $DomainAndComputerName,
 
-	[Parameter(Mandatory)]
-	[ValidateSet('Mandatory', 'Optional', 'Strict')]
-    	[string]
-	$Encrypt,
+    [bool]
+    $UseNewFeature = $false,
 
-    	[string]
-	$ServerInstance,
+    [ValidateSet('Mandatory', 'Optional', 'Strict')]
+    [string]
+    $Encrypt,
 
-	[bool]
-	$UseNewFeature = $false
+    [string]
+    $ServerInstance = 'localhost'
 )
+
+$sqlCmdParam = @{
+    ServerInstance = $ServerInstance
+}
+
+if ((Get-Command Invoke-SqlCmd).Parameters.Keys -contains 'Encrypt' -and -not [string]::IsNullOrEmpty($Encrypt)) {
+    $sqlCmdParam.Encrypt = $Encrypt
+}
 
 [string]$createDbQuery = @'
 USE [master]
@@ -904,10 +911,9 @@ ALTER DATABASE [DSC] SET READ_WRITE
 GO
 '@
 
-if (-not $UseNewFeature)
-{
-	$createDbQuery = $createDbQuery.Replace('WITH CATALOG_COLLATION = DATABASE_DEFAULT','')
-	$createDbQuery = $createDbQuery.Replace(', OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF','')
+if (-not $UseNewFeature) {
+    $createDbQuery = $createDbQuery.Replace('WITH CATALOG_COLLATION = DATABASE_DEFAULT', '')
+    $createDbQuery = $createDbQuery.Replace(', OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF', '')
 }
 
 $addPermissionsQuery = @'
@@ -930,20 +936,18 @@ ALTER ROLE [db_datawriter] ADD MEMBER [{1}]
 GO
 '@
 
-if (-not (Test-Path -Path C:\DSCDB))
-{
-	New-Item -ItemType Directory -Path C:\DSCDB | Out-Null
+if (-not (Test-Path -Path C:\DSCDB)) {
+    New-Item -ItemType Directory -Path C:\DSCDB | Out-Null
 }
 
-$dbCreated = Invoke-Sqlcmd -Query "SELECT name FROM master.sys.databases WHERE name='DSC'" -ServerInstance $ServerInstance -Encrypt $Encrypt
-if (-not $dbCreated)
-{
-	Write-Verbose "Creating the DSC database on the local default SQL instance..."
+$dbCreated = Invoke-Sqlcmd -Query "SELECT name FROM master.sys.databases WHERE name='DSC'" @sqlCmdParam
+if (-not $dbCreated) {
+    Write-Verbose "Creating the DSC database on the local default SQL instance..."
 
-	Invoke-Sqlcmd -Query $createDbQuery -ServerInstance $ServerInstance -Encrypt $Encrypt
+    Invoke-Sqlcmd -Query $createDbQuery @sqlCmdParam
 
-	Write-Verbose 'finished.'
-	Write-Verbose 'Database is stored on C:\DSCDB'
+    Write-Verbose 'finished.'
+    Write-Verbose 'Database is stored on C:\DSCDB'
 }
 
 Write-Verbose "Adding permissions to DSC database for $DomainAndComputerName..."
@@ -951,26 +955,23 @@ Write-Verbose "Adding permissions to DSC database for $DomainAndComputerName..."
 $domain = ($DomainAndComputerName -split '\\')[0]
 $name = ($DomainAndComputerName -split '\\')[1]
 
-if ($ComputerName -eq $env:COMPUTERNAME -and $DomainName -eq $env:USERDOMAIN)
-{
-	$domain = 'NT AUTHORITY'
-	$name = 'SYSTEM'
+if ($ComputerName -eq $env:COMPUTERNAME -and $DomainName -eq $env:USERDOMAIN) {
+    $domain = 'NT AUTHORITY'
+    $name = 'SYSTEM'
 }
 $name = $name + '$'
 
 $account = New-Object System.Security.Principal.NTAccount($domain, $name)
-try
-{
-	$account.Translate([System.Security.Principal.SecurityIdentifier]) | Out-Null
+try {
+    $account.Translate([System.Security.Principal.SecurityIdentifier]) | Out-Null
 }
-catch
-{
-	Write-Error "The account '$domain\$name' could not be found"
-	continue
+catch {
+    Write-Error "The account '$domain\$name' could not be found"
+    continue
 }
 
 $query = $addPermissionsQuery -f $domain, $name
 
-Invoke-Sqlcmd -Query $query -ServerInstance $ServerInstance -Encrypt $Encrypt
+Invoke-Sqlcmd -Query $query @sqlCmdParam
 
 Write-Verbose 'finished'
