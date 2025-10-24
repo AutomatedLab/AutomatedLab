@@ -14,11 +14,11 @@
 	)
 
 	if ($OrganizationalUnit) {
-		$script:un.Add(("echo '{1}' | realm join --computer-ou='{3}' --user={0} {2}" -f $Username, $Password, $DomainName, $OrganizationalUnit))
+		$script:un.Add(("realm join --computer-ou='{2}' --one-time-password='{0}' {1}" -f $Password, $DomainName, $OrganizationalUnit))
 
 	}
 	else {
-		$script:un.Add(("echo '{1}' | realm join --user={0} {2}" -f $Username, $Password, $DomainName))
+		$script:un.Add(("realm join --one-time-password='{0}' {1}" -f $Password, $DomainName))
 	}
 
 	$existingLine = $script:un | Where-Object { $_ -match 'network' }
