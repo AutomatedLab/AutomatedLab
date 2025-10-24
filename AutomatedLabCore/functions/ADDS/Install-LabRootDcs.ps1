@@ -236,7 +236,7 @@
                 if (-not $domainJoinedMachines) { continue }
                 $oneTimePassword = ($root.Group)[0].InstallationUser.Password
                 Invoke-LabCommand -ActivityName 'Add computer objects for domain-joined Linux machines' -ComputerName ($root.Group)[0] -ScriptBlock {
-                    foreach ($m in $domainJoinedMachines) { New-ADComputer -Name $m -AccountPassword ($oneTimePassword | ConvertTo-SecureString -AsPlaintext -Force)}
+                    foreach ($m in $domainJoinedMachines) { New-ADComputer -Name $m -DnsHostName $m.FQDN -AccountPassword ($oneTimePassword | ConvertTo-SecureString -AsPlaintext -Force)}
                 } -Variable (Get-Variable -Name domainJoinedMachines,oneTimePassword) -NoDisplay
             }
         }
