@@ -385,10 +385,10 @@ restorecon -R /root/.ssh/
                 if (-not [string]::IsNullOrEmpty($Machine.SshPublicKey))
                 {
                     $command = @"
-mkdir -p /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh
-chown -R $($Machine.InstallationUser.UserName)@$($Machine.DomainName):$($Machine.InstallationUser.UserName)@$($Machine.DomainName) /home/$($Machine.InstallationUser.UserName)@$($Machine.DomainName)/.ssh
-chmod 700 /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh && chmod 600 /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/authorized_keys
-echo "$($Machine.SshPublicKey)" > /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/authorized_keys
+mkdir -p /home/$($Machine.InstallationUser.UserName.ToLower())@$($Machine.DomainName.ToLower())/.ssh
+chown -R "$($Machine.InstallationUser.UserName)@$($Machine.DomainName):domain users@$($Machine.DomainName)" /home/$($Machine.InstallationUser.UserName.ToLower())@$($Machine.DomainName.ToLower())/.ssh
+chmod 700 /home/$($Machine.InstallationUser.UserName.ToLower())@$($Machine.DomainName.ToLower())/.ssh && chmod 600 /home/$($Machine.InstallationUser.UserName.ToLower())@$($Machine.DomainName.ToLower())/.ssh/authorized_keys
+echo "$($Machine.SshPublicKey)" > /home/$($Machine.InstallationUser.UserName.ToLower())@$($Machine.DomainName.ToLower())/.ssh/authorized_keys
 restorecon -R /$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/
 "@
                     Add-UnattendedSynchronousCommand -Command $command -Description 'SSH'
