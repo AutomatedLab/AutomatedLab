@@ -13,12 +13,18 @@
 		[string]$OrganizationalUnit
 	)
 
+	$idx = $script:un.IndexOf('%post')
+
+	if ($idx -eq -1) {
+		$idx = $script:un.Count
+	}
+
 	if ($OrganizationalUnit) {
-		$script:un.Add(("realm join --computer-ou='{2}' --one-time-password='{0}' {1}" -f $Password, $DomainName, $OrganizationalUnit))
+		$script:un.Insert($idx , ("realm join --computer-ou='{2}' --one-time-password='{0}' {1}" -f $Password, $DomainName, $OrganizationalUnit))
 
 	}
 	else {
-		$script:un.Add(("realm join --one-time-password='{0}' {1}" -f $Password, $DomainName))
+		$script:un.Insert($idx , ("realm join --one-time-password='{0}' {1}" -f $Password, $DomainName))
 	}
 
 	$existingLine = $script:un | Where-Object { $_ -match 'network' }
@@ -35,5 +41,5 @@
 		return
 	}
 
-	$script:un.Add("network --ipv4-dns-search=$DomainName")
+	$script:un.Add($idx , "network --ipv4-dns-search=$DomainName")
 }
