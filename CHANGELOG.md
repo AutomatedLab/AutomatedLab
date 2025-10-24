@@ -12,6 +12,7 @@
 - Updated `Invoke-LabPester` to scan the `$global:LabSources\CustomRoles` directory for Pester tests (#1764)
 - Use Storage Account kind `storagev2` for all new lab sources storages
     - Storages will be upgraded automatically
+- Made `Get-LabMachineRoleDefinition -Syntax` more user-friendly (#1562)
 
 ### Removed
 
