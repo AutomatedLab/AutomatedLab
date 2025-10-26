@@ -11,10 +11,12 @@ if ($PSEdition -eq 'Core') {
         try {
             if ((Get-Command Import-Module).Parameters.ContainsKey('UseWindowsPowerShell')) {
                 Import-Module -Name $requiredModulesImplicit -UseWindowsPowerShell -WarningAction SilentlyContinue -ErrorAction Stop -Force -ErrorVariable +ipmoErr
-            } else {
+            }
+            else {
                 Import-WinModule -Name $requiredModulesImplicit -WarningAction SilentlyContinue -ErrorAction Stop -Force -ErrorVariable +ipmoErr
             }
-        } catch {
+        }
+        catch {
             Remove-Module -Name $requiredModulesImplicit -Force -ErrorAction SilentlyContinue
             Clear-Variable -Name ipmoErr -ErrorAction SilentlyContinue
             foreach ($m in $requiredModulesImplicit) {
@@ -23,7 +25,8 @@ if ($PSEdition -eq 'Core') {
 
             if ((Get-Command Import-Module).Parameters.ContainsKey('UseWindowsPowerShell')) {
                 Import-Module -Name $requiredModulesImplicit -UseWindowsPowerShell -WarningAction SilentlyContinue -ErrorAction SilentlyContinue -Force -ErrorVariable +ipmoErr
-            } else {
+            }
+            else {
                 Import-WinModule -Name $requiredModulesImplicit -WarningAction SilentlyContinue -ErrorAction SilentlyContinue -Force -ErrorVariable +ipmoErr
             }
         }
@@ -36,24 +39,26 @@ if ($PSEdition -eq 'Core') {
     if ($ipmoErr) {
         Write-PSFMessage -Level Warning -Message "Could not import modules: $($ipmoErr.TargetObject -join ',') - your experience might be impacted."
     }
-} else {
+}
+else {
     Add-Type -Path $PSScriptRoot/lib/full/AutomatedLab.dll
 }
 
 if ((Get-Module -ListAvailable Ships) -and (Get-Module -ListAvailable AutomatedLab.Ships)) {
     Import-Module Ships, AutomatedLab.Ships
-    [void] (New-PSDrive -PSProvider SHiPS -Name Labs -Root 'AutomatedLab.Ships#LabHost' -WarningAction SilentlyContinue -ErrorAction SilentlyContinue)
+    [void] (New-PSDrive -PSProvider SHiPS -Name Labs -Root "AutomatedLab.Ships#LabHost" -WarningAction SilentlyContinue -ErrorAction SilentlyContinue)
 }
 
 Set-Item -Path Env:\SuppressAzurePowerShellBreakingChangeWarnings -Value true
 
 #region Register default configuration if not present
 $labAppDataRoot = if (-not $IsLinux -and -not $IsMacOs) {
-    Join-Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab'
-} else {
+    Join-Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath "AutomatedLab"
+}
+else {
     Join-Path -Path $Home -ChildPath .automatedlab
 }
-Set-PSFConfig -Module 'AutomatedLab' -Name LabAppDataRoot -Value $labAppDataRoot -Initialize -Validation string -Description 'Root folder to Labs, Assets and Stores'
+Set-PSFConfig -Module 'AutomatedLab' -Name LabAppDataRoot -Value $labAppDataRoot -Initialize -Validation string -Description "Root folder to Labs, Assets and Stores"
 Set-PSFConfig -Module 'AutomatedLab' -Name 'DisableVersionCheck' -Value $false -Initialize -Validation bool -Description 'Set to true to skip checking GitHub for an updated AutomatedLab release'
 
 if (-not (Get-PSFConfigValue -FullName AutomatedLab.DisableVersionCheck)) {
@@ -66,17 +71,17 @@ if (-not (Get-PSFConfigValue -FullName AutomatedLab.DisableVersionCheck)) {
 }
 
 
-Set-PSFConfig -Module 'AutomatedLab' -Name 'Notifications.NotificationProviders.Ifttt.Key' -Value 'Your IFTTT key here' -Initialize -Validation string -Description 'IFTTT Key Name'
-Set-PSFConfig -Module 'AutomatedLab' -Name 'Notifications.NotificationProviders.Ifttt.EventName' -Value 'The name of your IFTTT event' -Initialize -Validation String -Description 'IFTTT Event Name'
-Set-PSFConfig -Module 'AutomatedLab' -Name 'Notifications.NotificationProviders.Mail.Port' -Value 25 -Initialize -Validation integer -Description 'Port of your SMTP Server'
-Set-PSFConfig -Module 'AutomatedLab' -Name 'Notifications.NotificationProviders.Mail.SmtpServer' -Value 'your SMTP server here' -Initialize -Validation string -Description 'Adress of your SMTP server'
-Set-PSFConfig -Module 'AutomatedLab' -Name 'Notifications.NotificationProviders.Mail.To' -Value @('Recipients here') -Initialize -Validation stringarray -Description 'A list of default recipients'
-Set-PSFConfig -Module 'AutomatedLab' -Name 'Notifications.NotificationProviders.Mail.From' -Value "$($env:USERNAME)@localhost" -Initialize -Validation string -Description 'Your sender address'
-Set-PSFConfig -Module 'AutomatedLab' -Name 'Notifications.NotificationProviders.Mail.Priority' -Value 'Normal' -Initialize -Validation string -Description 'Priority of your message'
-Set-PSFConfig -Module 'AutomatedLab' -Name 'Notifications.NotificationProviders.Mail.CC' -Value @('Recipients here') -Initialize -Validation stringarray -Description 'A list of default CC recipients'
-Set-PSFConfig -Module 'AutomatedLab' -Name 'Notifications.NotificationProviders.Toast.Image' -Value 'https://raw.githubusercontent.com/AutomatedLab/AutomatedLab/master/Assets/Automated-Lab_icon512.png' -Initialize -Validation string -Description 'The image for your toast notification'
-Set-PSFConfig -Module 'AutomatedLab' -Name 'Notifications.NotificationProviders.Voice.Culture' -Value 'en-us' -Initialize -Validation string -Description 'Voice culture, needs to be available and defaults to en-us'
-Set-PSFConfig -Module 'AutomatedLab' -Name 'Notifications.NotificationProviders.Voice.Gender' -Value 'female' -Initialize -Validation string -Description 'Gender of voice to use'
+Set-PSFConfig -Module 'AutomatedLab' -Name 'Notifications.NotificationProviders.Ifttt.Key' -Value 'Your IFTTT key here' -Initialize -Validation string -Description "IFTTT Key Name"
+Set-PSFConfig -Module 'AutomatedLab' -Name 'Notifications.NotificationProviders.Ifttt.EventName' -Value 'The name of your IFTTT event' -Initialize -Validation String -Description "IFTTT Event Name"
+Set-PSFConfig -Module 'AutomatedLab' -Name 'Notifications.NotificationProviders.Mail.Port' -Value 25 -Initialize -Validation integer -Description "Port of your SMTP Server"
+Set-PSFConfig -Module 'AutomatedLab' -Name 'Notifications.NotificationProviders.Mail.SmtpServer' -Value 'your SMTP server here' -Initialize -Validation string -Description "Adress of your SMTP server"
+Set-PSFConfig -Module 'AutomatedLab' -Name 'Notifications.NotificationProviders.Mail.To' -Value @('Recipients here') -Initialize -Validation stringarray -Description "A list of default recipients"
+Set-PSFConfig -Module 'AutomatedLab' -Name 'Notifications.NotificationProviders.Mail.From' -Value "$($env:USERNAME)@localhost" -Initialize -Validation string -Description "Your sender address"
+Set-PSFConfig -Module 'AutomatedLab' -Name 'Notifications.NotificationProviders.Mail.Priority' -Value 'Normal' -Initialize -Validation string -Description "Priority of your message"
+Set-PSFConfig -Module 'AutomatedLab' -Name 'Notifications.NotificationProviders.Mail.CC' -Value @('Recipients here') -Initialize -Validation stringarray -Description "A list of default CC recipients"
+Set-PSFConfig -Module 'AutomatedLab' -Name 'Notifications.NotificationProviders.Toast.Image' -Value 'https://raw.githubusercontent.com/AutomatedLab/AutomatedLab/master/Assets/Automated-Lab_icon512.png' -Initialize -Validation string -Description "The image for your toast notification"
+Set-PSFConfig -Module 'AutomatedLab' -Name 'Notifications.NotificationProviders.Voice.Culture' -Value 'en-us' -Initialize -Validation string -Description "Voice culture, needs to be available and defaults to en-us"
+Set-PSFConfig -Module 'AutomatedLab' -Name 'Notifications.NotificationProviders.Voice.Gender' -Value 'female' -Initialize -Validation string -Description "Gender of voice to use"
 Set-PSFConfig -Module 'AutomatedLab' -Name 'Notifications.SubscribedProviders' -Value @('Toast') -Initialize -Validation stringarray -Description 'List of subscribed providers'
 Set-PSFConfig -Module 'AutomatedLab' -Name 'MachineFileName' -Value 'Machines.xml' -Initialize -Validation string -Description 'The file name for the deserialized machines. Do not change unless you know what you are doing.'
 Set-PSFConfig -Module 'AutomatedLab' -Name 'DiskFileName' -Value 'Disks.xml' -Initialize -Validation string -Description 'The file name for the deserialized disks. Do not change unless you know what you are doing.'
@@ -101,7 +106,8 @@ Set-PSFConfig -Module 'AutomatedLab' -Name DisableConnectivityCheck -Value $fals
 Set-PSFConfig -Module 'AutomatedLab' -Name 'VmPath' -Value $null -Validation string -Initialize -Description 'VM storage location'
 $osroot = if ([System.Environment]::OSVersion.Platform -eq 'Win32NT') {
     'C:\'
-} else {
+}
+else {
     '/'
 }
 Set-PSFConfig -Module 'AutomatedLab' -Name OsRoot -Value $osroot -Initialize -Validation string
@@ -136,10 +142,10 @@ Set-PSFConfig -Module 'AutomatedLab' -Name DoNotAddVmsToCluster -Value $false -I
 
 
 #Hyper-V VMConnect Settings
-Set-PSFConfig -Module 'AutomatedLab' -Name VMConnectWriteConfigFile -Value $true -Initialize -Validation string -Description 'Enable the writing of VMConnect config files by default'
+Set-PSFConfig -Module 'AutomatedLab' -Name VMConnectWriteConfigFile -Value $true -Initialize -Validation string -Description "Enable the writing of VMConnect config files by default"
 Set-PSFConfig -Module 'AutomatedLab' -Name VMConnectDesktopSize -Value '1366, 768' -Initialize -Validation string -Description "The default resolution for Hyper-V's VMConnect.exe"
-Set-PSFConfig -Module 'AutomatedLab' -Name VMConnectFullScreen -Value $false -Initialize -Validation string -Description 'Enable full screen mode for VMConnect.exe'
-Set-PSFConfig -Module 'AutomatedLab' -Name VMConnectUseAllMonitors -Value $false -Initialize -Validation string -Description 'Use all monitors for VMConnect.exe'
+Set-PSFConfig -Module 'AutomatedLab' -Name VMConnectFullScreen -Value $false -Initialize -Validation string -Description "Enable full screen mode for VMConnect.exe"
+Set-PSFConfig -Module 'AutomatedLab' -Name VMConnectUseAllMonitors -Value $false -Initialize -Validation string -Description "Use all monitors for VMConnect.exe"
 Set-PSFConfig -Module 'AutomatedLab' -Name VMConnectRedirectedDrives -Value 'none' -Initialize -Validation string -Description "Drives to mount in a VMConnect session. Use '*' for all drives or a semicolon seperated list."
 
 #Hyper-V Network settings
@@ -154,8 +160,8 @@ Set-PSFConfig -Module 'AutomatedLab' -Name WacDownloadUrl -Value 'http://aka.ms/
 Set-PSFConfig -Module 'AutomatedLab' -Name WacMsIntermediateCaCert -Value 'https://www.microsoft.com/pkiops/certs/MicCodSigPCA2011_2011-07-08.crt' -Validation string -Initialize -Description 'Windows Admin Center Code-Signing Cert Intermediate CA cert URL'
 
 #Host Settings
-Set-PSFConfig -Module 'AutomatedLab' -Name DiskDeploymentInProgressPath -Value (Join-Path -Path (Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot) -ChildPath 'LabDiskDeploymentInProgress.txt') -Initialize -Validation string -Description 'The file indicating that Hyper-V disks are being configured to reduce disk congestion'
-Set-PSFConfig -Module 'AutomatedLab' -Name SwitchDeploymentInProgressPath -Value (Join-Path -Path (Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot) -ChildPath 'VSwitchDeploymentInProgress.txt') -Initialize -Validation string -Description 'The file indicating that VM switches are being deployed in case multiple lab deployments are started in parallel'
+Set-PSFConfig -Module 'AutomatedLab' -Name DiskDeploymentInProgressPath -Value (Join-Path -Path (Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot) -ChildPath "LabDiskDeploymentInProgress.txt") -Initialize -Validation string -Description 'The file indicating that Hyper-V disks are being configured to reduce disk congestion'
+Set-PSFConfig -Module 'AutomatedLab' -Name SwitchDeploymentInProgressPath -Value (Join-Path -Path (Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot) -ChildPath "VSwitchDeploymentInProgress.txt") -Initialize -Validation string -Description 'The file indicating that VM switches are being deployed in case multiple lab deployments are started in parallel'
 Set-PSFConfig -Module 'AutomatedLab' -Name SkipHostFileModification -Value $false -Initialize -Validation bool -Description 'Indicates that the hosts file should not be modified when deploying a new lab.'
 
 #Azure
@@ -259,7 +265,7 @@ Set-PSFConfig -Module 'AutomatedLab' -Name cppredist32_2012 -Value 'https://down
 Set-PSFConfig -Module 'AutomatedLab' -Name cppredist64_2010 -Value 'http://go.microsoft.com/fwlink/?LinkId=404264&clcid=0x409' -Initialize -Validation string -Description 'Link to VC++ redist 2010 (x64)'
 
 # IIS URL Rewrite Module
-Set-PSFConfig -Module automatedlab -Name IisUrlRewriteDownloadUrl -Value 'https://download.microsoft.com/download/1/2/8/128E2E22-C1B9-44A4-BE2A-5859ED1D4592/rewrite_amd64_en-US.msi' -Validation string -Description 'Link to IIS URL Rewrite Module needed for Exchange 2016 and 2019'
+Set-PSFConfig -Module automatedlab -Name IisUrlRewriteDownloadUrl -Value "https://download.microsoft.com/download/1/2/8/128E2E22-C1B9-44A4-BE2A-5859ED1D4592/rewrite_amd64_en-US.msi" -Validation string -Description 'Link to IIS URL Rewrite Module needed for Exchange 2016 and 2019'
 
 #SQL Server 2016 Management Studio
 Set-PSFConfig -Module 'AutomatedLab' -Name Sql2016ManagementStudio -Value 'https://go.microsoft.com/fwlink/?LinkID=840946' -Initialize -Validation string -Description 'Link to SSMS 2016'
@@ -297,8 +303,8 @@ Set-PSFConfig -Module 'AutomatedLab' -Name WindowsAdkPe -Value 'https://download
 
 # SCOM
 Set-PSFConfig -Module AutomatedLab -Name SqlClrType2014 -Value 'https://download.microsoft.com/download/6/7/8/67858AF1-B1B3-48B1-87C4-4483503E71DC/ENU/x64/SQLSysClrTypes.msi' -Initialize -Validation string
-Set-PSFConfig -Module AutomatedLab -Name SqlClrType2016 -Value 'https://download.microsoft.com/download/6/4/5/645B2661-ABE3-41A4-BC2D-34D9A10DD303/ENU/x64/SQLSysClrTypes.msi' -Initialize -Validation string
-Set-PSFConfig -Module AutomatedLab -Name SqlClrType2019 -Value 'https://download.microsoft.com/download/d/d/1/dd194c5c-d859-49b8-ad64-5cbdcbb9b7bd/SQLSysClrTypes.msi' -Initialize -Validation string
+Set-PSFConfig -Module AutomatedLab -Name SqlClrType2016 -Value "https://download.microsoft.com/download/6/4/5/645B2661-ABE3-41A4-BC2D-34D9A10DD303/ENU/x64/SQLSysClrTypes.msi" -Initialize -Validation string
+Set-PSFConfig -Module AutomatedLab -Name SqlClrType2019 -Value "https://download.microsoft.com/download/d/d/1/dd194c5c-d859-49b8-ad64-5cbdcbb9b7bd/SQLSysClrTypes.msi" -Initialize -Validation string
 Set-PSFConfig -Module 'AutomatedLab' -Name ReportViewer2015 -Value 'https://download.microsoft.com/download/A/1/2/A129F694-233C-4C7C-860F-F73139CF2E01/ENU/x86/ReportViewer.msi'
 
 # OpenSSH
@@ -349,25 +355,25 @@ Set-PSFConfig -Module AutomatedLab -Name SharePoint2019Key -Value 'M692G-8N2JP-G
 
 Set-PSFConfig -Module AutomatedLab -Name SharePoint2013Prerequisites -Value @(
     'https://download.microsoft.com/download/E/2/1/E21644B5-2DF2-47C2-91BD-63C560427900/NDP452-KB2901907-x86-x64-AllOS-ENU.exe'
-    'http://download.microsoft.com/download/9/1/3/9138773A-505D-43E2-AC08-9A77E1E0490B/1033/x64/sqlncli.msi',
-    'http://download.microsoft.com/download/8/F/9/8F93DBBD-896B-4760-AC81-646F61363A6D/WcfDataServices.exe',
-    'http://download.microsoft.com/download/9/1/D/91DA8796-BE1D-46AF-8489-663AB7811517/setup_msipc_x64.msi',
-    'http://download.microsoft.com/download/E/0/0/E0060D8F-2354-4871-9596-DC78538799CC/Synchronization.msi',
-    'http://download.microsoft.com/download/1/C/A/1CAA41C7-88B9-42D6-9E11-3C655656DAB1/WcfDataServices.exe',
-    'http://download.microsoft.com/download/0/1/D/01D06854-CA0C-46F1-ADBA-EBF86010DCC6/r2/MicrosoftIdentityExtensions-64.msi',
-    'http://download.microsoft.com/download/D/7/2/D72FD747-69B6-40B7-875B-C2B40A6B2BDD/Windows6.1-KB974405-x64.msu',
-    'http://download.microsoft.com/download/A/6/7/A678AB47-496B-4907-B3D4-0A2D280A13C0/WindowsServerAppFabricSetup_x64.exe',
-    'http://download.microsoft.com/download/7/B/5/7B51D8D1-20FD-4BF0-87C7-4714F5A1C313/AppFabric1.1-RTM-KB2671763-x64-ENU.exe'
+    "http://download.microsoft.com/download/9/1/3/9138773A-505D-43E2-AC08-9A77E1E0490B/1033/x64/sqlncli.msi",
+    "http://download.microsoft.com/download/8/F/9/8F93DBBD-896B-4760-AC81-646F61363A6D/WcfDataServices.exe",
+    "http://download.microsoft.com/download/9/1/D/91DA8796-BE1D-46AF-8489-663AB7811517/setup_msipc_x64.msi",
+    "http://download.microsoft.com/download/E/0/0/E0060D8F-2354-4871-9596-DC78538799CC/Synchronization.msi",
+    "http://download.microsoft.com/download/1/C/A/1CAA41C7-88B9-42D6-9E11-3C655656DAB1/WcfDataServices.exe",
+    "http://download.microsoft.com/download/0/1/D/01D06854-CA0C-46F1-ADBA-EBF86010DCC6/r2/MicrosoftIdentityExtensions-64.msi",
+    "http://download.microsoft.com/download/D/7/2/D72FD747-69B6-40B7-875B-C2B40A6B2BDD/Windows6.1-KB974405-x64.msu",
+    "http://download.microsoft.com/download/A/6/7/A678AB47-496B-4907-B3D4-0A2D280A13C0/WindowsServerAppFabricSetup_x64.exe",
+    "http://download.microsoft.com/download/7/B/5/7B51D8D1-20FD-4BF0-87C7-4714F5A1C313/AppFabric1.1-RTM-KB2671763-x64-ENU.exe"
 ) -Initialize -Description 'List of prerequisite urls for SP2013' -Validation stringarray
 
 Set-PSFConfig -Module AutomatedLab -Name SharePoint2016Prerequisites -Value @(
-    'https://download.microsoft.com/download/B/E/D/BED73AAC-3C8A-43F5-AF4F-EB4FEA6C8F3A/ENU/x64/sqlncli.msi',
-    'https://download.microsoft.com/download/3/C/F/3CF781F5-7D29-4035-9265-C34FF2369FA2/setup_msipc_x64.exe',
-    'https://download.microsoft.com/download/B/9/D/B9D6E014-C949-4A1E-BA6B-2E0DEBA23E54/SyncSetup_en.x64.zip',
-    'https://download.microsoft.com/download/1/C/A/1CAA41C7-88B9-42D6-9E11-3C655656DAB1/WcfDataServices.exe',
-    'https://download.microsoft.com/download/0/1/D/01D06854-CA0C-46F1-ADBA-EBF86010DCC6/rtm/MicrosoftIdentityExtensions-64.msi',
-    'https://download.microsoft.com/download/A/6/7/A678AB47-496B-4907-B3D4-0A2D280A13C0/WindowsServerAppFabricSetup_x64.exe',
-    'https://download.microsoft.com/download/F/1/0/F1093AF6-E797-4CA8-A9F6-FC50024B385C/AppFabric-KB3092423-x64-ENU.exe',
+    "https://download.microsoft.com/download/B/E/D/BED73AAC-3C8A-43F5-AF4F-EB4FEA6C8F3A/ENU/x64/sqlncli.msi",
+    "https://download.microsoft.com/download/3/C/F/3CF781F5-7D29-4035-9265-C34FF2369FA2/setup_msipc_x64.exe",
+    "https://download.microsoft.com/download/B/9/D/B9D6E014-C949-4A1E-BA6B-2E0DEBA23E54/SyncSetup_en.x64.zip",
+    "https://download.microsoft.com/download/1/C/A/1CAA41C7-88B9-42D6-9E11-3C655656DAB1/WcfDataServices.exe",
+    "https://download.microsoft.com/download/0/1/D/01D06854-CA0C-46F1-ADBA-EBF86010DCC6/rtm/MicrosoftIdentityExtensions-64.msi",
+    "https://download.microsoft.com/download/A/6/7/A678AB47-496B-4907-B3D4-0A2D280A13C0/WindowsServerAppFabricSetup_x64.exe",
+    "https://download.microsoft.com/download/F/1/0/F1093AF6-E797-4CA8-A9F6-FC50024B385C/AppFabric-KB3092423-x64-ENU.exe",
     'https://download.microsoft.com/download/5/7/2/57249A3A-19D6-4901-ACCE-80924ABEB267/ENU/x64/msodbcsql.msi'
     'https://download.microsoft.com/download/8/b/7/8b79adc2-162c-4cf4-a200-3aeaadc455bf/NDP462-KB3151800-x86-x64-AllOS-ENU.exe'
 ) -Initialize -Description 'List of prerequisite urls for SP2013' -Validation stringarray
@@ -385,11 +391,11 @@ Set-PSFConfig -Module AutomatedLab -Name SharePoint2019Prerequisites -Value @(
 ) -Initialize -Description 'List of prerequisite urls for SP2013' -Validation stringarray
 
 # Dynamics 365 CRM
-Set-PSFConfig -Module AutomatedLab -Name SqlServerNativeClient2012 -Value 'https://download.microsoft.com/download/B/E/D/BED73AAC-3C8A-43F5-AF4F-EB4FEA6C8F3A/ENU/x64/sqlncli.msi' -Initialize -Validation string
-Set-PSFConfig -Module AutomatedLab -Name SqlClrType2014 -Value 'https://download.microsoft.com/download/1/3/0/13089488-91FC-4E22-AD68-5BE58BD5C014/ENU/x64/SQLSysClrTypes.msi' -Initialize -Validation string
-Set-PSFConfig -Module AutomatedLab -Name SqlClrType2016 -Value 'https://download.microsoft.com/download/6/4/5/645B2661-ABE3-41A4-BC2D-34D9A10DD303/ENU/x64/SQLSysClrTypes.msi' -Initialize -Validation string
-Set-PSFConfig -Module AutomatedLab -Name SqlClrType2019 -Value 'https://download.microsoft.com/download/d/d/1/dd194c5c-d859-49b8-ad64-5cbdcbb9b7bd/SQLSysClrTypes.msi' -Initialize -Validation string
-Set-PSFConfig -Module AutomatedLab -Name SqlSmo2016 -Value 'https://download.microsoft.com/download/6/4/5/645B2661-ABE3-41A4-BC2D-34D9A10DD303/ENU/x64/SharedManagementObjects.msi' -Initialize -Validation string
+Set-PSFConfig -Module AutomatedLab -Name SqlServerNativeClient2012 -Value "https://download.microsoft.com/download/B/E/D/BED73AAC-3C8A-43F5-AF4F-EB4FEA6C8F3A/ENU/x64/sqlncli.msi" -Initialize -Validation string
+Set-PSFConfig -Module AutomatedLab -Name SqlClrType2014 -Value "https://download.microsoft.com/download/1/3/0/13089488-91FC-4E22-AD68-5BE58BD5C014/ENU/x64/SQLSysClrTypes.msi" -Initialize -Validation string
+Set-PSFConfig -Module AutomatedLab -Name SqlClrType2016 -Value "https://download.microsoft.com/download/6/4/5/645B2661-ABE3-41A4-BC2D-34D9A10DD303/ENU/x64/SQLSysClrTypes.msi" -Initialize -Validation string
+Set-PSFConfig -Module AutomatedLab -Name SqlClrType2019 -Value "https://download.microsoft.com/download/d/d/1/dd194c5c-d859-49b8-ad64-5cbdcbb9b7bd/SQLSysClrTypes.msi" -Initialize -Validation string
+Set-PSFConfig -Module AutomatedLab -Name SqlSmo2016 -Value "https://download.microsoft.com/download/6/4/5/645B2661-ABE3-41A4-BC2D-34D9A10DD303/ENU/x64/SharedManagementObjects.msi" -Initialize -Validation string
 Set-PSFConfig -Module AutomatedLab -Name Dynamics365Uri -Value 'https://download.microsoft.com/download/B/D/0/BD0FA814-9885-422A-BA0E-54CBB98C8A33/CRM9.0-Server-ENU-amd64.exe' -Initialize -Validation String
 
 # Exchange Server
@@ -401,13 +407,13 @@ Set-PSFConfig -Module AutomatedLab -Name Exchange2019DownloadUrl -Value 'https:/
 Set-PSFConfig -Module AutomatedLab -Name ConfigurationManagerWmiExplorer -Value 'https://github.com/vinaypamnani/wmie2/releases/download/v2.0.0.2/WmiExplorer_2.0.0.2.zip' -Description 'Link to WMI explorer' -Validation string
 Set-PSFConfig -Module AutomatedLab -Name ConfigurationManagerUrl1902CB -Value 'http://download.microsoft.com/download/1/B/C/1BCADBD7-47F6-40BB-8B1F-0B2D9B51B289/SC_Configmgr_SCEP_1902.exe' -Description 'Link to ConfigMgr 1902 CB' -Validation string
 #Set-PSFConfig -Module AutomatedLab -Name ConfigurationManagerUrl1902TP -Value 'http://download.microsoft.com/download/1/B/C/1BCADBD7-47F6-40BB-8B1F-0B2D9B51B289/SC_Configmgr_SCEP_1902.exe'
-Set-PSFConfig -Module AutomatedLab -Name ConfigurationManagerUrl2002CB -Value 'https://download.microsoft.com/download/e/0/a/e0a2dd5e-2b96-47e7-9022-3030f8a1807b/MEM_Configmgr_2002.exe' -Description 'Link to ConfigMgr 2002 CB' -Validation string
+Set-PSFConfig -Module AutomatedLab -Name ConfigurationManagerUrl2002CB -Value "https://download.microsoft.com/download/e/0/a/e0a2dd5e-2b96-47e7-9022-3030f8a1807b/MEM_Configmgr_2002.exe" -Description 'Link to ConfigMgr 2002 CB' -Validation string
 #Set-PSFConfig -Module AutomatedLab -Name ConfigurationManagerUrl2002TP -Value "https://download.microsoft.com/download/D/8/E/D8E795CE-44D7-40B7-9067-D3D1313865E5/Configmgr_TechPreview2010.exe"
-Set-PSFConfig -Module AutomatedLab -Name ConfigurationManagerUrl2103CB -Value 'https://download.microsoft.com/download/8/8/8/888d525d-5523-46ba-aca8-4709f54affa8/MEM_Configmgr_2103.exe' -Description 'Link to ConfigMgr 2103 CB' -Validation string
+Set-PSFConfig -Module AutomatedLab -Name ConfigurationManagerUrl2103CB -Value "https://download.microsoft.com/download/8/8/8/888d525d-5523-46ba-aca8-4709f54affa8/MEM_Configmgr_2103.exe" -Description 'Link to ConfigMgr 2103 CB' -Validation string
 #Set-PSFConfig -Module AutomatedLab -Name ConfigurationManagerUrl2103TP -Value "https://download.microsoft.com/download/D/8/E/D8E795CE-44D7-40B7-9067-D3D1313865E5/Configmgr_TechPreview2103.exe"
 Set-PSFConfig -Module AutomatedLab -Name ConfigurationManagerUrl2203CB -Value 'https://download.microsoft.com/download/f/5/5/f55e3b9c-781d-493b-932b-16aa1b2f6371/MEM_Configmgr_2203.exe' -Description 'Link to ConfigMgr 2203 CB' -Validation string
 #Set-PSFConfig -Module AutomatedLab -Name ConfigurationManagerUrl2210TP -Value "https://download.microsoft.com/download/D/8/E/D8E795CE-44D7-40B7-9067-D3D1313865E5/Configmgr_TechPreview2210.exe"
-Set-PSFConfig -Module AutomatedLab -Name ConfigurationManagerUrl2411TP -Value 'https://download.microsoft.com/download/D/8/E/D8E795CE-44D7-40B7-9067-D3D1313865E5/ConfigMgr_TechPreview2411.exe' -Description 'Link to ConfigMgr 2411 TP' -Validation string
+Set-PSFConfig -Module AutomatedLab -Name ConfigurationManagerUrl2411TP -Value "https://download.microsoft.com/download/D/8/E/D8E795CE-44D7-40B7-9067-D3D1313865E5/ConfigMgr_TechPreview2411.exe" -Description 'Link to ConfigMgr 2411 TP' -Validation string
 
 # Validation
 Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
@@ -996,13 +1002,14 @@ if (-not (Test-Path -Path $productKeyCustomFilePath)) {
 #region ArgumentCompleter
 Register-PSFTeppScriptblock -Name AutomatedLab-NotificationProviders -ScriptBlock {
     (Get-PSFConfig -Module AutomatedLab -Name Notifications.NotificationProviders*).FullName |
-    ForEach-Object { ($_ -split '\.')[3] } | Select-Object -Unique
+    Foreach-Object { ($_ -split '\.')[3] } | Select-Object -Unique
 }
 
 Register-PSFTeppScriptblock -Name AutomatedLab-OperatingSystem -ScriptBlock {
     $lab = if (Get-Lab -ErrorAction SilentlyContinue) {
         Get-Lab -ErrorAction SilentlyContinue
-    } elseif (Get-LabDefinition -ErrorAction SilentlyContinue) {
+    }
+    elseif (Get-LabDefinition -ErrorAction SilentlyContinue) {
         Get-LabDefinition -ErrorAction SilentlyContinue
     }
 
@@ -1028,7 +1035,7 @@ Register-PSFTeppScriptblock -Name AutomatedLab-OperatingSystem -ScriptBlock {
     $global:AL_OperatingSystems.OperatingSystemName
 }
 
-Register-PSFTeppScriptblock -Name AutomatedLab-Labs -ScriptBlock {
+Register-PSFTeppscriptblock -Name AutomatedLab-Labs -ScriptBlock {
     $path = "$(Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot)/Labs"
     (Get-ChildItem -Path $path -Directory).Name
 }
@@ -1060,7 +1067,7 @@ Register-PSFTeppScriptblock -Name AutomatedLab-CustomRole -ScriptBlock {
 Register-PSFTeppScriptblock -Name AutomatedLab-AzureRoleSize -ScriptBlock {
     $defaultLocation = (Get-LabAzureDefaultLocation -ErrorAction SilentlyContinue).Location
     (Get-AzVMSize -Location $defaultLocation -ErrorAction SilentlyContinue |
-    Where-Object -Property Name -NotLike *basic* | Sort-Object -Property Name).Name
+    Where-Object -Property Name -notlike *basic* | Sort-Object -Property Name).Name
 }
 
 Register-PSFTeppScriptblock -Name AutomatedLab-TimeZone -ScriptBlock {
