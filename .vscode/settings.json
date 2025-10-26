@@ -24,6 +24,24 @@
     "[powershell]": {
         "files.trimTrailingWhitespace": false,
         "files.trimFinalNewlines": false,
-        "files.insertFinalNewline": false
-    }
+        "files.insertFinalNewline": false,
+
+    },
+    "powershell.codeFormatting.autoCorrectAliases": false,
+    "powershell.codeFormatting.useConstantStrings": false,
+    "powershell.codeFormatting.useCorrectCasing": false,
+    "powershell.codeFormatting.trimWhitespaceAroundPipe": false,
+    "powershell.codeFormatting.ignoreOneLineBlock": true,
+    "powershell.codeFormatting.pipelineIndentationStyle": "NoIndentation",
+    "powershell.codeFormatting.preset": "Custom",
+    "powershell.codeFormatting.openBraceOnSameLine": true,
+    "powershell.codeFormatting.newLineAfterOpenBrace": true,
+    "powershell.codeFormatting.newLineAfterCloseBrace": true,
+    "powershell.codeFormatting.whitespaceBeforeOpenBrace": true,
+    "powershell.codeFormatting.whitespaceBeforeOpenParen": true,
+    "powershell.codeFormatting.whitespaceAroundOperator": true,
+    "powershell.codeFormatting.whitespaceAfterSeparator": true,
+    "powershell.codeFormatting.whitespaceBetweenParameters": false,
+    "powershell.codeFormatting.whitespaceInsideBrace": true,
+    "powershell.codeFormatting.addWhitespaceAroundPipe": false
 }
