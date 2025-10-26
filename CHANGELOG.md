@@ -2,6 +2,11 @@
 
 ## Unreleased (2025-08-21)
 
+- Added The following new ValidRoleProperties:
+   - SQLServer2012 - 2022
+   - FailOverNode
+   - HyperV
+
 ### Added
 
 - Add option to opt out of Storage Account creation (#1753)
