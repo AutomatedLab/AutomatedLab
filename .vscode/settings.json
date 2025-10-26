@@ -3,5 +3,10 @@
     "workbench.colorCustomizations": {
         "editor.lineHighlightBackground": "#1073cf2d",
         "editor.lineHighlightBorder": "#9fced11f"
+    },
+    "[powershell]": {
+        "files.trimTrailingWhitespace": false,
+        "files.trimFinalNewlines": false,
+        "files.insertFinalNewline": false
     }
 }
