@@ -184,6 +184,7 @@
                 if (Test-Path "$($Script:data.LabPath)/$(Get-LabConfigurationItem -Name MachineFileName)") { Remove-Item -Path "$($Script:data.LabPath)/Machines.xml" -Force -Confirm:$false }
                 if (Test-Path "$($Script:data.LabPath)/Unattended*.xml") { Remove-Item -Path "$($Script:data.LabPath)/Unattended*.xml" -Force -Confirm:$false }
                 if (Test-Path "$($Script:data.LabPath)/armtemplate.json") { Remove-Item -Path "$($Script:data.LabPath)/armtemplate.json" -Force -Confirm:$false }
+                if (Test-Path "$($Script:data.LabPath)/Network_$labName.xml") { Remove-Item -Path "$($Script:data.LabPath)/Network_$labName.xml" -Force -Confirm:$false }
                 if (Test-Path "$($Script:data.LabPath)/ks*.cfg") { Remove-Item -Path "$($Script:data.LabPath)/ks*.cfg" -Force -Confirm:$false }
                 if (Test-Path "$($Script:data.LabPath)/*.bash") { Remove-Item -Path "$($Script:data.LabPath)/*.bash" -Force -Confirm:$false }
                 if (Test-Path "$($Script:data.LabPath)/autoinst*.xml") { Remove-Item -Path "$($Script:data.LabPath)/autoinst*.xml" -Force -Confirm:$false }
