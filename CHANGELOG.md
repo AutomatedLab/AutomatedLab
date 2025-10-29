@@ -6,7 +6,7 @@
 
 - Add option to opt out of Storage Account creation (#1753)
   - Switch to Entra-Auth not possible, as we require storage shares, which would require using ADDS or Azure Domain Services. If SAS keys cannot be used, no storage is the current option.
-- Added The following new ValidRoleProperties:
+- Added The following new ValidRoleProperties: (thanks @constantinhager)
   - SQLServer2012 - 2022
   - FailOverNode
   - HyperV
