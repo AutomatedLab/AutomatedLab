@@ -2,15 +2,14 @@
 
 ## Unreleased (2025-08-21)
 
-- Added The following new ValidRoleProperties:
-   - SQLServer2012 - 2022
-   - FailOverNode
-   - HyperV
-
 ### Added
 
 - Add option to opt out of Storage Account creation (#1753)
     - Switch to Entra-Auth not possible, as we require storage shares, which would require using ADDS or Azure Domain Services. If SAS keys cannot be used, no storage is the current option.
+- Added The following new ValidRoleProperties:
+   - SQLServer2012 - 2022
+   - FailOverNode
+   - HyperV
 
 ### Changed
 
@@ -18,6 +17,7 @@
 - Use Storage Account kind `storagev2` for all new lab sources storages
     - Storages will be upgraded automatically
 - Made `Get-LabMachineRoleDefinition -Syntax` more user-friendly (#1562)
+- Fixed retired parameter Location for `Get-AzVmSize`
 
 ### Removed
 
