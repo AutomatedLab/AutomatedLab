@@ -1187,6 +1187,12 @@ Register-PSFTeppScriptblock -Name AutomatedLab-CustomRole -ScriptBlock {
     (Get-ChildItem -Path (Join-Path -Path (Get-LabSourcesLocationInternal -Local) -ChildPath 'CustomRoles' -ErrorAction SilentlyContinue) -Directory -ErrorAction SilentlyContinue).Name
 }
 
+Register-PSFTeppScriptblock -Name AutomatedLab-AzureRoleSize -ScriptBlock {
+    $defaultLocation = (Get-LabAzureDefaultLocation -ErrorAction SilentlyContinue).Location
+    (Get-AzComputeResourceSku -Location $defaultLocation -ErrorAction SilentlyContinue |
+    Where-Object ResourceType -eq virtualMachines | Sort-Object -Property Name).Name
+}
+
 Register-PSFTeppScriptblock -Name AutomatedLab-TimeZone -ScriptBlock {
     [System.TimeZoneInfo]::GetSystemTimeZones().Id | Sort-Object
 }
