@@ -1,12 +1,10 @@
-﻿function Set-UnattendedWindowsUserLocale
-{
+﻿function Set-UnattendedWindowsUserLocale {
 	param (
 		[Parameter(Mandatory = $true)]
 		[string]$UserLocale
 	)
 
-	if (-not $script:un)
-	{
+	if (-not $script:un) {
 		Write-Error 'No unattended file imported. Please use Import-UnattendedFile first'
 		return
 	}
@@ -18,17 +16,8 @@
 	#this is for getting the input locale strings like '0409:00000409'
 	$component.UserLocale = $UserLocale
 
-	if ($IsLinux)
-	{
-		$inputLocale = '0409:00000409'
-	}
-	else
-	{
-		$inputLocale = $languageList[$UserLocale]
-		$inputLocale += $languageList['en-us']
-	}
-	if ($inputLocale)
-	{
-		$component.InputLocale = ($inputLocale -join ';')
-	}
+	$inputLocale = [System.Collections.Generic.List[string]]::new()
+	$inputLocale.Add($languageList[$UserLocale])
+	$inputLocale.Add($languageList['en-us'])
+	$component.InputLocale = ($inputLocale -join ';')
 }
