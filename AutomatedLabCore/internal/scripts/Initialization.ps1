@@ -4,7 +4,7 @@ if ($PSEdition -eq 'Core') {
     # These modules SHOULD be marked as Core compatible, as tested with Windows 10.0.18362.113
     # However, if they are not, they need to be imported.
     $requiredModules = @('Dism')
-    $requiredModulesImplicit = @('International') # These modules should be imported via implicit remoting. Might suffer from implicit sessions getting removed though
+    $requiredModulesImplicit = @() # These modules should be imported via implicit remoting. Might suffer from implicit sessions getting removed though
 
     $ipmoErr = $null # Initialize, otherwise Import-MOdule -Force will extend this variable indefinitely
     if ($requiredModulesImplicit -and $IsWindows) {

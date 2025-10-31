@@ -32,6 +32,7 @@
 - Added filtering to Install-LabSshKnownHost in an attempt to speed up the function
 - Fix issue with incompatible parameters that were introduced to CreateDscSqlDatabase.ps1 in 5.59
 - Fix nested Hyper-V on Azure SKU validator (#1679)
+- Remove dependcy on International module by generating language list statically (#1640)
 
 ## 5.59.0 (2025-08-18)
 
