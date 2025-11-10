@@ -35,6 +35,7 @@
 - `Test-LabAzureModuleAvailability`
   - Fixed module behavior to only import that are not yet loaded ([#1793](https://github.com/AutomatedLab/AutomatedLab/issues/1793)).
   - Fixed error handling so the function returns $false in case of a module load error ([#1794](https://github.com/AutomatedLab/AutomatedLab/issues/1794)).
+- Remove dependcy on International module by generating language list statically (#1640)
 
 ## 5.59.0 (2025-08-18)
 
