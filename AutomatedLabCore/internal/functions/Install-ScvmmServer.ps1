@@ -35,19 +35,19 @@
 
     if ($(Get-Lab).DefaultVirtualizationEngine -eq 'Azure' -or (Test-LabMachineInternetConnectivity -ComputerName $Computer[0]))
     {
-        Install-LabSoftwarePackage -Path $adkFile.FullName -ComputerName $Computer -CommandLine '/quiet /layout c:\ADKoffline'
-        Install-LabSoftwarePackage -Path $adkpeFile.FullName -ComputerName $Computer -CommandLine '/quiet /layout c:\ADKPEoffline'
+        Install-LabSoftwarePackage -Path $adkFile.FullName -ComputerName $Computer -CommandLine "/quiet /layout $deployDebugPath\ADKoffline"
+        Install-LabSoftwarePackage -Path $adkpeFile.FullName -ComputerName $Computer -CommandLine "/quiet /layout $deployDebugPath\ADKPEoffline"
     }
     else
     {
         Start-Process -FilePath $adkFile.FullName -ArgumentList "/quiet /layout $(Join-Path (Get-LabSourcesLocation -Local) SoftwarePackages/ADKoffline)" -Wait -NoNewWindow
         Start-Process -FilePath $adkpeFile.FullName -ArgumentList " /quiet /layout $(Join-Path (Get-LabSourcesLocation -Local) SoftwarePackages/ADKPEoffline)" -Wait -NoNewWindow
-        Copy-LabFileItem -Path (Join-Path (Get-LabSourcesLocation -Local) SoftwarePackages/ADKoffline) -ComputerName $Computer
-        Copy-LabFileItem -Path (Join-Path (Get-LabSourcesLocation -Local) SoftwarePackages/ADKPEoffline) -ComputerName $Computer
+        Copy-LabFileItem -Path (Join-Path (Get-LabSourcesLocation -Local) SoftwarePackages/ADKoffline) -ComputerName $Computer -DestinationFolderPath $deployDebugPath\ADKoffline
+        Copy-LabFileItem -Path (Join-Path (Get-LabSourcesLocation -Local) SoftwarePackages/ADKPEoffline) -ComputerName $Computer -DestinationFolderPath $deployDebugPath\ADKPEoffline
     }
 
-    Install-LabSoftwarePackage -LocalPath C:\ADKOffline\adksetup.exe -ComputerName $Computer -CommandLine '/quiet /installpath C:\ADK'
-    Install-LabSoftwarePackage -LocalPath C:\ADKPEOffline\adkwinpesetup.exe -ComputerName $Computer -CommandLine '/quiet /installpath C:\ADK'
+    Install-LabSoftwarePackage -LocalPath $deployDebugPath\ADKOffline\adksetup.exe -ComputerName $Computer -CommandLine "/quiet /installpath $deployDebugPath\ADK"
+    Install-LabSoftwarePackage -LocalPath $deployDebugPath\ADKPEOffline\adkwinpesetup.exe -ComputerName $Computer -CommandLine "/quiet /installpath $deployDebugPath\ADK"
     Install-LabWindowsFeature -ComputerName $Computer -FeatureName RSAT-Clustering -IncludeAllSubFeature
     Restart-LabVM -ComputerName $Computer -Wait
 

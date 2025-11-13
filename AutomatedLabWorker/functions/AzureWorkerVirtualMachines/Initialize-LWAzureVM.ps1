@@ -508,7 +508,10 @@ sudo systemctl restart sshd
         }
     }
 
-    Copy-LabFileItem -Path (Get-ChildItem -Path "$((Get-Module -Name AutomatedLabCore)[0].ModuleBase)\Tools\HyperV\*") -DestinationFolderPath /AL -ComputerName ($Machine | Where OperatingSystemType -eq 'Windows') -UseAzureLabSourcesOnAzureVm $false
+    $deployDebug = Invoke-LabCommand -ComputerName ($Machine | Where OperatingSystemType -eq 'Windows') -Variable (Get-Variable -Name AL_DeployDebugFolder) -PassThru -ScriptBlock {
+        (Get-Item -Path "$($ExecutionContext.InvokeCommand.ExpandString($DeployDebugPath))/AL").FullName
+    }
+    Copy-LabFileItem -Path (Get-ChildItem -Path "$((Get-Module -Name AutomatedLabCore)[0].ModuleBase)\Tools\HyperV\*") -DestinationFolderPath $deployDebug -ComputerName ($Machine | Where OperatingSystemType -eq 'Windows') -UseAzureLabSourcesOnAzureVm $false
     $sessions = if ($PSVersionTable.PSVersion -ge [System.Version]'7.0')
     {
         New-LabPSSession $Machine
@@ -516,7 +519,7 @@ sudo systemctl restart sshd
     else
     {
         Write-ScreenInfo -Type Warning -Message "Skipping copy of AutomatedLab.Common to Linux VMs as Windows PowerShell is used on the host and not PowerShell 7+."
-        New-LabPSSession ($Machine | Where OperatingSystemType -eq 'Windows')
+        New-LabPSSession ($Machine | Where-Object OperatingSystemType -eq 'Windows')
     }
 
     Send-ModuleToPSSession -Module (Get-Module -ListAvailable -Name AutomatedLab.Common | Select-Object -First 1) -Session $sessions -IncludeDependencies -Force
