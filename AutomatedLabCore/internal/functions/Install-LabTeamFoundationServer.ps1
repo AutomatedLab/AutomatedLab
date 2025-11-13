@@ -105,15 +105,12 @@
             $tfsConfigPath = (Get-ChildItem -Path $env:ProgramFiles -Filter tfsconfig.exe -Recurse | Select-Object -First 1).FullName
             if (-not $tfsConfigPath) { throw 'tfsconfig.exe could not be found.' }
 
-            if (-not (Test-Path C:\DeployDebug))
-            {
-                [void] (New-Item -Path C:\DeployDebug -ItemType Directory)
-            }
+            $deployDebug = (New-Item -ItemType Directory -Path $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder) -ErrorAction SilentlyContinue -Force).FullName
 
             # Create unattend file with fitting parameters and replace all we can find
-            [void] (Start-Process -FilePath $tfsConfigPath -ArgumentList 'unattend /create /type:Standard /unattendfile:C:\DeployDebug\TfsConfig.ini' -NoNewWindow -Wait)
+            [void] (Start-Process -FilePath $tfsConfigPath -ArgumentList 'unattend /create /type:Standard /unattendfile:$deployDebug\TfsConfig.ini' -NoNewWindow -Wait)
 
-            $config = (Get-Item -Path C:\DeployDebug\TfsConfig.ini -ErrorAction Stop).FullName
+            $config = (Get-Item -Path $deployDebug\TfsConfig.ini -ErrorAction Stop).FullName
             $content = [System.IO.File]::ReadAllText($config)
 
             $content = $content -replace 'SqlInstance=.+', ('SqlInstance={0}' -f $sqlServer)
@@ -148,7 +145,7 @@
             [System.IO.File]::WriteAllText($config, $content)
 
             $command = "unattend /unattendfile:`"$config`" /continue"
-            "`"$tfsConfigPath`" $command" | Set-Content C:\DeployDebug\SetupTfsServer.cmd
+            "`"$tfsConfigPath`" $command" | Set-Content $deployDebug\SetupTfsServer.cmd
             $configurationProcess = Start-Process -FilePath $tfsConfigPath -ArgumentList $command -PassThru -NoNewWindow -Wait
 
             # Locate log files and cat them
@@ -159,7 +156,7 @@
             {
                 throw ('Something went wrong while applying the unattended configuration {0}. Try {1} {2} manually. Read the log at {3}.' -f $config, $tfsConfigPath, $command, $log.FullName )
             }
-        } -Variable (Get-Variable sqlServer, machineName, InitialCollection, tfsPort, databaseLabel, cert -ErrorAction SilentlyContinue) -AsJob -ActivityName "TFS_Setup_$machine" -PassThru -NoDisplay
+        } -Variable (Get-Variable sqlServer, machineName, InitialCollection, tfsPort, databaseLabel, cert, AL_DeployDebugFolder -ErrorAction SilentlyContinue) -AsJob -ActivityName "TFS_Setup_$machine" -PassThru -NoDisplay
     }
 
     Write-ScreenInfo -Type Verbose -Message "Waiting for the installation of TFS on $tfsMachines to finish."

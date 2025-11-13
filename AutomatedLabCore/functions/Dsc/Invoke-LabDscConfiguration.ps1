@@ -122,6 +122,9 @@
             }
         }
 
+        $deployDebugPath = Invoke-LabCommand -ActivityName 'Create DSC Directory' -ComputerName $ComputerName -ScriptBlock {
+            (New-Item -Force -ItemType Directory -Path $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder) -Name 'AL Dsc').FullName
+        } -NoDisplay -PassThru -Variable (Get-Variable -Name AL_DeployDebugFolder -Scope Global) | Select-Object -First 1
         $mofFiles = Get-ChildItem -Path $outputPath -Filter *.mof | Where-Object Name -Match '(?<ConfigurationName>\w+)_(?<ComputerName>[\w-_]+)\.mof'
         foreach ($c in $ComputerName)
         {
@@ -129,7 +132,7 @@
             {
                 if ($mofFile.Name -match "(?<ConfigurationName>$($Configuration.Name))_(?<ComputerName>$c)\.mof")
                 {
-                    Send-File -Source $mofFile.FullName -Session (New-LabPSSession -ComputerName $Matches.ComputerName) -Destination "C:\AL Dsc\$($Configuration.Name)" -Force
+                    Send-File -Source $mofFile.FullName -Session (New-LabPSSession -ComputerName $Matches.ComputerName) -Destination "$deployDebugPath\$($Configuration.Name)" -Force
                 }
             }
         }
@@ -141,7 +144,7 @@
             {
                 if ($metaMofFile.Name -match "(?<ConfigurationName>$($Configuration.Name))_(?<ComputerName>$c)\.meta.mof")
                 {
-                    Send-File -Source $metaMofFile.FullName -Session (New-LabPSSession -ComputerName $Matches.ComputerName) -Destination "C:\AL Dsc\$($Configuration.Name)" -Force
+                    Send-File -Source $metaMofFile.FullName -Session (New-LabPSSession -ComputerName $Matches.ComputerName) -Destination "$deployDebugPath\$($Configuration.Name)" -Force
                 }
             }
         }
@@ -156,7 +159,7 @@
 
         Invoke-LabCommand -ComputerName $ComputerName -ActivityName 'Applying new DSC configuration' -ScriptBlock {
 
-            $path = "C:\AL Dsc\$($Configuration.Name)"
+            $path = "$deployDebugPath\$($Configuration.Name)"
 
             Remove-Item -Path "$path\localhost.mof" -ErrorAction SilentlyContinue
             Remove-Item -Path "$path\localhost.meta.mof" -ErrorAction SilentlyContinue
@@ -185,7 +188,7 @@
                 Start-DscConfiguration -Path $path -Wait:$Wait -Force:$Force
             }
 
-        } -Variable (Get-Variable -Name Configuration, Wait, Force)
+        } -Variable (Get-Variable -Name Configuration, Wait, Force, deployDebugPath)
     }
     else
     {

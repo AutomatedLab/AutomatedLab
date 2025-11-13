@@ -14,16 +14,13 @@
     $sql = Get-LabVm -Role SQLServer2016, SQLServer2017 | Sort-Object { $_.Roles.Name } | Select-Object -Last 1
     Start-LabVM -ComputerName $vms -Wait
 
-    Invoke-LabCommand -ComputerName $vms -ScriptBlock {
-        if (-not (Test-Path C:\DeployDebug))
-        {
-            $null = New-Item -ItemType Directory -Path C:\DeployDebug
-        }
-        if (-not (Test-Path C:\DynamicsSetup))
-        {
-            $null = New-Item -ItemType Directory -Path C:\DynamicsSetup
-        }
-    } -NoDisplay
+    $deployDebugPath = Invoke-LabCommand -ComputerName $vms -ScriptBlock {
+        $deployDebug = New-Item -ItemType Directory -Path $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder) -ErrorAction SilentlyContinue -Force
+        $deployDebug.FullName
+    } -NoDisplay -Variable (Get-Variable -Scope Global -Name AL_DeployDebugFolder) -PassThru | Select-Object -First 1
+    $dynamicsSetupPath = Invoke-LabCommand -ComputerName $vms -ScriptBlock {
+        (New-Item -ItemType Directory -Path (Join-Path $deployDebug.FullName DynamicsSetup) -Force).FullName
+    } -NoDisplay -Variable (Get-Variable -Scope Global -Name AL_DeployDebugFolder) -PassThru | Select-Object -First 1
     $someDc = Get-LabVm -Role RootDc | Select -First 1
     $defaultDomain = Invoke-LabCommand -ComputerName $someDc -ScriptBlock { Get-ADDomain } -PassThru -NoDisplay
 
@@ -38,7 +35,7 @@
     $sqlClrType = Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name SqlClrType2016) -Path $downloadTargetFolder -FileName sqlclrtype2016.msi -PassThru -NoDisplay
     $sqlSmo = Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name SqlSmo2016) -Path $downloadTargetFolder -FileName sqlsmo2016.msi -PassThru -NoDisplay
     $installer = Get-LabInternetFile -Uri $dynamicsUri -Path $labSources/SoftwarePackages -PassThru -NoDisplay
-    Install-LabSoftwarePackage -ComputerName $vms -Path $installer.FullName -CommandLine '/extract:C:\DynamicsSetup /quiet' -NoDisplay
+    Install-LabSoftwarePackage -ComputerName $vms -Path $installer.FullName -CommandLine "/extract:$dynamicsSetupPath /quiet" -NoDisplay
     Install-LabSoftwarePackage -Path  $cppRedist64_2010.FullName -Computer $vms -CommandLine '/quiet' -NoDisplay
     Install-LabSoftwarePackage -Path  $cppRedist64_2013.FullName -Computer $vms -CommandLine '/s' -NoDisplay
     Install-LabSoftwarePackage -Path $odbc.FullName -ComputerName $vms -CommandLine '/QN ADDLOCAL=ALL IACCEPTMSODBCSQLLICENSETERMS=YES /L*v C:\odbc.log' -NoDisplay
@@ -311,19 +308,19 @@
         Invoke-LabCommand -ComputerName $vm -ScriptBlock {
             # Using SID instead of name 'Performance Log Users' to avoid possible translation issues
             Add-LocalGroupMember -SID 'S-1-5-32-559' -Member $serverxml.crmsetup.Server.AsyncServiceAccount.ServiceAccountLogin, $serverxml.crmsetup.Server.CrmServiceAccount.ServiceAccountLogin
-            $serverXml.Save('C:\DeployDebug\Dynamics.xml')
-        } -Variable (Get-Variable serverXml) -NoDisplay
+            $serverXml.Save("$($ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder))\Dynamics.xml")
+        } -Variable @((Get-Variable serverXml), (Get-Variable -Scope Global -Name AL_DeployDebugFolder)) -NoDisplay
     }
 
     Restart-LabVM -ComputerName $vms -Wait -NoDisplay
 
     $timeout = if ($lab.DefaultVirtualizationEngine -eq 'Azure') { 60 } else { 45 }
-    Install-LabSoftwarePackage -ComputerName $orgFirstDeployed.Values -LocalPath 'C:\DynamicsSetup\SetupServer.exe' -CommandLine '/config C:\DeployDebug\Dynamics.xml /log C:\DeployDebug\DynamicsSetup.log /Q' -ExpectedReturnCodes 0, 3010 -NoDisplay -UseShellExecute -AsScheduledJob -UseExplicitCredentialsForScheduledJob -Timeout $timeout
+    Install-LabSoftwarePackage -ComputerName $orgFirstDeployed.Values -LocalPath 'C:\DynamicsSetup\SetupServer.exe' -CommandLine "/config $deployDebugPath\Dynamics.xml /log $deployDebugPath\DynamicsSetup.log /Q" -ExpectedReturnCodes 0, 3010 -NoDisplay -UseShellExecute -AsScheduledJob -UseExplicitCredentialsForScheduledJob -Timeout $timeout
 
     $remainingVms = $vms | Where-Object -Property Name -notin $orgFirstDeployed.Values
     if ($remainingVms)
     {
-        Install-LabSoftwarePackage -ComputerName $remainingVms -LocalPath 'C:\DynamicsSetup\SetupServer.exe' -CommandLine '/config C:\DeployDebug\Dynamics.xml /log C:\DeployDebug\DynamicsSetup.log /Q' -ExpectedReturnCodes 0, 3010 -NoDisplay -UseShellExecute -AsScheduledJob -UseExplicitCredentialsForScheduledJob -Timeout $timeout
+        Install-LabSoftwarePackage -ComputerName $remainingVms -LocalPath 'C:\DynamicsSetup\SetupServer.exe' -CommandLine "/config $deployDebugPath\Dynamics.xml /log $deployDebugPath\DynamicsSetup.log /Q" -ExpectedReturnCodes 0, 3010 -NoDisplay -UseShellExecute -AsScheduledJob -UseExplicitCredentialsForScheduledJob -Timeout $timeout
     }
 
     if ($CreateCheckPoints.IsPresent)

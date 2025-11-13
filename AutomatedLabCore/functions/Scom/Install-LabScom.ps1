@@ -88,16 +88,13 @@
 
     Start-LabVM -ComputerName $all -Wait
 
-    Invoke-LabCommand -ComputerName $all -ScriptBlock {
-        if (-not (Test-Path C:\DeployDebug))
-        {
-            $null = New-Item -ItemType Directory -Path C:\DeployDebug
-        }
+    $deployDebugPath = Invoke-LabCommand -ComputerName $all -ScriptBlock {
+        (New-Item -ItemType Directory -Path $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder) -ErrorAction SilentlyContinue -Force).FullName
 
         $null = New-Item -ItemType Directory -Path HKLM:\software\Microsoft\Windows\CurrentVersion\Policies\System\Kerberos\Parameters -Force
         # Yup, this Setup requires RC4 enabled to be able to "resolve" accounts
         $null = Set-ItemProperty HKLM:\software\Microsoft\Windows\CurrentVersion\Policies\System\Kerberos\Parameters -Name SupportedEncryptionTypes -Value 0x7fffffff
-    }
+    } -Variable (Get-Variable -Scope Global -Name AL_DeployDebugFolder) -PassThru | Select-Object -First 1
 
     Restart-LabVM -ComputerName $all -Wait
 
@@ -112,8 +109,8 @@
     
     if (Get-LabVm -Role ScomConsole, ScomWebConsole)
     {
-        Install-LabSoftwarePackage -path $SQLSysClrTypesFile.FullName -ComputerName (Get-LabVm -Role ScomConsole, ScomWebConsole) -CommandLine '/quiet /norestart /log C:\DeployDebug\SQLSysClrTypes.log' -NoDisplay
-        Install-LabSoftwarePackage -path $ReportViewerFile.FullName -ComputerName (Get-LabVm -Role ScomConsole, ScomWebConsole) -CommandLine '/quiet /norestart /log C:\DeployDebug\ReportViewer.log' -NoDisplay
+        Install-LabSoftwarePackage -path $SQLSysClrTypesFile.FullName -ComputerName (Get-LabVm -Role ScomConsole, ScomWebConsole) -CommandLine "/quiet /norestart /log $deployDebugPath\SQLSysClrTypes.log" -NoDisplay
+        Install-LabSoftwarePackage -path $ReportViewerFile.FullName -ComputerName (Get-LabVm -Role ScomConsole, ScomWebConsole) -CommandLine "/quiet /norestart /log $deployDebugPath\ReportViewer.log" -NoDisplay
         Install-LabWindowsFeature -Computername (Get-LabVm -Role ScomConsole, ScomWebConsole) NET-WCF-HTTP-Activation45, Web-Static-Content, Web-Default-Doc, Web-Dir-Browsing, Web-Http-Errors, Web-Http-Logging, Web-Request-Monitor, Web-Filtering, Web-Stat-Compression, Web-Mgmt-Console, Web-Metabase, Web-Asp-Net, Web-Windows-Auth  -NoDisplay
     }
 
@@ -128,9 +125,10 @@
     $scomIso = ($lab.Sources.ISOs | Where-Object { $_.Name -like 'Scom*' }).Path
     $isos = Mount-LabIsoImage -ComputerName $all -IsoPath $scomIso -SupressOutput -PassThru
     Invoke-LabCommand -ComputerName $all -Variable (Get-Variable isos) -ActivityName 'Extracting SCOM Server' -ScriptBlock {
+        $scomExtractDir = (New-Item -ItemType Directory -Path $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder) -Name SCOM -ErrorAction SilentlyContinue -Force).FullName
         $setup = Get-ChildItem -Path $($isos | Where InternalComputerName -eq $env:COMPUTERNAME).DriveLetter -Filter *.exe | Select-Object -First 1
-        Start-Process -FilePath $setup.FullName -ArgumentList '/VERYSILENT', '/DIR=C:\SCOM' -Wait
-    } -NoDisplay
+        Start-Process -FilePath $setup.FullName -ArgumentList "/VERYSILENT', '/DIR=$scomExtractDir" -Wait
+    } -NoDisplay -Variable (Get-Variable -Scope Global -Name AL_DeployDebugFolder)
     
     # Server
     $installationPaths = @{}
@@ -238,8 +236,11 @@
         $CommandlineArgumentsServer = $iniManagement.GetEnumerator() | Where-Object Key -notin ProductKey, ScomAdminGroupName | ForEach-Object { '/{0}:"{1}"' -f $_.Key, $_.Value }
             
         $setupCommandlineServer = "/install /silent /components:OMServer $CommandlineArgumentsServer"
-        Invoke-LabCommand -ComputerName $vm -ScriptBlock { Set-Content -Path C:\DeployDebug\SetupScomManagement.cmd -Value "C:\SCOM\setup.exe $setupCommandLineServer" } -Variable (Get-Variable setupCommandlineServer) -NoDisplay
-        Install-LabSoftwarePackage -ComputerName $vm -LocalPath C:\SCOM\setup.exe -CommandLine $setupCommandlineServer -AsJob -PassThru -UseShellExecute -UseExplicitCredentialsForScheduledJob -AsScheduledJob -Timeout 20 -NoDisplay
+        Invoke-LabCommand -ComputerName $vm -ScriptBlock {
+             $deployDebug = $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder)
+             Set-Content -Path $deployDebug\SetupScomManagement.cmd -Value "$deployDebug\SCOM\setup.exe $setupCommandLineServer" 
+            } -Variable @((Get-Variable setupCommandlineServer), (Get-Variable -Scope Global -Name AL_DeployDebugFolder)) -NoDisplay
+        Install-LabSoftwarePackage -ComputerName $vm -LocalPath $deployDebugPath\SCOM\setup.exe -CommandLine $setupCommandlineServer -AsJob -PassThru -UseShellExecute -UseExplicitCredentialsForScheduledJob -AsScheduledJob -Timeout 20 -NoDisplay
         $isPrimaryManagementServer = $isPrimaryManagementServer - 1
         $installationPaths[$vm.Name] = $iniManagement.InstallLocation
     }
@@ -315,8 +316,11 @@
         $CommandlineArgumentsServer = $iniManagement.GetEnumerator() | Where-Object Key -notin ProductKey, ScomAdminGroupName | ForEach-Object { '/{0}:"{1}"' -f $_.Key, $_.Value }
             
         $setupCommandlineServer = "/install /silent /components:OMServer $CommandlineArgumentsServer"
-        Invoke-LabCommand -ComputerName $vm -ScriptBlock { Set-Content -Path C:\DeployDebug\SetupScomManagement.cmd -Value "C:\SCOM\setup.exe $setupCommandLineServer" } -Variable (Get-Variable setupCommandlineServer) -NoDisplay
-        Install-LabSoftwarePackage -ComputerName $vm -LocalPath C:\SCOM\setup.exe -CommandLine $setupCommandlineServer -AsJob -PassThru -UseShellExecute -UseExplicitCredentialsForScheduledJob -AsScheduledJob -Timeout 20 -NoDisplay
+        Invoke-LabCommand -ComputerName $vm -ScriptBlock {
+            $deployDebug = $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder)
+            Set-Content -Path $deployDebug\SetupScomManagement.cmd -Value "$deployDebug\SCOM\setup.exe $setupCommandLineServer"
+        } -Variable @((Get-Variable setupCommandlineServer), (Get-Variable -Scope Global -Name AL_DeployDebugFolder)) -NoDisplay
+        Install-LabSoftwarePackage -ComputerName $vm -LocalPath $deployDebugPath\SCOM\setup.exe -CommandLine $setupCommandlineServer -AsJob -PassThru -UseShellExecute -UseExplicitCredentialsForScheduledJob -AsScheduledJob -Timeout 20 -NoDisplay
         $installationPaths[$vm.Name] = $iniManagement.InstallLocation
     }
     
@@ -350,7 +354,7 @@
 
         foreach ($failedInstall in ($installationStatus | Where-Object { $_.Status -contains $false }))
         {
-            Write-ScreenInfo -Type Error -Message "Installation of SCOM Management failed on $($failedInstall.Node). Please refer to the logs in C:\DeployDebug on the VM"
+            Write-ScreenInfo -Type Error -Message "Installation of SCOM Management failed on $($failedInstall.Node). Please refer to the logs in $AL_DeployDebugFolder on the VM"
         }
 
         $cmdAvailable = Invoke-LabCommand -PassThru -NoDisplay -ComputerName $firstmgmt { Get-Command Get-ScomManagementServer -ErrorAction SilentlyContinue }
@@ -398,9 +402,12 @@
 
         $CommandlineArgumentsNativeConsole = $iniNativeConsole.GetEnumerator() | ForEach-Object { '/{0}:"{1}"' -f $_.Key, $_.Value }
         $setupCommandlineNativeConsole = "/install /silent /components:OMConsole $CommandlineArgumentsNativeConsole"
-        Invoke-LabCommand -ComputerName $vm -ScriptBlock { Set-Content -Path C:\DeployDebug\SetupScomConsole.cmd -Value "C:\SCOM\setup.exe $setupCommandlineNativeConsole" } -Variable (Get-Variable setupCommandlineNativeConsole) -NoDisplay
+        Invoke-LabCommand -ComputerName $vm -ScriptBlock { 
+            $deployDebug = $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder)
+            Set-Content -Path $deployDebug\SetupScomConsole.cmd -Value "$deployDebug\SCOM\setup.exe $setupCommandlineNativeConsole"
+        } -Variable @((Get-Variable setupCommandlineNativeConsole), (Get-Variable -Scope Global -Name AL_DeployDebugFolder)) -NoDisplay
 
-        Install-LabSoftwarePackage -ComputerName $vm -LocalPath C:\SCOM\setup.exe -CommandLine $setupCommandlineNativeConsole -AsJob -PassThru -UseShellExecute -UseExplicitCredentialsForScheduledJob -AsScheduledJob -Timeout 20 -NoDisplay
+        Install-LabSoftwarePackage -ComputerName $vm -LocalPath $deployDebugPath\SCOM\setup.exe -CommandLine $setupCommandlineNativeConsole -AsJob -PassThru -UseShellExecute -UseExplicitCredentialsForScheduledJob -AsScheduledJob -Timeout 20 -NoDisplay
         $installationPaths[$vm.Name] = $iniConsole.InstallLocation
     }
 
@@ -427,7 +434,7 @@
 
         foreach ($failedInstall in ($installationStatus | Where-Object { $_.Status -contains $false }))
         {
-            Write-ScreenInfo -Type Error -Message "Installation of SCOM Console failed on $($failedInstall.Node). Please refer to the logs in C:\DeployDebug on the VM"
+            Write-ScreenInfo -Type Error -Message "Installation of SCOM Console failed on $($failedInstall.Node). Please refer to the logs in $AL_DeployDebugFolder on the VM"
         }
     }
 
@@ -460,9 +467,12 @@
 
         $CommandlineArgumentsWebConsole = $iniWeb.GetEnumerator() | ForEach-Object { '/{0}:"{1}"' -f $_.Key, $_.Value }
         $setupCommandlineWebConsole = "/install /silent /components:OMWebConsole $commandlineArgumentsWebConsole"
-        Invoke-LabCommand -ComputerName $vm -ScriptBlock { Set-Content -Path C:\DeployDebug\SetupScomWebConsole.cmd -Value "C:\SCOM\setup.exe $setupCommandlineWebConsole" } -Variable (Get-Variable setupCommandlineWebConsole) -NoDisplay
+        Invoke-LabCommand -ComputerName $vm -ScriptBlock { 
+            $deployDebug = $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder)
+            Set-Content -Path $deployDebug\SetupScomWebConsole.cmd -Value "$deployDebug\SCOM\setup.exe $setupCommandlineWebConsole" 
+        } -Variable @((Get-Variable setupCommandlineWebConsole), (Get-Variable -Scope Global -Name AL_DeployDebugFolder)) -NoDisplay
 
-        Install-LabSoftwarePackage -ComputerName $vm -LocalPath C:\SCOM\setup.exe -CommandLine $setupCommandlineWebConsole -AsJob -PassThru -UseShellExecute -UseExplicitCredentialsForScheduledJob -AsScheduledJob -Timeout 20 -NoDisplay
+        Install-LabSoftwarePackage -ComputerName $vm -LocalPath $deployDebugPath\SCOM\setup.exe -CommandLine $setupCommandlineWebConsole -AsJob -PassThru -UseShellExecute -UseExplicitCredentialsForScheduledJob -AsScheduledJob -Timeout 20 -NoDisplay
         $installationPaths[$vm.Name] = $iniWeb.WebSiteName
     }
 
@@ -479,7 +489,7 @@
 
         foreach ($failedInstall in ($installationStatus | Where-Object { $_.Status -contains $false }))
         {
-            Write-ScreenInfo -Type Error -Message "Installation of SCOM Web Console failed on $($failedInstall.Node). Please refer to the logs in C:\DeployDebug on the VM"
+            Write-ScreenInfo -Type Error -Message "Installation of SCOM Web Console failed on $($failedInstall.Node). Please refer to the logs in $AL_DeployDebugFolder on the VM"
         }
     }
 
@@ -564,12 +574,15 @@
 
         $CommandlineArgumentsReportServer = $iniReport.GetEnumerator() | ForEach-Object { '/{0}:"{1}"' -f $_.Key, $_.Value }
         $setupCommandlineReportServer = "/install /silent /components:OMReporting $commandlineArgumentsReportServer"
-        Invoke-LabCommand -ComputerName $vm -ScriptBlock { Set-Content -Path C:\DeployDebug\SetupScomReporting.cmd -Value "C:\SCOM\setup.exe $setupCommandlineReportServer" } -Variable (Get-Variable setupCommandlineReportServer) -NoDisplay
+        Invoke-LabCommand -ComputerName $vm -ScriptBlock { 
+            $deployDebug = $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder)
+            Set-Content -Path $deployDebug\SetupScomReporting.cmd -Value "$deployDebug\SCOM\setup.exe $setupCommandlineReportServer"
+        } -Variable @((Get-Variable setupCommandlineReportServer), (Get-Variable -Scope Global -Name AL_DeployDebugFolder)) -NoDisplay
         Invoke-LabCommand -ComputerName $scomReportingServer -ScriptBlock {
             Get-Service -Name SQLSERVERAGENT* | Set-Service -StartupType Automatic -Status Running
         } -NoDisplay
 
-        Install-LabSoftwarePackage -ComputerName $vm -LocalPath C:\SCOM\setup.exe -CommandLine $setupCommandlineReportServer -AsJob -PassThru -UseShellExecute -UseExplicitCredentialsForScheduledJob -AsScheduledJob -Timeout 20 -NoDisplay
+        Install-LabSoftwarePackage -ComputerName $vm -LocalPath $deployDebugPath\SCOM\setup.exe -CommandLine $setupCommandlineReportServer -AsJob -PassThru -UseShellExecute -UseExplicitCredentialsForScheduledJob -AsScheduledJob -Timeout 20 -NoDisplay
         $installationPaths[$vm.Name] = $iniReport.InstallLocation
     }
 
@@ -596,16 +609,17 @@
 
         foreach ($failedInstall in ($installationStatus | Where-Object { $_.Status -contains $false }))
         {
-            Write-ScreenInfo -Type Error -Message "Installation of SCOM Reporting failed on $($failedInstall.Node). Please refer to the logs in C:\DeployDebug on the VM"
+            Write-ScreenInfo -Type Error -Message "Installation of SCOM Reporting failed on $($failedInstall.Node). Please refer to the logs in $AL_DeployDebugFolder on the VM"
         }
     }
         
     # Collect installation logs from $env:LOCALAPPDATA\SCOM\Logs
     Write-PSFMessage -Message "====SCOM log content errors begin===="
-    $errors = Invoke-LabCommand -ComputerName $all -NoDisplay -ScriptBlock {    
-        $null = robocopy (Join-Path -Path $env:LOCALAPPDATA SCOM\Logs) "C:\DeployDebug\SCOMLogs" /S /E
-        Get-ChildItem -Path C:\DeployDebug\SCOMLogs -ErrorAction SilentlyContinue | Get-Content
-    } -PassThru | Where-Object {$_ -like '*Error*'}
+    $errors = Invoke-LabCommand -ComputerName $all -NoDisplay -ScriptBlock {
+        $deployDebug = $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder)
+        $null = robocopy (Join-Path -Path $env:LOCALAPPDATA SCOM\Logs) "$deployDebug\SCOMLogs" /S /E
+        Get-ChildItem -Path $deployDebug\SCOMLogs -ErrorAction SilentlyContinue | Get-Content
+    } -PassThru -Variable (Get-Variable -Scope Global -Name AL_DeployDebugFolder) | Where-Object {$_ -like '*Error*'}
     foreach ($err in $errors) { Write-PSFMessage $err }
     Write-PSFMessage -Message "====SCOM log content errors end===="
 

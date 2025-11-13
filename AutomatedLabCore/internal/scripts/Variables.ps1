@@ -11,7 +11,8 @@ $adInstallRootDcScriptPre2012 = {
         [string]$DsrmPassword
     )
 
-    Start-Transcript -Path C:\DeployDebug\ALDCPromo.log
+    $deployDebug =  (Get-Item -Path $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder)).FullName
+    Start-Transcript -Path $deployDebug\ALDCPromo.log
 
     $dcpromoAnswerFile = @"
       [DCInstall]
@@ -84,7 +85,8 @@ $adInstallRootDcScript2012 = {
 
     $VerbosePreference = $using:VerbosePreference
 
-    Start-Transcript -Path C:\DeployDebug\ALDCPromo.log
+    $deployDebug =  (Get-Item -Path $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder)).FullName
+    Start-Transcript -Path $deployDebug\ALDCPromo.log
 
     ([WMIClass]'Win32_NetworkAdapterConfiguration').SetDNSSuffixSearchOrder($DomainName) | Out-Null
 
@@ -147,7 +149,8 @@ $adInstallFirstChildDc2012 = {
 
     $VerbosePreference = $using:VerbosePreference
 
-    Start-Transcript -Path C:\DeployDebug\ALDCPromo.log
+    $deployDebug =  (Get-Item -Path $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder)).FullName
+    Start-Transcript -Path $deployDebug\ALDCPromo.log
 
     ([WMIClass]'Win32_NetworkAdapterConfiguration').SetDNSSuffixSearchOrder($DomainName) | Out-Null
 
@@ -286,7 +289,8 @@ $adInstallFirstChildDcPre2012 = {
         [string]$DsrmPassword
     )
 
-    Start-Transcript -Path C:\DeployDebug\ALDCPromo.log
+    $deployDebug =  (Get-Item -Path $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder)).FullName
+    Start-Transcript -Path $deployDebug\ALDCPromo.log
 
     Write-Verbose -Message 'Installing AD-Domain-Services windows feature'
     Import-Module -Name ServerManager
@@ -454,7 +458,8 @@ $adInstallDc2012 = {
 
     $VerbosePreference = $using:VerbosePreference
 
-    Start-Transcript -Path C:\DeployDebug\ALDCPromo.log
+    $deployDebug =  (Get-Item -Path $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder)).FullName
+    Start-Transcript -Path $deployDebug\ALDCPromo.log
 
     ([WMIClass]'Win32_NetworkAdapterConfiguration').SetDNSSuffixSearchOrder($DomainName) | Out-Null
 
@@ -599,7 +604,8 @@ $adInstallDcPre2012 = {
 
     $VerbosePreference = $using:VerbosePreference
 
-    Start-Transcript -Path C:\DeployDebug\ALDCPromo.log
+    $deployDebug =  (Get-Item -Path $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder)).FullName
+    Start-Transcript -Path $deployDebug\ALDCPromo.log
 
     Write-Verbose -Message 'Installing AD-Domain-Services windows feature'
     Import-Module -Name ServerManager
@@ -675,7 +681,7 @@ $adInstallDcPre2012 = {
     Copy-Item -Path C:\DcpromoAnswerFile.txt -Destination C:\DcpromoAnswerFileBackup.txt
 
     #For debug
-    Copy-Item -Path C:\DcpromoAnswerFile.txt -Destination C:\DeployDebug\DcpromoAnswerFile.txt
+    Copy-Item -Path C:\DcpromoAnswerFile.txt -Destination $deployDebug\DcpromoAnswerFile.txt
 
     Write-Verbose -Message "Starting installation of an additional Domain Controller on '$(HOSTNAME.EXE)'"
 
@@ -853,7 +859,7 @@ $iniContentConsoleScvmm = @{
     MUOptIn       = '0'
 }
 
-$setupCommandLineServerScvmm = '/server /i /f C:\Server.ini /VmmServiceDomain {0} /VmmServiceUserName {1} /VmmServiceUserPassword {2} /SqlDBAdminDomain {0} /SqlDBAdminName {1} /SqlDBAdminPassword {2} /IACCEPTSCEULA'
+$setupCommandLineServerScvmm = '/server /i /f {3}\Server.ini /VmmServiceDomain {0} /VmmServiceUserName {1} /VmmServiceUserPassword {2} /SqlDBAdminDomain {0} /SqlDBAdminName {1} /SqlDBAdminPassword {2} /IACCEPTSCEULA'
 $spsetupConfigFileContent = '<Configuration>
     <Package Id="sts">
         <Setting Id="LAUNCHEDFROMSETUPSTS" Value="Yes"/>

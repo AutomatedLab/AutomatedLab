@@ -23,23 +23,23 @@
     $jobs = @()
 
     $tempFileName = Join-Path -Path ([IO.Path]::GetTempPath()) -ChildPath enableazurewinrm.labtempfile.ps1
-    $customScriptContent = @'
-$null = mkdir C:\DeployDebug -ErrorAction SilentlyContinue
-New-Item -ItemType Directory -Path C:\ALAzure -ErrorAction SilentlyContinue
-'Trying to enable Remoting and CredSSP' | Out-File C:\ALAzure\WinRmActivation.log -Append
+    $customScriptContent = @"
+`$deployDebug = (New-Item -ItemType Directory -Path `$ExecutionContext.InvokeCommand.ExpandString("$AL_DeployDebugFolder") -Force).FullName
+`$null = New-Item -ItemType Directory -Path `$deployDebug\ALAzure -ErrorAction SilentlyContinue
+'Trying to enable Remoting and CredSSP' | Out-File `$deployDebug\ALAzure\WinRmActivation.log -Append
 try
 {
 Enable-PSRemoting -Force -ErrorAction Stop
-"Successfully called Enable-PSRemoting" | Out-File C:\ALAzure\WinRmActivation.log -Append
+"Successfully called Enable-PSRemoting" | Out-File `$deployDebug\ALAzure\WinRmActivation.log -Append
 }
 catch
 {
-"Error calling Enable-PSRemoting. $($_.Exception.Message)" | Out-File C:\ALAzure\WinRmActivation.log -Append
+"Error calling Enable-PSRemoting. `$(`$_.Exception.Message)" | Out-File `$deployDebug\ALAzure\WinRmActivation.log -Append
 }
 try
 {
 Enable-WSManCredSSP -Role Server -Force | Out-Null
-"Successfully enabled CredSSP" | Out-File C:\ALAzure\WinRmActivation.log -Append
+"Successfully enabled CredSSP" | Out-File `$deployDebug\ALAzure\WinRmActivation.log -Append
 }
 catch
 {
@@ -47,14 +47,14 @@ try
 {
 New-ItemProperty -Path HKLM:\software\Microsoft\Windows\CurrentVersion\WSMAN\Service -Name auth_credssp -Value 1 -PropertyType DWORD -Force -ErrorACtion Stop
 New-ItemProperty -Path HKLM:\software\Microsoft\Windows\CurrentVersion\WSMAN\Service -Name allow_remote_requests -Value 1 -PropertyType DWORD -Force -ErrorAction Stop
-"Enabled CredSSP via Registry" | Out-File C:\ALAzure\WinRmActivation.log -Append
+"Enabled CredSSP via Registry" | Out-File `$deployDebug\ALAzure\WinRmActivation.log -Append
 }
 catch
 {
-"Could not enable CredSSP via cmdlet or registry!" | Out-File C:\ALAzure\WinRmActivation.log -Append
+"Could not enable CredSSP via cmdlet or registry!" | Out-File `$deployDebug\ALAzure\WinRmActivation.log -Append
 }
 }
-'@
+"@
     $customScriptContent | Out-File $tempFileName -Force -Encoding utf8
     $rgName = Get-LabAzureDefaultResourceGroup
 

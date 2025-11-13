@@ -52,14 +52,14 @@
 
     if ($machines)
     {
-        Invoke-LabCommand -ComputerName $machines -ActivityName "Create folder 'C:\DeployDebug' for debug info" -NoDisplay -ScriptBlock {
-            New-Item -ItemType Directory -Path 'c:\DeployDebug' -ErrorAction SilentlyContinue | Out-Null
+        Invoke-LabCommand -ComputerName $machines -ActivityName "Create folder '$AL_DeployDebugFolder' for debug info" -NoDisplay -ScriptBlock {            
+            $deployDebug = New-Item -ItemType Directory -Path $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder) -ErrorAction SilentlyContinue -Force
 
-            $acl = Get-Acl -Path C:\DeployDebug
+            $acl = Get-Acl -Path $deployDebug.FullName
             $rule = New-Object System.Security.AccessControl.FileSystemAccessRule('Everyone', 'Read', 'ObjectInherit', 'None', 'Allow')
             $acl.AddAccessRule($rule)
-            Set-Acl -Path C:\DeployDebug -AclObject $acl
-        } -DoNotUseCredSsp -UseLocalCredential
+            Set-Acl -Path $deployDebug.FullName -AclObject $acl
+        } -DoNotUseCredSsp -UseLocalCredential -Variable (Get-Variable -Scope Global -Name AL_DeployDebugFolder)
 
         $rootDcs = Get-LabVM -Role RootDC
         $childDcs = Get-LabVM -Role FirstChildDC
@@ -148,6 +148,7 @@
             -UseLocalCredential `
             -NoDisplay `
             -ScriptBlock $scriptblock `
+            -Variable (Get-Variable -Scope Global -Name AL_DeployDebugFolder) `
             -ArgumentList $machine.DomainName,
             $parentCredential,
             $isReadOnly,

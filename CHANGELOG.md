@@ -18,6 +18,7 @@
   - Storages will be upgraded automatically
 - Made `Get-LabMachineRoleDefinition -Syntax` more user-friendly (#1562)
 - Fixed retired parameter Location for `Get-AzVmSize`
+- New parameter to configure location of static lab files on VMs
 
 ### Removed
 

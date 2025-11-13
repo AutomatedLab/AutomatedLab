@@ -115,6 +115,8 @@ Set-PSFConfig -Module 'AutomatedLab' -Name OverridePowerPlan -Value $true -Initi
 Set-PSFConfig -Module 'AutomatedLab' -Name SendFunctionTelemetry -Value $false -Initialize -Validation bool -Description 'Indicates if function call telemetry is sent' -Hidden
 Set-PSFConfig -Module 'AutomatedLab' -Name DoNotWaitForLinux -Value $false -Initialize -Validation bool -Description 'Indicates that you will not wait for Linux VMs to be ready, e.g. because you are offline and PowerShell cannot be installed.'
 Set-PSFConfig -Module 'AutomatedLab' -Name DoNotPrompt -Value $false -Initialize -Validation bool -Description 'Indicates that AutomatedLab should not display prompts. Workaround for environments that register as interactive, even if they are not. Skips enabling telemetry, skips Azure lab sources sync, forcibly configures remoting' -Hidden
+Set-PSFConfig -Module 'AutomatedLab' -Name VMDeploymentFilesFolder -Value '$([Environment]::GetFolderPath(''ApplicationData''))/DeployDebug' -Initialize -Validation string -Description 'Folder local to each VM which contains temporary files during deployment, logs and such. Will use ExecutionContext.InvokeCommand.ExpandString() to ensure xplat capabilities.'
+$Global:AL_DeployDebugFolder = Get-PSFConfigValue -FullName AutomatedLab.VMDeploymentFilesFolder
 
 #PSSession settings
 Set-PSFConfig -Module 'AutomatedLab' -Name InvokeLabCommandRetries -Value 3 -Initialize -Validation integer -Description 'Number of retries for Invoke-LabCommand'
