@@ -64,7 +64,7 @@
             WinRmMaxConnections                 = 300
         }
 
-        $deployDebug = (New-Item -ItemType Directory -Path `$ExecutionContext.InvokeCommand.ExpandString($DeployDebugPath) -Force).FullName
+        $deployDebug = (New-Item -ItemType Directory -Path $ExecutionContext.InvokeCommand.ExpandString($DeployDebugPath) -Force).FullName
         $null = Start-Transcript -OutputDirectory $deployDebug
     
         Start-Service WinRm
