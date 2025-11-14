@@ -43,8 +43,8 @@
             Write-Verbose -Message 'Getting list of DCs'
             $dcs = repadmin.exe /viewlist *
             Write-Verbose -Message "List: '$($dcs -join ', ')'"
-            (Get-Date -Format 'yyyy-MM-dd hh:mm:ss') | Add-Content -Path $($deployDebug.FullName)\DCList.log -Force
-            $dcs | Add-Content -Path $($deployDebug.FullName)\DCList.log
+            Get-Date -Format 'yyyy-MM-dd hh:mm:ss' | Add-Content -Path "$($deployDebug.FullName)\DCList.log" -Force
+            $dcs | Where-Object {$_ -ne $null} | Add-Content -Path "$($deployDebug.FullName)\DCList.log"
 
             foreach ($dc in $dcs)
             {
@@ -59,7 +59,7 @@
             }
             Write-Verbose -Message "Executing 'repadmin.exe /ReplSum'"
             $result = repadmin.exe /ReplSum
-            $result | Add-Content -Path $($deployDebug.FullName)\repadmin.exeResult.log
+            $result | Add-Content -Path "$($deployDebug.FullName)\repadmin.exeResult.log"
 
             Restart-Service -Name DNS -WarningAction SilentlyContinue
 
@@ -68,8 +68,8 @@
             Write-Verbose -Message 'Getting list of DCs'
             $dcs = repadmin.exe /viewlist *
             Write-Verbose -Message "List: '$($dcs -join ', ')'"
-            (Get-Date -Format 'yyyy-MM-dd hh:mm:ss') | Add-Content -Path $($deployDebug.FullName)\DCList.log -Force
-            $dcs | Add-Content -Path $($deployDebug.FullName)\DCList.log
+            (Get-Date -Format 'yyyy-MM-dd hh:mm:ss') | Add-Content -Path "$($deployDebug.FullName)\DCList.log" -Force
+            $dcs | Add-Content -Path "$($deployDebug.FullName)\DCList.log"
             foreach ($dc in $dcs)
             {
                 if ($dc)
@@ -83,7 +83,7 @@
             }
             Write-Verbose -Message "Executing 'repadmin.exe /ReplSum'"
             $result = repadmin.exe /ReplSum
-            $result | Add-Content -Path $($deployDebug.FullName)\repadmin.exeResult.log
+            $result | Add-Content -Path "$($deployDebug.FullName)\repadmin.exeResult.log"
 
             ipconfig.exe /registerdns
 
