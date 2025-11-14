@@ -177,11 +177,6 @@ $unattendedXmlDefaultContent2012 = @'
             <Order>6</Order>
             <CommandLine>PowerShell -File C:\WinRmCustomization.ps1</CommandLine>
         </SynchronousCommand>
-        <SynchronousCommand wcm:action="add">
-            <Description>Remove temporary script</Description>
-            <Order>7</Order>
-            <CommandLine>del C:\AdditionalDisksOnline.ps1</CommandLine>
-        </SynchronousCommand>
       </FirstLogonCommands>
       <UserAccounts>
         <AdministratorPassword>
@@ -408,11 +403,6 @@ $unattendedXmlDefaultContent2008 = @'
             <Description>Bring all additional disks online</Description>
             <Order>6</Order>
             <CommandLine>PowerShell -File C:\AdditionalDisksOnline.ps1</CommandLine>
-        </SynchronousCommand>
-        <SynchronousCommand wcm:action="add">
-            <Description>Remove temporary script</Description>
-            <Order>7</Order>
-            <CommandLine>del C:\AdditionalDisksOnline.ps1</CommandLine>
         </SynchronousCommand>
 		<SynchronousCommand wcm:action="add">
             <Description>Disable .net Optimization</Description>

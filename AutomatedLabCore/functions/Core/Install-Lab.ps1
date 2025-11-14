@@ -741,6 +741,7 @@
     }
 
     Initialize-LabWindowsActivation -ErrorAction SilentlyContinue
+    Remove-LabDeploymentFiles -ErrorAction SilentlyContinue
 
     if (-not $NoValidation -and ($performAll -or $PostDeploymentTests))
     {
