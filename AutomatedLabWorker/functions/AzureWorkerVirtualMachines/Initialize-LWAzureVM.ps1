@@ -510,7 +510,7 @@ sudo systemctl restart sshd
 
     $deployDebug = Invoke-LabCommand -ComputerName ($Machine | Where OperatingSystemType -eq 'Windows') -Variable (Get-Variable -Name AL_DeployDebugFolder) -PassThru -ScriptBlock {
         (Get-Item -Path "$($ExecutionContext.InvokeCommand.ExpandString($DeployDebugPath))/AL").FullName
-    }
+    } | Select-Object -First 1
     Copy-LabFileItem -Path (Get-ChildItem -Path "$((Get-Module -Name AutomatedLabCore)[0].ModuleBase)\Tools\HyperV\*") -DestinationFolderPath $deployDebug -ComputerName ($Machine | Where OperatingSystemType -eq 'Windows') -UseAzureLabSourcesOnAzureVm $false
     $sessions = if ($PSVersionTable.PSVersion -ge [System.Version]'7.0')
     {

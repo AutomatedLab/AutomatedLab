@@ -15,7 +15,7 @@
 
     $deployDebugPath = Invoke-LabCommand -ComputerName $buildWorkers -ScriptBlock {
         (New-Item -ItemType Directory -Path $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder) -ErrorAction SilentlyContinue -Force).FullName
-    } -PassThru -Variable (Get-Variable -Name AL_DeployDebugFolder -Scope Global)
+    } -PassThru -Variable (Get-Variable -Name AL_DeployDebugFolder -Scope Global) | Select-Object -First 1
 
     $buildWorkerUri = Get-LabConfigurationItem -Name BuildAgentUri
     $buildWorkerPath = $ExecutionContext.SessionState.Path.Combine($labsources, 'Tools\TfsBuildWorker.zip')

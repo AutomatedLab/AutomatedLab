@@ -159,10 +159,14 @@
         }
     }
 
+    $deployDebugPath = Invoke-LabCommand -ComputerName $machines -ScriptBlock {
+        (New-Item -ItemType Directory -Path $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder) -ErrorAction SilentlyContinue -Force).FullName
+    } -PassThru -Variable (Get-Variable -Name AL_DeployDebugFolder -Scope Global) | Select-Object -First 1
+
     Copy-LabFileItem -Path $labSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerEdb.ps1,
     $labSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerMdb.ps1,
     $labSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerSql.ps1,
-    $labSources\PostInstallationActivities\SetupDscPullServer\DscTestConfig.ps1 -ComputerName $machines
+    $labSources\PostInstallationActivities\SetupDscPullServer\DscTestConfig.ps1 -ComputerName $machines -DestinationFolderPath $deployDebugPath
 
     foreach ($machine in $machines)
     {
@@ -251,16 +255,16 @@
         $jobs += Invoke-LabCommand -ActivityName "Setting up DSC Pull Server on '$machine'" -ComputerName $machine -ScriptBlock {
             if ($setupParams.DatabaseEngine -eq 'edb')
             {
-                C:\SetupDscPullServerEdb.ps1 -ComputerName $setupParams.ComputerName -CertificateThumbPrint $setupParams.CertificateThumbPrint -RegistrationKey $setupParams.RegistrationKey
+                & $DeployDebugPath\SetupDscPullServerEdb.ps1 -ComputerName $setupParams.ComputerName -CertificateThumbPrint $setupParams.CertificateThumbPrint -RegistrationKey $setupParams.RegistrationKey
             }
             elseif ($setupParams.DatabaseEngine -eq 'mdb')
             {
-                C:\SetupDscPullServerMdb.ps1 -ComputerName $setupParams.ComputerName -CertificateThumbPrint $setupParams.CertificateThumbPrint -RegistrationKey $setupParams.RegistrationKey
+                & $DeployDebugPath\SetupDscPullServerMdb.ps1 -ComputerName $setupParams.ComputerName -CertificateThumbPrint $setupParams.CertificateThumbPrint -RegistrationKey $setupParams.RegistrationKey
                 Copy-Item -Path C:\Windows\System32\WindowsPowerShell\v1.0\Modules\PSDesiredStateConfiguration\PullServer\Devices.mdb -Destination 'C:\Program Files\WindowsPowerShell\DscService\Devices.mdb'
             }
             elseif ($setupParams.DatabaseEngine -eq 'sql')
             {
-                C:\SetupDscPullServerSql.ps1 -ComputerName $setupParams.ComputerName -CertificateThumbPrint $setupParams.CertificateThumbPrint -RegistrationKey $setupParams.RegistrationKey -SqlServer $setupParams.SqlServer -DatabaseName $setupParams.DatabaseName
+                & $DeployDebugPath\SetupDscPullServerSql.ps1 -ComputerName $setupParams.ComputerName -CertificateThumbPrint $setupParams.CertificateThumbPrint -RegistrationKey $setupParams.RegistrationKey -SqlServer $setupParams.SqlServer -DatabaseName $setupParams.DatabaseName
             }
             else
             {
@@ -268,10 +272,10 @@
                 return
             }
 
-            C:\DscTestConfig.ps1
+            & $DeployDebugPath\DscTestConfig.ps1
             Start-Job -ScriptBlock { Publish-DSCModuleAndMof -Source C:\DscTestConfig } | Wait-Job | Out-Null
 
-        } -Variable (Get-Variable -Name setupParams) -AsJob -PassThru
+        } -Variable (Get-Variable -Name setupParams, deployDebugPath) -AsJob -PassThru
     }
 
     Write-ScreenInfo -Message 'Waiting for configuration of DSC Pull Server to complete' -NoNewline

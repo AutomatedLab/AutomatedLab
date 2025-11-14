@@ -14,7 +14,7 @@
     $adkpeFile = Get-LabInternetFile -Uri $adkPeUrl -Path $labsources\SoftwarePackages -FileName adkpe.exe -PassThru -NoDisplay
     $deployDebugPath = Invoke-LabCommand -ComputerName $vms -ScriptBlock {
         (New-Item -ItemType Directory -Path $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder) -ErrorAction SilentlyContinue -Force).FullName
-    } -PassThru -Variable (Get-Variable -Name AL_DeployDebugFolder -Scope Global)
+    } -PassThru -Variable (Get-Variable -Name AL_DeployDebugFolder -Scope Global) | Select-Object -First 1
     
     if ($(Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
     {
