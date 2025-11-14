@@ -53,7 +53,7 @@
     
     $deployDebugPath = Invoke-LabCommand -ComputerName $machines -NoDisplay -ScriptBlock {
         $deployDebug = (New-Item -ItemType Directory -Path $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder) -ErrorAction SilentlyContinue -Force).FullName
-
+        $deployDebug
         Set-Content $deployDebug\SPPrereq.ps1 -Value $Script
 
     } -Variable (Get-Variable -Scope Global -Name AL_DeployDebugFolder) -PassThru | Select-Object -First 1

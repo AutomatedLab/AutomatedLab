@@ -39,7 +39,7 @@
     
     $deployDebugPath = Invoke-LabCommand -ComputerName $machines -ScriptBlock {
         (New-Item -ItemType Directory -Path $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder) -ErrorAction SilentlyContinue -Force).FullName
-    } -Variable (Get-Variable -Scope Global -Name AL_DeployDebugFolder) | Select-Object -First 1
+    } -Variable (Get-Variable -Scope Global -Name AL_DeployDebugFolder) -PassThru | Select-Object -First 1
 
     #The default SQL installation in Azure does not give the standard buildin administrators group access.
     #This section adds the rights. As only the renamed Builtin Admin account has permissions, Invoke-LabCommand cannot be used.
