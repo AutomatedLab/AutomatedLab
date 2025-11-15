@@ -6,7 +6,7 @@
         [AutomatedLab.Machine[]]
         $Computer
     )
-
+    $lab = Get-Lab
     foreach ($vm in $Computer)
     {
         $iniConsole = $iniContentConsoleScvmm.Clone()

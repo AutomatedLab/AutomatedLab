@@ -7,6 +7,7 @@
         $Computer
     )
 
+    $lab = Get-Lab
     $deployDebugPath = Invoke-LabCommand -ComputerName $all -ScriptBlock {
         (Get-Item -Path $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder)).FullName
     } -Variable (Get-Variable -Scope Global -Name AL_DeployDebugFolder) -PassThru | Select-Object -First 1
