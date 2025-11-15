@@ -124,11 +124,11 @@
     # Extract SCOM on all machines
     $scomIso = ($lab.Sources.ISOs | Where-Object { $_.Name -like 'Scom*' }).Path
     $isos = Mount-LabIsoImage -ComputerName $all -IsoPath $scomIso -SupressOutput -PassThru
-    Invoke-LabCommand -ComputerName $all -Variable (Get-Variable isos) -ActivityName 'Extracting SCOM Server' -ScriptBlock {
+    Invoke-LabCommand -ComputerName $all -Variable (Get-Variable isos,AL_DeployDebugFolder) -ActivityName 'Extracting SCOM Server' -ScriptBlock {
         $scomExtractDir = (New-Item -ItemType Directory -Path $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder) -Name SCOM -ErrorAction SilentlyContinue -Force).FullName
         $setup = Get-ChildItem -Path $($isos | Where InternalComputerName -eq $env:COMPUTERNAME).DriveLetter -Filter *.exe | Select-Object -First 1
         Start-Process -FilePath $setup.FullName -ArgumentList "/VERYSILENT', '/DIR=$scomExtractDir" -Wait
-    } -NoDisplay -Variable (Get-Variable -Scope Global -Name AL_DeployDebugFolder)
+    } -NoDisplay
     
     # Server
     $installationPaths = @{}
@@ -239,7 +239,7 @@
         Invoke-LabCommand -ComputerName $vm -ScriptBlock {
              $deployDebug = $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder)
              Set-Content -Path $deployDebug\SetupScomManagement.cmd -Value "$deployDebug\SCOM\setup.exe $setupCommandLineServer" 
-            } -Variable @((Get-Variable setupCommandlineServer), (Get-Variable -Scope Global -Name AL_DeployDebugFolder)) -NoDisplay
+            } -Variable (Get-Variable setupCommandlineServer, AL_DeployDebugFolder) -NoDisplay
         Install-LabSoftwarePackage -ComputerName $vm -LocalPath $deployDebugPath\SCOM\setup.exe -CommandLine $setupCommandlineServer -AsJob -PassThru -UseShellExecute -UseExplicitCredentialsForScheduledJob -AsScheduledJob -Timeout 20 -NoDisplay
         $isPrimaryManagementServer = $isPrimaryManagementServer - 1
         $installationPaths[$vm.Name] = $iniManagement.InstallLocation
@@ -319,7 +319,7 @@
         Invoke-LabCommand -ComputerName $vm -ScriptBlock {
             $deployDebug = $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder)
             Set-Content -Path $deployDebug\SetupScomManagement.cmd -Value "$deployDebug\SCOM\setup.exe $setupCommandLineServer"
-        } -Variable @((Get-Variable setupCommandlineServer), (Get-Variable -Scope Global -Name AL_DeployDebugFolder)) -NoDisplay
+        } -Variable (Get-Variable setupCommandlineServer, AL_DeployDebugFolder) -NoDisplay
         Install-LabSoftwarePackage -ComputerName $vm -LocalPath $deployDebugPath\SCOM\setup.exe -CommandLine $setupCommandlineServer -AsJob -PassThru -UseShellExecute -UseExplicitCredentialsForScheduledJob -AsScheduledJob -Timeout 20 -NoDisplay
         $installationPaths[$vm.Name] = $iniManagement.InstallLocation
     }
@@ -405,7 +405,7 @@
         Invoke-LabCommand -ComputerName $vm -ScriptBlock { 
             $deployDebug = $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder)
             Set-Content -Path $deployDebug\SetupScomConsole.cmd -Value "$deployDebug\SCOM\setup.exe $setupCommandlineNativeConsole"
-        } -Variable @((Get-Variable setupCommandlineNativeConsole), (Get-Variable -Scope Global -Name AL_DeployDebugFolder)) -NoDisplay
+        } -Variable (Get-Variable setupCommandlineNativeConsole, AL_DeployDebugFolder) -NoDisplay
 
         Install-LabSoftwarePackage -ComputerName $vm -LocalPath $deployDebugPath\SCOM\setup.exe -CommandLine $setupCommandlineNativeConsole -AsJob -PassThru -UseShellExecute -UseExplicitCredentialsForScheduledJob -AsScheduledJob -Timeout 20 -NoDisplay
         $installationPaths[$vm.Name] = $iniConsole.InstallLocation
@@ -470,7 +470,7 @@
         Invoke-LabCommand -ComputerName $vm -ScriptBlock { 
             $deployDebug = $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder)
             Set-Content -Path $deployDebug\SetupScomWebConsole.cmd -Value "$deployDebug\SCOM\setup.exe $setupCommandlineWebConsole" 
-        } -Variable @((Get-Variable setupCommandlineWebConsole), (Get-Variable -Scope Global -Name AL_DeployDebugFolder)) -NoDisplay
+        } -Variable (Get-Variable setupCommandlineWebConsole, AL_DeployDebugFolder) -NoDisplay
 
         Install-LabSoftwarePackage -ComputerName $vm -LocalPath $deployDebugPath\SCOM\setup.exe -CommandLine $setupCommandlineWebConsole -AsJob -PassThru -UseShellExecute -UseExplicitCredentialsForScheduledJob -AsScheduledJob -Timeout 20 -NoDisplay
         $installationPaths[$vm.Name] = $iniWeb.WebSiteName
