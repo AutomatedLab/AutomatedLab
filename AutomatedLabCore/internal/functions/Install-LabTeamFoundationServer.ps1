@@ -108,7 +108,7 @@
             $deployDebug = (New-Item -ItemType Directory -Path $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder) -ErrorAction SilentlyContinue -Force).FullName
 
             # Create unattend file with fitting parameters and replace all we can find
-            [void] (Start-Process -FilePath $tfsConfigPath -ArgumentList 'unattend /create /type:Standard /unattendfile:$deployDebug\TfsConfig.ini' -NoNewWindow -Wait)
+            [void] (Start-Process -FilePath $tfsConfigPath -ArgumentList "unattend /create /type:Standard /unattendfile:$deployDebug\TfsConfig.ini" -NoNewWindow -Wait)
 
             $config = (Get-Item -Path $deployDebug\TfsConfig.ini -ErrorAction Stop).FullName
             $content = [System.IO.File]::ReadAllText($config)
