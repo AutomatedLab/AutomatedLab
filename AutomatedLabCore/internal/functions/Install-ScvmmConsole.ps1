@@ -7,6 +7,10 @@
         $Computer
     )
     $lab = Get-Lab
+    $deployDebugPath = Invoke-LabCommand -ComputerName $Computer -ScriptBlock {
+        (Get-Item -Path $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder)).FullName
+    } -Variable (Get-Variable -Scope Global -Name AL_DeployDebugFolder) -PassThru | Select-Object -First 1
+
     foreach ($vm in $Computer)
     {
         $iniConsole = $iniContentConsoleScvmm.Clone()
@@ -25,14 +29,14 @@
             Invoke-LabCommand -ComputerName $vm -Variable (Get-Variable iniConsole, scvmmIso, AL_DeployDebugFolder) -ActivityName 'Extracting SCVMM Console' -ScriptBlock {
                 $deployDebug =  (Get-Item -Path $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder)).FullName
                 $setup = Get-ChildItem -Path $scvmmIso.DriveLetter -Filter *.exe | Select-Object -First 1
-                Start-Process -FilePath $setup.FullName -ArgumentList '/VERYSILENT', '/DIR=C:\SCVMM' -Wait
+                Start-Process -FilePath $setup.FullName -ArgumentList '/VERYSILENT', "/DIR=$deployDebug\SCVMM" -Wait
                 '[OPTIONS]' | Set-Content C:\Console.ini
                 $iniConsole.GetEnumerator() | ForEach-Object { "$($_.Key) = $($_.Value)" | Add-Content C:\Console.ini }
                 "cd $deployDebug\SCVMM; $deployDebug\SCVMM\setup.exe /client /i /f $deployDebug\ScvmmConsole.ini /IACCEPTSCEULA" | Set-Content $deployDebug\VmmSetup.cmd
                 Set-Location -Path $deployDebug\SCVMM
             }
 
-            Install-LabSoftwarePackage -ComputerName $vm -WorkingDirectory C:\SCVMM -LocalPath C:\SCVMM\setup.exe -CommandLine "/client /i /f $deployDebug\ScvmmConsole.ini /IACCEPTSCEULA" -AsJob -PassThru -UseShellExecute -Timeout 20
+            Install-LabSoftwarePackage -ComputerName $vm -WorkingDirectory C:\SCVMM -LocalPath C:\SCVMM\setup.exe -CommandLine "/client /i /f $deployDebugPath\ScvmmConsole.ini /IACCEPTSCEULA" -AsJob -PassThru -UseShellExecute -Timeout 20
             Dismount-LabIsoImage -ComputerName $vm -SupressOutput
         }
     }

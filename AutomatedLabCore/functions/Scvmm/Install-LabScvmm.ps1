@@ -7,7 +7,7 @@
     $all = Get-LabVM -Role SCVMM | Where-Object SkipDeployment -eq $false
     Invoke-LabCommand -ComputerName $all -ScriptBlock {
         New-Item -ItemType Directory -Path $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder) -ErrorAction SilentlyContinue -Force
-    } -Variable (Get-Variable -Scope Global -Name AL_DeployDebugFolder) -PassThru
+    } -Variable (Get-Variable -Scope Global -Name AL_DeployDebugFolder)
 
     $server = $all | Where-Object { -not $_.Roles.Properties.ContainsKey('SkipServer') }
     $consoles = $all | Where-Object { $_.Roles.Properties.ContainsKey('SkipServer') }

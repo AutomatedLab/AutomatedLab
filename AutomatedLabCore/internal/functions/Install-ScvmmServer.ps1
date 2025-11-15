@@ -8,9 +8,10 @@
     )
 
     $lab = Get-Lab
-    $deployDebugPath = Invoke-LabCommand -ComputerName $all -ScriptBlock {
+    $deployDebugPath = Invoke-LabCommand -ComputerName $Computer -ScriptBlock {
         (Get-Item -Path $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder)).FullName
     } -Variable (Get-Variable -Scope Global -Name AL_DeployDebugFolder) -PassThru | Select-Object -First 1
+
     $sqlcmd = Get-LabConfigurationItem -Name SqlCommandLineUtils
     $adk = Get-LabConfigurationItem -Name WindowsAdk
     $adkpe = Get-LabConfigurationItem -Name WindowsAdkPe
