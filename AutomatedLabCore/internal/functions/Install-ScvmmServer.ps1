@@ -28,8 +28,8 @@
     $cpp32File = Get-LabInternetFile -uri $cpp32 -Path $labsources\SoftwarePackages -FileName vcredist_32_2012.exe -PassThru
     $cpp1464File = Get-LabInternetFile -uri $cpp1464 -Path $labsources\SoftwarePackages -FileName vcredist_64_2015.exe -PassThru
     $cpp1432File = Get-LabInternetFile -uri $cpp1432 -Path $labsources\SoftwarePackages -FileName vcredist_32_2015.exe -PassThru
-    Install-LabSoftwarePackage -Path $odbcFile.FullName -ComputerName $Computer -CommandLine '/QN ADDLOCAL=ALL IACCEPTMSODBCSQLLICENSETERMS=YES /L*v C:\odbc.log'
-    Install-LabSoftwarePackage -Path $sqlFile.FullName -ComputerName $Computer -CommandLine '/QN IACCEPTMSSQLCMDLNUTILSLICENSETERMS=YES /L*v C:\sqlcmd.log'
+    Install-LabSoftwarePackage -Path $odbcFile.FullName -ComputerName $Computer -CommandLine "/QN ADDLOCAL=ALL IACCEPTMSODBCSQLLICENSETERMS=YES /L*v $deployDebugPath\odbc.log"
+    Install-LabSoftwarePackage -Path $sqlFile.FullName -ComputerName $Computer -CommandLine "/QN IACCEPTMSSQLCMDLNUTILSLICENSETERMS=YES /L*v $deployDebugPath\sqlcmd.log"
     Install-LabSoftwarePackage -path $cpp64File.FullName -ComputerName $Computer -CommandLine "/quiet /norestart /log $deployDebugPath\cpp64_2012.log"
     Install-LabSoftwarePackage -path $cpp32File.FullName -ComputerName $Computer -CommandLine "/quiet /norestart /log $deployDebugPath\cpp32_2012.log"
     Install-LabSoftwarePackage -path $cpp1464File.FullName -ComputerName $Computer -CommandLine "/quiet /norestart /log $deployDebugPath\cpp64_2015.log"
@@ -109,14 +109,14 @@
 
         $scvmmIso = Mount-LabIsoImage -ComputerName $vm -IsoPath ($lab.Sources.ISOs | Where-Object { $_.Name -eq $role.Name }).Path -SupressOutput -PassThru
         $domainCredential = $vm.GetCredential((Get-Lab))
-        $commandLine = $setupCommandLineServerScvmm -f $vm.DomainName, $domainCredential.UserName.Replace("$($vm.DomainName)\", ''), $domainCredential.GetNetworkCredential().Password
+        $commandLine = $setupCommandLineServerScvmm -f $vm.DomainName, $domainCredential.UserName.Replace("$($vm.DomainName)\", ''), $domainCredential.GetNetworkCredential().Password, $deployDebugPath
 
         Invoke-LabCommand -ComputerName $vm -Variable ((Get-Variable iniServer, scvmmIso, commandLine, AL_DeployDebugFolder) ) -ActivityName 'Extracting SCVMM Server' -ScriptBlock {
             $deployDebug = (Get-Item -Path $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder)).FullName
             $setup = Get-ChildItem -Path $scvmmIso.DriveLetter -Filter *.exe | Select-Object -First 1
             Start-Process -FilePath $setup.FullName -ArgumentList '/VERYSILENT', "/DIR=$deployDebug\SCVMM" -Wait
-            '[OPTIONS]' | Set-Content C:\Server.ini
-            $iniServer.GetEnumerator() | ForEach-Object { "$($_.Key) = $($_.Value)" | Add-Content C:\Server.ini }
+            '[OPTIONS]' | Set-Content $deployDebug\Server.ini
+            $iniServer.GetEnumerator() | ForEach-Object { "$($_.Key) = $($_.Value)" | Add-Content $deployDebug\Server.ini }
             "cd $deployDebug\SCVMM; $deployDebug\SCVMM\setup.exe $commandline" | Set-Content $deployDebug\VmmSetup.cmd
             Set-Location -Path $deployDebug\SCVMM
         }

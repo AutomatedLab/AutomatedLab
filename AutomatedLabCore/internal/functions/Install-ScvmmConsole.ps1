@@ -30,13 +30,13 @@
                 $deployDebug =  (Get-Item -Path $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder)).FullName
                 $setup = Get-ChildItem -Path $scvmmIso.DriveLetter -Filter *.exe | Select-Object -First 1
                 Start-Process -FilePath $setup.FullName -ArgumentList '/VERYSILENT', "/DIR=$deployDebug\SCVMM" -Wait
-                '[OPTIONS]' | Set-Content C:\Console.ini
-                $iniConsole.GetEnumerator() | ForEach-Object { "$($_.Key) = $($_.Value)" | Add-Content C:\Console.ini }
+                '[OPTIONS]' | Set-Content $deployDebug\ScvmmConsole.ini
+                $iniConsole.GetEnumerator() | ForEach-Object { "$($_.Key) = $($_.Value)" | Add-Content $deployDebug\ScvmmConsole.ini }
                 "cd $deployDebug\SCVMM; $deployDebug\SCVMM\setup.exe /client /i /f $deployDebug\ScvmmConsole.ini /IACCEPTSCEULA" | Set-Content $deployDebug\VmmSetup.cmd
                 Set-Location -Path $deployDebug\SCVMM
             }
 
-            Install-LabSoftwarePackage -ComputerName $vm -WorkingDirectory C:\SCVMM -LocalPath C:\SCVMM\setup.exe -CommandLine "/client /i /f $deployDebugPath\ScvmmConsole.ini /IACCEPTSCEULA" -AsJob -PassThru -UseShellExecute -Timeout 20
+            Install-LabSoftwarePackage -ComputerName $vm -WorkingDirectory $deployDebugPath\SCVMM -LocalPath $deployDebugPath\SCVMM\setup.exe -CommandLine "/client /i /f $deployDebugPath\ScvmmConsole.ini /IACCEPTSCEULA" -AsJob -PassThru -UseShellExecute -Timeout 20
             Dismount-LabIsoImage -ComputerName $vm -SupressOutput
         }
     }
