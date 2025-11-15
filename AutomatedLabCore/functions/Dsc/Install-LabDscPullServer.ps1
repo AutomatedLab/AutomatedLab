@@ -274,7 +274,7 @@
 
             & $DeployDebugPath\DscTestConfig.ps1
             Start-Job -ScriptBlock { Publish-DSCModuleAndMof -Source C:\DscTestConfig } | Wait-Job | Out-Null
-
+            'C:\Dsc', 'C:\DscTestConfig' | Remove-Item -Recurse -Force
         } -Variable (Get-Variable -Name setupParams, deployDebugPath) -AsJob -PassThru
     }
 
