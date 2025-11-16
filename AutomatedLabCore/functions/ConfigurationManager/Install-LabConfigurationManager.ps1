@@ -18,8 +18,8 @@
     
     if ($(Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
     {
-        Install-LabSoftwarePackage -Path $adkFile.FullName -ComputerName $vms -CommandLine "/quiet /layout $deployDebugPath\ADKoffline" -NoDisplay
-        Install-LabSoftwarePackage -Path $adkpeFile.FullName -ComputerName $vms -CommandLine "/quiet /layout $deployDebugPath\ADKPEoffline" -NoDisplay
+        Install-LabSoftwarePackage -Path $adkFile.FullName -ComputerName $vms -CommandLine "/quiet /layout `"$deployDebugPath\ADKoffline`"" -NoDisplay
+        Install-LabSoftwarePackage -Path $adkpeFile.FullName -ComputerName $vms -CommandLine "/quiet /layout `"$deployDebugPath\ADKPEoffline`"" -NoDisplay
     }
     else
     {

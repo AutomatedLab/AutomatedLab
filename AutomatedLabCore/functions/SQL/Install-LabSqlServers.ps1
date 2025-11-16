@@ -124,13 +124,13 @@ GO
             Write-ScreenInfo -Message 'done'
 
             Write-ScreenInfo -Message "Starting installation of pre-requisite C++ 2015 redist on machine '$($machinesBatch -join ', ')'" -NoNewLine
-            Install-LabSoftwarePackage -Path $cppredist32_2015.FullName -CommandLine " /quiet /norestart /log $deployDebugPath\cpp32_2015.log" -ComputerName $machinesBatch -ExpectedReturnCodes 0,3010 -AsScheduledJob -NoDisplay
-            Install-LabSoftwarePackage -Path $cppRedist64_2015.FullName -CommandLine " /quiet /norestart /log $deployDebugPath\cpp64_2015.log" -ComputerName $machinesBatch -ExpectedReturnCodes 0,3010 -AsScheduledJob -NoDisplay
+            Install-LabSoftwarePackage -Path $cppredist32_2015.FullName -CommandLine " /quiet /norestart /log `"$deployDebugPath\cpp32_2015.log`"" -ComputerName $machinesBatch -ExpectedReturnCodes 0,3010 -AsScheduledJob -NoDisplay
+            Install-LabSoftwarePackage -Path $cppRedist64_2015.FullName -CommandLine " /quiet /norestart /log `"$deployDebugPath\cpp64_2015.log`"" -ComputerName $machinesBatch -ExpectedReturnCodes 0,3010 -AsScheduledJob -NoDisplay
             Write-ScreenInfo -Message 'done'
 
             Write-ScreenInfo -Message "Starting installation of pre-requisite C++ 2017 redist on machine '$($machinesBatch -join ', ')'" -NoNewLine
-            Install-LabSoftwarePackage -Path $cppredist32_2017.FullName -CommandLine " /quiet /norestart /log $deployDebugPath\cpp32_2017.log" -ComputerName $machinesBatch -ExpectedReturnCodes 0,3010 -AsScheduledJob -NoDisplay
-            Install-LabSoftwarePackage -Path $cppRedist64_2017.FullName -CommandLine " /quiet /norestart /log $deployDebugPath\cpp64_2017.log" -ComputerName $machinesBatch -ExpectedReturnCodes 0,3010 -AsScheduledJob -NoDisplay
+            Install-LabSoftwarePackage -Path $cppredist32_2017.FullName -CommandLine " /quiet /norestart /log `"$deployDebugPath\cpp32_2017.log`"" -ComputerName $machinesBatch -ExpectedReturnCodes 0,3010 -AsScheduledJob -NoDisplay
+            Install-LabSoftwarePackage -Path $cppRedist64_2017.FullName -CommandLine " /quiet /norestart /log `"$deployDebugPath\cpp64_2017.log`"" -ComputerName $machinesBatch -ExpectedReturnCodes 0,3010 -AsScheduledJob -NoDisplay
             Write-ScreenInfo -Message 'done'
 
             Write-ScreenInfo -Message "Restarting '$($machinesBatch -join ', ')'" -NoNewLine
@@ -419,7 +419,7 @@ GO
     {
         Write-ScreenInfo -Message "Installing SSRS on'$($servers.Name -join ',')'"
         Write-ScreenInfo -Message "Installing .net Framework 4.8 on '$($servers.Name -join ',')'"
-        Install-LabSoftwarePackage -Path $dotnet48InstallFile.FullName -CommandLine "/q /norestart /log $deployDebugPath\dotnet48.txt" -ComputerName $servers -UseShellExecute
+        Install-LabSoftwarePackage -Path $dotnet48InstallFile.FullName -CommandLine "/q /norestart /log `"$deployDebugPath\dotnet48.txt`"" -ComputerName $servers -UseShellExecute
         Restart-LabVM -ComputerName $servers -Wait
     }
 

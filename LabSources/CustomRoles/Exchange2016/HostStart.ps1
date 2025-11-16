@@ -71,15 +71,15 @@ function Install-ExchangeRequirements
     } -NoDisplay -PassThru -Variable (Get-Variable -Name AL_DeployDebugFolder -Scope Global) | Select-Object -First 1
 
     $cppJobs = @()
-    $cppJobs += Install-LabSoftwarePackage -Path $cppredist642013InstallFile.FullName -CommandLine " /quiet /norestart /log $deployDebugPath\cpp64_2013.log" -ComputerName $vm -AsJob -ExpectedReturnCodes 0, 3010 -PassThru
-    $cppJobs += Install-LabSoftwarePackage -Path $cppredist322013InstallFile.FullName -CommandLine " /quiet /norestart /log $deployDebugPath\cpp32_2013.log" -ComputerName $vm -AsJob -ExpectedReturnCodes 0, 3010 -PassThru
+    $cppJobs += Install-LabSoftwarePackage -Path $cppredist642013InstallFile.FullName -CommandLine " /quiet /norestart /log `"$deployDebugPath\cpp64_2013.log`"" -ComputerName $vm -AsJob -ExpectedReturnCodes 0, 3010 -PassThru
+    $cppJobs += Install-LabSoftwarePackage -Path $cppredist322013InstallFile.FullName -CommandLine " /quiet /norestart /log `"$deployDebugPath\cpp32_2013.log`"" -ComputerName $vm -AsJob -ExpectedReturnCodes 0, 3010 -PassThru
     Wait-LWLabJob -Job $cppJobs -NoDisplay -ProgressIndicator 20 -NoNewLine
 
     $jobs = @()
-    $jobs += Install-LabSoftwarePackage -ComputerName $vm -Path $ucmaInstallFile.FullName -CommandLine "/Quiet /Log $deployDebugPath\ucma.log" -AsJob -PassThru -NoDisplay
+    $jobs += Install-LabSoftwarePackage -ComputerName $vm -Path $ucmaInstallFile.FullName -CommandLine "/Quiet /Log `"$deployDebugPath\ucma.log`"" -AsJob -PassThru -NoDisplay
     Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator 20 -NoNewLine
 
-    $jobs += Install-LabSoftwarePackage -ComputerName $vm -Path $iisUrlRewriteInstallFile.FullName -CommandLine "/Quiet /Log $deployDebugPath\IisurlRewrite.log" -AsJob -AsScheduledJob -UseShellExecute -PassThru
+    $jobs += Install-LabSoftwarePackage -ComputerName $vm -Path $iisUrlRewriteInstallFile.FullName -CommandLine "/Quiet /Log `"$deployDebugPath\IisurlRewrite.log`"" -AsJob -AsScheduledJob -UseShellExecute -PassThru
     Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator 20 -NoNewLine
 
     foreach ($machine in $machines)
@@ -88,7 +88,7 @@ function Install-ExchangeRequirements
         if ($dotnetFrameworkVersion.Version -lt '4.8')
         {
             Write-ScreenInfo "Installing .net Framework 4.8 on '$machine'" -Type Verbose
-            $jobs += Install-LabSoftwarePackage -ComputerName $machine -Path $dotnetInstallFile.FullName -CommandLine "/q /norestart /log $deployDebugPath\dotnet48.txt" -AsJob -NoDisplay -AsScheduledJob -UseShellExecute -PassThru
+            $jobs += Install-LabSoftwarePackage -ComputerName $machine -Path $dotnetInstallFile.FullName -CommandLine "/q /norestart /log `"$deployDebugPath\dotnet48.txt`"" -AsJob -NoDisplay -AsScheduledJob -UseShellExecute -PassThru
         }
         else
         {

@@ -162,8 +162,8 @@
         $configFile = $spsetupConfigFileContent -f $productKey
         Invoke-LabCommand -ComputerName $group.Group -ActivityName "Install SharePoint $($group.Name)" -ScriptBlock {
             Set-Content -Force -Path $deployDebugPath\SPInstall\files\al-config.xml -Value $configFile
-            $null = Start-Process -Wait "$deployDebugPath\SPInstall\setup.exe" -ArgumentList "/config $deployDebugPath\SPInstall\files\al-config.xml"
-            Set-Content $deployDebugPath\SPInst.cmd -Value "$deployDebugPath\SPInstall\setup.exe /config $deployDebugPath\SPInstall\files\al-config.xml"
+            $null = Start-Process -Wait "$deployDebugPath\SPInstall\setup.exe" -ArgumentList "/config `"$deployDebugPath\SPInstall\files\al-config.xml`""
+            Set-Content $deployDebugPath\SPInst.cmd -Value "$deployDebugPath\SPInstall\setup.exe /config `"$deployDebugPath\SPInstall\files\al-config.xml`""
             Get-ChildItem -Path (Join-Path ([IO.Path]::GetTempPath()) 'SharePoint Server Setup*') | Get-Content
         } -Variable (Get-Variable -Name configFile, deployDebugPath) -AsJob -PassThru
     }

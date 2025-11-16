@@ -8,7 +8,7 @@
     )
 
     $lab = Get-Lab
-    $deployDebugPath = Invoke-LabCommand -ComputerName $Computer -ScriptBlock {
+    $deployDebugPath = Invoke-LabCommand -ComputerName $Computer -NoDisplay -ScriptBlock {
         (Get-Item -Path $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder)).FullName
     } -Variable (Get-Variable -Scope Global -Name AL_DeployDebugFolder) -PassThru | Select-Object -First 1
 
@@ -28,17 +28,17 @@
     $cpp32File = Get-LabInternetFile -uri $cpp32 -Path $labsources\SoftwarePackages -FileName vcredist_32_2012.exe -PassThru
     $cpp1464File = Get-LabInternetFile -uri $cpp1464 -Path $labsources\SoftwarePackages -FileName vcredist_64_2015.exe -PassThru
     $cpp1432File = Get-LabInternetFile -uri $cpp1432 -Path $labsources\SoftwarePackages -FileName vcredist_32_2015.exe -PassThru
-    Install-LabSoftwarePackage -Path $odbcFile.FullName -ComputerName $Computer -CommandLine "/QN ADDLOCAL=ALL IACCEPTMSODBCSQLLICENSETERMS=YES /L*v $deployDebugPath\odbc.log"
-    Install-LabSoftwarePackage -Path $sqlFile.FullName -ComputerName $Computer -CommandLine "/QN IACCEPTMSSQLCMDLNUTILSLICENSETERMS=YES /L*v $deployDebugPath\sqlcmd.log"
-    Install-LabSoftwarePackage -path $cpp64File.FullName -ComputerName $Computer -CommandLine "/quiet /norestart /log $deployDebugPath\cpp64_2012.log"
-    Install-LabSoftwarePackage -path $cpp32File.FullName -ComputerName $Computer -CommandLine "/quiet /norestart /log $deployDebugPath\cpp32_2012.log"
-    Install-LabSoftwarePackage -path $cpp1464File.FullName -ComputerName $Computer -CommandLine "/quiet /norestart /log $deployDebugPath\cpp64_2015.log"
-    Install-LabSoftwarePackage -path $cpp1432File.FullName -ComputerName $Computer -CommandLine "/quiet /norestart /log $deployDebugPath\cpp32_2015.log"
+    Install-LabSoftwarePackage -Path $odbcFile.FullName -ComputerName $Computer -CommandLine "/QN ADDLOCAL=ALL IACCEPTMSODBCSQLLICENSETERMS=YES /L*v `"$deployDebugPath\odbc.log`""
+    Install-LabSoftwarePackage -Path $sqlFile.FullName -ComputerName $Computer -CommandLine "/QN IACCEPTMSSQLCMDLNUTILSLICENSETERMS=YES /L*v `"$deployDebugPath\sqlcmd.log`""
+    Install-LabSoftwarePackage -path $cpp64File.FullName -ComputerName $Computer -CommandLine "/quiet /norestart /log `"$deployDebugPath\cpp64_2012.log`""
+    Install-LabSoftwarePackage -path $cpp32File.FullName -ComputerName $Computer -CommandLine "/quiet /norestart /log `"$deployDebugPath\cpp32_2012.log`""
+    Install-LabSoftwarePackage -path $cpp1464File.FullName -ComputerName $Computer -CommandLine "/quiet /norestart /log `"$deployDebugPath\cpp64_2015.log`""
+    Install-LabSoftwarePackage -path $cpp1432File.FullName -ComputerName $Computer -CommandLine "/quiet /norestart /log $`"deployDebugPath\cpp32_2015.log`""
 
     if ($(Get-Lab).DefaultVirtualizationEngine -eq 'Azure' -or (Test-LabMachineInternetConnectivity -ComputerName $Computer[0]))
     {
-        Install-LabSoftwarePackage -Path $adkFile.FullName -ComputerName $Computer -CommandLine "/quiet /layout $deployDebugPath\ADKoffline"
-        Install-LabSoftwarePackage -Path $adkpeFile.FullName -ComputerName $Computer -CommandLine "/quiet /layout $deployDebugPath\ADKPEoffline"
+        Install-LabSoftwarePackage -Path $adkFile.FullName -ComputerName $Computer -CommandLine "/quiet /layout `"$deployDebugPath\ADKoffline`""
+        Install-LabSoftwarePackage -Path $adkpeFile.FullName -ComputerName $Computer -CommandLine "/quiet /layout `"$deployDebugPath\ADKPEoffline`""
     }
     else
     {
@@ -48,8 +48,8 @@
         Copy-LabFileItem -Path (Join-Path (Get-LabSourcesLocation -Local) SoftwarePackages/ADKPEoffline) -ComputerName $Computer -DestinationFolderPath $deployDebugPath\ADKPEoffline
     }
 
-    Install-LabSoftwarePackage -LocalPath $deployDebugPath\ADKOffline\adksetup.exe -ComputerName $Computer -CommandLine "/quiet /installpath $deployDebugPath\ADK"
-    Install-LabSoftwarePackage -LocalPath $deployDebugPath\ADKPEOffline\adkwinpesetup.exe -ComputerName $Computer -CommandLine "/quiet /installpath $deployDebugPath\ADK"
+    Install-LabSoftwarePackage -LocalPath $deployDebugPath\ADKOffline\adksetup.exe -ComputerName $Computer -CommandLine "/quiet /installpath `"$deployDebugPath\ADK`""
+    Install-LabSoftwarePackage -LocalPath $deployDebugPath\ADKPEOffline\adkwinpesetup.exe -ComputerName $Computer -CommandLine "/quiet /installpath `"$deployDebugPath\ADK`""
     Install-LabWindowsFeature -ComputerName $Computer -FeatureName RSAT-Clustering -IncludeAllSubFeature
     Restart-LabVM -ComputerName $Computer -Wait
 
@@ -86,7 +86,7 @@
             $iniServer['SqlMachineName'] = Get-LabVM -Role SQLServer2016, SQLServer2017, SQLServer2019, SQLServer2022 | Select-Object -First 1 -ExpandProperty Fqdn
         }
 
-        Invoke-LabCommand -ComputerName (Get-LabVM -Role ADDS | Select-Object -First 1) -ScriptBlock {
+        Invoke-LabCommand -ComputerName (Get-LabVM -Role ADDS | Select-Object -First 1) -NoDisplay -ActivityName "Checking if OU $($iniServer.TopContainerName) exists" -ScriptBlock {
             param ($OUName)
             if ($OUName -match 'CN=')
             {
@@ -114,10 +114,10 @@
         Invoke-LabCommand -ComputerName $vm -Variable ((Get-Variable iniServer, scvmmIso, commandLine, AL_DeployDebugFolder) ) -ActivityName 'Extracting SCVMM Server' -ScriptBlock {
             $deployDebug = (Get-Item -Path $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder)).FullName
             $setup = Get-ChildItem -Path $scvmmIso.DriveLetter -Filter *.exe | Select-Object -First 1
-            Start-Process -FilePath $setup.FullName -ArgumentList '/VERYSILENT', "/DIR=$deployDebug\SCVMM" -Wait
+            Start-Process -FilePath $setup.FullName -ArgumentList '/VERYSILENT', "/DIR=`"$deployDebug\SCVMM`"" -Wait
             '[OPTIONS]' | Set-Content $deployDebug\Server.ini
             $iniServer.GetEnumerator() | ForEach-Object { "$($_.Key) = $($_.Value)" | Add-Content $deployDebug\Server.ini }
-            "cd $deployDebug\SCVMM; $deployDebug\SCVMM\setup.exe $commandline" | Set-Content $deployDebug\VmmSetup.cmd
+            "cd $deployDebug\SCVMM`r`n.\setup.exe $commandline" | Set-Content $deployDebug\VmmSetup.cmd
             Set-Location -Path $deployDebug\SCVMM
         }
         Install-LabSoftwarePackage -ComputerName $vm -WorkingDirectory $deployDebugPath\SCVMM -LocalPath $deployDebugPath\SCVMM\setup.exe -CommandLine $commandLine -AsJob -PassThru -UseShellExecute -Timeout 20
@@ -128,7 +128,7 @@
     # Jobs seem to end prematurely...
     Remove-LabPSSession
     Dismount-LabIsoImage -ComputerName (Get-LabVm -Role SCVMM) -SupressOutput
-    Invoke-LabCommand -ComputerName (Get-LabVm -Role SCVMM) -ScriptBlock {
+    Invoke-LabCommand -ComputerName (Get-LabVm -Role SCVMM) -ActivityName 'Waiting for SCVMM Setup to finish' -ScriptBlock {
         $deployDebug = (Get-Item -Path $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder)).FullName
         $installer = Get-Process -Name Setup,SetupVM -ErrorAction SilentlyContinue
         if ($installer)

@@ -315,12 +315,12 @@
     Restart-LabVM -ComputerName $vms -Wait -NoDisplay
 
     $timeout = if ($lab.DefaultVirtualizationEngine -eq 'Azure') { 60 } else { 45 }
-    Install-LabSoftwarePackage -ComputerName $orgFirstDeployed.Values -LocalPath 'C:\DynamicsSetup\SetupServer.exe' -CommandLine "/config $deployDebugPath\Dynamics.xml /log $deployDebugPath\DynamicsSetup.log /Q" -ExpectedReturnCodes 0, 3010 -NoDisplay -UseShellExecute -AsScheduledJob -UseExplicitCredentialsForScheduledJob -Timeout $timeout
+    Install-LabSoftwarePackage -ComputerName $orgFirstDeployed.Values -LocalPath 'C:\DynamicsSetup\SetupServer.exe' -CommandLine "/config `"$deployDebugPath\Dynamics.xml`" /log `"$deployDebugPath\DynamicsSetup.log`" /Q" -ExpectedReturnCodes 0, 3010 -NoDisplay -UseShellExecute -AsScheduledJob -UseExplicitCredentialsForScheduledJob -Timeout $timeout
 
     $remainingVms = $vms | Where-Object -Property Name -notin $orgFirstDeployed.Values
     if ($remainingVms)
     {
-        Install-LabSoftwarePackage -ComputerName $remainingVms -LocalPath 'C:\DynamicsSetup\SetupServer.exe' -CommandLine "/config $deployDebugPath\Dynamics.xml /log $deployDebugPath\DynamicsSetup.log /Q" -ExpectedReturnCodes 0, 3010 -NoDisplay -UseShellExecute -AsScheduledJob -UseExplicitCredentialsForScheduledJob -Timeout $timeout
+        Install-LabSoftwarePackage -ComputerName $remainingVms -LocalPath 'C:\DynamicsSetup\SetupServer.exe' -CommandLine "/config `"$deployDebugPath\Dynamics.xml`" /log `"$deployDebugPath\DynamicsSetup.log`" /Q" -ExpectedReturnCodes 0, 3010 -NoDisplay -UseShellExecute -AsScheduledJob -UseExplicitCredentialsForScheduledJob -Timeout $timeout
     }
 
     if ($CreateCheckPoints.IsPresent)

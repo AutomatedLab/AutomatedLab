@@ -104,8 +104,8 @@ function Install-ExchangeRequirements
         {
             Write-ScreenInfo "Installing Visual C++ redistributals 2012 and 2013 on '$machine'" -Type Verbose
             $cppJobs = @()
-            $cppJobs += Install-LabSoftwarePackage -ComputerName $machine -Path $vc2012InstallFile.FullName -CommandLine "/install /quiet /norestart /log $deployDebugPath\cpp64_2012.log" -AsJob -AsScheduledJob -UseShellExecute -PassThru
-            $cppJobs += Install-LabSoftwarePackage -ComputerName $machine -Path $vc2013InstallFile.FullName -CommandLine "/install /quiet /norestart /log $deployDebugPath\cpp64_2013.log" -AsJob -AsScheduledJob -UseShellExecute -PassThru
+            $cppJobs += Install-LabSoftwarePackage -ComputerName $machine -Path $vc2012InstallFile.FullName -CommandLine "/install /quiet /norestart /log `"$deployDebugPath\cpp64_2012.log`"" -AsJob -AsScheduledJob -UseShellExecute -PassThru
+            $cppJobs += Install-LabSoftwarePackage -ComputerName $machine -Path $vc2013InstallFile.FullName -CommandLine "/install /quiet /norestart /log `"$deployDebugPath\cpp64_2013.log`"" -AsJob -AsScheduledJob -UseShellExecute -PassThru
             Wait-LWLabJob -Job $cppJobs -NoDisplay -ProgressIndicator 20 -NoNewLine
         }
         else
@@ -114,7 +114,7 @@ function Install-ExchangeRequirements
         }
 
         Write-ScreenInfo "Installing IIS URL Rewrite module on '$machine'" -Type Verbose
-        $jobs += Install-LabSoftwarePackage -ComputerName $machine -Path $iisUrlRewriteInstallFile.FullName -CommandLine "/Quiet /Log $deployDebugPath\IisurlRewrite.log" -AsJob -AsScheduledJob -UseShellExecute -UseExplicitCredentialsForScheduledJob -PassThru
+        $jobs += Install-LabSoftwarePackage -ComputerName $machine -Path $iisUrlRewriteInstallFile.FullName -CommandLine "/Quiet /Log `"$deployDebugPath\IisurlRewrite.log`"" -AsJob -AsScheduledJob -UseShellExecute -UseExplicitCredentialsForScheduledJob -PassThru
         Wait-LWLabJob -Job $jobs -ProgressIndicator 20 -NoNewLine
     }
 

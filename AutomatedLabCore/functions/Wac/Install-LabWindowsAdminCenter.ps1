@@ -41,12 +41,12 @@
         Write-ScreenInfo -Type Verbose -Message "Starting installation of Windows Admin Center on $labMachine"
         if ($labMachine.SshPrivateKeyPath) {
             Invoke-LabCommand -ComputerName $labMachine -ScriptBlock {
-                "Start-Process -Wait -FilePath C:\WAC.exe -ArgumentList '/SILENT /LOG=$deployDebugPath\WACSetup.log'; exit 0" | Set-Content $deployDebugPath\DeployWac.ps1
+                "Start-Process -Wait -FilePath C:\WAC.exe -ArgumentList '/SILENT /LOG=`"$deployDebugPath\WACSetup.log`"'; exit 0" | Set-Content $deployDebugPath\DeployWac.ps1
                 powershell.exe -File $deployDebugPath\DeployWac.ps1
             } -AsJob -PassThru -NoDisplay -Variable (Get-Variable -Name deployDebugPath)
         }
         else {
-            Install-LabSoftwarePackage -LocalPath C:\WAC.exe -CommandLine "/SILENT /LOG=$deployDebugPath\WACSetup.log" -ComputerName $labMachine -PassThru -NoDisplay -AsJob
+            Install-LabSoftwarePackage -LocalPath C:\WAC.exe -CommandLine "/SILENT /LOG=`"$deployDebugPath\WACSetup.log`"" -ComputerName $labMachine -PassThru -NoDisplay -AsJob
         }
     }
 

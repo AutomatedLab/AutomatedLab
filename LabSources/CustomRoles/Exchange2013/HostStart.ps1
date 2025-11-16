@@ -139,7 +139,7 @@ function Install-ExchangeRequirements
 
     if (-not $isUcmaInstalled)
     {
-        $jobs += Install-LabSoftwarePackage -ComputerName $vm -LocalPath "C:\Install\$($script:ucmaInstallFile.FileName)" -CommandLine "/Quiet /Log $deployDebugPath\ucma.txt" -AsJob -PassThru -NoDisplay
+        $jobs += Install-LabSoftwarePackage -ComputerName $vm -LocalPath "C:\Install\$($script:ucmaInstallFile.FileName)" -CommandLine "/Quiet /Log `"$deployDebugPath\ucma.txt`"" -AsJob -PassThru -NoDisplay
         Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator 20 -NoNewLine
     }
     else
@@ -153,7 +153,7 @@ function Install-ExchangeRequirements
         if ($dotnetFrameworkVersion.Version -notcontains '4.8')
         {
             Write-ScreenInfo "Installing .net Framework 4.8 on '$machine'" -Type Verbose
-            $jobs += Install-LabSoftwarePackage -ComputerName $machine -LocalPath "C:\Install\$($script:dotnetInstallFile.FileName)" -CommandLine "/q /norestart /log $deployDebugPath\dotnet48.txt" -AsJob -NoDisplay -AsScheduledJob -UseShellExecute -PassThru
+            $jobs += Install-LabSoftwarePackage -ComputerName $machine -LocalPath "C:\Install\$($script:dotnetInstallFile.FileName)" -CommandLine "/q /norestart /log `"$deployDebugPath\dotnet48.txt`"" -AsJob -NoDisplay -AsScheduledJob -UseShellExecute -PassThru
         }
         else
         {

@@ -859,7 +859,7 @@ $iniContentConsoleScvmm = @{
     MUOptIn       = '0'
 }
 
-$setupCommandLineServerScvmm = '/server /i /f {3}\Server.ini /VmmServiceDomain {0} /VmmServiceUserName {1} /VmmServiceUserPassword {2} /SqlDBAdminDomain {0} /SqlDBAdminName {1} /SqlDBAdminPassword {2} /IACCEPTSCEULA'
+$setupCommandLineServerScvmm = '/server /i /f "{3}\Server.ini" /VmmServiceDomain {0} /VmmServiceUserName {1} /VmmServiceUserPassword {2} /SqlDBAdminDomain {0} /SqlDBAdminName {1} /SqlDBAdminPassword {2} /IACCEPTSCEULA'
 $spsetupConfigFileContent = '<Configuration>
     <Package Id="sts">
         <Setting Id="LAUNCHEDFROMSETUPSTS" Value="Yes"/>
