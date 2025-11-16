@@ -33,7 +33,7 @@
     Install-LabSoftwarePackage -path $cpp64File.FullName -ComputerName $Computer -CommandLine "/quiet /norestart /log `"$deployDebugPath\cpp64_2012.log`""
     Install-LabSoftwarePackage -path $cpp32File.FullName -ComputerName $Computer -CommandLine "/quiet /norestart /log `"$deployDebugPath\cpp32_2012.log`""
     Install-LabSoftwarePackage -path $cpp1464File.FullName -ComputerName $Computer -CommandLine "/quiet /norestart /log `"$deployDebugPath\cpp64_2015.log`""
-    Install-LabSoftwarePackage -path $cpp1432File.FullName -ComputerName $Computer -CommandLine "/quiet /norestart /log $`"deployDebugPath\cpp32_2015.log`""
+    Install-LabSoftwarePackage -path $cpp1432File.FullName -ComputerName $Computer -CommandLine "/quiet /norestart /log `"$deployDebugPath\cpp32_2015.log`""
 
     if ($(Get-Lab).DefaultVirtualizationEngine -eq 'Azure' -or (Test-LabMachineInternetConnectivity -ComputerName $Computer[0]))
     {

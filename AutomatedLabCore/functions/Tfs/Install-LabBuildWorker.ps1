@@ -173,7 +173,7 @@
 
                 $configResult = & "$deployDebug\SetupBuildWorker$numberOfBuildWorker.cmd"
 
-                $log = Get-ChildItem -Path "$deployDebug\BuildWorker$numberOfBuildWorker\_diag" -Filter *.log | Sort-Object -Property CreationTime | Select-Object -Last 1
+                $log = Get-ChildItem -Path "$buildWorkerInstallPath\BuildWorker$numberOfBuildWorker\_diag" -Filter *.log | Sort-Object -Property CreationTime | Select-Object -Last 1
 
                 [pscustomobject]@{
                     ConfigResult = $configResult

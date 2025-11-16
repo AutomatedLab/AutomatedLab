@@ -127,7 +127,7 @@
     Invoke-LabCommand -ComputerName $all -Variable (Get-Variable isos,AL_DeployDebugFolder) -ActivityName 'Extracting SCOM Server' -ScriptBlock {
         $scomExtractDir = (New-Item -ItemType Directory -Path $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder) -Name SCOM -ErrorAction SilentlyContinue -Force).FullName
         $setup = Get-ChildItem -Path $($isos | Where InternalComputerName -eq $env:COMPUTERNAME).DriveLetter -Filter *.exe | Select-Object -First 1
-        Start-Process -FilePath $setup.FullName -ArgumentList "/VERYSILENT', '/DIR=`"$scomExtractDir`"" -Wait
+        Start-Process -FilePath $setup.FullName -ArgumentList '/VERYSILENT', "/DIR=`"$scomExtractDir`"" -Wait -NoNewWindow -LoadUserProfile
     } -NoDisplay
     
     # Server
