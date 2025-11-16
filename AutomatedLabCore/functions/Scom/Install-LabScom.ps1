@@ -624,5 +624,7 @@
     foreach ($err in $errors) { Write-PSFMessage $err }
     Write-PSFMessage -Message "====SCOM log content errors end===="
 
+    Dismount-LabIsoImage -ComputerName $all
+
     Write-LogFunctionExit
 }
