@@ -145,7 +145,7 @@
                 $null = New-Item -ItemType Directory -Path $buildWorkerInstallPath -Force
                 Microsoft.PowerShell.Archive\Expand-Archive -Path $deployDebug\TfsBuildWorker.zip -DestinationPath "$buildWorkerInstallPath\BuildWorker$numberOfBuildWorker" -Force
 
-                $content = "cd `"$buildWorkerInstallPath\BuildWorker$numberOfBuildWorker`""
+                $content = "cd `"$buildWorkerInstallPath\BuildWorker$numberOfBuildWorker`"`r`n"
                 $content += if ($useSsl -and [string]::IsNullOrEmpty($pat))
                 {
                     ".\config.cmd --unattended --url https://$($machineName):$($tfsPort) --auth Integrated --pool $agentPool --agent $($env:COMPUTERNAME)-$numberOfBuildWorker --runasservice --sslskipcertvalidation --gituseschannel"
