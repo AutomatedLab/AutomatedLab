@@ -105,7 +105,7 @@
     $odbcFile = Get-LabInternetFile -Uri $odbc -Path $labsources\SoftwarePackages -FileName odbc.msi -PassThru
     $SQLSysClrTypesFile = Get-LabInternetFile -uri $SQLSysClrTypes -Path $labsources\SoftwarePackages -FileName SQLSysClrTypes.msi -PassThru
     $ReportViewerFile = Get-LabInternetFile -uri $ReportViewer -Path $labsources\SoftwarePackages -FileName ReportViewer.msi -PassThru
-    Install-LabSoftwarePackage -Path $odbcFile.FullName -ComputerName $all -CommandLine '/QN ADDLOCAL=ALL IACCEPTMSODBCSQLLICENSETERMS=YES /L*v C:\odbc.log' -NoDisplay
+    Install-LabSoftwarePackage -Path $odbcFile.FullName -ComputerName $all -CommandLine "/QN ADDLOCAL=ALL IACCEPTMSODBCSQLLICENSETERMS=YES /L*v `"$deployDebugPath\odbc.log`"" -NoDisplay
     
     if (Get-LabVm -Role ScomConsole, ScomWebConsole)
     {
@@ -211,12 +211,12 @@
 
         if (-not $sqlMachine)
         {
-            $sqlMachine = Get-LabVm -Role SQLServer2016, SQLServer2017 | Select-Object -First 1
+            $sqlMachine = Get-LabVm -Role SQLServer2016, SQLServer2017, SQLServer2019, SQLServer2022 | Select-Object -First 1
         }
 
         if (-not $sqlDwMachine)
         {
-            $sqlDwMachine = Get-LabVm -Role SQLServer2016, SQLServer2017 | Select-Object -First 1
+            $sqlDwMachine = Get-LabVm -Role SQLServer2016, SQLServer2017, SQLServer2019, SQLServer2022 | Select-Object -First 1
         }
 
         if ([string]::IsNullOrWhiteSpace($iniManagement['SqlServerInstance']))
