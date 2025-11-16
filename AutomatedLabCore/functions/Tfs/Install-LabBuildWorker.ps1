@@ -144,24 +144,24 @@
                 $buildWorkerInstallPath = Join-Path $env:ProgramFiles AutomatedLabBuildWorkers
                 $null = New-Item -ItemType Directory -Path $buildWorkerInstallPath -Force
                 Microsoft.PowerShell.Archive\Expand-Archive -Path $deployDebug\TfsBuildWorker.zip -DestinationPath "$buildWorkerInstallPath\BuildWorker$numberOfBuildWorker" -Force
-                $configurationTool = Get-Item "$buildWorkerInstallPath\BuildWorker$numberOfBuildWorker\config.cmd" -ErrorAction Stop
 
-                $content = if ($useSsl -and [string]::IsNullOrEmpty($pat))
+                $content = "cd `"$buildWorkerInstallPath\BuildWorker$numberOfBuildWorker`""
+                $content += if ($useSsl -and [string]::IsNullOrEmpty($pat))
                 {
-                    "$configurationTool --unattended --url https://$($machineName):$($tfsPort) --auth Integrated --pool $agentPool --agent $($env:COMPUTERNAME)-$numberOfBuildWorker --runasservice --sslskipcertvalidation --gituseschannel"
+                    ".\config.cmd --unattended --url https://$($machineName):$($tfsPort) --auth Integrated --pool $agentPool --agent $($env:COMPUTERNAME)-$numberOfBuildWorker --runasservice --sslskipcertvalidation --gituseschannel"
 
                 }
                 elseif ($useSsl -and -not [string]::IsNullOrEmpty($pat))
                 {
-                    "$configurationTool --unattended --url https://$($machineName) --auth pat --token $pat --pool $agentPool --agent $($env:COMPUTERNAME)-$numberOfBuildWorker --runasservice --sslskipcertvalidation --gituseschannel"
+                    ".\config.cmd --unattended --url https://$($machineName) --auth pat --token $pat --pool $agentPool --agent $($env:COMPUTERNAME)-$numberOfBuildWorker --runasservice --sslskipcertvalidation --gituseschannel"
                 }
                 elseif (-not $useSsl -and -not [string]::IsNullOrEmpty($pat))
                 {
-                    "$configurationTool --unattended --url http://$($machineName) --auth pat --token $pat --pool $agentPool --agent $($env:COMPUTERNAME)-$numberOfBuildWorker --runasservice --gituseschannel"
+                    ".\config.cmd --unattended --url http://$($machineName) --auth pat --token $pat --pool $agentPool --agent $($env:COMPUTERNAME)-$numberOfBuildWorker --runasservice --gituseschannel"
                 }
                 else
                 {
-                    "$configurationTool --unattended --url http://$($machineName):$($tfsPort) --auth Integrated --pool $agentPool --agent $env:COMPUTERNAME --runasservice --gituseschannel"
+                    ".\config.cmd --unattended --url http://$($machineName):$($tfsPort) --auth Integrated --pool $agentPool --agent $env:COMPUTERNAME --runasservice --gituseschannel"
                 }
 
                 if ($isOnDomainController)
