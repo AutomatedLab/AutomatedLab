@@ -741,7 +741,6 @@
     }
 
     Initialize-LabWindowsActivation -ErrorAction SilentlyContinue
-    Remove-LabDeploymentFiles -ErrorAction SilentlyContinue
 
     if (-not $NoValidation -and ($performAll -or $PostDeploymentTests))
     {
@@ -758,6 +757,11 @@
             if ($result.Result -eq 'Failed')
             {
                 Write-ScreenInfo -Type Error -Message "Lab deployment seems to have failed. The following tests were not passed:"
+            }
+            else
+            {
+                Write-ScreenInfo -Type Info -Message 'Lab Deployment successful, removing temporary files from all VMs'
+                Remove-LabDeploymentFiles -ErrorAction SilentlyContinue
             }
 
             foreach ($fail in $result.Failed)
