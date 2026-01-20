@@ -69,5 +69,4 @@ function Remove-LWProxmoxVMSnapshot
     }
 
     Write-LogFunctionExit
-
 }
