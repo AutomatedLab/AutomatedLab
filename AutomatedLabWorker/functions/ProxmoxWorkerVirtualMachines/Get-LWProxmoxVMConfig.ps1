@@ -1,9 +1,17 @@
-function Get-LWProxmoxVMConfig {
+function Get-LWProxmoxVMConfig
+{
     [CmdletBinding()]
     param
     (
         [Parameter()]
-        [string[]]$Name,
+        [string[]]$ComputerName,
+
+        [Parameter(ValueFromPipeline = $true)]
+        [object]$Node,
+
+        [Parameter()]
+        [switch]
+        $NoCache,
 
         [Parameter()]
         [switch]
@@ -11,16 +19,19 @@ function Get-LWProxmoxVMConfig {
     )
 
     $vms = Get-LWProxmoxVM @PSBoundParameters
-    if (-not $vms) {
+    if (-not $vms)
+    {
         Write-Error "VM with name '$Name' not found."
         return
     }
 
-    $configs = foreach ($vm in $vms) {
-        $vmConfig = Get-PveNodesQemuConfig -Vmid $vm.VMID -Node $global:proxmoxNode
+    $configs = foreach ($vm in $vms)
+    {
+        $vmConfig = Get-PveNodesQemuConfig -Vmid $vm.VMID -Node $vm.node
 
-        if ($vmConfig.StatusCode -ne 200) {
-            Write-Error "Failed to get VM config for VM '$Name' (VMID: $($vm.VMID)) on node '$($global:proxmoxNode)'."
+        if ($vmConfig.StatusCode -ne 200)
+        {
+            Write-Error "Failed to get VM config for VM '$Name' (VMID: $($vm.VMID)) on node '$node'."
             return
         }
 
