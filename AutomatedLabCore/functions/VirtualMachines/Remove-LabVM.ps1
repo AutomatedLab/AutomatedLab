@@ -78,6 +78,10 @@
             {
                 Remove-LWVMWareVM -Name $machine.ResourceName
             }
+            elseif ($machine.HostType -eq 'Proxmox')
+            {
+                Remove-LWProxmoxVM -Name $machine.ResourceName
+            }
 
             if ((Get-HostEntry -Section (Get-Lab).Name.ToLower() -HostName $machine))
             {

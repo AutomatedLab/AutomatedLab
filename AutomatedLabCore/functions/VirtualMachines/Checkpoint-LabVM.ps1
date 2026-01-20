@@ -47,6 +47,7 @@
     {
         'HyperV' { Checkpoint-LWHypervVM -ComputerName $machines.ResourceName -SnapshotName $SnapshotName}
         'Azure'  { Checkpoint-LWAzureVM -ComputerName $machines.ResourceName -SnapshotName $SnapshotName}
+        'Proxmox' { Checkpoint-LWProxmoxVM -ComputerName $machines.ResourceName -SnapshotName $SnapshotName }
         'VMWare' { Write-ScreenInfo -Type Error -Message 'Snapshotting VMWare VMs is not yet implemented'}
     }
 

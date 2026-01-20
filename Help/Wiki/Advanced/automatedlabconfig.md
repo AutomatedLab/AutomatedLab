@@ -6,10 +6,10 @@ To view all settings, you may use the `Get-LabConfigurationItem` cmdlet. For a b
 
 ```powershell
 # One session only, then reset to default
-Set-PSFConfig -Module AutomatedLab -Name MacAddressPrefix -Value '0017FC'
+Set-PSFConfig -Module AutomatedLab -Name HypervMacAddressPrefix -Value '0017FC'
 
 # Persistent setting, survives module updates
-Set-PSFConfig -Module AutomatedLab -Name MacAddressPrefix -Value '0017FC' -PassThru | Register-PSFConfig
+Set-PSFConfig -Module AutomatedLab -Name HypervMacAddressPrefix -Value '0017FC' -PassThru | Register-PSFConfig
 ```
 
 ## Available settings

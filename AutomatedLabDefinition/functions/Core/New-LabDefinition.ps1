@@ -16,7 +16,7 @@
 
         [switch]$UseStaticMemory = $false,
 
-        [ValidateSet('Azure', 'HyperV', 'VMWare')]
+        [ValidateSet('Azure', 'HyperV', 'VMWare', 'Proxmox')]
         [string]$DefaultVirtualizationEngine,
 
         [switch]$Passthru
@@ -183,7 +183,7 @@
 
     Write-ScreenInfo -Message "Location of LabSources folder is '$sourcesPath'"
 
-    if (-not (Get-LabIsoImageDefinition) -and $DefaultVirtualizationEngine -ne 'Azure')
+    if (-not (Get-LabIsoImageDefinition) -and $DefaultVirtualizationEngine -notin 'Azure', 'Proxmox')
     {
         if (-not (Get-ChildItem -Path "$(Get-LabSourcesLocation)\ISOs" -Filter *.iso -Recurse))
         {

@@ -136,7 +136,7 @@
                     $param.UseSSL = $true
                 }
             }
-            elseif ($m.HostType -eq 'HyperV' -or $m.HostType -eq 'VMWare')
+            elseif ($m.HostType -in 'HyperV', 'VMWare', 'Proxmox')
             {
                 # DoNotUseGetHostEntryInNewLabPSSession is used when existing DNS is possible
                 # SkipHostFileModification is used when the local hosts file should not be used

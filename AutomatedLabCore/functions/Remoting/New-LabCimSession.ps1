@@ -127,7 +127,7 @@
                     $param.Add('SessionOption', (New-CimSessionOption -SkipCACheck -SkipCNCheck -UseSsl))
                 }
             }
-            elseif ($m.HostType -eq 'HyperV' -or $m.HostType -eq 'VMWare')
+            elseif ($m.HostType -in 'HyperV', 'VMWare', 'Proxmox')
             {
                 $doNotUseGetHostEntry = Get-LabConfigurationItem -Name DoNotUseGetHostEntryInNewLabPSSession
                 if (-not $doNotUseGetHostEntry)

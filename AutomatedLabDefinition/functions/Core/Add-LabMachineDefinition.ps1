@@ -1062,6 +1062,10 @@
         {
             $machine.OperatingSystem = $OperatingSystem
         }
+        elseif ($machine.HostType -eq 'Proxmox')
+        {
+            $machine.OperatingSystem = $OperatingSystem
+        }
 
         if ($script:lab.DefaultVirtualizationEngine -eq 'HyperV' -and $InitialDscConfigurationMofPath -and -not (Test-Path $InitialDscConfigurationMofPath))
         {

@@ -39,6 +39,7 @@ namespace AutomatedLab
         private string autoLogonPassword;
         private Hashtable azureProperties;
         private Hashtable hypervProperties;
+        private Hashtable proxmoxProperties;
         private SerializableDictionary<string, string> notes;
         private SerializableDictionary<string, string> internalNotes;
         private OperatingSystemType operatingSystemType;
@@ -347,6 +348,22 @@ namespace AutomatedLab
                 }
             }
             set { azureProperties = value; }
+        }
+
+        public SerializableDictionary<string, string> ProxmoxProperties
+        {
+            get
+            {
+                if (proxmoxProperties != null)
+                {
+                    return proxmoxProperties;
+                }
+                else
+                {
+                    return new System.Collections.Hashtable();
+                }
+            }
+            set { proxmoxProperties = value; }
         }
 
         public SerializableDictionary<string, string> HypervProperties
