@@ -1,43 +1,83 @@
-function Get-LWProxmoxVmTemplate {
+function Get-LWProxmoxVmTemplate
+{
     [CmdletBinding()]
     param
     (
-        [Parameter(Mandatory = $true)]
+        [Parameter(ValueFromPipeline = $true)]
         [object]$Node,
 
         [Parameter()]
         [string]$OperatingSystem,
 
         [Parameter()]
-        [string]$OperatingSystemVersion
+        [string]$OperatingSystemVersion,
+
+        [Parameter()]
+        [switch]
+        $NoCache
     )
 
-    if (-not (Test-LabProxmoxConnection)) {
-        Write-Error 'There is no connection to the Proxmox cluster.'
-        return
+    begin {
+        if (-not (Test-LabProxmoxConnection))
+        {
+            Write-Error 'There is no connection to the Proxmox cluster.'
+            return
+        }
+
+        if ($null -eq $Node)
+        {
+            $Node = Get-LWProxmoxNode
+        }
+
+        $result = @()
     }
 
-    $templates = Get-PveNodesQemu -Node $Node
+    process {
 
-    if ($templates.StatusCode -ne 200) {
-        Write-Error "Failed to retrieve VM templates from Proxmox node '$($Node.node)': $($templates.ReasonPhrase)"
-        return
+        if ($Node -isnot [string])
+        {
+            $Node = $Node.node
+        }
+
+        $templates = Get-LWProxmoxVM -Node $Node -IncludeTemplates -NoCache:$NoCache.IsPresent | Where-Object { $_.template -eq 1 }
+
+        Write-ScreenInfo -Message "Found $($templates.Count) templates on Proxmox node '$Node'" -Type Verbose
+
+        $OperatingSystem = ($OperatingSystem -replace '[\s\(\)]', '').ToLower()
+
+        $result += if ($OperatingSystem -and $OperatingSystemVersion)
+        {
+            $templates | Where-Object {
+                $_.tags -contains $OperatingSystem -and
+                $_.tags -contains $OperatingSystemVersion -and
+                $_.tags -contains 'template'
+            }
+        }
+        elseif ($OperatingSystem)
+        {
+            $templates | Where-Object {
+                $_.tags -contains $OperatingSystem -and
+                $_.tags -contains 'template'
+        }
+        }
+        else
+        {
+            $templates
+        }
+
+        Write-ScreenInfo -Message "Found $($result.Count) matching templates on Proxmox node '$Node'" -Type Verbose
     }
 
-    $OperatingSystem = ($OperatingSystem -replace '[\s\(\)]', '').ToLower()
-
-    $templates = $templates.Response.data | Where-Object { $_.template -eq 1 }
-    foreach ($template in $templates) {
-        $template.tags = $template.tags -split ';'
-    }
-
-    if ($OperatingSystem -and $OperatingSystemVersion) {
-        $template | Where-Object { $_.tags -contains $OperatingSystem -and $_.tags -contains $OperatingSystemVersion }
-    }
-    elseif ($OperatingSystem) {
-        $template | Where-Object { $_.tags -contains $OperatingSystem }
-    }
-    else {
-        $templates
+    end {
+        if ($null -eq $result)
+        {
+            Write-Error "No templates found on Proxmox node '$Node'"
+            return
+        }
+        else
+        {
+            Write-ScreenInfo -Message "Found $($result.Count) matching templates on Proxmox cluster." -Type Verbose
+            $result
+        }
     }
 }
