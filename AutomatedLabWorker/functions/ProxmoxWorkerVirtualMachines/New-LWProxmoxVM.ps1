@@ -17,19 +17,31 @@ function New-LWProxmoxVM
 
     $script:lab = Get-Lab
 
-    if (Get-LWProxmoxVM -Name $Machine.ResourceName -ErrorAction SilentlyContinue)
+    $proxmoxNodes = Get-LWProxmoxNode
+    $proxmoxVMs = Get-LWProxmoxVM -Node $proxmoxNodes -IncludeTemplates
+
+    if ($vm = $proxmoxVMs | Where-Object { $_.Name -eq $Machine.ResourceName })
     {
-        Write-ProgressIndicatorEnd
-        Write-ScreenInfo -Message "The machine '$Machine' does already exist" -Type Warning
-        return $false
+        $vm = Get-LWProxmoxVM -ComputerName $Machine.ResourceName -Node $vm.node -NoCache -NoError
+        if ($null -ne $vm)
+        {
+            Write-ProgressIndicatorEnd
+            Write-ScreenInfo -Message "The machine '$Machine' does already exist" -Type Warning
+            return $false
+        }
     }
 
-    $template = Get-LWProxmoxVmTemplate -Node $Global:proxmoxNode -OperatingSystem $Machine.OperatingSystem
+    $template = $proxmoxNodes | Get-LWProxmoxVmTemplate -OperatingSystem $Machine.OperatingSystem
     if (-not $template)
     {
-        Write-Error "No template found for operating system '$($Machine.OperatingSystem)' on Proxmox node '$($Global:proxmoxNode.node)'. Cannot create VM '$($Machine.ResourceName)'."
-        return
+        Write-Error "No template found for operating system '$($Machine.OperatingSystem)'. Cannot create VM '$($Machine.ResourceName)'." -ErrorAction Stop
     }
+    if ($template.Count -gt 1)
+    {
+        Write-Error "Multiple templates found for operating system '$($Machine.OperatingSystem)'. Cannot create VM '$($Machine.ResourceName)'. Please ensure only one template exists per operating system." -ErrorAction Stop
+    }
+
+    Write-ScreenInfo -Message "Using template '$($template.Name)' (VMID: $($template.VMID)) on Proxmox node '$($template.node)' to create VM '$($Machine.ResourceName)'."
 
     $storage = Get-PveStorage
     if ($storage.StatusCode -ne 200)
@@ -40,34 +52,63 @@ function New-LWProxmoxVM
 
     $storage = $storage.Response.data | Where-Object { $_.type -in @('dir', 'lvm', 'zfspool', 'btrfs', 'nfs', 'cephfs', 'rbd') }
 
-    if ($storage.storage -notcontains $global:proxmoxStorage)
+    if ($Machine.ProxmoxProperties.Storage)
     {
-        Write-Error "The specified storage '$($global:proxmoxStorage)' does not exist in the Proxmox cluster."
-        return
+        if ($storage.storage -notcontains $Machine.ProxmoxProperties.Storage)
+        {
+            Write-Error "The specified storage '$($Machine.ProxmoxProperties.Storage)' does not exist in the Proxmox cluster."
+            return
+        }
     }
 
     # Every file in that folder will be copied to the VM
     $vhdVolume = "C:\ProgramData\AutomatedLab\Labs\$($lab.Name)\Proxmox\VHD\$($Machine.ResourceName)"
     mkdir -Path $vhdVolume -Force | Out-Null
 
-
     $nextVmId = (Get-LWProxmoxVM -IncludeTemplates | Sort-Object -Property vmid -Descending | Select-Object -First 1).vmid + 1
 
     $param = @{
-        Node        = $global:proxmoxNode
+        Node        = $template.node
         Name        = $Machine.ResourceName
-        Description = 'Created by AutomatedLab'
+        Description = "Lab '$($lab.Name)'. Created by AutomatedLab"
         Vmid        = $template.vmid
         Newid       = $nextVmId
-        #Storage     = $global:proxmoxStorage
-        #Full        = $true
     }
+
+    if ($Machine.ProxmoxProperties.TargetNode)
+    {
+        $param.Target = $Machine.ProxmoxProperties.TargetNode
+    }
+    if ($Machine.ProxmoxProperties.FullClone)
+    {
+        $param.Full = $true
+    }
+    if ($Machine.ProxmoxProperties.Pool)
+    {
+        $param.Pool = $Machine.ProxmoxProperties.Pool
+    }
+    if ($Machine.ProxmoxProperties.Storage)
+    {
+        $param.Storage = $Machine.ProxmoxProperties.Storage
+    }
+
+    #TODO: Not sure yet, if this test makes sense
+    #if (-not $globa:proxmoxPool -and -not $global:proxmoxStorage)
+    #{
+    #    Write-Error 'Neither the Proxmox pool nor the storage have been specified. Using the storage of the template.' -ErrorAction Stop
+    #}
+
     $result = New-PveNodesQemuClone @param
+    if ($result.StatusCode -ne 200)
+    {
+        Write-Error "Failed to create VM '$($Machine.ResourceName)': $($result.ReasonPhrase)"
+        return
+    }
     Write-Verbose "Waiting for VM '$($Machine.ResourceName)' to be created..."
     $values = @{
         status = 'stopped'
     }
-    $result = Wait-LWProxmoxTasksStatus -Upid $result.Response.data -DesiredValues $values -TimeoutInSeconds 600
+    $result = Wait-LWProxmoxTasksStatus -Node $template.node -Upid $result.Response.data -DesiredValues $values -TimeoutInSeconds 600
     if ($result -ne 'OK')
     {
         Write-Error "Failed to create VM '$($Machine.ResourceName)': $($result.Message)"
@@ -88,14 +129,21 @@ function New-LWProxmoxVM
 
     $param = @{
         Vmid        = $nextVmId
-        Node        = $global:proxmoxNode
+        Node        = $Machine.ProxmoxProperties.TargetNode
         Cores       = $Machine.Processors
         Memory      = $Machine.Memory / 1MB
         Tags        = "AutomatedLab, $($lab.Name), $((Get-Date).ToString('yyMMdd_HHmmss'))"
         Description = "Created by AutomatedLab on $((Get-Date).ToString('yyyy-MM-dd HH:mm:ss'))"
         LocalTime   = 1
-        #Agent      = '1,fstrim_cloned_disks=1'
+        Agent      = 'enabled=true,fstrim_cloned_disks=true,type=virtio'
+        Cpu = 'x86-64-v3' #TODO: Make this configurable
     }
+
+    if ($Machine.ProxmoxProperties.CpuType)
+    {
+        $param.Cpu = $Machine.ProxmoxProperties.CpuType
+    }
+
     $result = Set-PveNodesQemuConfig @param
     if ($result.StatusCode -ne 200)
     {
@@ -103,16 +151,68 @@ function New-LWProxmoxVM
         return
     }
 
+    #Remove CD/DVD Drives
+    $config = Get-LWProxmoxVMConfig -ComputerName $Machine.ResourceName -Node $Machine.ProxmoxProperties.TargetNode -NoCache
+    if (-not $config)
+    {
+        Write-Error "Could not retrieve VM config for VM '$($Machine.ResourceName)' on node $($Machine.ProxmoxProperties.TargetNode)."
+        return
+    }
+    $existingDrives = $config | Get-Member | Where-Object Name -Match 'ide\d{1,3}'
+    foreach ($existingDrive in $existingDrives)
+    {
+        $null = Set-PveNodesQemuConfig -Vmid $nextVmId -Node $Machine.ProxmoxProperties.TargetNode -Delete $existingDrive.Name
+    }
+
     # --------------------------- Disk Configuration ------------------------------------------
+    # Setting cache and Async IO options for the main disk (scsi0)
+    if (-not ($config.scsi0 -match 'aio=(?<aioValue>native|threads|io_uring)'))
+    {
+        Write-PSFMessage "Adding 'aio=threads' to scsi0 configuration"
+        $config.scsi0 += ',aio=threads'
+    }
+    else
+    {
+        Write-PSFMessage "Updating 'aio' from '$($matches.aioValue)' to 'threads' in scsi0 configuration"
+        $config.scsi0 = $config.scsi0 -replace 'aio=(native|threads|io_uring)', 'aio=threads'
+    }
+
+    if (-not ($config.scsi0 -match 'cache=(?<cacheValue>none|writeback|writethrough|directsync|unsafe)'))
+    {
+        Write-PSFMessage "Adding 'cache=writeback' to scsi0 configuration"
+        $config.scsi0 += ',cache=writeback'
+    }
+    else
+    {
+        Write-PSFMessage "Updating 'cache' from '$($matches.cacheValue)' to 'writeback' in scsi0 configuration"
+        $config.scsi0 = $config.scsi0 -replace 'cache=(none|writeback|writethrough|directsync|unsafe)', 'cache=writeback'
+    }
+    $result = Set-PveNodesQemuConfig -Vmid $nextVmId -Node $Machine.ProxmoxProperties.TargetNode -ScsiN @{ 0 = $config.scsi0 }
+    if ($result.StatusCode -ne 200)
+    {
+        Write-Error "Failed to configure scsi0 on VM '$($Machine.ResourceName)': $($result.ReasonPhrase)"
+    }
+
+    #Get VMs storage name
+    if (-not ($config.efidisk0 -match '(?<StorageName>.+):'))
+    {
+        write-Error "Could not determine storage name for efi disk on VM '$($Machine.ResourceName)'."
+        return
+    }
+    $storageName = $matches.StorageName
 
     # Add the additional hard disks
     $i = 1
     foreach ($disk in $Machine.Disks)
     {
         $diskHashTable = @{
-            $i = "$($global:proxmoxStorage):$($disk.DiskSize)"
+            $i = "$($storageName):$($disk.DiskSize),aio=threads,cache=writeback"
         }
-        $null = Set-PveNodesQemuConfig -Vmid $nextVmId -Node $global:proxmoxNode -ScsiN $diskHashTable
+        $result = Set-PveNodesQemuConfig -Vmid $nextVmId -Node $Machine.ProxmoxProperties.TargetNode -ScsiN $diskHashTable
+        if ($result.StatusCode -ne 200)
+        {
+            Write-Error "Failed to configure disk $i on VM '$($Machine.ResourceName)': $($result.ReasonPhrase)"
+        }
         $disk.Lun = $i
         $i++
     }
@@ -230,12 +330,17 @@ function New-LWProxmoxVM
     $Machine.NetworkAdapters | ForEach-Object { $adapters.Add($_) }
 
     # remove existing network adapters, later the defined adapters will be added again
-    $config = Get-LWProxmoxVMConfig -Name $Machine.ResourceName
+    $config = Get-LWProxmoxVMConfig -ComputerName $Machine.ResourceName -Node $Machine.ProxmoxProperties.TargetNode -NoCache
+    if (-not $config)
+    {
+        Write-Error "Could not retrieve VM config for VM '$($Machine.ResourceName)' on node $($Machine.ProxmoxProperties.TargetNode)."
+        return
+    }
     $existingNetAdapters = $config | Get-Member | Where-Object Name -Match 'net\d{1,3}'
 
     foreach ($existingNetAdapter in $existingNetAdapters)
     {
-        $null = Set-PveNodesQemuConfig -Vmid $nextVmId -Node $global:proxmoxNode -Delete $existingNetAdapter.Name
+        $null = Set-PveNodesQemuConfig -Vmid $nextVmId -Node $Machine.ProxmoxProperties.TargetNode -Delete $existingNetAdapter.Name
     }
 
     $existingMacAddresses = @(Get-LWProxmoxUsedMacAddresses -NoSeparator)
@@ -376,7 +481,7 @@ function New-LWProxmoxVM
         $netAdapterHashTable = @{
             $i = "model=virtio,macaddr=$($networkAdapter.MacAddress -replace '(.{2})(?!$)', '$1:'),bridge=$($networkAdapter.VirtualSwitch),firewall=1"
         }
-        $null = Set-PveNodesQemuConfig -Vmid $nextVmId -Node $global:proxmoxNode -NetN $netAdapterHashTable
+        $null = Set-PveNodesQemuConfig -Vmid $nextVmId -Node $Machine.ProxmoxProperties.TargetNode -NetN $netAdapterHashTable
         $i++
     }
 
@@ -887,7 +992,7 @@ Stop-Transcript
     Start-LWProxmoxVM -ComputerName $Machine
 
     Write-Verbose "Waiting for QEMU Guest Agent to become available on VM '$($Machine.ResourceName)'..."
-    while ((New-PveNodesQemuAgentPing -Node $global:proxmoxNode -Vmid $nextVmId).StatusCode -ne 200)
+    while ((New-PveNodesQemuAgentPing -Node $Machine.ProxmoxProperties.TargetNode -Vmid $nextVmId).StatusCode -ne 200)
     {
         Start-Sleep -Seconds 1
     }
