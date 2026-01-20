@@ -90,6 +90,8 @@
 
         [hashtable]$HypervProperties,
 
+        [hashtable]$ProxmoxProperties,
+
         [hashtable]$Notes,
 
         [switch]$PassThru,
@@ -113,7 +115,7 @@
         [string]$SshPrivateKeyPath,
 
         [string]$OrganizationalUnit,
-        
+
         [string]$ReferenceDisk,
 
         [string]$KmsServerName,
@@ -143,11 +145,12 @@
         $machineRoles = ''
         if ($Roles)
         {
-            $machineRoles = " (Roles: $($Roles.Name -join ', '))" 
+            $machineRoles = " (Roles: $($Roles.Name -join ', '))"
         }
 
         $azurePropertiesValidKeys = 'ResourceGroupName', 'UseAllRoleSizes', 'RoleSize', 'LoadBalancerRdpPort', 'LoadBalancerWinRmHttpPort', 'LoadBalancerWinRmHttpsPort', 'LoadBalancerAllowedIp', 'SubnetName', 'UseByolImage', 'AutoshutdownTime', 'AutoshutdownTimezoneId', 'StorageSku', 'EnableSecureBoot', 'EnableTpm'
         $hypervPropertiesValidKeys = 'AutomaticStartAction', 'AutomaticStartDelay', 'AutomaticStopAction', 'EnableSecureBoot', 'SecureBootTemplate', 'EnableTpm'
+        $proxmoxPropertiesValidKeys = 'TargetNode', 'Storage', 'Pool', 'VmId', 'CpuType', 'FullClone'
 
         if (-not $VirtualizationHost -and -not (Get-LabDefinition).DefaultVirtualizationEngine)
         {
@@ -241,10 +244,21 @@
                 throw "The key(s) '$($illegalKeys -join ', ')' are not supported in HypervProperties. Valid keys are '$($hypervPropertiesValidKeys -join ', ')'"
             }
         }
+        if ($ProxmoxProperties)
+        {
+            $illegalKeys = Compare-Object -ReferenceObject $proxmoxPropertiesValidKeys -DifferenceObject ($ProxmoxProperties.Keys | Sort-Object -Unique) |
+            Where-Object SideIndicator -eq '=>' |
+            Select-Object -ExpandProperty InputObject
+
+            if ($illegalKeys)
+            {
+                throw "The key(s) '$($illegalKeys -join ', ')' are not supported in ProxmoxProperties. Valid keys are '$($proxmoxPropertiesValidKeys -join ', ')'"
+            }
+        }
 
         if ($global:labNamePrefix)
         {
-            $Name = "$global:labNamePrefix$Name" 
+            $Name = "$global:labNamePrefix$Name"
         }
 
         if ($null -eq $script:machines)
@@ -373,15 +387,15 @@
                 {
                     'HyperV'
                     {
-                        $installationUser = New-Object AutomatedLab.User('Administrator', 'Somepass1') 
+                        $installationUser = New-Object AutomatedLab.User('Administrator', 'Somepass1')
                     }
                     'Azure'
                     {
-                        $installationUser = New-Object AutomatedLab.User('Install', 'Somepass1') 
+                        $installationUser = New-Object AutomatedLab.User('Install', 'Somepass1')
                     }
                     Default
                     {
-                        $installationUser = New-Object AutomatedLab.User('Administrator', 'Somepass1') 
+                        $installationUser = New-Object AutomatedLab.User('Administrator', 'Somepass1')
                     }
                 }
             }
@@ -426,15 +440,15 @@
                         {
                             'Azure'
                             {
-                                Add-LabDomainDefinition -Name $DomainName -AdminUser Install -AdminPassword Somepass1 
+                                Add-LabDomainDefinition -Name $DomainName -AdminUser Install -AdminPassword Somepass1
                             }
                             'HyperV'
                             {
-                                Add-LabDomainDefinition -Name $DomainName -AdminUser Administrator -AdminPassword Somepass1 
+                                Add-LabDomainDefinition -Name $DomainName -AdminUser Administrator -AdminPassword Somepass1
                             }
                             'VMware'
                             {
-                                Add-LabDomainDefinition -Name $DomainName -AdminUser Administrator -AdminPassword Somepass1 
+                                Add-LabDomainDefinition -Name $DomainName -AdminUser Administrator -AdminPassword Somepass1
                             }
                         }
                     }
@@ -537,27 +551,27 @@
         {
             '6.0'
             {
-                $level = 'Win2008' 
+                $level = 'Win2008'
             }
             '6.1'
             {
-                $level = 'Win2008R2' 
+                $level = 'Win2008R2'
             }
             '6.2'
             {
-                $level = 'Win2012' 
+                $level = 'Win2012'
             }
             '6.3'
             {
-                $level = 'Win2012R2' 
+                $level = 'Win2012R2'
             }
             '6.4'
             {
-                $level = 'WinThreshold' 
+                $level = 'WinThreshold'
             }
             '10.0'
             {
-                $level = 'WinThreshold' 
+                $level = 'WinThreshold'
             }
         }
 
@@ -937,11 +951,11 @@
 
             if ($DnsServer1)
             {
-                $adapter.Ipv4DnsServers.Add($DnsServer1) 
+                $adapter.Ipv4DnsServers.Add($DnsServer1)
             }
             if ($DnsServer2)
             {
-                $adapter.Ipv4DnsServers.Add($DnsServer2) 
+                $adapter.Ipv4DnsServers.Add($DnsServer2)
             }
 
             #if the virtual network is not external, the machine is not an Azure one, is domain joined and there is no DNS server configured
@@ -957,7 +971,7 @@
 
             if ($Gateway)
             {
-                $adapter.Ipv4Gateway.Add($Gateway) 
+                $adapter.Ipv4Gateway.Add($Gateway)
             }
 
             $machine.NetworkAdapters.Add($adapter)
@@ -1154,6 +1168,11 @@
         if ($HypervProperties)
         {
             $machine.HypervProperties = $HypervProperties
+        }
+
+        if ($ProxmoxProperties)
+        {
+            $machine.ProxmoxProperties = $ProxmoxProperties
         }
 
         if ($AzureProperties)
