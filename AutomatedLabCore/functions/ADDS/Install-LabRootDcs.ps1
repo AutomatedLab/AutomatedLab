@@ -233,11 +233,11 @@
             $rootDomains = $machines | Group-Object -Property DomainName
             foreach($root in $rootDomains)
             {
-                $domainJoinedMachines = ($linuxMachines | Where-Object DomainName -eq $root.Name).Name
+                $domainJoinedMachines = $linuxMachines | Where-Object DomainName -eq $root.Name
                 if (-not $domainJoinedMachines) { continue }
                 $oneTimePassword = ($root.Group)[0].InstallationUser.Password
                 Invoke-LabCommand -ActivityName 'Add computer objects for domain-joined Linux machines' -ComputerName ($root.Group)[0] -ScriptBlock {
-                    foreach ($m in $domainJoinedMachines) { New-ADComputer -Name $m -AccountPassword ($oneTimePassword | ConvertTo-SecureString -AsPlaintext -Force)}
+                    foreach ($m in $domainJoinedMachines) { New-ADComputer -Name $m.Name -DnsHostName $m.FQDN -AccountPassword ($oneTimePassword | ConvertTo-SecureString -AsPlaintext -Force)}
                 } -Variable (Get-Variable -Name domainJoinedMachines,oneTimePassword) -NoDisplay
             }
         }
