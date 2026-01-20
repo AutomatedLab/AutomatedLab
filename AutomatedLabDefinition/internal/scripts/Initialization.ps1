@@ -167,7 +167,7 @@ $unattendedXmlDefaultContent2012 = @'
             <Order>4</Order>
             <CommandLine>PowerShell -File C:\AdditionalDisksOnline.ps1</CommandLine>
         </SynchronousCommand>
-		<SynchronousCommand wcm:action="add">
+		    <SynchronousCommand wcm:action="add">
             <Description>Disable .net Optimization</Description>
             <Order>5</Order>
             <CommandLine>PowerShell -Command "schtasks.exe /query /FO CSV | ConvertFrom-Csv | Where-Object { $_.TaskName -like '*NGEN*' } | ForEach-Object { schtasks.exe /Change /TN $_.TaskName /Disable }"</CommandLine>

@@ -52,7 +52,10 @@
             $WinRmMaxConnections,
 
             [string]
-            $PublicKey
+            $PublicKey,
+
+            [string]
+            $DeployDebugPath
         )
 
         $defaultSettings = @{
@@ -61,8 +64,8 @@
             WinRmMaxConnections                 = 300
         }
 
-        $null = mkdir C:\DeployDebug -ErrorAction SilentlyContinue
-        $null = Start-Transcript -OutputDirectory C:\DeployDebug
+        $deployDebug = (New-Item -ItemType Directory -Path $ExecutionContext.InvokeCommand.ExpandString($DeployDebugPath) -Force).FullName
+        $null = Start-Transcript -OutputDirectory $deployDebug
     
         Start-Service WinRm
         foreach ($setting in $defaultSettings.GetEnumerator())
@@ -112,12 +115,12 @@
             $geoId = 244 #default is US
         }
 
-        if (-not (Test-Path 'C:\AL'))
+        if (-not (Test-Path (Join-Path $deployDebug AL)))
         {
-            $alDir = New-Item -ItemType Directory -Path C:\AL -Force
+            $alDir = New-Item -ItemType Directory -Path (Join-Path $deployDebug AL) -Force
         }
 
-        $alDir = 'C:\AL'
+        $alDir = Join-Path $deployDebug AL
 
         $tempFile = Join-Path -Path $alDir -ChildPath RegionalSettings
         $regionSettings -f $UserLocale, $geoId | Out-File -FilePath $tempFile
@@ -154,9 +157,9 @@
             }
 
             New-ItemProperty -Path "HKLM:\SOFTWARE\OpenSSH" -Name DefaultShell -Value "C:\Program Files\powershell\7\pwsh.exe" -PropertyType String -Force -ErrorAction SilentlyContinue
-            $null = New-Item -Force -Path C:\AL\SSH -ItemType Directory
-            if ($PublicKey) { $PublicKey | Set-Content -Path (Join-Path -Path C:\AL\SSH -ChildPath 'keys') }
-            Start-Process -Wait -FilePath icacls.exe -ArgumentList "$(Join-Path -Path C:\AL\SSH -ChildPath 'keys') /inheritance:r /grant ""Administrators:F"" /grant ""SYSTEM:F""" -ErrorAction SilentlyContinue
+            $null = New-Item -Force -Path $alDir\SSH -ItemType Directory
+            if ($PublicKey) { $PublicKey | Set-Content -Path (Join-Path -Path $alDir\SSH -ChildPath 'keys') }
+            Start-Process -Wait -FilePath icacls.exe -ArgumentList "$(Join-Path -Path $alDir\SSH -ChildPath 'keys') /inheritance:r /grant ""Administrators:F"" /grant ""SYSTEM:F""" -ErrorAction SilentlyContinue
             $sshdConfig = @"
 Port 22
 PasswordAuthentication no
@@ -228,8 +231,8 @@ $finalErrorCode = $LASTEXITCODE
                 Path               = $LabSourcesPath
                 StorageAccountName = $StorageAccountName
                 StorageAccountKey  = $StorageAccountKey
-            } | Export-Clixml -Path C:\AL\LabSourcesStorageAccount.xml
-            $script | Out-File C:\AL\AzureLabSources.ps1 -Force
+            } | Export-Clixml -Path $alDir\LabSourcesStorageAccount.xml
+            $script | Out-File $alDir\AzureLabSources.ps1 -Force
         }
 
         #set the time zone
@@ -243,7 +246,7 @@ $finalErrorCode = $LASTEXITCODE
         reg.exe add 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System' /v ConsentPromptBehaviorAdmin /t REG_DWORD /d 0 /f
         reg.exe add 'HKLM\SOFTWARE\Microsoft\Active Setup\Installed Components\{A509B1A7-37EF-4b3f-8CFC-4F3A74704073}' /v IsInstalled /t REG_DWORD /d 0 /f #disable admin IE Enhanced Security Configuration
         reg.exe add 'HKLM\SOFTWARE\Microsoft\Active Setup\Installed Components\{A509B1A8-37EF-4b3f-8CFC-4F3A74704073}' /v IsInstalled /t REG_DWORD /d 0 /f #disable user IE Enhanced Security Configuration
-        reg.exe add 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run' /v BgInfo /t REG_SZ /d "C:\AL\BgInfo.exe C:\AL\BgInfo.bgi /Timer:0 /nolicprompt" /f
+        reg.exe add 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run' /v BgInfo /t REG_SZ /d "$alDir\BgInfo.exe $alDir\BgInfo.bgi /Timer:0 /nolicprompt" /f
 
         #turn off the Windows firewall
         Set-NetFirewallProfile -All -Enabled False -PolicyStore PersistentStore
@@ -271,7 +274,7 @@ $finalErrorCode = $LASTEXITCODE
         if (-not $Disks) { $null = try { Stop-Transcript -ErrorAction Stop } catch { }; return }
         
         # Azure InvokeRunAsCommand is not very clever, so we sent the stuff as JSON
-        $Disks | Set-Content -Path C:\AL\disks.json
+        $Disks | Set-Content -Path $alDir\disks.json
         [object[]] $diskObjects = $Disks | ConvertFrom-Json
         Write-Verbose -Message "Disk count for $env:COMPUTERNAME`: $($diskObjects.Count)"
         foreach ($diskObject in $diskObjects.Where({ -not $_.SkipInitialization }))
@@ -338,6 +341,7 @@ $finalErrorCode = $LASTEXITCODE
             WinRmMaxEnvelopeSizeKb              = Get-LabConfigurationItem -Name WinRmMaxEnvelopeSizeKb
             WinRmMaxConcurrentOperationsPerUser = Get-LabConfigurationItem -Name WinRmMaxConcurrentOperationsPerUser
             WinRmMaxConnections                 = Get-LabConfigurationItem -Name WinRmMaxConnections
+            DeployDebugPath                     = $AL_DeployDebugFolder
         }
         $azsArgumentLine = '-UserLocale "{0}" -TimeZoneId "{1}" -WinRmMaxEnvelopeSizeKb {2} -WinRmMaxConcurrentOperationsPerUser {3} -WinRmMaxConnections {4}' -f $m.UserLocale, $m.TimeZone, (Get-LabConfigurationItem -Name WinRmMaxEnvelopeSizeKb), (Get-LabConfigurationItem -Name WinRmMaxConcurrentOperationsPerUser), (Get-LabConfigurationItem -Name WinRmMaxConnections)
 
@@ -504,7 +508,10 @@ sudo systemctl restart sshd
         }
     }
 
-    Copy-LabFileItem -Path (Get-ChildItem -Path "$((Get-Module -Name AutomatedLabCore)[0].ModuleBase)\Tools\HyperV\*") -DestinationFolderPath /AL -ComputerName ($Machine | Where OperatingSystemType -eq 'Windows') -UseAzureLabSourcesOnAzureVm $false
+    $deployDebug = Invoke-LabCommand -ComputerName ($Machine | Where OperatingSystemType -eq 'Windows') -Variable (Get-Variable -Name AL_DeployDebugFolder) -PassThru -ScriptBlock {
+        (Get-Item -Path "$($ExecutionContext.InvokeCommand.ExpandString($DeployDebugPath))/AL").FullName
+    } | Select-Object -First 1
+    Copy-LabFileItem -Path (Get-ChildItem -Path "$((Get-Module -Name AutomatedLabCore)[0].ModuleBase)\Tools\HyperV\*") -DestinationFolderPath $deployDebug -ComputerName ($Machine | Where OperatingSystemType -eq 'Windows') -UseAzureLabSourcesOnAzureVm $false
     $sessions = if ($PSVersionTable.PSVersion -ge [System.Version]'7.0')
     {
         New-LabPSSession $Machine
@@ -512,7 +519,7 @@ sudo systemctl restart sshd
     else
     {
         Write-ScreenInfo -Type Warning -Message "Skipping copy of AutomatedLab.Common to Linux VMs as Windows PowerShell is used on the host and not PowerShell 7+."
-        New-LabPSSession ($Machine | Where OperatingSystemType -eq 'Windows')
+        New-LabPSSession ($Machine | Where-Object OperatingSystemType -eq 'Windows')
     }
 
     Send-ModuleToPSSession -Module (Get-Module -ListAvailable -Name AutomatedLab.Common | Select-Object -First 1) -Session $sessions -IncludeDependencies -Force

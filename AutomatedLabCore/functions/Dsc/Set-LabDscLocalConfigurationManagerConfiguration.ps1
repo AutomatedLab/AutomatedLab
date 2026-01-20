@@ -165,7 +165,8 @@
         [void]$sb.AppendLine('}')
 
         Invoke-Expression $sb.ToString()
-        $sb.ToString() | Out-File -FilePath c:\AL_DscLcm_Debug.txt
+        $deployDebug = (New-Item -Force -ItemType Directory -Path $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder) -Name 'AL Dsc').FullName
+        $sb.ToString() | Out-File -FilePath $deployDebug\Lcm_Debug.txt
 
         $path = New-Item -ItemType Directory -Path "$([System.IO.Path]::GetTempPath())\$(New-Guid)"
 

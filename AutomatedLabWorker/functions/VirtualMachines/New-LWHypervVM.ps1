@@ -838,47 +838,48 @@ Windows Registry Editor Version 5.00
         #Using the .net class as the PowerShell provider usually does not recognize the new drive
         [System.IO.File]::WriteAllText("$vhdVolume\WSManRegKey.reg", $enableWSManRegDump)
 
-        $additionalDisksOnline = @'
-Start-Transcript -Path C:\DeployDebug\AdditionalDisksOnline.log
-$diskpartCmd = 'LIST DISK'
-$disks = $diskpartCmd | diskpart.exe
-$pattern = 'Disk (?<DiskNumber>\d{1,3}) \s+(?<State>Online|Offline)\s+(?<Size>\d+) (KB|MB|GB|TB)\s+(?<Free>\d+) (B|KB|MB|GB|TB)'
-foreach ($line in $disks)
+        $additionalDisksOnline = @"
+`$deployDebug = (New-Item -ItemType Directory -Path `$ExecutionContext.InvokeCommand.ExpandString("$AL_DeployDebugFolder") -Force).FullName
+Start-Transcript -Path `$deployDebug\AdditionalDisksOnline.log
+`$diskpartCmd = 'LIST DISK'
+`$disks = `$diskpartCmd | diskpart.exe
+`$pattern = 'Disk (?<DiskNumber>\d{1,3}) \s+(?<State>Online|Offline)\s+(?<Size>\d+) (KB|MB|GB|TB)\s+(?<Free>\d+) (B|KB|MB|GB|TB)'
+foreach (`$line in `$disks)
 {
-    if ($line -match $pattern)
+    if (`$line -match `$pattern)
     {
-        #$nextDriveLetter = [char[]](67..90) |
+        #`$nextDriveLetter = [char[]](67..90) |
         #Where-Object { (Get-CimInstance -Class Win32_LogicalDisk |
-        #Select-Object -ExpandProperty DeviceID) -notcontains "$($_):"} |
+        #Select-Object -ExpandProperty DeviceID) -notcontains "`$(`$_):"} |
         #Select-Object -First 1
-        $diskNumber = $Matches.DiskNumber
-        if ($Matches.State -eq 'Offline')
+        `$diskNumber = `$Matches.DiskNumber
+        if (`$Matches.State -eq 'Offline')
         {
-            $diskpartCmd = "@
-                SELECT DISK $diskNumber
+            `$diskpartCmd = "@
+                SELECT DISK `$diskNumber
                 ATTRIBUTES DISK CLEAR READONLY
                 ONLINE DISK
                 EXIT
             @"
-            $diskpartCmd | diskpart.exe | Out-Null
+            `$diskpartCmd | diskpart.exe | Out-Null
         }
     }
 }
-foreach ($volume in (Get-WmiObject -Class Win32_Volume))
+foreach (`$volume in (Get-WmiObject -Class Win32_Volume))
 {
-    if ($volume.Label -notmatch '(?<Label>[-_\w\d]+)_AL_(?<DriveLetter>[A-Z])')
+    if (`$volume.Label -notmatch '(?<Label>[-_\w\d]+)_AL_(?<DriveLetter>[A-Z])')
     {
         continue
     }
-        if ($volume.DriveLetter -ne "$($Matches.DriveLetter):")
+        if (`$volume.DriveLetter -ne "`$(`$Matches.DriveLetter):")
     {
-        $volume.DriveLetter = "$($Matches.DriveLetter):"
+        `$volume.DriveLetter = "`$(`$Matches.DriveLetter):"
     }
-        $volume.Label = $Matches.Label
-    $volume.Put()
+        `$volume.Label = `$Matches.Label
+    `$volume.Put()
 }
 Stop-Transcript
-'@
+"@
         [System.IO.File]::WriteAllText("$vhdVolume\AdditionalDisksOnline.ps1", $additionalDisksOnline)
 
         $defaultSettings = @{

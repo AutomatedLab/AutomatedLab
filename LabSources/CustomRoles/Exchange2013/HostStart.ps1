@@ -125,11 +125,9 @@ function Install-ExchangeWindowsFeature
 function Install-ExchangeRequirements
 {
     #Create the DeployDebug directory to contain log files (the Domain Controller will already have this directory)
-    Invoke-LabCommand -ActivityName 'Create Logging Directory' -ComputerName $vm -ScriptBlock {
-        if (-not (Test-Path -LiteralPath 'C:\DeployDebug')) {
-            New-Item -Path 'C:\DeployDebug' -ItemType Directory
-        }
-    } -NoDisplay
+    $deployDebugPath = Invoke-LabCommand -ActivityName 'Create Logging Directory' -ComputerName $vm -ScriptBlock {
+        (New-Item -Force -ItemType Directory -Path $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder)).FullName
+    } -NoDisplay -PassThru -Variable (Get-Variable -Name AL_DeployDebugFolder -Scope Global)
 
     Write-ScreenInfo "Installing Exchange Requirements '$vm'"  -TaskStart -NoNewLine
 
@@ -141,7 +139,7 @@ function Install-ExchangeRequirements
 
     if (-not $isUcmaInstalled)
     {
-        $jobs += Install-LabSoftwarePackage -ComputerName $vm -LocalPath "C:\Install\$($script:ucmaInstallFile.FileName)" -CommandLine '/Quiet /Log c:\DeployDebug\ucma.txt' -AsJob -PassThru -NoDisplay
+        $jobs += Install-LabSoftwarePackage -ComputerName $vm -LocalPath "C:\Install\$($script:ucmaInstallFile.FileName)" -CommandLine "/Quiet /Log `"$deployDebugPath\ucma.txt`"" -AsJob -PassThru -NoDisplay
         Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator 20 -NoNewLine
     }
     else
@@ -155,7 +153,7 @@ function Install-ExchangeRequirements
         if ($dotnetFrameworkVersion.Version -notcontains '4.8')
         {
             Write-ScreenInfo "Installing .net Framework 4.8 on '$machine'" -Type Verbose
-            $jobs += Install-LabSoftwarePackage -ComputerName $machine -LocalPath "C:\Install\$($script:dotnetInstallFile.FileName)" -CommandLine '/q /norestart /log c:\DeployDebug\dotnet48.txt' -AsJob -NoDisplay -AsScheduledJob -UseShellExecute -PassThru
+            $jobs += Install-LabSoftwarePackage -ComputerName $machine -LocalPath "C:\Install\$($script:dotnetInstallFile.FileName)" -CommandLine "/q /norestart /log `"$deployDebugPath\dotnet48.txt`"" -AsJob -NoDisplay -AsScheduledJob -UseShellExecute -PassThru
         }
         else
         {

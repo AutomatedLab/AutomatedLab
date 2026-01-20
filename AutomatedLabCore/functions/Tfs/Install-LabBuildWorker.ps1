@@ -13,10 +13,14 @@
         return
     }
 
+    $deployDebugPath = Invoke-LabCommand -ComputerName $buildWorkers -ScriptBlock {
+        (New-Item -ItemType Directory -Path $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder) -ErrorAction SilentlyContinue -Force).FullName
+    } -PassThru -Variable (Get-Variable -Name AL_DeployDebugFolder -Scope Global) | Select-Object -First 1
+
     $buildWorkerUri = Get-LabConfigurationItem -Name BuildAgentUri
     $buildWorkerPath = $ExecutionContext.SessionState.Path.Combine($labsources, 'Tools\TfsBuildWorker.zip')
     $download = Get-LabInternetFile -Uri $buildWorkerUri -Path $buildWorkerPath -PassThru
-    Copy-LabFileItem -ComputerName $buildWorkers -Path $download.Path
+    Copy-LabFileItem -ComputerName $buildWorkers -Path $download.Path -DestinationFolderPath $deployDebugPath
 
     $installationJobs = @()
     foreach ($machine in $buildWorkers)
@@ -124,7 +128,8 @@
 
         $installationJobs += Invoke-LabCommand -ComputerName $machine -ScriptBlock {
 
-            if (-not (Test-Path C:\TfsBuildWorker.zip)) { throw 'Build worker installation files not available' }
+            $deployDebug = (Get-Item -Path $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder)).FullName
+            if (-not (Test-Path $deployDebug\TfsBuildWorker.zip)) { throw 'Build worker installation files not available' }
 
             if ($numberOfBuildWorkers)
             {
@@ -136,25 +141,27 @@
             }
             foreach ($numberOfBuildWorker in $numberOfBuildWorkers)
             {
-                Microsoft.PowerShell.Archive\Expand-Archive -Path C:\TfsBuildWorker.zip -DestinationPath "C:\BuildWorker$numberOfBuildWorker" -Force
-                $configurationTool = Get-Item "C:\BuildWorker$numberOfBuildWorker\config.cmd" -ErrorAction Stop
+                $buildWorkerInstallPath = Join-Path $env:ProgramFiles AutomatedLabBuildWorkers
+                $null = New-Item -ItemType Directory -Path $buildWorkerInstallPath -Force
+                Microsoft.PowerShell.Archive\Expand-Archive -Path $deployDebug\TfsBuildWorker.zip -DestinationPath "$buildWorkerInstallPath\BuildWorker$numberOfBuildWorker" -Force
 
-                $content = if ($useSsl -and [string]::IsNullOrEmpty($pat))
+                $content = "cd `"$buildWorkerInstallPath\BuildWorker$numberOfBuildWorker`"`r`n"
+                $content += if ($useSsl -and [string]::IsNullOrEmpty($pat))
                 {
-                    "$configurationTool --unattended --url https://$($machineName):$($tfsPort) --auth Integrated --pool $agentPool --agent $($env:COMPUTERNAME)-$numberOfBuildWorker --runasservice --sslskipcertvalidation --gituseschannel"
+                    ".\config.cmd --unattended --url https://$($machineName):$($tfsPort) --auth Integrated --pool $agentPool --agent $($env:COMPUTERNAME)-$numberOfBuildWorker --runasservice --sslskipcertvalidation --gituseschannel"
 
                 }
                 elseif ($useSsl -and -not [string]::IsNullOrEmpty($pat))
                 {
-                    "$configurationTool --unattended --url https://$($machineName) --auth pat --token $pat --pool $agentPool --agent $($env:COMPUTERNAME)-$numberOfBuildWorker --runasservice --sslskipcertvalidation --gituseschannel"
+                    ".\config.cmd --unattended --url https://$($machineName) --auth pat --token $pat --pool $agentPool --agent $($env:COMPUTERNAME)-$numberOfBuildWorker --runasservice --sslskipcertvalidation --gituseschannel"
                 }
                 elseif (-not $useSsl -and -not [string]::IsNullOrEmpty($pat))
                 {
-                    "$configurationTool --unattended --url http://$($machineName) --auth pat --token $pat --pool $agentPool --agent $($env:COMPUTERNAME)-$numberOfBuildWorker --runasservice --gituseschannel"
+                    ".\config.cmd --unattended --url http://$($machineName) --auth pat --token $pat --pool $agentPool --agent $($env:COMPUTERNAME)-$numberOfBuildWorker --runasservice --gituseschannel"
                 }
                 else
                 {
-                    "$configurationTool --unattended --url http://$($machineName):$($tfsPort) --auth Integrated --pool $agentPool --agent $env:COMPUTERNAME --runasservice --gituseschannel"
+                    ".\config.cmd --unattended --url http://$($machineName):$($tfsPort) --auth Integrated --pool $agentPool --agent $env:COMPUTERNAME --runasservice --gituseschannel"
                 }
 
                 if ($isOnDomainController)
@@ -162,12 +169,11 @@
                     $content += " --windowsLogonAccount $($cred.UserName) --windowsLogonPassword $($cred.GetNetworkCredential().Password)"
                 }
 
-                $null = New-Item -ItemType Directory -Path C:\DeployDebug -ErrorAction SilentlyContinue
-                Set-Content -Path "C:\DeployDebug\SetupBuildWorker$numberOfBuildWorker.cmd" -Value $content -Force
+                Set-Content -Path "$deployDebug\SetupBuildWorker$numberOfBuildWorker.cmd" -Value $content -Force
 
-                $configResult = & "C:\DeployDebug\SetupBuildWorker$numberOfBuildWorker.cmd"
+                $configResult = & "$deployDebug\SetupBuildWorker$numberOfBuildWorker.cmd"
 
-                $log = Get-ChildItem -Path "C:\BuildWorker$numberOfBuildWorker\_diag" -Filter *.log | Sort-Object -Property CreationTime | Select-Object -Last 1
+                $log = Get-ChildItem -Path "$buildWorkerInstallPath\BuildWorker$numberOfBuildWorker\_diag" -Filter *.log | Sort-Object -Property CreationTime | Select-Object -Last 1
 
                 [pscustomobject]@{
                     ConfigResult = $configResult
@@ -179,7 +185,7 @@
                     Write-Warning -Message "Build worker $numberOfBuildWorker on '$env:COMPUTERNAME' failed to install. Exit code was $($LASTEXITCODE). Log is $($Log.FullName)"
                 }
             }
-        } -AsJob -Variable (Get-Variable machineName, tfsPort, useSsl, pat, isOnDomainController, cred, numberOfBuildWorkers, agentPool) -ActivityName "TFS_Agent_$machine" -PassThru -NoDisplay
+        } -AsJob -Variable ((Get-Variable machineName, tfsPort, useSsl, pat, isOnDomainController, cred, numberOfBuildWorkers, agentPool, AL_DeployDebugFolder)) -ActivityName "TFS_Agent_$machine" -PassThru -NoDisplay
     }
 
     Wait-LWLabJob -Job $installationJobs

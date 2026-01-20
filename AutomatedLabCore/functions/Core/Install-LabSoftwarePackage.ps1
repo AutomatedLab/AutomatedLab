@@ -217,6 +217,9 @@
         {
             Install-SoftwarePackage @installParams
         }
+
+        # We can safely remove the file, since .Path will be updated if it stored in the LabSources share
+        $installParams.Path | Remove-Item -ErrorAction SilentlyContinue
     }
 
     $parameters.Add('NoDisplay', $True)
