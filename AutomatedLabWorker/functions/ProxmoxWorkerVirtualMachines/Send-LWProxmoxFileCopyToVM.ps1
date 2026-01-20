@@ -1,4 +1,5 @@
-function Send-LWProxmoxFileCopyToVM {
+function Send-LWProxmoxFileCopyToVM
+{
     param
     (
         [Parameter(Mandatory = $true)]
@@ -11,7 +12,8 @@ function Send-LWProxmoxFileCopyToVM {
         [string[]]$ComputerName
     )
 
-    if (-not (Test-Path -Path $SourceFilePath)) {
+    if (-not (Test-Path -Path $SourceFilePath))
+    {
         Write-Error "Source file '$SourceFilePath' does not exist."
         return
     }
@@ -23,18 +25,22 @@ function Send-LWProxmoxFileCopyToVM {
     $fileName = [System.IO.Path]::GetFileName($SourceFilePath)
     $destinationFilePath = Join-Path -Path $DestinationPath -ChildPath $fileName
 
-    foreach ($name in $ComputerName) {
+    foreach ($name in $ComputerName)
+    {
         $vm = $proxmoxVms | Where-Object { $_.Name -eq $name }
-        if (-not $vm) {
+        if (-not $vm)
+        {
             Write-Error "Proxmox VM '$name' not found."
             continue
         }
 
-        $result = New-PveNodesQemuAgentFileWrite -Node $global:proxmoxNode -Vmid $vm.VmId -File $destinationFilePath -Content $content
-        if ($result.StatusCode -eq 200) {
+        $result = New-PveNodesQemuAgentFileWrite -Node $vm.node -Vmid $vm.VmId -File $destinationFilePath -Content $content
+        if ($result.StatusCode -eq 200)
+        {
             Write-ScreenInfo -Message "File '$SourceFilePath' successfully sent to VM '$name' at '$DestinationPath'." -Type Verbose
         }
-        else {
+        else
+        {
             Write-Error "Failed to send file to VM '$name'. The error was '$($result.ReasonPhrase)'."
         }
     }

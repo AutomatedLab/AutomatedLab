@@ -1,4 +1,5 @@
-function Wait-LWProxmoxTasksStatus {
+function Wait-LWProxmoxTasksStatus
+{
     [Cmdletbinding()]
     [OutputType([string], [pscustomobject])]
     param (
@@ -6,33 +7,42 @@ function Wait-LWProxmoxTasksStatus {
         [string[]]$Upid,
 
         [Parameter(Mandatory)]
+        [string]$Node,
+
+        [Parameter(Mandatory)]
         [hashtable]$DesiredValues,
 
         [int]$TimeoutInSeconds = 300
     )
 
-    if (-not (Test-LabProxmoxConnection)) {
+    if (-not (Test-LabProxmoxConnection))
+    {
         Write-Error 'There is no connection to the Proxmox cluster.' -ErrorAction Stop
         return
     }
 
     $startTime = Get-Date
 
-    $result = foreach ($id in $Upid) {
-        while ($true) {
-            $status = (Get-PveNodesTasksStatus -Node $global:proxmoxNode -Upid $id).Response.data
+    $result = foreach ($id in $Upid)
+    {
+        while ($true)
+        {
+            $status = (Get-PveNodesTasksStatus -Node $Node -Upid $id).Response.data
 
             $taskSuccessful = $true
-            foreach ($key in $DesiredValues.Keys) {
+            foreach ($key in $DesiredValues.Keys)
+            {
                 $desiredStatus = $DesiredValues[$key]
                 $currentStatus = $status.$key
 
-                if ($currentStatus -ne $desiredStatus) {
+                if ($currentStatus -ne $desiredStatus)
+                {
                     $taskSuccessful = $false
                 }
             }
 
-            if ($taskSuccessful) {
+            if ($taskSuccessful)
+            {
                 [pscustomobject]@{
                     Upid       = $id
                     ExitStatus = $status.exitstatus
@@ -41,7 +51,8 @@ function Wait-LWProxmoxTasksStatus {
                 break
             }
 
-            if ((Get-Date) - $startTime -gt (New-TimeSpan -Seconds $TimeoutInSeconds)) {
+            if ((Get-Date) - $startTime -gt (New-TimeSpan -Seconds $TimeoutInSeconds))
+            {
                 Write-Error "Timeout waiting for task '$id' to reach status '$DesiredStatus'. Current status: '$exitStatus'."
                 break
             }
@@ -50,10 +61,12 @@ function Wait-LWProxmoxTasksStatus {
         }
     }
 
-    if ($result.Count -eq 1) {
+    if ($result.Count -eq 1)
+    {
         return $result.exitStatus
     }
-    else {
+    else
+    {
         return $result
     }
 }
