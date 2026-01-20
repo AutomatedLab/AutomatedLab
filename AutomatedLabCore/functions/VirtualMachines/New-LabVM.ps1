@@ -32,7 +32,7 @@
     }
     
     Write-ScreenInfo -Message 'Waiting for all machines to finish installing' -TaskStart
-    foreach ($machine in $machines.Where({$_.HostType -ne 'Azure'}))
+    foreach ($machine in $machines.Where({$_.HostType -notin 'Azure', 'Proxmox'}))
     {
         $fdvDenyWriteAccess = (Get-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Policies\Microsoft\FVE -Name FDVDenyWriteAccess -ErrorAction SilentlyContinue).FDVDenyWriteAccess
         if ($fdvDenyWriteAccess) {
@@ -87,6 +87,89 @@
         if ($fdvDenyWriteAccess) {
             Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Policies\Microsoft\FVE -Name FDVDenyWriteAccess -Value $fdvDenyWriteAccess
         }
+    }
+
+    if ($proxmoxVMs = $machines.Where({$_.HostType -eq 'Proxmox' -and -not $_.SkipDeployment }))
+    {
+        if (-not (Test-LabProxmoxConnection))
+        {
+            Write-ScreenInfo -Message 'There is no connection to Proxmox, cannot create VMs.' -Type Error
+            Write-Error 'There is no connection to Proxmox, cannot create VMs.' -ErrorAction Stop
+        }
+
+        $rootDCs = $proxmoxVMs.Where({$_.Roles.Name -contains 'RootDC'})
+        $firstChildDCs = $proxmoxVMs.Where({$_.Roles.Name -contains 'FirstChildDC'})
+        $otherVMs = $proxmoxVMs.Where({ $_.Roles.Name -notin 'RootDC', 'FirstChildDC' })
+
+        #-------------------------------------------------------------------
+
+        if ($rootDCs)
+        {
+            foreach ($rootDC in $rootDCs)
+            {
+                New-LWProxmoxVM -Machine $rootDC
+            }
+            Wait-LabVM -ComputerName $rootDCs #Stop and start is required to sync the time with the Proxmox host
+            Stop-LabVM -ComputerName $rootDCs -Wait
+            Start-LabVM -ComputerName $rootDCs -Wait
+
+            $sysprepState = Get-LWProxmoxSysprepState -ComputerName $rootDCs
+            if ($sysprepState | Where-Object SysprepState -ne 'IMAGE_STATE_COMPLETE')
+            {
+                Write-Error "The following Proxmox VMs did not complete sysprep: $($sysprepState | Where-Object SysprepState -ne 'IMAGE_STATE_COMPLETE' | Select-Object -ExpandProperty ComputerName -Unique -Join ', ')"
+            }
+            Install-LabRootDcs
+        }
+
+        #-------------------------------------------------------------------
+
+        if ($firstChildDCs)
+        {
+            foreach ($firstChildDC in $firstChildDCs)
+            {
+                New-LWProxmoxVM -Machine $firstChildDC
+            }
+            Wait-LabVM -ComputerName $firstChildDCs
+            $sysprepState = Get-LWProxmoxSysprepState -ComputerName $firstChildDCs
+            if ($sysprepState | Where-Object SysprepState -ne 'IMAGE_STATE_COMPLETE')
+            {
+                Write-Error "The following Proxmox VMs did not complete sysprep: $($sysprepState | Where-Object SysprepState -ne 'IMAGE_STATE_COMPLETE' | Select-Object -ExpandProperty ComputerName -Unique -Join ', ')"
+            }
+            Install-LabFirstChildDcs
+        }
+
+        #-------------------------------------------------------------------
+
+        if ($otherVMs)
+        {
+            foreach ($otherVM in $otherVMs)
+            {
+                New-LWProxmoxVM -Machine $otherVM
+            }
+
+            Wait-LabVM -ComputerName $otherVMs
+
+            $sysprepState = Get-LWProxmoxSysprepState -ComputerName $otherVMs
+            if ($sysprepState | Where-Object SysprepState -ne 'IMAGE_STATE_COMPLETE')
+            {
+                Write-Error "The following Proxmox VMs did not complete sysprep: $($sysprepState | Where-Object SysprepState -ne 'IMAGE_STATE_COMPLETE' | Select-Object -ExpandProperty ComputerName -Unique -Join ', ')"
+            }
+        }
+
+        Write-Host 'done.'
+    }
+
+    foreach ($machine in $machines.Where({$_.HostType -ne 'Proxmox'}))
+    {
+        wait-lab
+         #TODO: This needs to move to the New-LabVM function
+    <#
+    Write-PSFMessage "Creating snapshot named '$($Machine.ResourceName) - post OS Installation'"
+    if ($CreateCheckPoints)
+    {
+        Hyper-V\Checkpoint-VM -VM (Hyper-V\Get-VM -Name $Machine.ResourceName) -SnapshotName 'Post OS Installation'
+    }
+    #>
     }
 
     if ($lab.DefaultVirtualizationEngine -eq 'Azure')

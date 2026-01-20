@@ -63,7 +63,7 @@
             #if called without using DoNotUseCredSsp and the machine is not yet configured for CredSsp, call Wait-LabVM again but with DoNotUseCredSsp. Wait-LabVM enables CredSsp if called with DoNotUseCredSsp switch.
             if (-not $vm.SkipDeployment -and $lab.DefaultVirtualizationEngine -eq 'HyperV')
             {
-                $machineMetadata = Get-LWHypervVMDescription -ComputerName $vm.ResourceName
+                $machineMetadata = Get-LWVMDescription -ComputerName $vm.ResourceName
                 if (($machineMetadata.InitState -band [AutomatedLab.LabVMInitState]::EnabledCredSsp) -ne [AutomatedLab.LabVMInitState]::EnabledCredSsp -and -not $DoNotUseCredSsp)
                 {
                     Wait-LabVM -ComputerName $vm -TimeoutInMinutes $TimeoutInMinutes -PostDelaySeconds $PostDelaySeconds -ProgressIndicator $ProgressIndicator -DoNotUseCredSsp -NoNewLine:$NoNewLine
@@ -142,11 +142,11 @@
             foreach ($machine in (Get-LabVM -ComputerName $completed))
             {
                 if ($machine.SkipDeployment -or $machine.HostType -ne 'HyperV') { continue }
-                $machineMetadata = Get-LWHypervVMDescription -ComputerName $machine.ResourceName
+                $machineMetadata = Get-LWVMDescription -ComputerName $machine.ResourceName
                 if ($machineMetadata.InitState -eq [AutomatedLab.LabVMInitState]::Uninitialized)
                 {
                     $machineMetadata.InitState = [AutomatedLab.LabVMInitState]::ReachedByAutomatedLab
-                    Set-LWHypervVMDescription -Hashtable $machineMetadata -ComputerName $machine.ResourceName
+                    Set-LWVMDescription -Hashtable $machineMetadata -ComputerName $machine.ResourceName
                     Enable-LabAutoLogon -ComputerName $ComputerName
                 }
 
@@ -193,7 +193,7 @@
                         Write-ScreenInfo "CredSsp could not be enabled on machine '$machine'" -Type Warning
                     }
 
-                    Set-LWHypervVMDescription -Hashtable $machineMetadata -ComputerName $(Get-LabVM -ComputerName $machine).ResourceName
+                    Set-LWVMDescription -Hashtable $machineMetadata -ComputerName $(Get-LabVM -ComputerName $machine).ResourceName
                 }
             }
 

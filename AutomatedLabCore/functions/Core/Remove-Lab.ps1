@@ -96,15 +96,18 @@
                 @(Get-LabAzureResourceGroup -CurrentLab).Clone() | Remove-LabAzureResourceGroup -Force
             }
 
-            $labMachines = Get-LabVM -IncludeLinux | Where-Object HostType -eq 'HyperV' | Where-Object { -not $_.SkipDeployment }
+            $labMachines = Get-LabVM -IncludeLinux |
+            Where-Object HostType -in 'HyperV', 'Proxmox' |
+            Where-Object { -not $_.SkipDeployment }
+
             if ($labMachines)
             {
                 $labName = (Get-Lab).Name
 
                 $removeMachines = foreach ($machine in $labMachines)
                 {
-                    $machineMetadata = Get-LWHypervVMDescription -ComputerName $machine.ResourceName -ErrorAction SilentlyContinue
-                    $vm = Get-LWHypervVM -Name $machine.ResourceName -ErrorAction SilentlyContinue
+                    $machineMetadata = Get-LWVMDescription -ComputerName $machine.ResourceName -ErrorAction SilentlyContinue
+                    $vm = Get-LabVM -ComputerName $machine -ErrorAction SilentlyContinue
                     if (-not $machineMetadata)
                     {
                         Write-Error -Message "Cannot remove machine '$machine' because lab meta data could not be retrieved"

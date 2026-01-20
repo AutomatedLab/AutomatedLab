@@ -1,29 +1,137 @@
-﻿function New-LWHypervVM
+function New-LWProxmoxVM
 {
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification = "Not relevant on Linux")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseCompatibleCmdlets', '', Justification = 'Not relevant on Linux')]
     [Cmdletbinding()]
-    Param (
+    param (
         [Parameter(Mandatory)]
         [AutomatedLab.Machine]$Machine
     )
 
     $PSBoundParameters.Add('ProgressIndicator', 1) #enables progress indicator
-    if ($Machine.SkipDeployment) { return }
+    if ($Machine.SkipDeployment)
+    {
+        return
+    }
 
     Write-LogFunctionEntry
 
     $script:lab = Get-Lab
 
-    if (Get-LWHypervVM -Name $Machine.ResourceName -ErrorAction SilentlyContinue)
+    if (Get-LWProxmoxVM -Name $Machine.ResourceName -ErrorAction SilentlyContinue)
     {
         Write-ProgressIndicatorEnd
         Write-ScreenInfo -Message "The machine '$Machine' does already exist" -Type Warning
         return $false
     }
 
-    if ($PSDefaultParameterValues.ContainsKey('*:IsKickstart')) { $PSDefaultParameterValues.Remove('*:IsKickstart') }
-    if ($PSDefaultParameterValues.ContainsKey('*:IsAutoYast')) { $PSDefaultParameterValues.Remove('*:IsAutoYast') }
-    if ($PSDefaultParameterValues.ContainsKey('*:IsCloudInit')) { $PSDefaultParameterValues.Remove('*:IsCloudInit') }
+    $template = Get-LWProxmoxVmTemplate -Node $Global:proxmoxNode -OperatingSystem $Machine.OperatingSystem
+    if (-not $template)
+    {
+        Write-Error "No template found for operating system '$($Machine.OperatingSystem)' on Proxmox node '$($Global:proxmoxNode.node)'. Cannot create VM '$($Machine.ResourceName)'."
+        return
+    }
+
+    $storage = Get-PveStorage
+    if ($storage.StatusCode -ne 200)
+    {
+        Write-Error "Failed to retrieve storage information from Proxmox cluster: $($storage.ReasonPhrase)"
+        return
+    }
+
+    $storage = $storage.Response.data | Where-Object { $_.type -in @('dir', 'lvm', 'zfspool', 'btrfs', 'nfs', 'cephfs', 'rbd') }
+
+    if ($storage.storage -notcontains $global:proxmoxStorage)
+    {
+        Write-Error "The specified storage '$($global:proxmoxStorage)' does not exist in the Proxmox cluster."
+        return
+    }
+
+    # Every file in that folder will be copied to the VM
+    $vhdVolume = "C:\ProgramData\AutomatedLab\Labs\$($lab.Name)\Proxmox\VHD\$($Machine.ResourceName)"
+    mkdir -Path $vhdVolume -Force | Out-Null
+
+
+    $nextVmId = (Get-LWProxmoxVM -IncludeTemplates | Sort-Object -Property vmid -Descending | Select-Object -First 1).vmid + 1
+
+    $param = @{
+        Node        = $global:proxmoxNode
+        Name        = $Machine.ResourceName
+        Description = 'Created by AutomatedLab'
+        Vmid        = $template.vmid
+        Newid       = $nextVmId
+        #Storage     = $global:proxmoxStorage
+        #Full        = $true
+    }
+    $result = New-PveNodesQemuClone @param
+    Write-Verbose "Waiting for VM '$($Machine.ResourceName)' to be created..."
+    $values = @{
+        status = 'stopped'
+    }
+    $result = Wait-LWProxmoxTasksStatus -Upid $result.Response.data -DesiredValues $values -TimeoutInSeconds 600
+    if ($result -ne 'OK')
+    {
+        Write-Error "Failed to create VM '$($Machine.ResourceName)': $($result.Message)"
+        return
+    }
+    Write-Verbose 'done.'
+
+    Write-PSFMessage "`tSettings RAM, start and stop actions"
+
+    if ($Machine.MaxMemory)
+    {
+        Write-PSFMessage "`tThe setting 'MaxMemory' is not supported on Proxmox VMs and will be ignored."
+    }
+    if ($Machine.MinMemory)
+    {
+        Write-PSFMessage "`tThe setting 'MinMemory' is not supported on Proxmox VMs and will be ignored."
+    }
+
+    $param = @{
+        Vmid        = $nextVmId
+        Node        = $global:proxmoxNode
+        Cores       = $Machine.Processors
+        Memory      = $Machine.Memory / 1MB
+        Tags        = "AutomatedLab, $($lab.Name), $((Get-Date).ToString('yyMMdd_HHmmss'))"
+        Description = "Created by AutomatedLab on $((Get-Date).ToString('yyyy-MM-dd HH:mm:ss'))"
+        LocalTime   = 1
+        #Agent      = '1,fstrim_cloned_disks=1'
+    }
+    $result = Set-PveNodesQemuConfig @param
+    if ($result.StatusCode -ne 200)
+    {
+        Write-Error "Failed to configure VM '$($Machine.ResourceName)': $($result.ReasonPhrase)"
+        return
+    }
+
+    # --------------------------- Disk Configuration ------------------------------------------
+
+    # Add the additional hard disks
+    $i = 1
+    foreach ($disk in $Machine.Disks)
+    {
+        $diskHashTable = @{
+            $i = "$($global:proxmoxStorage):$($disk.DiskSize)"
+        }
+        $null = Set-PveNodesQemuConfig -Vmid $nextVmId -Node $global:proxmoxNode -ScsiN $diskHashTable
+        $disk.Lun = $i
+        $i++
+    }
+    $Machine.Disks | Export-Clixml -Path (Join-Path -Path $vhdVolume -ChildPath Disks.xml)
+
+    # ------------------------------------------------------------------------------------------
+
+    if ($PSDefaultParameterValues.ContainsKey('*:IsKickstart'))
+    {
+        $PSDefaultParameterValues.Remove('*:IsKickstart')
+    }
+    if ($PSDefaultParameterValues.ContainsKey('*:IsAutoYast'))
+    {
+        $PSDefaultParameterValues.Remove('*:IsAutoYast')
+    }
+    if ($PSDefaultParameterValues.ContainsKey('*:IsCloudInit'))
+    {
+        $PSDefaultParameterValues.Remove('*:IsCloudInit')
+    }
 
     if ($Machine.OperatingSystemType -eq 'Linux' -and $Machine.LinuxType -eq 'RedHat')
     {
@@ -43,21 +151,30 @@
     #region Unattend XML settings
     if (-not $Machine.ProductKey)
     {
-        $Machine.ProductKey = $Machine.OperatingSystem.ProductKey
+        if ($Machine.OperatingSystem.ProductKey)
+        {
+            $Machine.ProductKey = $Machine.OperatingSystem.ProductKey
+        }
+        else
+        {
+            $Machine.ProductKey = Get-LWProductKey -OSName $Machine.OperatingSystem.OperatingSystemName
+        }
     }
 
     $unattendContent = $Machine.UnattendedXmlContent
-    if ($Machine.LinuxType -eq 'Suse' -and $Machine.OperatingSystem.OperatingSystemName -match 'Leap') {
+    if ($Machine.LinuxType -eq 'Suse' -and $Machine.OperatingSystem.OperatingSystemName -match 'Leap')
+    {
         $unattendContent = $unattendContent -replace 'SUSEVERSION', "$($Machine.OperatingSystem.Version.Major).$($Machine.OperatingSystem.Version.Minor)"
     }
 
     Import-UnattendedContent -Content $unattendContent
 
     # Ensure package selection works
-    if ($Machine.LinuxType -eq 'Suse' -and $Machine.OperatingSystem.OperatingSystemName -match 'Tumbleweed') {
+    if ($Machine.LinuxType -eq 'Suse' -and $Machine.OperatingSystem.OperatingSystemName -match 'Tumbleweed')
+    {
         $nsm = [System.Xml.XmlNamespaceManager]::new((Get-UnattendedContent).NameTable)
-        $nsm.AddNamespace('un', "http://www.suse.com/1.0/yast2ns")
-        $nsm.AddNamespace('config', "http://www.suse.com/1.0/configns" )
+        $nsm.AddNamespace('un', 'http://www.suse.com/1.0/yast2ns')
+        $nsm.AddNamespace('config', 'http://www.suse.com/1.0/configns' )
         $addOnNode = (Get-UnattendedContent).SelectSingleNode('/un:profile/un:add-on/un:add_on_others', $nsm)
         $addOnNode.RemoveAll()
 
@@ -71,7 +188,7 @@
         $mapAttr.InnerText = 'map'
         $aliasNode = (Get-UnattendedContent).CreateElement('alias', $nsm.LookupNamespace('un'))
         $aliasNode.InnerText = 'repo-update'
-        $mediaUrlNode = (Get-UnattendedContent).CreateElement('media_url', $nsm.LookupNamespace('un')) 
+        $mediaUrlNode = (Get-UnattendedContent).CreateElement('media_url', $nsm.LookupNamespace('un'))
         $mediaUrlNode.InnerText = 'http://download.opensuse.org/update/tumbleweed/'
         $nameNode = (Get-UnattendedContent).CreateElement('name', $nsm.LookupNamespace('un'))
         $nameNode.InnerText = 'Update'
@@ -90,7 +207,7 @@
         $mapAttr.InnerText = 'map'
         $aliasNode = (Get-UnattendedContent).CreateElement('alias', $nsm.LookupNamespace('un'))
         $aliasNode.InnerText = 'repo-update'
-        $mediaUrlNode = (Get-UnattendedContent).CreateElement('media_url', $nsm.LookupNamespace('un')) 
+        $mediaUrlNode = (Get-UnattendedContent).CreateElement('media_url', $nsm.LookupNamespace('un'))
         $mediaUrlNode.InnerText = 'http://download.opensuse.org/tumbleweed/repo/non-oss/'
         $nameNode = (Get-UnattendedContent).CreateElement('name', $nsm.LookupNamespace('un'))
         $nameNode.InnerText = 'Update'
@@ -105,43 +222,28 @@
     }
     #endregion
 
-    #region Ubuntu Desktop configuration
-    # ref: https://github.com/canonical/autoinstall-desktop
-    if ($Machine.LinuxType -eq 'Ubuntu' -and $Machine.OperatingSystem.Edition -eq 'Desktop') {
-        Set-UnattendedPackage -Package 'ubuntu-desktop'
-        Set-UnattendedPackage -Package firefox -IsSnap $true
-        if ($Machine.OperatingSystem.Version.Major -eq 20) {
-            Set-UnattendedPackage -Package gnome-3-38-2004 -IsSnap $true
-            Add-UnattendedPreinstallationCommand -Description 'Enable Hardware Experience' -Command "echo 'linux-generic-hwe-20.04' > /run/kernel-meta-package"
-        } elseif ($Machine.OperatingSystem.Version.Major -eq 22) {
-            Set-UnattendedPackage -Package gnome-42-2204 -IsSnap $true # Same package is installed as verified on installed OS
-            Add-UnattendedPreinstallationCommand -Description 'Enable Hardware Experience' -Command "echo 'linux-generic-hwe-22.04' > /run/kernel-meta-package"
-        } else {
-            Set-UnattendedPackage -Package gnome-42-2204 -IsSnap $true # Same package is installed as verified on installed OS
-            Add-UnattendedPreinstallationCommand -Description 'Enable Hardware Experience' -Command "echo 'linux-generic-hwe-24.04' > /run/kernel-meta-package"
-        }
-        Set-UnattendedPackage -Package gtk-common-themes -IsSnap $true
-        Set-UnattendedPackage -Package snap-store -IsSnap $true
-        Set-UnattendedPackage -Package snapd-desktop-integration -IsSnap $true
-        Add-UnattendedSynchronousCommand -Description 'Configure grub' -Command "sed -i /etc/default/grub -e 's/GRUB_CMDLINE_LINUX_DEFAULT=`".*/GRUB_CMDLINE_LINUX_DEFAULT=`"quiet splash`"/'"
-        Add-UnattendedSynchronousCommand -Description 'Update grub' -Command 'update-grub'
-        Add-UnattendedSynchronousCommand -Description 'Keep cloud init' -Command 'apt-get install -y cloud-init'
-        Add-UnattendedSynchronousCommand -Description 'Remove unused packages' -Command 'apt-get autoremove -y'
-    }
-    #endregion
+    #---------------------------------------------------------------------------
 
     #region network adapter settings
-    $macAddressPrefix = Get-LabConfigurationItem -Name HypervMacAddressPrefix
-    $macAddressesInUse = @(Get-LWHypervVM | Get-VMNetworkAdapter | Select-Object -ExpandProperty MacAddress)
-    $macAddressesInUse += (Get-LabVm -IncludeLinux).NetworkAdapters.MacAddress
-
-    $macIdx = 0
-    $prefixlength = 12 - $macAddressPrefix.Length
-    while ("$macAddressPrefix{0:X$prefixLength}" -f $macIdx -in $macAddressesInUse) { $macIdx++ }
-
     $type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.NetworkAdapter
     $adapters = New-Object $type
     $Machine.NetworkAdapters | ForEach-Object { $adapters.Add($_) }
+
+    # remove existing network adapters, later the defined adapters will be added again
+    $config = Get-LWProxmoxVMConfig -Name $Machine.ResourceName
+    $existingNetAdapters = $config | Get-Member | Where-Object Name -Match 'net\d{1,3}'
+
+    foreach ($existingNetAdapter in $existingNetAdapters)
+    {
+        $null = Set-PveNodesQemuConfig -Vmid $nextVmId -Node $global:proxmoxNode -Delete $existingNetAdapter.Name
+    }
+
+    $existingMacAddresses = @(Get-LWProxmoxUsedMacAddresses -NoSeparator)
+    $macAddressPrefix = Get-LabConfigurationItem -Name ProxmoxMacAddressPrefix
+    $macAddressPrefix = $macAddressPrefix -replace '(.{2})(?=.)', '$1:'
+    $macAddressPrefix += ':00:00:00'
+
+    #---------------------------------------------------------------------------
 
     if ($Machine.IsDomainJoined)
     {
@@ -153,8 +255,8 @@
             #the first adapter that has an IP address in the same IP range as the RootDC or FirstChildDC in the same domain will be used on top of
             #the network ordering
             $domainAdapter = $adapters | Where-Object { $_.Ipv4Address[0] } |
-            Where-Object { [AutomatedLab.IPNetwork]::Contains($_.Ipv4Address[0], $dc.IpAddress[0]) } |
-            Select-Object -First 1
+                Where-Object { [AutomatedLab.IPNetwork]::Contains($_.Ipv4Address[0], $dc.IpAddress[0]) } |
+                    Select-Object -First 1
 
             if ($domainAdapter)
             {
@@ -171,14 +273,15 @@
         $openSuseLinuxRcNetwork = [System.Text.StringBuilder]::new()
         $null = $openSuseLinuxRcNetwork.Append("ifcfg=`"eth$($adapterCount)`"=")
 
-        $prefixlength = 12 - $macAddressPrefix.Length
-        $mac = "$macAddressPrefix{0:X$prefixLength}" -f $macIdx++
+        $mac = New-MacAddress -MacAddressPrefix $macAddressPrefix -ExistingMacAddresses $existingMacAddresses
+        $mac = $mac -replace '[:\-]', ''
+        $existingMacAddresses += $mac
 
         if (-not $adapter.MacAddress)
         {
             $adapter.MacAddress = $mac
         }
-        
+
         #$ipSettings.Add('MacAddress', $adapter.MacAddress)
         $macWithDash = '{0}-{1}-{2}-{3}-{4}-{5}' -f (Get-StringSection -SectionSize 2 -String $adapter.MacAddress)
 
@@ -201,7 +304,7 @@
 
         $ipSettings.Add('Gateways', ($adapter.Ipv4Gateway + $adapter.Ipv6Gateway))
         $ipSettings.Add('DNSServers', ($adapter.Ipv4DnsServers + $adapter.Ipv6DnsServers))
-        
+
         $null = $openSuseLinuxRcNetwork.Append($ipSettings.IpAddresses -join ' ')
         $null = $openSuseLinuxRcNetwork.Append(' ')
         $null = $openSuseLinuxRcNetwork.Append($ipSettings.Gateways -join ' ')
@@ -246,9 +349,18 @@
 
         switch ($Adapter.NetbiosOptions)
         {
-            'Default' { $ipSettings.Add('NetBIOSOptions', '0') }
-            'Enabled' { $ipSettings.Add('NetBIOSOptions', '1') }
-            'Disabled' { $ipSettings.Add('NetBIOSOptions', '2') }
+            'Default'
+            {
+                $ipSettings.Add('NetBIOSOptions', '0')
+            }
+            'Enabled'
+            {
+                $ipSettings.Add('NetBIOSOptions', '1')
+            }
+            'Disabled'
+            {
+                $ipSettings.Add('NetBIOSOptions', '2')
+            }
         }
 
         Add-UnattendedNetworkAdapter @ipSettings
@@ -256,6 +368,17 @@
     }
 
     $Machine.NetworkAdapters = $adapters
+
+    # Add the network adapters to the Proxmox VM
+    $i = 0
+    foreach ($networkAdapter in $Machine.NetworkAdapters)
+    {
+        $netAdapterHashTable = @{
+            $i = "model=virtio,macaddr=$($networkAdapter.MacAddress -replace '(.{2})(?!$)', '$1:'),bridge=$($networkAdapter.VirtualSwitch),firewall=1"
+        }
+        $null = Set-PveNodesQemuConfig -Vmid $nextVmId -Node $global:proxmoxNode -NetN $netAdapterHashTable
+        $i++
+    }
 
     if ($Machine.OperatingSystemType -eq 'Windows')
     {
@@ -331,25 +454,26 @@
 
     Set-UnattendedFirewallState -State $Machine.EnableWindowsFirewall
 
-    if ($Machine.LinuxType -eq 'Suse') {
-        try {
+    if ($Machine.LinuxType -eq 'Suse')
+    {
+        try
+        {
             $repoContent = (Invoke-RestMethod -Method Get -Uri "https://packages.microsoft.com/config/rhel/$Version/prod.repo" -ErrorAction Stop) -split "`n"
         }
-        catch { }
+        catch
+        {
+        }
 
-        $pwshRelease = ((Invoke-RestMethod -Uri 'https://api.github.com/repos/PowerShell/PowerShell/releases/latest' -ErrorAction SilentlyContinue).assets | Where-Object Name -match 'rh\.x86_64\.rpm').browser_download_url
-        if (-not $pwshRelease) {
+        $pwshRelease = ((Invoke-RestMethod -Uri 'https://api.github.com/repos/PowerShell/PowerShell/releases/latest' -ErrorAction SilentlyContinue).assets | Where-Object Name -Match 'rh\.x86_64\.rpm').browser_download_url
+        if (-not $pwshRelease)
+        {
             $pwshRelease = 'https://github.com/PowerShell/PowerShell/releases/download/v7.5.2/powershell-7.5.2-1.rh.x86_64.rpm'
         }
 
         Add-UnattendedSynchronousCommand -Command "sudo zypper update -y && sudo zypper install -y libicu libopenssl3`nsudo rpm -i --nodeps $pwshRelease`necho `"Subsystem powershell /usr/bin/pwsh -sshs -NoLogo`" >> /etc/ssh/sshd_config`nsystemctl restart sshd`n" -Description 'Install PowerShell'
     }
-    
-    if (-not [string]::IsNullOrEmpty($Machine.SshPublicKey) -and $Machine.LinuxType -in 'Ubuntu', 'Suse')
-    {
-        Add-UnattendedSshPublicKey -PublicKey $Machine.SshPublicKey
-    }
-    elseif ($Machine.OperatingSystemType -eq 'Linux' -and -not [string]::IsNullOrEmpty($Machine.SshPublicKey))
+
+    if ($Machine.OperatingSystemType -eq 'Linux' -and -not [string]::IsNullOrEmpty($Machine.SshPublicKey))
     {
         $command = @"
 mkdir -p /root/.ssh
@@ -384,20 +508,21 @@ restorecon -R /root/.ssh/
 
         if (-not [string]::IsNullOrEmpty($Machine.DomainName))
         {
-            $domain = $lab.Domains | Where-Object Name -eq $Machine.DomainName
+            $domain = $lab.Domains | Where-Object Name -EQ $Machine.DomainName
 
             $parameters = @{
                 DomainName = $Machine.DomainName
                 Username   = $domain.Administrator.UserName
                 Password   = $domain.Administrator.Password
             }
-            if ($Machine.OrganizationalUnit) {
+            if ($Machine.OrganizationalUnit)
+            {
                 $parameters['OrganizationalUnit'] = $machine.OrganizationalUnit
             }
 
             Set-UnattendedDomain @parameters
 
-            if ($Machine.OperatingSystemType -eq 'Linux' -and $Machine.LinuxType -ne 'Ubuntu')
+            if ($Machine.OperatingSystemType -eq 'Linux')
             {
                 if ($Machine.LinuxType -eq 'Suse')
                 {
@@ -410,13 +535,6 @@ restorecon -R /root/.ssh/
                 }
 
                 Add-UnattendedSynchronousCommand @sudoParam
-                [System.Collections.Generic.List[string]] $commands = @(
-                    "mkdir -p /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh"
-                    "chown -R $($domain.Administrator.UserName)@$($Machine.DomainName):domain\ users@$($Machine.DomainName) /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh" 
-                    "chmod 700 /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh && chmod 600 /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/authorized_keys"
-                    "echo `"$($Machine.SshPublicKey)`" > /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/authorized_keys"
-                    "restorecon -R /home/$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/"
-                )
 
                 if (-not [string]::IsNullOrEmpty($Machine.SshPublicKey))
                 {
@@ -430,85 +548,16 @@ restorecon -R /$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/
                     Add-UnattendedSynchronousCommand -Command $command -Description 'SSH'
                 }
             }
-            elseif ($Machine.OperatingSystemType -eq 'Linux' -and $Machine.LinuxType -eq 'Ubuntu')
-            {
-                Write-UnattendedFile -Content $Machine.SshPublicKey -DestinationPath "/home/$($domain.Administrator.UserName.ToLower())@$($Machine.DomainName)/.ssh/authorized_keys"
-                Write-UnattendedFile -Content @"
-#!/bin/bash
-mkdir -p /home/$($domain.Administrator.UserName.ToLower())@$($Machine.DomainName)/.ssh
-chown -R $($domain.Administrator.UserName.ToLower())@$($Machine.DomainName):domain\ users@$($Machine.DomainName) /home/$($domain.Administrator.UserName.ToLower())@$($Machine.DomainName)
-chmod 700 /home/$($domain.Administrator.UserName.ToLower())@$($Machine.DomainName)/.ssh && chmod 600 /home/$($domain.Administrator.UserName.ToLower())@$($Machine.DomainName)/.ssh/authorized_keys
-restorecon -R /home/$($domain.Administrator.UserName.ToLower())@$($Machine.DomainName)/.ssh/
-rm -rf /etc/cron.d/postconf
-"@ -DestinationPath '/postconf.sh'
-                Write-UnattendedFile -Content '@reboot root sleep 30; bash /postconf.sh' -DestinationPath '/etc/cron.d/10postconf'
-            }
         }
-    }
-
-    #set the Generation for the VM depending on SupportGen2VMs, host OS version and VM OS version
-    $hostOsVersion = [System.Environment]::OSVersion.Version
-
-    $generation = if (Get-LabConfigurationItem -Name SupportGen2VMs)
-    {
-        if ($Machine.VmGeneration -ne 1 -and $hostOsVersion -ge [System.Version]6.3 -and $Machine.Gen2VmSupported)
-        {
-            2
-        }
-        else
-        {
-            1
-        }
-    }
-    else
-    {
-        1
-    }
-
-    $vmPath = $lab.GetMachineTargetPath($Machine.ResourceName)
-    $path = "$vmPath\$($Machine.ResourceName).vhdx"
-    Write-PSFMessage "`tVM Disk path is '$path'"
-
-    if (Test-Path -Path $path)
-    {
-        Write-ScreenInfo -Message "The disk $path does already exist. Disk cannot be created" -Type Warning
-        return $false
     }
 
     Write-ProgressIndicator
 
+    #TODO Unlear yet
+    <#
     if ($Machine.OperatingSystemType -eq 'Linux')
     {
-        $nextDriveLetter = [char[]](67..90) |
-        Where-Object { (Get-CimInstance -Class Win32_LogicalDisk |
-                Select-Object -ExpandProperty DeviceID) -notcontains "$($_):" } |
-        Select-Object -First 1
-        $systemDisk = New-Vhd -Path $path -SizeBytes ($lab.Target.ReferenceDiskSizeInGB * 1GB) -BlockSizeBytes 1MB
-        $mountedOsDisk = $systemDisk | Mount-VHD -Passthru
-
-            $mountedOsDisk | Initialize-Disk -PartitionStyle GPT
-            $size = 6GB
-            if ($Machine.LinuxType -in 'RedHat', 'Ubuntu')
-            {
-                $size = 100MB
-            }
-            $label = if ($Machine.LinuxType -eq 'RedHat') { 'OEMDRV' } else { 'CIDATA' }
-            $unattendPartition = $mountedOsDisk | New-Partition -Size $size
-
-            # Use a small FAT32 partition to hold AutoYAST and Kickstart configuration
-            $diskpartCmd = "@
-                select disk $($mountedOsDisk.DiskNumber)
-                select partition $($unattendPartition.PartitionNumber)
-                format quick fs=fat32 label=$label
-                exit
-            @"
-            $diskpartCmd | diskpart.exe | Out-Null
-
-            $unattendPartition | Set-Partition -NewDriveLetter $nextDriveLetter
-            $unattendPartition = $unattendPartition | Get-Partition
-            $drive = [System.IO.DriveInfo][string]$unattendPartition.DriveLetter
-
-        if ($machine.LinuxPackageGroup )
+        if ( $machine.OperatingSystemType -eq 'Linux' -and $machine.LinuxPackageGroup )
         {
             Set-UnattendedPackage -Package $machine.LinuxPackageGroup
         }
@@ -533,7 +582,7 @@ rm -rf /etc/cron.d/postconf
             # Copy data
             Copy-Item -Path "$($isoDrive.RootDirectory.FullName)*" -Destination $drive.RootDirectory.FullName -Recurse -Force -PassThru |
             Where-Object IsReadOnly | Set-ItemProperty -name IsReadOnly -Value $false
-            
+
             # Unmount ISO
             [void] (Dismount-DiskImage -ImagePath $Machine.OperatingSystem.IsoPath)
 
@@ -547,14 +596,11 @@ rm -rf /etc/cron.d/postconf
         }
         elseif ($machine.LinuxType -eq 'Ubuntu')
         {
-            Export-UnattendedFile -Path $drive.RootDirectory
-            $ubuLease = '{0:d2}.{1:d2}' -f $machine.OperatingSystem.Version.Major, $machine.OperatingSystem.Version.Minor # Microsoft Repo does not use $RELEASE but version number instead.
+            $null = New-Item -Path $drive.RootDirectory -Name meta-data -Force -Value "instance-id: iid-local01`nlocal-hostname: $($Machine.Name)"
+            Export-UnattendedFile -Path (Join-Path -Path $drive.RootDirectory -ChildPath user-data)
+            $ubuLease = '{0:d2}.{1:d2}' -f $machine.OperatingSystem.Version.Major,$machine.OperatingSystem.Version.Minor # Microsoft Repo does not use $RELEASE but version number instead.
             (Get-Content -Path (Join-Path -Path $drive.RootDirectory -ChildPath user-data)) -replace 'REPLACERELEASE', $ubuLease | Set-Content (Join-Path -Path $drive.RootDirectory -ChildPath user-data)
-            (Get-Content -Path (Join-Path -Path $drive.RootDirectory -ChildPath meta-data)) -replace 'REPLACERELEASE', $ubuLease | Set-Content (Join-Path -Path $drive.RootDirectory -ChildPath meta-data)
-            
-
-            Copy-Item -Path (Join-Path -Path $drive.RootDirectory -ChildPath user-data) -Destination (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath "cloudinit_user_$($Machine.Name).yml")
-            Copy-Item -Path (Join-Path -Path $drive.RootDirectory -ChildPath meta-data) -Destination (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath "cloudinit_meta_$($Machine.Name).yml")
+            Copy-Item -Path (Join-Path -Path $drive.RootDirectory -ChildPath user-data) -Destination (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath "cloudinit_$($Machine.Name).yml")
         }
 
         $mountedOsDisk | Dismount-VHD
@@ -565,61 +611,58 @@ rm -rf /etc/cron.d/postconf
     }
     else
     {
-        $referenceDiskPath = if ($Machine.ReferenceDiskPath) { $Machine.ReferenceDiskPath } else { $Machine.OperatingSystem.BaseDiskPath }
-        $systemDisk = New-VHD -Path $path -Differencing -ParentPath $referenceDiskPath -ErrorAction Stop
-        Write-PSFMessage "`tcreated differencing disk '$($systemDisk.Path)' pointing to '$ReferenceVhdxPath'"
+    #>
 
-        $mountedOsDisk = Mount-VHD -Path $path -Passthru
-        try
+    #TODO: The copy job needs to go somewhere else
+    <#
+    $paths = [Collections.ArrayList]::new()
+    $alcommon = Get-Module -Name AutomatedLab.Common
+    $null = $paths.Add((Split-Path -Path $alcommon.ModuleBase -Parent))
+    $null = foreach ($req in $alCommon.RequiredModules.Name)
+    {
+        $paths.Add((Split-Path -Path (Get-Module -Name $req -ListAvailable)[0].ModuleBase -Parent))
+    }
+
+    Copy-Item -Path $paths -Destination "$($drive.DriveLetter):\Program Files\WindowsPowerShell\Modules" -Recurse
+    #>
+
+    #TODO: The DSC job needs to go somewhere else
+    <#
+    if ($Machine.InitialDscConfigurationMofPath)
+    {
+        $exportedModules = Get-RequiredModulesFromMOF -Path $Machine.InitialDscConfigurationMofPath
+        foreach ($exportedModule in $exportedModules.GetEnumerator())
         {
-            $drive = $mountedosdisk | get-disk | Get-Partition | Get-Volume  | Where { $_.DriveLetter -and $_.FileSystemLabel -eq 'System' }
-
-            $paths = [Collections.ArrayList]::new()
-            $alcommon = Get-Module -Name AutomatedLab.Common
-            $null = $paths.Add((Split-Path -Path $alcommon.ModuleBase -Parent))
-            $null = foreach ($req in $alCommon.RequiredModules.Name)
+            $moduleInfo = Get-Module -ListAvailable -Name $exportedModule.Key | Where-Object Version -eq $exportedModule.Value | Select-Object -First 1
+            if (-not $moduleInfo)
             {
-                $paths.Add((Split-Path -Path (Get-Module -Name $req -ListAvailable)[0].ModuleBase -Parent))
+                Write-ScreenInfo -Type Warning -Message "Unable to find $($exportedModule.Key). Attempting to download from PSGallery"
+                Save-Module -Path "$($drive.DriveLetter):\Program Files\WindowsPowerShell\Modules" -Name $exportedModule.Key -RequiredVersion $exportedModule.Value -Repository PSGallery -Force -AllowPrerelease
             }
-
-            Copy-Item -Path $paths -Destination "$($drive.DriveLetter):\Program Files\WindowsPowerShell\Modules" -Recurse
-
-
-            if ($Machine.InitialDscConfigurationMofPath)
+            else
             {
-                $exportedModules = Get-RequiredModulesFromMOF -Path $Machine.InitialDscConfigurationMofPath
-                foreach ($exportedModule in $exportedModules.GetEnumerator())
-                {
-                    $moduleInfo = Get-Module -ListAvailable -Name $exportedModule.Key | Where-Object Version -eq $exportedModule.Value | Select-Object -First 1
-                    if (-not $moduleInfo)
+                $source = Get-ModuleDependency -Module $moduleInfo | Sort-Object -Unique | ForEach-Object {
+                    if ((Get-Item $_).BaseName -match '\d{1,4}\.\d{1,4}\.\d{1,4}' -and $Machine.OperatingSystem.Version -ge 10.0)
                     {
-                        Write-ScreenInfo -Type Warning -Message "Unable to find $($exportedModule.Key). Attempting to download from PSGallery"
-                        Save-Module -Path "$($drive.DriveLetter):\Program Files\WindowsPowerShell\Modules" -Name $exportedModule.Key -RequiredVersion $exportedModule.Value -Repository PSGallery -Force -AllowPrerelease
+                        #parent folder contains a specific version. In order to copy the module right, the parent of this parent is required
+                        Split-Path -Path $_ -Parent
                     }
                     else
                     {
-                        $source = Get-ModuleDependency -Module $moduleInfo | Sort-Object -Unique | ForEach-Object { 
-                            if ((Get-Item $_).BaseName -match '\d{1,4}\.\d{1,4}\.\d{1,4}' -and $Machine.OperatingSystem.Version -ge 10.0)
-                            {
-                                #parent folder contains a specific version. In order to copy the module right, the parent of this parent is required
-                                Split-Path -Path $_ -Parent
-                            }
-                            else
-                            {
-                                $_
-                            }    
-                        }
-
-                        Copy-Item -Recurse -Path $source -Destination "$($drive.DriveLetter):\Program Files\WindowsPowerShell\Modules"
+                        $_
                     }
                 }
-                Copy-Item -Path $Machine.InitialDscConfigurationMofPath -Destination "$($drive.DriveLetter):\Windows\System32\configuration\pending.mof"
-            }
 
-            if ($Machine.InitialDscLcmConfigurationMofPath)
-            {
-                Copy-Item -Path $Machine.InitialDscLcmConfigurationMofPath -Destination "$($drive.DriveLetter):\Windows\System32\configuration\MetaConfig.mof"
+                Copy-Item -Recurse -Path $source -Destination "$($drive.DriveLetter):\Program Files\WindowsPowerShell\Modules"
             }
+        }
+        Copy-Item -Path $Machine.InitialDscConfigurationMofPath -Destination "$($drive.DriveLetter):\Windows\System32\configuration\pending.mof"
+    }
+
+    if ($Machine.InitialDscLcmConfigurationMofPath)
+    {
+        Copy-Item -Path $Machine.InitialDscLcmConfigurationMofPath -Destination "$($drive.DriveLetter):\Windows\System32\configuration\MetaConfig.mof"
+    }
         }
         finally
         {
@@ -628,215 +671,79 @@ rm -rf /etc/cron.d/postconf
     }
 
     Write-ProgressIndicator
+    #>
 
-    $vmParameter = @{
-        Name               = $Machine.ResourceName
-        MemoryStartupBytes = ($Machine.Memory)
-        VHDPath            = $systemDisk.Path
-        Path               = $VmPath
-        Generation         = $generation
-        ErrorAction        = 'Stop'
-    }
-
-    $vm = Hyper-V\New-VM @vmParameter
-
-    Set-LWHypervVMDescription -ComputerName $Machine.ResourceName -Hashtable @{
+    Set-LWVMDescription -ComputerName $Machine.ResourceName -Hashtable @{
         CreatedBy    = '{0} ({1})' -f $PSCmdlet.MyInvocation.MyCommand.Module.Name, $PSCmdlet.MyInvocation.MyCommand.Module.Version
         CreationTime = Get-Date
         LabName      = (Get-Lab).Name
         InitState    = [AutomatedLab.LabVMInitState]::Uninitialized
     }
 
-    #Removing this check as this 'Get-SecureBootUEFI' is not supported on Azure VMs for nested virtualization
-    #$isUefi = try
-    #{
-    #    Get-SecureBootUEFI -Name SetupMode
-    #}
-    #catch { }
-
-    if ($vm.Generation -ge 2)
-    {
-        $secureBootTemplate = if ($Machine.HypervProperties.SecureBootTemplate)
-        {
-            $Machine.HypervProperties.SecureBootTemplate
-        }
-        else
-        {
-            if ($Machine.LinuxType -eq 'unknown')
-            {
-                'MicrosoftWindows'
-            }
-            else
-            {
-                'MicrosoftUEFICertificateAuthority'
-            }
-        }
-
-        $vmFirmwareParameters = @{}
-
-        if ($Machine.HypervProperties.EnableSecureBoot)
-        {
-            $vmFirmwareParameters.EnableSecureBoot = 'On'
-            $vmFirmwareParameters.SecureBootTemplate = $secureBootTemplate
-        }
-        else
-        {
-            $vmFirmwareParameters.EnableSecureBoot = 'Off'
-        }
-
-        $vm | Set-VMFirmware @vmFirmwareParameters
-
-        if ($Machine.HyperVProperties.EnableTpm -match '1|true|yes')
-        {
-            $vm | Set-VMKeyProtector -NewLocalKeyProtector
-            $vm | Enable-VMTPM
-        }
-    }
-
-    #remove the unconnected default network adapter
-    $vm | Remove-VMNetworkAdapter
-    foreach ($adapter in $adapters)
-    {
-        #bind all network adapters to their designated switches, Repair-LWHypervNetworkConfig will change the binding order if necessary
-        $parameters = @{
-            Name             = $adapter.VirtualSwitch.ResourceName
-            SwitchName       = $adapter.VirtualSwitch.ResourceName
-            StaticMacAddress = $adapter.MacAddress
-            VMName           = $vm.Name
-            PassThru         = $true
-        }
-
-        if (-not (Get-LabConfigurationItem -Name DisableDeviceNaming -Default $false) -and (Get-Command Add-VMNetworkAdapter).Parameters.Values.Name -contains 'DeviceNaming' -and $vm.Generation -eq 2 -and $Machine.OperatingSystem.Version -ge 10.0)
-        {
-            $parameters['DeviceNaming'] = 'On'
-        }
-
-        $newAdapter = Add-VMNetworkAdapter @parameters
-
-        if (-not $adapter.AccessVLANID -eq 0)
-        {
-
-            Set-VMNetworkAdapterVlan -VMNetworkAdapter $newAdapter -Access -VlanId $adapter.AccessVLANID
-            Write-PSFMessage "Network Adapter: '$($adapter.VirtualSwitch.ResourceName)' for VM: '$($vm.Name)' created with VLAN ID: '$($adapter.AccessVLANID)', Ensure external routing is configured correctly"
-        }
-    }
-
     Write-PSFMessage "`tMachine '$Name' created"
 
-    $automaticStartAction = 'Nothing'
-    $automaticStartDelay = 0
-    $automaticStopAction = 'ShutDown'
+    #copy AL tools to lab machine and optionally the tools folder
+    #TODO
+    <#
+    $drive = New-PSDrive -Name $VhdVolume[0] -PSProvider FileSystem -Root $VhdVolume
 
-    if ($Machine.HypervProperties.AutomaticStartAction) { $automaticStartAction = $Machine.HypervProperties.AutomaticStartAction }
-    if ($Machine.HypervProperties.AutomaticStartDelay)  { $automaticStartDelay  = $Machine.HypervProperties.AutomaticStartDelay  }
-    if ($Machine.HypervProperties.AutomaticStopAction)  { $automaticStopAction  = $Machine.HypervProperties.AutomaticStopAction  }
-    $vm | Hyper-V\Set-VM -AutomaticStartAction $automaticStartAction -AutomaticStartDelay $automaticStartDelay -AutomaticStopAction $automaticStopAction
+    Write-PSFMessage 'Copying AL tools to VHD...'
+    $tempPath = "$([System.IO.Path]::GetTempPath())$([System.IO.Path]::GetRandomFileName())"
+    New-Item -ItemType Directory -Path $tempPath | Out-Null
+    Copy-Item -Path "$((Get-Module -Name AutomatedLabCore)[0].ModuleBase)\Tools\HyperV\*" -Destination $tempPath -Recurse
 
-    Write-ProgressIndicator
+    Copy-Item -Path "$tempPath\*" -Destination "$vhdVolume\Windows" -Recurse
 
-    if ( $Machine.OperatingSystemType -eq 'Linux')
+    Remove-Item -Path $tempPath -Recurse -ErrorAction SilentlyContinue
+
+    Write-PSFMessage '...done'
+    #>
+
+    if ($Machine.OperatingSystemType -eq 'Windows' -and -not [string]::IsNullOrEmpty($Machine.SshPublicKey))
     {
-        $dvd = $vm | Add-VMDvdDrive -Path $Machine.OperatingSystem.IsoPath -Passthru
-        if ( $Machine.LinuxType -in 'RedHat','Ubuntu') {
-            $vm | Set-VMFirmware -FirstBootDevice $dvd
-        }
-    }
+        Add-UnattendedSynchronousCommand -Command 'PowerShell -File "C:\Program Files\OpenSSH-Win64\install-sshd.ps1"' -Description 'Configure SSH'
+        Add-UnattendedSynchronousCommand -Command 'PowerShell -Command "Set-Service -Name sshd -StartupType Automatic"' -Description 'Enable SSH'
+        Add-UnattendedSynchronousCommand -Command 'PowerShell -Command "Restart-Service -Name sshd"' -Description 'Restart SSH'
 
-    if ( $Machine.OperatingSystemType -eq 'Windows')
-    {
-        [void](Mount-DiskImage -ImagePath $path)
-        $VhdDisk = Get-DiskImage -ImagePath $path | Get-Disk
-        $VhdPartition = Get-Partition -DiskNumber $VhdDisk.Number
-
-        if ($VhdPartition.Count -gt 1)
+        Write-PSFMessage 'Copying PowerShell 7 and setting up SSH'
+        $release = try
         {
-            #for Generation 2 VMs
-            $vhdOsPartition = $VhdPartition | Where-Object Type -eq 'Basic'
-            # If no drive letter is assigned, make sure we assign it before continuing
-            If ($vhdOsPartition.NoDefaultDriveLetter)
-            {
-                # Get all available drive letters, and store in a temporary variable.
-                $usedDriveLetters = @(Get-Volume | ForEach-Object { "$([char]$_.DriveLetter)" }) + @(Get-CimInstance -ClassName Win32_MappedLogicalDisk | ForEach-Object { $([char]$_.DeviceID.Trim(':')) })
-                [char[]]$tempDriveLetters = Compare-Object -DifferenceObject $usedDriveLetters -ReferenceObject $( 67..90 | ForEach-Object { "$([char]$_)" }) -PassThru | Where-Object { $_.SideIndicator -eq '<=' }
-                # Sort the available drive letters to get the first available drive letter
-                $availableDriveLetters = ($TempDriveLetters | Sort-Object)
-                $firstAvailableDriveLetter = $availableDriveLetters[0]
-                $vhdOsPartition | Set-Partition -NewDriveLetter $firstAvailableDriveLetter
-                $VhdVolume = "$($firstAvailableDriveLetter):"
-
-            }
-            Else
-            {
-                $VhdVolume = "$($vhdOsPartition.DriveLetter):"
-            }
+            Invoke-RestMethod -Uri 'https://api.github.com/repos/powershell/powershell/releases/latest' -UseBasicParsing -ErrorAction Stop
         }
-        else
+        catch
         {
-            #for Generation 1 VMs
-            $VhdVolume = "$($VhdPartition.DriveLetter):"
         }
-        Write-PSFMessage "`tDisk mounted to drive $VhdVolume"
-
-        #Get-PSDrive needs to be called to update the PowerShell drive list
-        Get-PSDrive | Out-Null
-
-        #copy AL tools to lab machine and optionally the tools folder
-        $drive = New-PSDrive -Name $VhdVolume[0] -PSProvider FileSystem -Root $VhdVolume
-
-        Write-PSFMessage 'Copying AL tools to VHD...'
-        $tempPath = "$([System.IO.Path]::GetTempPath())$([System.IO.Path]::GetRandomFileName())"
-        New-Item -ItemType Directory -Path $tempPath | Out-Null
-        Copy-Item -Path "$((Get-Module -Name AutomatedLabCore)[0].ModuleBase)\Tools\HyperV\*" -Destination $tempPath -Recurse
-        foreach ($file in (Get-ChildItem -Path $tempPath -Recurse -File))
+        $uri = ($release.assets | Where-Object name -Like '*-win-x64.zip').browser_download_url
+        if (-not $uri)
         {
-            # Why???
-            if ($PSEdition -eq 'Desktop')
-            {
-                $file.Decrypt()
-            }
+            $uri = 'https://github.com/PowerShell/PowerShell/releases/download/v7.2.6/PowerShell-7.2.6-win-x64.zip'
         }
+        $psArchive = Get-LabInternetFile -Uri $uri -Path "$labSources/SoftwarePackages/PS7.zip"
 
-        Copy-Item -Path "$tempPath\*" -Destination "$vhdVolume\Windows" -Recurse
 
-        Remove-Item -Path $tempPath -Recurse -ErrorAction SilentlyContinue
-
-        Write-PSFMessage '...done'
-
-        
-
-        if ($Machine.OperatingSystemType -eq 'Windows' -and -not [string]::IsNullOrEmpty($Machine.SshPublicKey))
+        $release = try
         {
-            Add-UnattendedSynchronousCommand -Command 'PowerShell -File "C:\Program Files\OpenSSH-Win64\install-sshd.ps1"' -Description 'Configure SSH'
-            Add-UnattendedSynchronousCommand -Command 'PowerShell -Command "Set-Service -Name sshd -StartupType Automatic"' -Description 'Enable SSH'
-            Add-UnattendedSynchronousCommand -Command 'PowerShell -Command "Restart-Service -Name sshd"' -Description 'Restart SSH'
+            Invoke-RestMethod -Uri 'https://api.github.com/repos/powershell/win32-openssh/releases/latest' -UseBasicParsing -ErrorAction Stop
+        }
+        catch
+        {
+        }
+        $uri = ($release.assets | Where-Object name -Like '*-win64.zip').browser_download_url
+        if (-not $uri)
+        {
+            $uri = 'https://github.com/PowerShell/Win32-OpenSSH/releases/download/v8.9.1.0p1-Beta/OpenSSH-Win64.zip'
+        }
+        $sshArchive = Get-LabInternetFile -Uri $uri -Path "$labSources/SoftwarePackages/ssh.zip"
 
-            Write-PSFMessage 'Copying PowerShell 7 and setting up SSH'
-            $release = try { Invoke-RestMethod -Uri 'https://api.github.com/repos/powershell/powershell/releases/latest' -UseBasicParsing -ErrorAction Stop } catch {}
-            $uri = ($release.assets | Where-Object name -like '*-win-x64.zip').browser_download_url
-            if (-not $uri)
-            {
-                $uri = 'https://github.com/PowerShell/PowerShell/releases/download/v7.2.6/PowerShell-7.2.6-win-x64.zip'
-            }
-            $psArchive = Get-LabInternetFile -Uri $uri -Path "$labSources/SoftwarePackages/PS7.zip"
+        $null = New-Item -ItemType Directory -Force -Path (Join-Path -Path $vhdVolume -ChildPath 'Program Files\PowerShell\7')
+        Expand-Archive -Path "$labSources/SoftwarePackages/PS7.zip" -DestinationPath (Join-Path -Path $vhdVolume -ChildPath 'Program Files\PowerShell\7')
+        Expand-Archive -Path "$labSources/SoftwarePackages/ssh.zip" -DestinationPath (Join-Path -Path $vhdVolume -ChildPath 'Program Files')
 
-        
-            $release = try { Invoke-RestMethod -Uri 'https://api.github.com/repos/powershell/win32-openssh/releases/latest' -UseBasicParsing -ErrorAction Stop } catch {}
-            $uri = ($release.assets | Where-Object name -like '*-win64.zip').browser_download_url
-            if (-not $uri)
-            {
-                $uri = 'https://github.com/PowerShell/Win32-OpenSSH/releases/download/v8.9.1.0p1-Beta/OpenSSH-Win64.zip'
-            }
-            $sshArchive = Get-LabInternetFile -Uri $uri -Path "$labSources/SoftwarePackages/ssh.zip"
+        $null = New-Item -ItemType File -Path (Join-Path -Path $vhdVolume -ChildPath '\AL\SSH\keys'), (Join-Path -Path $vhdVolume -ChildPath 'ProgramData\ssh\sshd_config') -Force
 
-            $null = New-Item -ItemType Directory -Force -Path (Join-Path -Path $vhdVolume -ChildPath 'Program Files\PowerShell\7')
-            Expand-Archive -Path "$labSources/SoftwarePackages/PS7.zip" -DestinationPath (Join-Path -Path $vhdVolume -ChildPath 'Program Files\PowerShell\7')
-            Expand-Archive -Path "$labSources/SoftwarePackages/ssh.zip" -DestinationPath (Join-Path -Path $vhdVolume -ChildPath 'Program Files')
+        $Machine.SshPublicKey | Add-Content -Path (Join-Path -Path $vhdVolume -ChildPath '\AL\SSH\keys')
 
-            $null = New-Item -ItemType File -Path (Join-Path -Path $vhdVolume -ChildPath '\AL\SSH\keys'), (Join-Path -Path $vhdVolume -ChildPath 'ProgramData\ssh\sshd_config') -Force
-        
-            $Machine.SshPublicKey | Add-Content -Path (Join-Path -Path $vhdVolume -ChildPath '\AL\SSH\keys')
-        
-            $sshdConfig = @"
+        $sshdConfig = @'
 Port 22
 PasswordAuthentication no
 PubkeyAuthentication yes
@@ -844,24 +751,25 @@ GSSAPIAuthentication yes
 AllowGroups Users Administrators
 AuthorizedKeysFile c:/al/ssh/keys
 Subsystem powershell c:/progra~1/powershell/7/pwsh.exe -sshs -NoLogo
-"@
-            $sshdConfig | Set-Content -Path (Join-Path -Path $vhdVolume -ChildPath 'ProgramData\ssh\sshd_config')
-            Write-PSFMessage 'Done'
-        }
+'@
+        $sshdConfig | Set-Content -Path (Join-Path -Path $vhdVolume -ChildPath 'ProgramData\ssh\sshd_config')
+        Write-PSFMessage 'Done'
+    }
 
-        if ($Machine.ToolsPath.Value)
-        {
-            $toolsDestination = "$vhdVolume\Tools"
-            if ($Machine.ToolsPathDestination)
-            {
-                $toolsDestination = "$($toolsDestination[0])$($Machine.ToolsPathDestination.Substring(1,$Machine.ToolsPathDestination.Length - 1))"
-            }
-            Write-PSFMessage 'Copying tools to VHD...'
-            Copy-Item -Path $Machine.ToolsPath -Destination $toolsDestination -Recurse
-            Write-PSFMessage '...done'
-        }
+    #TODO: In Proxmox, this has to be done later via Copy-LabFileItem
+    #if ($Machine.ToolsPath.Value)
+    #{
+    #    $toolsDestination = "$vhdVolume\Tools"
+    #    if ($Machine.ToolsPathDestination)
+    #    {
+    #        $toolsDestination = "$($toolsDestination[0])$($Machine.ToolsPathDestination.Substring(1,$Machine.ToolsPathDestination.Length - 1))"
+    #    }
+    #    Write-PSFMessage 'Copying tools to VHD...'
+    #    Copy-Item -Path $Machine.ToolsPath -Destination $toolsDestination -Recurse
+    #    Write-PSFMessage '...done'
+    #}
 
-        $enableWSManRegDump = @'
+    $enableWSManRegDump = @'
 Windows Registry Editor Version 5.00
 
 [HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\WSMAN]
@@ -890,129 +798,122 @@ Windows Registry Editor Version 5.00
 [HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\WSMAN\Service]
 "allow_remote_requests"=dword:00000001
 '@
-        #Using the .net class as the PowerShell provider usually does not recognize the new drive
-        [System.IO.File]::WriteAllText("$vhdVolume\WSManRegKey.reg", $enableWSManRegDump)
+    #Using the .net class as the PowerShell provider usually does not recognize the new drive
+    [System.IO.File]::WriteAllText("$vhdVolume\WSManRegKey.reg", $enableWSManRegDump)
 
-        $additionalDisksOnline = @"
-`$deployDebug = (New-Item -ItemType Directory -Path `$ExecutionContext.InvokeCommand.ExpandString("$AL_DeployDebugFolder") -Force).FullName
-Start-Transcript -Path `$deployDebug\AdditionalDisksOnline.log
-`$diskpartCmd = 'LIST DISK'
-`$disks = `$diskpartCmd | diskpart.exe
-`$pattern = 'Disk (?<DiskNumber>\d{1,3}) \s+(?<State>Online|Offline)\s+(?<Size>\d+) (KB|MB|GB|TB)\s+(?<Free>\d+) (B|KB|MB|GB|TB)'
-foreach (`$line in `$disks)
+    $additionalDisksOnline = @'
+Start-Transcript -Path C:\DeployDebug\AdditionalDisksOnline.log
+$diskpartCmd = 'LIST DISK'
+$disks = $diskpartCmd | diskpart.exe
+$pattern = 'Disk (?<DiskNumber>\d{1,3}) \s+(?<State>Online|Offline)\s+(?<Size>\d+) (KB|MB|GB|TB)\s+(?<Free>\d+) (B|KB|MB|GB|TB)'
+foreach ($line in $disks)
 {
-    if (`$line -match `$pattern)
+    if ($line -match $pattern)
     {
-        #`$nextDriveLetter = [char[]](67..90) |
-        #Where-Object { (Get-CimInstance -Class Win32_LogicalDisk |
-        #Select-Object -ExpandProperty DeviceID) -notcontains "`$(`$_):"} |
-        #Select-Object -First 1
-        `$diskNumber = `$Matches.DiskNumber
-        if (`$Matches.State -eq 'Offline')
+        $diskNumber = $Matches.DiskNumber
+        if ($Matches.State -eq 'Offline')
         {
-            `$diskpartCmd = "@
-                SELECT DISK `$diskNumber
+            $diskpartCmd = "@
+                SELECT DISK $diskNumber
                 ATTRIBUTES DISK CLEAR READONLY
                 ONLINE DISK
                 EXIT
             @"
-            `$diskpartCmd | diskpart.exe | Out-Null
+            $diskpartCmd | diskpart.exe | Out-Null
         }
     }
 }
-foreach (`$volume in (Get-WmiObject -Class Win32_Volume))
+
+$diskDefinitions = Import-Clixml -Path C:\Disks.xml
+Write-Verbose -Message "Disk count for $env:COMPUTERNAME`: $($diskDefinitions.Count)"
+foreach ($diskDefinition in $diskDefinitions.Where({ -not $_.SkipInitialization }))
 {
-    if (`$volume.Label -notmatch '(?<Label>[-_\w\d]+)_AL_(?<DriveLetter>[A-Z])')
+    $disk = Get-Disk | Where-Object Number -eq $diskDefinition.Lun
+    $disk | Set-Disk -IsReadOnly $false
+    $disk | Set-Disk -IsOffline $false
+    $disk | Initialize-Disk -PartitionStyle GPT
+    $partition = if ($diskDefinition.DriveLetter)
     {
-        continue
-    }
-        if (`$volume.DriveLetter -ne "`$(`$Matches.DriveLetter):")
-    {
-        `$volume.DriveLetter = "`$(`$Matches.DriveLetter):"
-    }
-        `$volume.Label = `$Matches.Label
-    `$volume.Put()
-}
-Stop-Transcript
-"@
-        [System.IO.File]::WriteAllText("$vhdVolume\AdditionalDisksOnline.ps1", $additionalDisksOnline)
-
-        $defaultSettings = @{
-            WinRmMaxEnvelopeSizeKb              = 500
-            WinRmMaxConcurrentOperationsPerUser = 1500
-            WinRmMaxConnections                 = 300
-        }
-    
-        $command = 'Start-Service WinRm'
-        foreach ($setting in $defaultSettings.GetEnumerator())
-        {
-            $settingValue = if ((Get-LabConfigurationItem -Name $setting.Key) -ne $setting.Value)
-            {
-                Get-LabConfigurationItem -Name $setting.Key
-            }
-            else
-            {
-                $setting.Value
-            }
-
-            $subdir = if ($setting.Key -match 'MaxEnvelope') { $null } else { 'Service\' }
-            $command = -join @($command, "`r`nSet-Item WSMAN:\localhost\$subdir$($setting.Key.Replace('WinRm','')) $($settingValue) -Force")
-        }
-
-        [System.IO.File]::WriteAllText("$vhdVolume\WinRmCustomization.ps1", $command)
-    
-        Write-ProgressIndicator
-        
-        $unattendXmlContent = Get-UnattendedContent
-        $unattendXmlContent.Save("$VhdVolume\Unattend.xml")
-        Write-PSFMessage "`tUnattended file copied to VM Disk '$vhdVolume\unattend.xml'"
-        
-        [void](Dismount-DiskImage -ImagePath $path)
-        Write-PSFMessage "`tdisk image dismounted"
-    }    
-
-    Write-PSFMessage "`tSettings RAM, start and stop actions"
-    $param = @{}
-    $param.Add('MemoryStartupBytes', $Machine.Memory)
-    $param.Add('AutomaticCheckpointsEnabled', $false)
-    $param.Add('CheckpointType', 'Production')
-
-    if ($Machine.MaxMemory) { $param.Add('MemoryMaximumBytes', $Machine.MaxMemory) }
-    if ($Machine.MinMemory) { $param.Add('MemoryMinimumBytes', $Machine.MinMemory) }
-
-    if ($Machine.MaxMemory -or $Machine.MinMemory)
-    {
-        $param.Add('DynamicMemory', $true)
-        Write-PSFMessage "`tSettings dynamic memory to MemoryStartupBytes $($Machine.Memory), minimum $($Machine.MinMemory), maximum $($Machine.MaxMemory)"
+        $disk | New-Partition -UseMaximumSize -DriveLetter $diskDefinition.DriveLetter
     }
     else
     {
-        Write-PSFMessage "`tSettings static memory to $($Machine.Memory)"
-        $param.Add('StaticMemory', $true)
+        $disk | New-Partition -UseMaximumSize -AssignDriveLetter
+    }
+    $partition | Format-Volume -Force -UseLargeFRS:$diskDefinition.UseLargeFRS -AllocationUnitSize $diskDefinition.AllocationUnitSize -NewFileSystemLabel $diskDefinition.Label
+}
+
+Stop-Transcript
+'@
+    [System.IO.File]::WriteAllText("$vhdVolume\AdditionalDisksOnline.ps1", $additionalDisksOnline)
+
+    $defaultSettings = @{
+        WinRmMaxEnvelopeSizeKb              = 500
+        WinRmMaxConcurrentOperationsPerUser = 1500
+        WinRmMaxConnections                 = 300
     }
 
-    $param = Sync-Parameter -Command (Get-Command Set-Vm) -Parameters $param
-
-    Hyper-V\Set-VM -Name $Machine.ResourceName @param
-
-    Hyper-V\Set-VM -Name $Machine.ResourceName -ProcessorCount $Machine.Processors
-
-    if ($DisableIntegrationServices)
+    $command = 'Start-Service WinRm'
+    foreach ($setting in $defaultSettings.GetEnumerator())
     {
-        Disable-VMIntegrationService -VMName $Machine.ResourceName -Name 'Time Synchronization'
+        $settingValue = if ((Get-LabConfigurationItem -Name $setting.Key) -ne $setting.Value)
+        {
+            Get-LabConfigurationItem -Name $setting.Key
+        }
+        else
+        {
+            $setting.Value
+        }
+
+        $subdir = if ($setting.Key -match 'MaxEnvelope')
+        {
+            $null
+        }
+        else
+        {
+            'Service\'
+        }
+        $command = -join @($command, "`r`nSet-Item WSMAN:\localhost\$subdir$($setting.Key.Replace('WinRm','')) $($settingValue) -Force")
     }
 
-    if ($Generation -eq 1)
+    [System.IO.File]::WriteAllText("$vhdVolume\WinRmCustomization.ps1", $command)
+
+    Write-ProgressIndicator
+
+    $unattendXmlContent = Get-UnattendedContent
+    $unattendXmlContent.Save("$VhdVolume\Unattend.xml")
+    Write-PSFMessage "`tUnattended file copied to VM Disk '$vhdVolume\unattend.xml'"
+
+    Start-LWProxmoxVM -ComputerName $Machine
+
+    Write-Verbose "Waiting for QEMU Guest Agent to become available on VM '$($Machine.ResourceName)'..."
+    while ((New-PveNodesQemuAgentPing -Node $global:proxmoxNode -Vmid $nextVmId).StatusCode -ne 200)
     {
-        Set-VMBios -VMName $Machine.ResourceName -EnableNumLock
+        Start-Sleep -Seconds 1
+    }
+    Write-Verbose 'done.'
+
+    $files = dir -Path $vhdVolume -File
+    foreach ($file in $files)
+    {
+        Write-PSFMessage "Copying file '$($file.Name)' to VM '$($Machine.ResourceName)'"
+        Send-LWProxmoxFileCopyToVM -SourceFilePath $file.FullName -ComputerName $Machine.ResourceName
     }
 
+    Write-PSFMessage "Starting Sysprep on VM '$($Machine.ResourceName)'"
+    Start-LWProxmoxAgentExecutionOnVM -ComputerName $Machine.ResourceName -Command 'C:\Windows\system32\Sysprep\sysprep.exe /generalize /oobe /reboot'
+
+    #TODO: This needs to move to the New-LabVM function
+    <#
     Write-PSFMessage "Creating snapshot named '$($Machine.ResourceName) - post OS Installation'"
     if ($CreateCheckPoints)
     {
         Hyper-V\Checkpoint-VM -VM (Hyper-V\Get-VM -Name $Machine.ResourceName) -SnapshotName 'Post OS Installation'
     }
+    #>
 
+    #TODO ...
+    <#
     if ($Machine.Disks.Name)
     {
         $disks = Get-LabVHDX -Name $Machine.Disks.Name
@@ -1021,14 +922,18 @@ Stop-Transcript
             Add-LWVMVHDX -VMName $Machine.ResourceName -VhdxPath $disk.Path
         }
     }
+    #>
 
     Write-ProgressIndicatorEnd
 
+    #TODO: ...
+    <#
     $writeVmConnectConfigFile = Get-LabConfigurationItem -Name VMConnectWriteConfigFile
     if ($writeVmConnectConfigFile)
     {
         New-LWHypervVmConnectSettingsFile -VmName $Machine.ResourceName
     }
+    #>
 
     Write-LogFunctionExit
 

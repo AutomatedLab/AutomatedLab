@@ -174,12 +174,12 @@
             
             foreach ($vm in $hypervVMs)
             {
-                $machineMetadata = Get-LWHypervVMDescription -ComputerName $vm.ResourceName
+                $machineMetadata = Get-LWVMDescription -ComputerName $vm.ResourceName
                 if (($machineMetadata.InitState -band [AutomatedLab.LabVMInitState]::NetworkAdapterBindingCorrected) -ne [AutomatedLab.LabVMInitState]::NetworkAdapterBindingCorrected)
                 {
                     Repair-LWHypervNetworkConfig -ComputerName $vm
                     $machineMetadata.InitState = [AutomatedLab.LabVMInitState]::NetworkAdapterBindingCorrected
-                    Set-LWHypervVMDescription -Hashtable $machineMetadata -ComputerName $vm.ResourceName
+                    Set-LWVMDescription -Hashtable $machineMetadata -ComputerName $vm.ResourceName
                 }
             }
         }
@@ -188,6 +188,12 @@
         if ($azureVms)
         {
             Start-LWAzureVM -ComputerName $azureVms -DelayBetweenComputers $DelayBetweenComputers -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewline
+        }
+
+        $proxmoxVms = $vms | Where-Object HostType -eq 'Proxmox'
+        if ($proxmoxVms)
+        {
+            Start-LWProxmoxVM -ComputerName $proxmoxVms -DelayBetweenComputers $DelayBetweenComputers -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewline
         }
 
         $vmwareVms = $vms | Where-Object HostType -eq 'VmWare'

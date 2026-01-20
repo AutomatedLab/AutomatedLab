@@ -71,8 +71,11 @@
         switch ($lab.DefaultVirtualizationEngine)
         {
             'HyperV' { Save-LWHypervVM -ComputerName $vms.ResourceName}
+            'Proxmox' { Save-LWProxmoxVM -ComputerName $vms.ResourceName }
             'VMWare' { Save-LWVMWareVM -ComputerName $vms.ResourceName}
-            'Azure'  { Write-PSFMessage -Level Warning -Message "Skipping Azure VMs '$($vms -join ',')' as suspending the VMs is not supported on Azure."}
+            'Azure'  {
+                Write-PSFMessage -Level Warning -Message "Skipping Azure VMs '$($vms -join ',')' as suspending the VMs is not supported on Azure."
+            }
         }
 
         Write-LogFunctionExit
