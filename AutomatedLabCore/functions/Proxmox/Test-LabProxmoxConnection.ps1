@@ -5,10 +5,12 @@ function Test-LabProxmoxConnection
     ()
     
     $date = Get-Date
-    if ($null -ne $script:connectionData.TicketTimestamp -and
-        $script:connectionData.TicketTimestamp -lt $date.AddMinutes(-60))
+    $maxTicketLifetime = Get-LabConfigurationItem -Name MaxAuthTicketLifetimeMinutes
+
+    if ($script:connectionData.TicketTimestamp -and
+        $script:connectionData.TicketTimestamp -lt $date.AddMinutes(-$maxTicketLifetime))
     {
-        Write-PSFMessage -Message 'Proxmox cluster connection ticket is older than 60 minutes. Reconnecting...' -Level Verbose
+        Write-PSFMessage -Message "Proxmox cluster connection ticket is older than $maxTicketLifetime minutes. Reconnecting..." -Level Verbose
         Connect-LabProxmoxCluster -RefreshExistingConnection
     }
 
