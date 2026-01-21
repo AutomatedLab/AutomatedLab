@@ -274,7 +274,7 @@
         if ($engine -eq 'Proxmox')
         {
             Write-ScreenInfo -Message "Machines with role 'RootDC' are already installed in a Proxmox deployment."
-            #For some reason, the sysprepped Proxmox machines need to be restarted oncemore, otherwise we get this error when connecting:
+            #For some reason, the sysprepped Proxmox machines need to be restarted once more, otherwise we get this error when connecting:
             #'We can't sign you in with this credential because your domain isn't available. Make sure your device is connected to your organization's network and try again.'
             $machinesToRestart = Get-LabVM | Where-Object { $_.DomainName -in $rootDCs.DomainName -and $_.Name -notin $rootDCs.Name -and (Get-LabVMStatus -ComputerName $_) -eq 'Started' }
             if ($machinesToRestart.Count -gt 0)
