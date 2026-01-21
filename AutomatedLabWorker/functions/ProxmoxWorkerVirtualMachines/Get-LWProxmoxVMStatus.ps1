@@ -18,10 +18,10 @@ function Get-LWProxmoxVMStatus {
     $proxmoxRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
 
     $result = @{ }
-    $vms = Get-LWProxmoxVM @PSBoundParameters
+    $vms = Get-LWProxmoxVM @PSBoundParameters -NoCache
 
     $vmTable = @{ }
-    Get-LabVm -ComputerName $ComputerName -IncludeLinux | ForEach-Object { $vmTable[$_.FriendlyName] = $_.Name }
+    Get-LabVM -ComputerName $ComputerName -IncludeLinux | ForEach-Object { $vmTable[$_.FriendlyName] = $_.Name }
 
     foreach ($vm in $vms) {
         $vmName = if ($vmTable[$vm.Name]) { $vmTable[$vm.Name] } else { $vm.Name }
