@@ -14,8 +14,7 @@ function Get-LWProxmoxVMStatus {
 
     Write-LogFunctionEntry
 
-    #TODO: Add Proxmox config item
-    $proxmoxRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
+    $proxmoxRetryCount = Get-LabConfigurationItem -Name ProxmoxRetryCount
 
     $result = @{ }
     $vms = Get-LWProxmoxVM @PSBoundParameters -NoCache

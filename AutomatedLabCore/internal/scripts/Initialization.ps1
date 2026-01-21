@@ -163,6 +163,7 @@ Set-PSFConfig -Module 'AutomatedLab' -Name MaxAuthTicketLifetimeMinutes -Value 6
 #Proxmox Network settings
 Set-PSFConfig -Module 'AutomatedLab' -Name ProxmoxMacAddressPrefix -Value BC2411 -Initialize -Validation string -Description 'The MAC address prefix for Proxmox labs' -Handler { if ($args[0].Length -eq 0 -or $args[0].Length -gt 11) { Write-PSFMessage -Level Error -Message "Invalid prefix length for ProxmoxMacAddressPrefix! $($args[0]) needs to be at least one character and at most 11 characters"; throw "Invalid prefix length for ProxmoxMacAddressPrefix! $($args[0]) needs to be at least one character and at most 11 characters" } }
 Set-PSFConfig -Module 'AutomatedLab' -Name DisableDeviceNaming -Value $false -Validation bool -Initialize -Description 'Disables Device Naming for VM NICs. Enabled by default for Hosts > 2016 and Gen 2 Guests > 2016'
+Set-PSFConfig -Module 'AutomatedLab' -Name ProxmoxRetryCount -Value 3 -Initialize -Validation integer -Description 'The number of retries for Proxmox actions like creating a virtual network'
 
 #Proxmox VM Settings
 Set-PSFConfig -Module 'AutomatedLab' -Name DefaultCpuType -Value x86-64-v3 -Initialize -Validation string -Description 'The default CPU type for Proxmox VMs'
