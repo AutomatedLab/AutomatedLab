@@ -54,7 +54,7 @@ function Get-LWProxmoxVM
 
     if ($NoCache)
     {
-        Write-ScreenInfo -Message "Retrieving VM(s) from Proxmox node(s) '$($Node -join ', ')'" -Type Info -NoNewLine -TaskStart
+        Write-ScreenInfo -Message "Retrieving VM(s) from Proxmox node(s) '$($Node -join ', ')'" -Type Verbose -NoNewLine -TaskStart
     }
 
     $vms = foreach ($n in $Node)
@@ -64,7 +64,7 @@ function Get-LWProxmoxVM
             $script:proxmoxVmCache.$n = $null
 
             Write-ScreenInfo -Message "Retrieving VM(s) from Proxmox node '$($n)'" -Type Verbose
-            Write-ScreenInfo -Message '.' -Type Info -NoNewLine
+            Write-ScreenInfo -Message '.' -Type Verbose -NoNewLine
             $result = Get-PveNodesQemu -Node $n
             if ($result.StatusCode -ne 200)
             {
@@ -97,7 +97,7 @@ function Get-LWProxmoxVM
             $script:proxmoxVmCache.$n
         }
     }
-    Write-ScreenInfo -Message 'done.' -Type Info -TaskEnd
+    Write-ScreenInfo -Message 'done.' -Type Verbose -TaskEnd
 
     [object[]]$vms = $vms
 
