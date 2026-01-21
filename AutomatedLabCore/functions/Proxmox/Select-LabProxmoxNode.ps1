@@ -24,7 +24,7 @@ function Select-LabProxmoxNode {
     }
 
     if ($nodes.Response.data.Count -eq 1 -and -not $NodeName) {
-        Write-Verbose "Only one node found. Selecting the only available node: $($nodes.Response.data[0].node)"
+        Write-ScreenInfo -Message "Only one node found. Selecting the only available node: $($nodes.Response.data[0].node)" -Type Verbose
         return $nodes.Response.data[0]
     }
     elseif ($nodes.Response.data.Count -eq 1 -and -not $nodes.Response.data[0].node -eq $NodeName) {

@@ -10,7 +10,7 @@ function Test-LabProxmoxConnection
     if ($script:connectionData.TicketTimestamp -and
         $script:connectionData.TicketTimestamp -lt $date.AddMinutes(-$maxTicketLifetime))
     {
-        Write-PSFMessage -Message "Proxmox cluster connection ticket is older than $maxTicketLifetime minutes. Reconnecting..." -Level Verbose
+        Write-ScreenInfo -Message "Proxmox cluster connection ticket is older than $maxTicketLifetime minutes. Reconnecting..." -Type Verbose
         Connect-LabProxmoxCluster -RefreshExistingConnection
     }
 
@@ -18,7 +18,7 @@ function Test-LabProxmoxConnection
 
     if ($result.StatusCode -ne 200)
     {
-        Write-Verbose "Failed to connect to Proxmox cluster: $($result.ReasonPhrase)"
+        Write-ScreenInfo -Message "Failed to connect to Proxmox cluster: $($result.ReasonPhrase)" -Type Verbose
         return $false
     }
     else

@@ -23,11 +23,11 @@ function Connect-LabProxmoxCluster
             Write-Error -Message 'No existing Proxmox cluster connection data found to refresh. Call this cmdlet with connection parameters first.'
             return
         }
-        Write-PSFMessage -Message "Refreshing existing Proxmox cluster connection to '$($script:connectionData.HostName):$($script:connectionData.Port)'" -Level Verbose
+        Write-ScreenInfo -Message "Refreshing existing Proxmox cluster connection to '$($script:connectionData.HostName):$($script:connectionData.Port)'" -Type Verbose
     }
     else
     {
-        Write-PSFMessage -Message "Storing Proxmox cluster connection data for '$($HostName):$($Port)'" -Level Verbose
+        Write-ScreenInfo -Message "Storing Proxmox cluster connection data for '$($HostName):$($Port)'" -Type Verbose
         $script:connectionData = @{
             HostName = $HostName
             Port     = $Port
@@ -37,10 +37,10 @@ function Connect-LabProxmoxCluster
 
     try
     {
-        Write-PSFMessage -Message "Connecting to Proxmox cluster at '$($script:connectionData.HostName):$($script:connectionData.Port)'"
+        Write-ScreenInfo -Message "Connecting to Proxmox cluster at '$($script:connectionData.HostName):$($script:connectionData.Port)'" -Type Verbose
         Connect-PveCluster -HostsAndPorts "$($script:connectionData.HostName):$($script:connectionData.Port)" -Credential $script:connectionData.Credential -SkipCertificateCheck | Out-Null
         $script:connectionData.TicketTimestamp = Get-Date
-        Write-PSFMessage -Message "Successfully connected to Proxmox cluster at '$($script:connectionData.HostName):$($script:connectionData.Port)'" -Level Significant
+        Write-ScreenInfo -Message "Successfully connected to Proxmox cluster at '$($script:connectionData.HostName):$($script:connectionData.Port)'" -Type Significant
     }
     catch
     {
