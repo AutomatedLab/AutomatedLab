@@ -136,7 +136,7 @@ function New-LWProxmoxVM
         Description = "Created by AutomatedLab on $((Get-Date).ToString('yyyy-MM-dd HH:mm:ss'))"
         LocalTime   = 1
         Agent      = 'enabled=true,fstrim_cloned_disks=true,type=virtio'
-        Cpu = 'x86-64-v3' #TODO: Make this configurable
+        Cpu = Get-LabConfigurationItem -Name DefaultCpuType
     }
 
     if ($Machine.ProxmoxProperties.CpuType)
