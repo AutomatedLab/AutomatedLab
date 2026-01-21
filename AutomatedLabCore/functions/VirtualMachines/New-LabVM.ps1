@@ -113,7 +113,7 @@
             Stop-LabVM -ComputerName $rootDCs -Wait
             Start-LabVM -ComputerName $rootDCs -Wait
 
-            $sysprepState = Get-LWProxmoxSysprepState -ComputerName $rootDCs
+            $sysprepState = Get-LWProxmoxVMSysprepState -ComputerName $rootDCs
             if ($sysprepState | Where-Object SysprepState -ne 'IMAGE_STATE_COMPLETE')
             {
                 Write-Error "The following Proxmox VMs did not complete sysprep: $($sysprepState | Where-Object SysprepState -ne 'IMAGE_STATE_COMPLETE' | Select-Object -ExpandProperty ComputerName -Unique -Join ', ')"
@@ -130,7 +130,7 @@
                 New-LWProxmoxVM -Machine $firstChildDC
             }
             Wait-LabVM -ComputerName $firstChildDCs
-            $sysprepState = Get-LWProxmoxSysprepState -ComputerName $firstChildDCs
+            $sysprepState = Get-LWProxmoxVMSysprepState -ComputerName $firstChildDCs
             if ($sysprepState | Where-Object SysprepState -ne 'IMAGE_STATE_COMPLETE')
             {
                 Write-Error "The following Proxmox VMs did not complete sysprep: $($sysprepState | Where-Object SysprepState -ne 'IMAGE_STATE_COMPLETE' | Select-Object -ExpandProperty ComputerName -Unique -Join ', ')"
@@ -149,7 +149,7 @@
 
             Wait-LabVM -ComputerName $otherVMs
 
-            $sysprepState = Get-LWProxmoxSysprepState -ComputerName $otherVMs
+            $sysprepState = Get-LWProxmoxVMSysprepState -ComputerName $otherVMs
             # As the machine's name is not yet set we likely run into the default retry behavior resulting in 3 entries returned. Hence, we get only the last one per machine.
             $sysprepState = $sysprepState | Group-Object -Property ComputerName | ForEach-Object { $_.Group[-1] }
 

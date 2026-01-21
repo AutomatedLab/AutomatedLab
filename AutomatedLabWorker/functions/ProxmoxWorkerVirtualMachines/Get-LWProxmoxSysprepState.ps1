@@ -1,4 +1,4 @@
-function Get-LWProxmoxSysprepState {
+function Get-LWProxmoxVMSysprepState {
     param (
         [Parameter(Mandatory)]
         [string[]]$ComputerName
