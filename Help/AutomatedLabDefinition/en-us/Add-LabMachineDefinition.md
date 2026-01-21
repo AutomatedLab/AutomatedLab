@@ -322,6 +322,22 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -ProxmoxProperties
+The Proxmox properties.
+Currently valid properties: 'TargetNode', 'Storage', 'Pool', 'VmId', 'CpuType', 'FullClone'
+
+```yaml
+Type: Hashtable
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -InitialDscConfigurationMofPath
 Path to an initial mof (machine configuration) file. Applied at first boot.
 
@@ -898,4 +914,3 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
-
