@@ -559,10 +559,13 @@ rm -rf /etc/cron.d/postconf
 
             # Change grub configuration
             $grubFile = Get-ChildItem -Recurse -Path $drive.RootDirectory.FullName -Filter 'grub.cfg'
+            $isoLinuxConfig = Get-ChildItem -Recurse -Path $drive.RootDirectory.FullName -Filter 'txt.cfg'
             $loopbackcnf = Get-ChildItem -Recurse -Path $drive.RootDirectory.FullName -Filter 'loopback.cfg'
 
-            ($grubFile | Get-Content -Raw) -replace '---', 'autoinstall  ---' | Set-Content -Path $grubFile.FullName
-            ($loopbackcnf | Get-Content -Raw) -replace '---', 'autoinstall  ---' | Set-Content -Path $loopbackcnf.FullName
+            if ($grubFile) {($grubFile | Get-Content -Raw) -replace '---', 'autoinstall  ---' | Set-Content -Path $grubFile.FullName}
+            if ($isoLinuxConfig) {($isoLinuxConfig | Get-Content -Raw) -replace '---', 'autoinstall  ---' | Set-Content -Path $isoLinuxConfig.FullName}
+            if ($loopbackcnf) {($loopbackcnf | Get-Content -Raw) -replace '---', 'autoinstall  ---' | Set-Content -Path $loopbackcnf.FullName}
+            
 
             Copy-Item -Path (Join-Path -Path $drive.RootDirectory -ChildPath user-data) -Destination (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath "cloudinit_user_$($Machine.Name).yml")
             Copy-Item -Path (Join-Path -Path $drive.RootDirectory -ChildPath meta-data) -Destination (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath "cloudinit_meta_$($Machine.Name).yml")
