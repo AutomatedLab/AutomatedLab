@@ -485,8 +485,6 @@ rm -rf /etc/cron.d/postconf
             $unattendPartition = $unattendPartition | Get-Partition
             $drive = [System.IO.DriveInfo][string]$unattendPartition.DriveLetter
         }
-        $label = if ($Machine.LinuxType -in 'Suse','RedHat') { 'OEMDRV' } else { 'CIDATA' }
-        $unattendPartition = $mountedOsDisk | New-Partition -Size $size
 
         if ($machine.LinuxPackageGroup )
         {
