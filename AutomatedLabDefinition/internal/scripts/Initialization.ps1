@@ -596,65 +596,21 @@ $autoyastContent = @"
 "@
 
 $cloudInitContent = @'
+runcmd:
+  - [eval, 'echo $(cat /proc/cmdline) "autoinstall" > /root/cmdline']
+  - [eval, 'mount -n --bind -o ro /root/cmdline /proc/cmdline']
+  - [eval, 'snap restart subiquity.subiquity-server || true']
+  - [eval, 'snap restart subiquity.subiquity-service || true']
 autoinstall:
   version: 1
   network:
     version: 2
   shutdown: poweroff
   storage:
-    config:
-      - type: disk
-        match: {}
-        id: os-drive
-        ptable: gpt
-        wipe: superblock-recursive
-        preserve: false
-        grub_device: false
-      - type: partition
-        number: 1
-        id: efi-partition
-        device: os-drive
-        size: 256M
-        flag: boot
-        grub_device: true
-      - type: format
-        id: efi-format
-        volume: efi-partition
-        fstype: fat32
-        label: ESP
-      - path: /boot/efi
-        device: efi-format
-        type: mount
-        id: mount-efi
-      - type: partition
-        number: 2
-        id: boot-partition
-        device: os-drive
-        size: 1G
-      - type: format
-        id: boot-format
-        volume: boot-partition
-        fstype: ext4
-        label: BOOT
-      - path: /boot
-        device: boot-format
-        type: mount
-        id: mount-boot
-      - type: partition
-        number: 3
-        id: root-partition
-        device: os-drive
-        size: -1
-        grub_device: false
-      - type: format
-        id: root-format
-        volume: root-partition
-        fstype: ext4
-        label: ROOT
-      - path: /
-        device: root-format
-        type: mount
-        id: mount-root
+    layout:
+      name: lvm
+      match:
+        size: largest
     swap:
       swap: 0
     version: 1
