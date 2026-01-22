@@ -673,13 +673,14 @@
                 #>
                 while ($hvMachine | Get-VMHardDiskDrive | Where-Object Path -like "*_INSTALL*")
                 {
-                    if ($hvMachine.State -ne 'Running' -and ((Get-Item -Path $hvMachine.GuestStatePath).LastWriteTime - $hvMachine.CreationTime) -gt '00:01:00')
+                    if ($hvMachine.State -ne 'Running' -and ((Get-ChildItem -Path $hvMachine.Path -Recurse -Filter *.vmgs).LastWriteTime - $hvMachine.CreationTime) -gt '00:01:00')
                     {
                         Write-ScreenInfo -Type Verbose "Removing installation disk '$Name'"
                         $disk = $hvMachine | Hyper-V\Get-VMHardDiskDrive | Where-Object Path -like "*_INSTALL*"
                         $diskPath = $disk.Path # Otherwise $disk will be update after remove-vmharddiskdrive was called
                         $disk | Hyper-V\Remove-VMHardDiskDrive
                         Remove-Item -Path $diskPath -Force
+                        $hvMachine | Hyper-V\Get-VMDvdDrive | Hyper-V\Remove-VMDvdDrive
                         $hvMachine | Hyper-V\Start-VM
                         return
                     }
