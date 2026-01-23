@@ -125,7 +125,6 @@
         Set-UnattendedPackage -Package snapd-desktop-integration -IsSnap $true
         Add-UnattendedSynchronousCommand -Description 'Configure grub' -Command "sed -i /etc/default/grub -e 's/GRUB_CMDLINE_LINUX_DEFAULT=`".*/GRUB_CMDLINE_LINUX_DEFAULT=`"quiet splash`"/'"
         Add-UnattendedSynchronousCommand -Description 'Update grub' -Command 'update-grub'
-        Add-UnattendedSynchronousCommand -Description 'Remove superfluous packages' -Command 'apt-get remove -y ubuntu-server ubuntu-server-minimal binutils byobu curl dmeventd finalrd gawk kpartx mdadm ncurses-term needrestart open-iscsi openssh-server sg3-utils ssh-import-id sssd thin-provisioning-tools vim tmux sosreport screen open-vm-tools motd-news-config lxd-agent-loader landscape-common htop git fonts-ubuntu-console ethtool'
         Add-UnattendedSynchronousCommand -Description 'Keep cloud init' -Command 'apt-get install -y cloud-init'
         Add-UnattendedSynchronousCommand -Description 'Remove unused packages' -Command 'apt-get autoremove -y'
     }

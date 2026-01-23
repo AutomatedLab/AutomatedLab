@@ -608,7 +608,7 @@ autoinstall:
   shutdown: reboot
   storage:
     layout:
-      name: lvm
+      name: direct
       match:
         size: largest
     swap:
