@@ -205,6 +205,8 @@
         {
             $os.Architecture = 'x64'
         }
+
+        $os.OperatingSystemName = $name
         $os.OperatingSystemImageName = $name
         $os.Size = $IsoFile.Length
         $os.Version = $osversion
@@ -230,7 +232,9 @@
         {
             $os.Architecture = 'x64'
         }
-        $os.OperatingSystemImageName = '{0}-WithGnomeDesktop' -f $name
+
+        $os.OperatingSystemName = '{0} (GNOME Desktop)' -f $name
+        $os.OperatingSystemImageName = '{0} (GNOME Desktop)' -f $name
         $os.Size = $IsoFile.Length
         $os.Version = $osversion
         $os.PublishedDate = [datetime]::ParseExact($osDate, 'yyyyMMdd', [cultureinfo]::CurrentCulture)
