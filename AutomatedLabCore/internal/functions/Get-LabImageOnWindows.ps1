@@ -175,6 +175,7 @@
     if (Test-Path -Path $ubuntuPath -PathType Leaf)
     {
         $infoContent = Get-Content -Path $ubuntuPath -TotalCount 1
+        if ($infoContent -notmatch '-Server') { Write-ScreenInfo -Type Error -Message "Skipping $IsoFile, AutomatedLab only supports Server ISOs of Ubuntu."; return}
         if ($infoContent -like 'Kali*')
         {
             $null = $infoContent -match '(?:Kali GNU\/Linux)?\s+(?<Version>\d\d\d\d\.\d).*\s+"(?<Name>[\w-]+)".*Official\s(?<Arch>i386|amd64).*(?<ReleaseDate>\d{8})'
@@ -189,6 +190,7 @@
             if (([version]$osversion) -lt '20.4')
             {
                 Write-ScreenInfo -Type Error -Message "Skipping $IsoFile, AutomatedLab was only tested with 20.04 and newer."
+                return
             }
         }
 
@@ -207,7 +209,32 @@
         $os.Size = $IsoFile.Length
         $os.Version = $osversion
         $os.PublishedDate = [datetime]::ParseExact($osDate, 'yyyyMMdd', [cultureinfo]::CurrentCulture)
-        $os.Edition = if ($infoContent -match '-Server') { 'Server' } else { 'Desktop' }
+        $os.Edition = 'Server'
+
+        foreach ($package in (Get-ChildItem -Directory -Recurse -Path $ubuntuPackageInfo))
+        {
+            if ($package.Parent.Name -eq 'main') { continue }
+
+            $null = $os.LinuxPackageGroup.Add($package.Name)
+        }
+
+        $os
+        
+        # Graphical UI
+        $os = New-Object -TypeName AutomatedLab.OperatingSystem($name, $IsoFile.FullName)
+        if ($Matches.Arch -eq 'i386')
+        {
+            $os.Architecture = 'x86'
+        }
+        else
+        {
+            $os.Architecture = 'x64'
+        }
+        $os.OperatingSystemImageName = '{0}-WithGnomeDesktop' -f $name
+        $os.Size = $IsoFile.Length
+        $os.Version = $osversion
+        $os.PublishedDate = [datetime]::ParseExact($osDate, 'yyyyMMdd', [cultureinfo]::CurrentCulture)
+        $os.Edition = 'Desktop'
 
         foreach ($package in (Get-ChildItem -Directory -Recurse -Path $ubuntuPackageInfo))
         {
