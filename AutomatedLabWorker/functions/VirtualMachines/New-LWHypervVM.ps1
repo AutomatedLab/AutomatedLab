@@ -109,20 +109,20 @@
     # ref: https://github.com/canonical/autoinstall-desktop
     if ($Machine.LinuxType -eq 'Ubuntu' -and $Machine.OperatingSystem.Edition -eq 'Desktop') {
         Set-UnattendedPackage -Package 'ubuntu-desktop'
-        Set-UnattendedPackage -Package firefox
+        Set-UnattendedPackage -Package firefox -IsSnap $true
         if ($Machine.OperatingSystem.Version.Major -eq 20) {
-            Set-UnattendedPackage -Package gnome-3-38-2004
+            Set-UnattendedPackage -Package gnome-3-38-2004 -IsSnap $true
             Add-UnattendedPreinstallationCommand -Description 'Enable Hardware Experience' -Command "echo 'linux-generic-hwe-20.04' > /run/kernel-meta-package"
         } elseif ($Machine.OperatingSystem.Version.Major -eq 22) {
-            Set-UnattendedPackage -Package gnome-42-2204 # Same package is installed as verified on installed OS
+            Set-UnattendedPackage -Package gnome-42-2204 -IsSnap $true # Same package is installed as verified on installed OS
             Add-UnattendedPreinstallationCommand -Description 'Enable Hardware Experience' -Command "echo 'linux-generic-hwe-22.04' > /run/kernel-meta-package"
         } else {
-            Set-UnattendedPackage -Package gnome-42-2204 # Same package is installed as verified on installed OS
+            Set-UnattendedPackage -Package gnome-42-2204 -IsSnap $true # Same package is installed as verified on installed OS
             Add-UnattendedPreinstallationCommand -Description 'Enable Hardware Experience' -Command "echo 'linux-generic-hwe-24.04' > /run/kernel-meta-package"
         }
-        Set-UnattendedPackage -Package gtk-common-themes
-        Set-UnattendedPackage -Package snap-store
-        Set-UnattendedPackage -Package snapd-desktop-integration
+        Set-UnattendedPackage -Package gtk-common-themes -IsSnap $true
+        Set-UnattendedPackage -Package snap-store -IsSnap $true
+        Set-UnattendedPackage -Package snapd-desktop-integration -IsSnap $true
         Add-UnattendedSynchronousCommand -Description 'Configure grub' -Command "sed -i /etc/default/grub -e 's/GRUB_CMDLINE_LINUX_DEFAULT=`".*/GRUB_CMDLINE_LINUX_DEFAULT=`"quiet splash`"/'"
         Add-UnattendedSynchronousCommand -Description 'Update grub' -Command 'update-grub'
         Add-UnattendedSynchronousCommand -Description 'Remove superfluous packages' -Command 'apt-get remove -y ubuntu-server ubuntu-server-minimal binutils byobu curl dmeventd finalrd gawk kpartx mdadm ncurses-term needrestart open-iscsi openssh-server sg3-utils ssh-import-id sssd thin-provisioning-tools vim tmux sosreport screen open-vm-tools motd-news-config lxd-agent-loader landscape-common htop git fonts-ubuntu-console ethtool'
