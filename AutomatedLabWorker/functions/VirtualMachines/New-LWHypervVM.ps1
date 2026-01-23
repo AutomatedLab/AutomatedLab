@@ -461,11 +461,9 @@ rm -rf /etc/cron.d/postconf
         $systemDisk = New-Vhd -Path $path -SizeBytes ($lab.Target.ReferenceDiskSizeInGB * 1GB) -BlockSizeBytes 1MB
         $mountedOsDisk = $systemDisk | Mount-VHD -Passthru
 
-        if ($Machine.LinuxType -ne 'Ubuntu')
-        {
             $mountedOsDisk | Initialize-Disk -PartitionStyle GPT
             $size = 6GB
-            if ($Machine.LinuxType -eq 'RedHat')
+            if ($Machine.LinuxType -in 'RedHat', 'Ubuntu')
             {
                 $size = 100MB
             }
@@ -484,7 +482,6 @@ rm -rf /etc/cron.d/postconf
             $unattendPartition | Set-Partition -NewDriveLetter $nextDriveLetter
             $unattendPartition = $unattendPartition | Get-Partition
             $drive = [System.IO.DriveInfo][string]$unattendPartition.DriveLetter
-        }
 
         if ($machine.LinuxPackageGroup )
         {
@@ -525,51 +522,14 @@ rm -rf /etc/cron.d/postconf
         }
         elseif ($machine.LinuxType -eq 'Ubuntu')
         {
-            # And of course, another special treatment: Ubuntu does not want to install itself to the disk containing the installation medium.
-            # To automatically continue configuration, Ubuntu wants more configuration than of just seeing the file, so we need to copy the ISO
-            $nextDriveLetter = [char[]](67..90) |
-            Where-Object { (Get-CimInstance -Class Win32_LogicalDisk |
-                    Select-Object -ExpandProperty DeviceID) -notcontains "$($_):" } |
-            Select-Object -First 1
-            $ubuntuSpecialDisk = New-Vhd -Path "$vmPath\$($Machine.ResourceName)_INSTALL.vhdx" -SizeBytes ((Get-Item $Machine.OperatingSystem.IsoPath).Length + 100MB) -BlockSizeBytes 1MB
-
-            $mountedSpecialDisk = $ubuntuSpecialDisk | Mount-VHD -Passthru
-            $mountedSpecialDisk | Initialize-Disk -PartitionStyle GPT
-            $unattendPartition = $mountedSpecialDisk | New-Partition -UseMaximumSize
-            $diskpartCmd = "@
-                select disk $($mountedSpecialDisk.DiskNumber)
-                select partition $($unattendPartition.PartitionNumber)
-                format quick fs=fat32 label=CIDATA
-                exit
-            @"
-            $diskpartCmd | diskpart.exe | Out-Null
-
-            $unattendPartition | Set-Partition -NewDriveLetter $nextDriveLetter
-            $unattendPartition = $unattendPartition | Get-Partition
-            $drive = [System.IO.DriveInfo][string]$unattendPartition.DriveLetter
-
             Export-UnattendedFile -Path $drive.RootDirectory
             $ubuLease = '{0:d2}.{1:d2}' -f $machine.OperatingSystem.Version.Major, $machine.OperatingSystem.Version.Minor # Microsoft Repo does not use $RELEASE but version number instead.
             (Get-Content -Path (Join-Path -Path $drive.RootDirectory -ChildPath user-data)) -replace 'REPLACERELEASE', $ubuLease | Set-Content (Join-Path -Path $drive.RootDirectory -ChildPath user-data)
-            $mountedIso = Mount-DiskImage -ImagePath $Machine.OperatingSystem.IsoPath -PassThru | Get-Volume
-            $isoDrive = [System.IO.DriveInfo][string]$mountedIso.DriveLetter
-            Copy-Item -Path "$($isoDrive.RootDirectory.FullName)*" -Destination $drive.RootDirectory.FullName -Recurse -Force -PassThru |
-            Where-Object IsReadOnly | Set-ItemProperty -name IsReadOnly -Value $false
-            [void] (Dismount-DiskImage -ImagePath $Machine.OperatingSystem.IsoPath)
-
-            # Change grub configuration
-            $grubFile = Get-ChildItem -Recurse -Path $drive.RootDirectory.FullName -Filter 'grub.cfg'
-            $isoLinuxConfig = Get-ChildItem -Recurse -Path $drive.RootDirectory.FullName -Filter 'txt.cfg'
-            $loopbackcnf = Get-ChildItem -Recurse -Path $drive.RootDirectory.FullName -Filter 'loopback.cfg'
-
-            if ($grubFile) {($grubFile | Get-Content -Raw) -replace '---', 'autoinstall  ---' | Set-Content -Path $grubFile.FullName}
-            if ($isoLinuxConfig) {($isoLinuxConfig | Get-Content -Raw) -replace '---', 'autoinstall  ---' | Set-Content -Path $isoLinuxConfig.FullName}
-            if ($loopbackcnf) {($loopbackcnf | Get-Content -Raw) -replace '---', 'autoinstall  ---' | Set-Content -Path $loopbackcnf.FullName}
+            (Get-Content -Path (Join-Path -Path $drive.RootDirectory -ChildPath meta-data)) -replace 'REPLACERELEASE', $ubuLease | Set-Content (Join-Path -Path $drive.RootDirectory -ChildPath meta-data)
             
 
             Copy-Item -Path (Join-Path -Path $drive.RootDirectory -ChildPath user-data) -Destination (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath "cloudinit_user_$($Machine.Name).yml")
             Copy-Item -Path (Join-Path -Path $drive.RootDirectory -ChildPath meta-data) -Destination (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath "cloudinit_meta_$($Machine.Name).yml")
-            $mountedSpecialDisk | Dismount-VHD
         }
 
         $mountedOsDisk | Dismount-VHD
@@ -654,13 +614,6 @@ rm -rf /etc/cron.d/postconf
     }
 
     $vm = Hyper-V\New-VM @vmParameter
-
-    if ($vm.Generation -ge 2 -and $Machine.OperatingSystemType -eq 'Linux' -and $Machine.LinuxType -eq 'Ubuntu')
-    {
-        $systemDisk = $vm | Get-VMHardDiskDrive
-        $ubuntuSpecialDisk = $vm | Add-VMHardDiskDrive -Path "$vmPath\$($Machine.ResourceName)_INSTALL.vhdx" -Passthru
-        $vm | Set-VMFirmware -BootOrder $systemDisk, $ubuntuSpecialDisk
-    }
 
     Set-LWHypervVMDescription -ComputerName $Machine.ResourceName -Hashtable @{
         CreatedBy    = '{0} ({1})' -f $PSCmdlet.MyInvocation.MyCommand.Module.Name, $PSCmdlet.MyInvocation.MyCommand.Module.Version
