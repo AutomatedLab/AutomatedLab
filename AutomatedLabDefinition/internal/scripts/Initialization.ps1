@@ -659,9 +659,9 @@ autoinstall:
   late-commands:
     - curtin in-target --target=/target -- wget -q "https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb"
     - curtin in-target --target=/target -- dpkg -i packages-microsoft-prod.deb
-    - curtin in-target --target=/target -- apt update
-    - curtin in-target --target=/target -- apt install -y powershell || true
-    - curtin in-target --target=/target -- apt -yq install krb5-user
+    - curtin in-target --target=/target -- apt-get update
+    - curtin in-target --target=/target -- apt-get install -y powershell || true
+    - curtin in-target --target=/target -- apt-get -yq install krb5-user
 '@
 
 try
