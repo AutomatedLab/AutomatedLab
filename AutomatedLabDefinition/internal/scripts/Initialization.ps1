@@ -605,7 +605,7 @@ autoinstall:
   version: 1
   network:
     version: 2
-  shutdown: poweroff
+  shutdown: reboot
   storage:
     layout:
       name: lvm
