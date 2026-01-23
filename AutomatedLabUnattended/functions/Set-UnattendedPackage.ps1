@@ -8,6 +8,9 @@
         [Parameter(ParameterSetName = 'CloudInit', Mandatory = $true)]
         [string[]]$Package,
 
+        [bool]
+        $IsSnap = $false,
+
         [Parameter(ParameterSetName = 'Kickstart')]
         [switch]
         $IsKickstart,
