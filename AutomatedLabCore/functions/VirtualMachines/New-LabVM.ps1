@@ -162,19 +162,6 @@
         Write-Host 'done.'
     }
 
-    foreach ($machine in $machines.Where({$_.HostType -ne 'Proxmox'}))
-    {
-        wait-lab
-         #TODO: This needs to move to the New-LabVM function
-    <#
-    Write-PSFMessage "Creating snapshot named '$($Machine.ResourceName) - post OS Installation'"
-    if ($CreateCheckPoints)
-    {
-        Hyper-V\Checkpoint-VM -VM (Hyper-V\Get-VM -Name $Machine.ResourceName) -SnapshotName 'Post OS Installation'
-    }
-    #>
-    }
-
     if ($lab.DefaultVirtualizationEngine -eq 'Azure')
     {
         $deployment = New-LabAzureResourceGroupDeployment -Lab $lab -PassThru -Wait -ErrorAction SilentlyContinue -ErrorVariable rgDeploymentFail
