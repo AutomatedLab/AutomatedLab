@@ -60,7 +60,7 @@ function Start-LWProxmoxVM
             $result = Wait-LWProxmoxTasksStatus -Upid $result.Response.data -Node $proxmoxVm.node -DesiredValues $values -TimeoutInSeconds 600
             if ($result -ne 'OK' -and $result -ne "VM $vmid already running")
             {
-                Write-Error -Message "Could not start Proxmox machine '$vm': Timeout waiting for status change." -ErrorAction Stop
+                Write-Error -Message "Could not start Proxmox machine '$vm'. The error was '$result'." -ErrorAction Stop
             }
         }
         catch
