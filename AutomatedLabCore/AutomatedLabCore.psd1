@@ -88,7 +88,6 @@
         'Get-LabIssuingCA',
         'Get-LabMachineAutoShutdown',
         'Get-LabPSSession',
-        'Get-LWProxmoxNode',
         'Get-LabReleaseStep',
         'Get-LabSoftwarePackage',
         'Get-LabSourcesLocation',
