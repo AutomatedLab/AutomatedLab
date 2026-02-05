@@ -50,6 +50,7 @@
         'Get-LWHypervVMSnapshot',
         'Get-LWHypervVMStatus',
         'Get-LWHypervWindowsFeature',
+        'Get-LWProxmoxNode',
         'Get-LWProxmoxVMSysprepState',
         'Get-LWProxmoxVM',
         'Get-LWProxmoxVmSnapshot',
