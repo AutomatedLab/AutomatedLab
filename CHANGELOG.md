@@ -19,6 +19,7 @@
 - Made `Get-LabMachineRoleDefinition -Syntax` more user-friendly (#1562)
 - Fixed retired parameter Location for `Get-AzVmSize`
 - New parameter to configure location of static lab files on VMs
+- Updated help (Fixes #1800 with better documentation)
 
 ### Removed
 

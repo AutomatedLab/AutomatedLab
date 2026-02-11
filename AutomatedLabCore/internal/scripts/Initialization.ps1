@@ -110,7 +110,7 @@ $osroot = if ([System.Environment]::OSVersion.Platform -eq 'Win32NT') {
 else {
     '/'
 }
-Set-PSFConfig -Module 'AutomatedLab' -Name OsRoot -Value $osroot -Initialize -Validation string
+Set-PSFConfig -Module 'AutomatedLab' -Name OsRoot -Value $osroot -Initialize -Validation string -Hidden -Description 'Host operating system root, used mostly with file transfers. Do not modify if not requried.'
 Set-PSFConfig -Module 'AutomatedLab' -Name OverridePowerPlan -Value $true -Initialize -Validation bool -Description 'On Windows: Indicates that power settings will be set to High Power during lab deployment'
 Set-PSFConfig -Module 'AutomatedLab' -Name SendFunctionTelemetry -Value $false -Initialize -Validation bool -Description 'Indicates if function call telemetry is sent' -Hidden
 Set-PSFConfig -Module 'AutomatedLab' -Name DoNotWaitForLinux -Value $false -Initialize -Validation bool -Description 'Indicates that you will not wait for Linux VMs to be ready, e.g. because you are offline and PowerShell cannot be installed.'
@@ -172,7 +172,7 @@ Set-PSFConfig -Module 'AutomatedLab' -Name DefaultAzureRoleSize -Value 'D' -Init
 Set-PSFConfig -Module 'AutomatedLab' -Name LabSourcesMaxFileSizeMb -Value 50 -Initialize -Validation integer -Description 'The default file size for Sync-LabAzureLabSources'
 Set-PSFConfig -Module 'AutomatedLab' -Name AutoSyncLabSources -Value $false -Initialize -Validation bool -Description 'Toggle auto-sync of Azure lab sources in Azure labs'
 Set-PSFConfig -Module 'AutomatedLab' -Name LabSourcesSyncIntervalDays -Value 60 -Initialize -Validation integerpositive -Description 'Interval in days for lab sources auto-sync'
-Set-PSFConfig -Module 'AutomatedLab' -Name AzureDiskSkus -Value @('Standard_LRS', 'Premium_LRS', 'StandardSSD_LRS') # 'UltraSSD_LRS' is not allowed!
+Set-PSFConfig -Module 'AutomatedLab' -Name AzureDiskSkus -Value @('Standard_LRS', 'Premium_LRS', 'StandardSSD_LRS') -Description 'SKU for Azure VM Managed Disk, no UltraSSDs' # 'UltraSSD_LRS' is not allowed!
 Set-PSFConfig -Module 'AutomatedLab' -Name AzureEnableJit -Value $false -Initialize -Validation bool -Description 'Enable this setting to have AutomatedLab configure ports 22, 3389 and 5986 for JIT access. Can be done manually with Enable-LabAzureJitAccess and requested (after enabling) with Request-LabAzureJitAccess'
 Set-PSFConfig -Module 'AutomatedLab' -Name AzureDisableLabSourcesStorage -Value $false -Initialize -Validation bool -Description 'Enable this setting to opt out of creating Lab Sources storage. This will prolong your lab deployment times significantly, if ISOs have to be mounted or large files have to be copied.'
 Set-PSFConfig -Module 'AutomatedLab' -Name RequiredAzModules -Value @(
@@ -276,10 +276,10 @@ Set-PSFConfig -Module 'AutomatedLab' -Name Sql2019ManagementStudio -Value 'https
 Set-PSFConfig -Module 'AutomatedLab' -Name Sql2022ManagementStudio -Value 'https://aka.ms/ssmsfullsetup' -Initialize -Validation string -Description 'Link to SSMS latest'
 
 # SSRS
-Set-PSFConfig -Module 'AutomatedLab' -Name SqlServerReportBuilder -Value https://download.microsoft.com/download/5/E/B/5EB40744-DC0A-47C0-8B0A-1830E74D3C23/ReportBuilder.msi
-Set-PSFConfig -Module 'AutomatedLab' -Name Sql2017SSRS -Value https://download.microsoft.com/download/E/6/4/E6477A2A-9B58-40F7-8AD6-62BB8491EA78/SQLServerReportingServices.exe
-Set-PSFConfig -Module 'AutomatedLab' -Name Sql2019SSRS -Value https://download.microsoft.com/download/1/a/a/1aaa9177-3578-4931-b8f3-373b24f63342/SQLServerReportingServices.exe
-Set-PSFConfig -Module 'AutomatedLab' -Name Sql2022SSRS -Value https://download.microsoft.com/download/8/3/2/832616ff-af64-42b5-a0b1-5eb07f71dec9/SQLServerReportingServices.exe
+Set-PSFConfig -Module 'AutomatedLab' -Name SqlServerReportBuilder -Value https://download.microsoft.com/download/5/E/B/5EB40744-DC0A-47C0-8B0A-1830E74D3C23/ReportBuilder.msi -Initialize -Description 'Download link to SQL Server Report Builder'
+Set-PSFConfig -Module 'AutomatedLab' -Name Sql2017SSRS -Value https://download.microsoft.com/download/E/6/4/E6477A2A-9B58-40F7-8AD6-62BB8491EA78/SQLServerReportingServices.exe -Initialize -Description 'Download link to SSRS 2017'
+Set-PSFConfig -Module 'AutomatedLab' -Name Sql2019SSRS -Value https://download.microsoft.com/download/1/a/a/1aaa9177-3578-4931-b8f3-373b24f63342/SQLServerReportingServices.exe -Initialize -Description 'Download link to SSRS 2019'
+Set-PSFConfig -Module 'AutomatedLab' -Name Sql2022SSRS -Value https://download.microsoft.com/download/8/3/2/832616ff-af64-42b5-a0b1-5eb07f71dec9/SQLServerReportingServices.exe -Initialize -Description 'Download link to SSRS 2022'
 
 #SQL Server sample database contents
 #Set-PSFConfig -Module 'AutomatedLab' -Name SQLServer2008 -Value 'http://download-codeplex.sec.s-msft.com/Download/Release?ProjectName=msftdbprodsamples&DownloadId=478218&FileTime=129906742909030000&Build=21063' -Initialize -Validation string -Description 'Link to SQL sample DB for SQL 2008'
@@ -297,17 +297,17 @@ Set-PSFConfig -Module 'AutomatedLab' -Name AccessDatabaseEngine2016x86 -Value 'h
 Set-PSFConfig -Module 'AutomatedLab' -Name BuildAgentUri -Value 'https://download.agent.dev.azure.com/agent/4.258.1/vsts-agent-win-x64-4.258.1.zip' -Initialize -Validation string -Description 'Link to Azure DevOps/VSTS Build Agent'
 
 # SCVMM
-Set-PSFConfig -Module 'AutomatedLab' -Name SqlOdbc11 -Value 'https://download.microsoft.com/download/5/7/2/57249A3A-19D6-4901-ACCE-80924ABEB267/ENU/x64/msodbcsql.msi' -Initialize -Validation string
-Set-PSFConfig -Module 'AutomatedLab' -Name SqlOdbc13 -Value 'https://download.microsoft.com/download/D/5/E/D5EEF288-A277-45C8-855B-8E2CB7E25B96/x64/msodbcsql.msi' -Initialize -Validation string
-Set-PSFConfig -Module 'AutomatedLab' -Name SqlCommandLineUtils -Value 'https://download.microsoft.com/download/C/8/8/C88C2E51-8D23-4301-9F4B-64C8E2F163C5/x64/MsSqlCmdLnUtils.msi' -Initialize -Validation string
-Set-PSFConfig -Module 'AutomatedLab' -Name WindowsAdk -Value 'https://download.microsoft.com/download/2/d/9/2d9c8902-3fcd-48a6-a22a-432b08bed61e/ADK/adksetup.exe' -Initialize -Validation string
-Set-PSFConfig -Module 'AutomatedLab' -Name WindowsAdkPe -Value 'https://download.microsoft.com/download/5/5/6/556e01ec-9d78-417d-b1e1-d83a2eff20bc/ADKWinPEAddons/adkwinpesetup.exe' -Initialize -Validation string
+Set-PSFConfig -Module 'AutomatedLab' -Name SqlOdbc11 -Value 'https://download.microsoft.com/download/5/7/2/57249A3A-19D6-4901-ACCE-80924ABEB267/ENU/x64/msodbcsql.msi' -Initialize -Validation string -Description 'Download Link for SQL ODBC Driver 11, used with SCVMM'
+Set-PSFConfig -Module 'AutomatedLab' -Name SqlOdbc13 -Value 'https://download.microsoft.com/download/D/5/E/D5EEF288-A277-45C8-855B-8E2CB7E25B96/x64/msodbcsql.msi' -Initialize -Validation string -Description 'Download Link for SQL ODBC Driver 13, used with SCVMM'
+Set-PSFConfig -Module 'AutomatedLab' -Name SqlCommandLineUtils -Value 'https://download.microsoft.com/download/C/8/8/C88C2E51-8D23-4301-9F4B-64C8E2F163C5/x64/MsSqlCmdLnUtils.msi' -Initialize -Validation string -Description 'Download Link for SQL Commandline Utils, used with SCVMM'
+Set-PSFConfig -Module 'AutomatedLab' -Name WindowsAdk -Value 'https://download.microsoft.com/download/2/d/9/2d9c8902-3fcd-48a6-a22a-432b08bed61e/ADK/adksetup.exe' -Initialize -Validation string -Description 'Download Link for Windows ADK, used with SCVMM'
+Set-PSFConfig -Module 'AutomatedLab' -Name WindowsAdkPe -Value 'https://download.microsoft.com/download/5/5/6/556e01ec-9d78-417d-b1e1-d83a2eff20bc/ADKWinPEAddons/adkwinpesetup.exe' -Initialize -Validation string -Description 'Download Link for Windows ADK PE, used with SCVMM'
 
 # SCOM
-Set-PSFConfig -Module AutomatedLab -Name SqlClrType2014 -Value 'https://download.microsoft.com/download/6/7/8/67858AF1-B1B3-48B1-87C4-4483503E71DC/ENU/x64/SQLSysClrTypes.msi' -Initialize -Validation string
-Set-PSFConfig -Module AutomatedLab -Name SqlClrType2016 -Value "https://download.microsoft.com/download/6/4/5/645B2661-ABE3-41A4-BC2D-34D9A10DD303/ENU/x64/SQLSysClrTypes.msi" -Initialize -Validation string
-Set-PSFConfig -Module AutomatedLab -Name SqlClrType2019 -Value "https://download.microsoft.com/download/d/d/1/dd194c5c-d859-49b8-ad64-5cbdcbb9b7bd/SQLSysClrTypes.msi" -Initialize -Validation string
-Set-PSFConfig -Module 'AutomatedLab' -Name ReportViewer2015 -Value 'https://download.microsoft.com/download/A/1/2/A129F694-233C-4C7C-860F-F73139CF2E01/ENU/x86/ReportViewer.msi'
+Set-PSFConfig -Module AutomatedLab -Name SqlClrType2014 -Value 'https://download.microsoft.com/download/6/7/8/67858AF1-B1B3-48B1-87C4-4483503E71DC/ENU/x64/SQLSysClrTypes.msi' -Initialize -Validation string -Description  'Download link to SQL Server Clr Types v2014, used with SCOM'
+Set-PSFConfig -Module AutomatedLab -Name SqlClrType2016 -Value "https://download.microsoft.com/download/6/4/5/645B2661-ABE3-41A4-BC2D-34D9A10DD303/ENU/x64/SQLSysClrTypes.msi" -Initialize -Validation string -Description 'Download link to SQL Server Clr Types v2016, used with SCOM'
+Set-PSFConfig -Module AutomatedLab -Name SqlClrType2019 -Value "https://download.microsoft.com/download/d/d/1/dd194c5c-d859-49b8-ad64-5cbdcbb9b7bd/SQLSysClrTypes.msi" -Initialize -Validation string -Description 'Download link to SQL Server Clr Types v2019, used with SCOM'
+Set-PSFConfig -Module 'AutomatedLab' -Name ReportViewer2015 -Value 'https://download.microsoft.com/download/A/1/2/A129F694-233C-4C7C-860F-F73139CF2E01/ENU/x86/ReportViewer.msi' -Initialize -Description 'SQL Server Report Viewer 2015'
 
 # OpenSSH
 Set-PSFConfig -Module 'AutomatedLab' -Name OpenSshUri -Value 'https://github.com/PowerShell/Win32-OpenSSH/releases/download/v7.6.0.0p1-Beta/OpenSSH-Win64.zip' -Initialize -Validation string -Description 'Link to OpenSSH binaries'
@@ -393,17 +393,17 @@ Set-PSFConfig -Module AutomatedLab -Name SharePoint2019Prerequisites -Value @(
 ) -Initialize -Description 'List of prerequisite urls for SP2013' -Validation stringarray
 
 # Dynamics 365 CRM
-Set-PSFConfig -Module AutomatedLab -Name SqlServerNativeClient2012 -Value "https://download.microsoft.com/download/B/E/D/BED73AAC-3C8A-43F5-AF4F-EB4FEA6C8F3A/ENU/x64/sqlncli.msi" -Initialize -Validation string
-Set-PSFConfig -Module AutomatedLab -Name SqlClrType2014 -Value "https://download.microsoft.com/download/1/3/0/13089488-91FC-4E22-AD68-5BE58BD5C014/ENU/x64/SQLSysClrTypes.msi" -Initialize -Validation string
-Set-PSFConfig -Module AutomatedLab -Name SqlClrType2016 -Value "https://download.microsoft.com/download/6/4/5/645B2661-ABE3-41A4-BC2D-34D9A10DD303/ENU/x64/SQLSysClrTypes.msi" -Initialize -Validation string
-Set-PSFConfig -Module AutomatedLab -Name SqlClrType2019 -Value "https://download.microsoft.com/download/d/d/1/dd194c5c-d859-49b8-ad64-5cbdcbb9b7bd/SQLSysClrTypes.msi" -Initialize -Validation string
-Set-PSFConfig -Module AutomatedLab -Name SqlSmo2016 -Value "https://download.microsoft.com/download/6/4/5/645B2661-ABE3-41A4-BC2D-34D9A10DD303/ENU/x64/SharedManagementObjects.msi" -Initialize -Validation string
-Set-PSFConfig -Module AutomatedLab -Name Dynamics365Uri -Value 'https://download.microsoft.com/download/B/D/0/BD0FA814-9885-422A-BA0E-54CBB98C8A33/CRM9.0-Server-ENU-amd64.exe' -Initialize -Validation String
+Set-PSFConfig -Module AutomatedLab -Name SqlServerNativeClient2012 -Value "https://download.microsoft.com/download/B/E/D/BED73AAC-3C8A-43F5-AF4F-EB4FEA6C8F3A/ENU/x64/sqlncli.msi" -Initialize -Validation string -Description 'Download link to SQL Native Client v2012, used with Dynamics and ConfigMgr'
+Set-PSFConfig -Module AutomatedLab -Name SqlClrType2014 -Value "https://download.microsoft.com/download/1/3/0/13089488-91FC-4E22-AD68-5BE58BD5C014/ENU/x64/SQLSysClrTypes.msi" -Initialize -Validation string -Description 'Download link to SQL Server Clr Types v2014, used with Dynamics'
+Set-PSFConfig -Module AutomatedLab -Name SqlClrType2016 -Value "https://download.microsoft.com/download/6/4/5/645B2661-ABE3-41A4-BC2D-34D9A10DD303/ENU/x64/SQLSysClrTypes.msi" -Initialize -Validation string -Description 'Download link to SQL Server Clr Types v2016, used with Dynamics'
+Set-PSFConfig -Module AutomatedLab -Name SqlClrType2019 -Value "https://download.microsoft.com/download/d/d/1/dd194c5c-d859-49b8-ad64-5cbdcbb9b7bd/SQLSysClrTypes.msi" -Initialize -Validation string -Description 'Download link to SQL Server Clr Types v2019, used with Dynamics'
+Set-PSFConfig -Module AutomatedLab -Name SqlSmo2016 -Value "https://download.microsoft.com/download/6/4/5/645B2661-ABE3-41A4-BC2D-34D9A10DD303/ENU/x64/SharedManagementObjects.msi" -Initialize -Validation string -Description 'Download link to SQL Server Share Management Objects v2016, used with Dynamics'
+Set-PSFConfig -Module AutomatedLab -Name Dynamics365Uri -Value 'https://download.microsoft.com/download/B/D/0/BD0FA814-9885-422A-BA0E-54CBB98C8A33/CRM9.0-Server-ENU-amd64.exe' -Initialize -Validation String -Description 'Dynamics 365 Download URI, defaults to CRM9.0'
 
 # Exchange Server
-Set-PSFConfig -Module AutomatedLab -Name Exchange2013DownloadUrl -Value 'https://download.microsoft.com/download/7/F/D/7FDCC96C-26C0-4D49-B5DB-5A8B36935903/Exchange2013-x64-cu23.exe'
-Set-PSFConfig -Module AutomatedLab -Name Exchange2016DownloadUrl -Value 'https://download.microsoft.com/download/8/d/2/8d2d01b4-5bbb-4726-87da-0e331bc2b76f/ExchangeServer2016-x64-CU23.ISO'
-Set-PSFConfig -Module AutomatedLab -Name Exchange2019DownloadUrl -Value 'https://download.microsoft.com/download/b/c/7/bc766694-8398-4258-8e1e-ce4ddb9b3f7d/ExchangeServer2019-x64-CU12.ISO'
+Set-PSFConfig -Module AutomatedLab -Name Exchange2013DownloadUrl -Value 'https://download.microsoft.com/download/7/F/D/7FDCC96C-26C0-4D49-B5DB-5A8B36935903/Exchange2013-x64-cu23.exe' -Initialize -Description 'Download url for Exchange Server 2013 exe'
+Set-PSFConfig -Module AutomatedLab -Name Exchange2016DownloadUrl -Value 'https://download.microsoft.com/download/8/d/2/8d2d01b4-5bbb-4726-87da-0e331bc2b76f/ExchangeServer2016-x64-CU23.ISO' -Initialize -Description 'Download url for Exchange Server 2016 ISO'
+Set-PSFConfig -Module AutomatedLab -Name Exchange2019DownloadUrl -Value 'https://download.microsoft.com/download/b/c/7/bc766694-8398-4258-8e1e-ce4ddb9b3f7d/ExchangeServer2019-x64-CU12.ISO' -Initialize -Description 'Download url for Exchange Server 2019 ISO'
 
 # ConfigMgr
 Set-PSFConfig -Module AutomatedLab -Name ConfigurationManagerWmiExplorer -Value 'https://github.com/vinaypamnani/wmie2/releases/download/v2.0.0.2/WmiExplorer_2.0.0.2.zip' -Description 'Link to WMI explorer' -Validation string
