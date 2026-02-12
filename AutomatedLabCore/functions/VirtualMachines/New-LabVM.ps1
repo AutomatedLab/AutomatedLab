@@ -30,7 +30,7 @@
         Write-LogFunctionExitWithError -Message $message
         return
     }
-    
+
     Write-ScreenInfo -Message 'Waiting for all machines to finish installing' -TaskStart
     foreach ($machine in $machines.Where({$_.HostType -notin 'Azure', 'Proxmox'}))
     {
@@ -83,7 +83,7 @@
 
             Start-LabVM -ComputerName $machine
         }
-        
+
         if ($fdvDenyWriteAccess) {
             Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Policies\Microsoft\FVE -Name FDVDenyWriteAccess -Value $fdvDenyWriteAccess
         }
@@ -110,8 +110,11 @@
                 New-LWProxmoxVM -Machine $rootDC
             }
             Wait-LabVM -ComputerName $rootDCs #Stop and start is required to sync the time with the Proxmox host
-            Stop-LabVM -ComputerName $rootDCs -Wait
-            Start-LabVM -ComputerName $rootDCs -Wait
+
+            Repair-LWHypervNetworkConfig -ComputerName $rootDCs -ErrorAction SilentlyContinue
+            #TODO: Is this still required?
+            #Stop-LabVM -ComputerName $rootDCs -Wait
+            #Start-LabVM -ComputerName $rootDCs -Wait
 
             $sysprepState = Get-LWProxmoxVMSysprepState -ComputerName $rootDCs
             if ($sysprepState | Where-Object SysprepState -ne 'IMAGE_STATE_COMPLETE')
@@ -130,6 +133,9 @@
                 New-LWProxmoxVM -Machine $firstChildDC
             }
             Wait-LabVM -ComputerName $firstChildDCs
+
+            Repair-LWHypervNetworkConfig -ComputerName $firstChildDCs -ErrorAction SilentlyContinue
+
             $sysprepState = Get-LWProxmoxVMSysprepState -ComputerName $firstChildDCs
             if ($sysprepState | Where-Object SysprepState -ne 'IMAGE_STATE_COMPLETE')
             {
@@ -148,6 +154,8 @@
             }
 
             Wait-LabVM -ComputerName $otherVMs
+
+            Repair-LWHypervNetworkConfig -ComputerName $otherVMs -ErrorAction SilentlyContinue
 
             $sysprepState = Get-LWProxmoxVMSysprepState -ComputerName $otherVMs
             # As the machine's name is not yet set we likely run into the default retry behavior resulting in 3 entries returned. Hence, we get only the last one per machine.
