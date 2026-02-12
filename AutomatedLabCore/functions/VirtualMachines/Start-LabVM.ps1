@@ -194,6 +194,17 @@
         if ($proxmoxVms)
         {
             Start-LWProxmoxVM -ComputerName $proxmoxVms -DelayBetweenComputers $DelayBetweenComputers -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewline
+
+            foreach ($vm in $proxmoxVms)
+            {
+                $machineMetadata = Get-LWVMDescription -ComputerName $vm.ResourceName
+                if (($machineMetadata.InitState -band [AutomatedLab.LabVMInitState]::NetworkAdapterBindingCorrected) -ne [AutomatedLab.LabVMInitState]::NetworkAdapterBindingCorrected)
+                {
+                    Repair-LWHypervNetworkConfig -ComputerName $vm
+                    $machineMetadata.InitState = [AutomatedLab.LabVMInitState]::NetworkAdapterBindingCorrected
+                    Set-LWVMDescription -Hashtable $machineMetadata -ComputerName $vm.ResourceName
+                }
+            }
         }
 
         $vmwareVms = $vms | Where-Object HostType -eq 'VmWare'
