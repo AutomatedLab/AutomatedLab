@@ -4,23 +4,40 @@
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
-        [string]$ComputerName
+        [string[]]$ComputerName
     )
 
     Write-LogFunctionEntry
 
-    $machine = Get-LabVM -ComputerName $ComputerName
-    $vm = Get-LWHypervVM -Name $machine.ResourceName
+    $machines = Get-LabVM -ComputerName $ComputerName
 
-    if (-not $machine) { return } # No fixing this on a Linux VM
+    if (-not $machines)
+    {
+        Write-LogFunctionExit
+        return
+    }
 
-    Wait-LabVM -ComputerName $machine -NoNewLine
-    $machineAdapterStream = [System.Management.Automation.PSSerializer]::Serialize($machine.NetworkAdapters,2)
+    Wait-LabVM -ComputerName $machines -NoNewLine
 
-    Invoke-LabCommand -ComputerName $machine -ActivityName "Network config on '$machine' (renaming and ordering)" -ScriptBlock {
-        Write-Verbose "Renaming network adapters"
-        #rename the adapters as defined in the lab
-        $machineAdapter = [System.Management.Automation.PSSerializer]::Deserialize($machineAdapterStream)
+    # Build a lookup of adapters keyed by machine name so each remote machine can find its own config
+    $adaptersByMachine = @{}
+    foreach ($machine in $machines)
+    {
+        $adaptersByMachine[$machine.ResourceName] = $machine.NetworkAdapters
+    }
+    $allAdaptersStream = [System.Management.Automation.PSSerializer]::Serialize($adaptersByMachine, 4)
+
+    Invoke-LabCommand -ComputerName $machines -ActivityName 'Network config (renaming and ordering)' -ScriptBlock {
+        Write-Verbose 'Renaming network adapters'
+        $allAdapters = [System.Management.Automation.PSSerializer]::Deserialize($allAdaptersStream)
+        $machineAdapter = $allAdapters[$env:COMPUTERNAME]
+
+        if (-not $machineAdapter)
+        {
+            Write-Verbose "No adapter configuration found for $env:COMPUTERNAME"
+            return
+        }
+
         $newNames = @()
         foreach ($adapterInfo in $machineAdapter)
         {
@@ -93,17 +110,7 @@
             }
         }
 
-    } -Function (Get-Command -Name Get-StringSection, Add-StringIncrement) -Variable (Get-Variable -Name machineAdapterStream) -NoDisplay
-
-    foreach ($adapterInfo in $machineAdapter)
-    {
-        $vmAdapter = $vm | Get-VMNetworkAdapter -Name $adapterInfo.VirtualSwitch.ResourceName
-
-        if ($adapterInfo.VirtualSwitch.ResourceName -ne $vmAdapter.SwitchName)
-        {
-            $vmAdapter | Connect-VMNetworkAdapter -SwitchName $adapterInfo.VirtualSwitch.ResourceName
-        }
-    }
+    } -Function (Get-Command -Name Get-StringSection, Add-StringIncrement) -Variable (Get-Variable -Name allAdaptersStream) -NoDisplay
 
     Write-LogFunctionExit
 }
