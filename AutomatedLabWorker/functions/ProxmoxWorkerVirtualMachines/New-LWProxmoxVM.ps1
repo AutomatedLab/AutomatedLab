@@ -931,7 +931,7 @@ foreach ($line in $disks)
 
 $diskDefinitions = Import-Clixml -Path C:\Disks.xml
 Write-Verbose -Message "Disk count for $env:COMPUTERNAME`: $($diskDefinitions.Count)"
-foreach ($diskDefinition in $diskDefinitions.Where({ -not $_.SkipInitialization }))
+foreach ($diskDefinition in $diskDefinitions | Where-Object { -not $_.SkipInitialization })
 {
     $disk = Get-Disk | Where-Object Number -eq $diskDefinition.Lun
     $disk | Set-Disk -IsReadOnly $false
