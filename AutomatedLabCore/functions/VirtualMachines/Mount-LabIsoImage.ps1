@@ -25,11 +25,11 @@
         $machinesNotFound = Compare-Object -ReferenceObject $ComputerName -DifferenceObject ($machines.Name)
         Write-ScreenInfo "The specified machine(s) $($machinesNotFound.InputObject -join ', ') could not be found" -Type Warning
     }
-    $machines | Where-Object HostType -notin HyperV, Azure | ForEach-Object {
-        Write-ScreenInfo "Using ISO images is only supported with Hyper-V VMs or on Azure. Skipping machine '$($_.Name)'" -Type Warning
+    $machines | Where-Object HostType -notin HyperV, Azure, Proxmox | ForEach-Object {
+        Write-ScreenInfo "Using ISO images is only supported with Hyper-V, Azure, or Proxmox VMs. Skipping machine '$($_.Name)'" -Type Warning
     }
 
-    $machines = $machines | Where-Object HostType -in HyperV,Azure
+    $machines = $machines | Where-Object HostType -in HyperV, Azure, Proxmox
 
     foreach ($machine in $machines)
     {
@@ -42,9 +42,52 @@
         {
             Mount-LWIsoImage -ComputerName $machine -IsoPath $IsoPath -PassThru:$PassThru
         }
-        else
+        elseif ($machine.HostType -eq 'Azure')
         {
             Mount-LWAzureIsoImage -ComputerName $machine -IsoPath $IsoPath -PassThru:$PassThru
+        }
+        elseif ($machine.HostType -eq 'Proxmox')
+        {
+            $node = $machine.ProxmoxProperties.TargetNode
+            $proxmoxVm = Get-LWProxmoxVM -ComputerName $machine.ResourceName
+            if (-not $proxmoxVm)
+            {
+                Write-ScreenInfo -Message "Proxmox VM '$($machine.Name)' could not be found on any node." -Type Error
+                continue
+            }
+
+            $dvdDrivesBefore = Invoke-LabCommand -ComputerName $machine -ScriptBlock {
+                Get-WmiObject -Class Win32_LogicalDisk -Filter 'DriveType = 5 AND FileSystem LIKE "%"' | Select-Object -ExpandProperty DeviceID
+            } -PassThru -NoDisplay
+
+            if (-not $dvdDrivesBefore) { $dvdDrivesBefore = @() }
+
+            $isoFileName = Split-Path -Path $IsoPath -Leaf
+            $mountResult = Mount-LWProxmoxIso -Node $node -VmId $proxmoxVm.vmid -IsoFile $isoFileName
+
+            if ($PassThru -and $mountResult)
+            {
+                # Wait for the guest OS to recognise the new CD-ROM drive
+                $driveLetter = $null
+                $delaySeconds = 5, 10, 15, 30
+                foreach ($delay in $delaySeconds)
+                {
+                    Start-Sleep -Seconds $delay
+
+                    $dvdDrivesAfter = Invoke-LabCommand -ComputerName $machine -ScriptBlock {
+                        Get-WmiObject -Class Win32_LogicalDisk -Filter 'DriveType = 5 AND FileSystem LIKE "%"' | Select-Object -ExpandProperty DeviceID
+                    } -PassThru -NoDisplay
+
+                    if (-not $dvdDrivesAfter) { $dvdDrivesAfter = @() }
+
+                    $driveLetter = (Compare-Object -ReferenceObject $dvdDrivesBefore -DifferenceObject $dvdDrivesAfter -ErrorAction SilentlyContinue).InputObject
+                    if ($driveLetter) { break }
+                }
+
+                $mountResult | Add-Member -Name DriveLetter -MemberType NoteProperty -Value $driveLetter
+                $mountResult | Add-Member -Name InternalComputerName -MemberType NoteProperty -Value $machine.Name
+                $mountResult
+            }
         }
     }
 
