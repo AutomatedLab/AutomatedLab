@@ -59,6 +59,11 @@ function Mount-LWProxmoxIsoImage
         Mounts the ISO to the lab VM 'Server01' and returns the result with drive letter.
 
     .EXAMPLE
+        Mount-LWProxmoxIsoImage -ComputerName 'Server01' -IsoPath 'D:\ISOs\setup.iso' -PassThru
+
+        Mounts the ISO to the lab VM 'Server01' and returns the result with drive letter.
+
+    .EXAMPLE
         Mount-LWProxmoxIsoImage -Node 'rz1pinhst101' -VmId 9004 -IsoFile 'dsc-resources.iso'
 
         Mounts the ISO file 'dsc-resources.iso' to VM 9004, automatically
