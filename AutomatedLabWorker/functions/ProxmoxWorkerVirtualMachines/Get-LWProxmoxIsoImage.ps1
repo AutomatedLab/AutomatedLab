@@ -1,4 +1,4 @@
-function Get-LWProxmoxIso
+function Get-LWProxmoxIsoImage
 {
     <#
     .SYNOPSIS
@@ -26,17 +26,17 @@ function Get-LWProxmoxIso
         If no match is found, a non-terminating error is written.
 
     .EXAMPLE
-        Get-LWProxmoxIso -Node 'rz1pinhst101'
+        Get-LWProxmoxIsoImage -Node 'rz1pinhst101'
 
         Lists all ISO images across all ISO-capable storages on node rz1pinhst101.
 
     .EXAMPLE
-        Get-LWProxmoxIso -Node 'rz1pinhst101' -Storage 'cephfs'
+        Get-LWProxmoxIsoImage -Node 'rz1pinhst101' -Storage 'cephfs'
 
         Lists all ISO images on the 'cephfs' storage only.
 
     .EXAMPLE
-        Get-LWProxmoxIso -Node 'rz1pinhst101' -IsoFile 'dsc-resources.iso'
+        Get-LWProxmoxIsoImage -Node 'rz1pinhst101' -IsoFile 'dsc-resources.iso'
 
         Searches all ISO-capable storages and returns the matching entry.
     #>

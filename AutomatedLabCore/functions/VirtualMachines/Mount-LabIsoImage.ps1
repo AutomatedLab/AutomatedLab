@@ -63,7 +63,7 @@
             if (-not $dvdDrivesBefore) { $dvdDrivesBefore = @() }
 
             $isoFileName = Split-Path -Path $IsoPath -Leaf
-            $mountResult = Mount-LWProxmoxIso -Node $node -VmId $proxmoxVm.vmid -IsoFile $isoFileName
+            $mountResult = Mount-LWProxmoxIsoImage -Node $node -VmId $proxmoxVm.vmid -IsoFile $isoFileName
 
             if ($PassThru -and $mountResult)
             {
