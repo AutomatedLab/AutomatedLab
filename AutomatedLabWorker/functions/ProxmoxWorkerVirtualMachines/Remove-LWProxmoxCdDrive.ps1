@@ -6,7 +6,7 @@ function Remove-LWProxmoxCdDrive
 
     .DESCRIPTION
         Completely removes the specified SCSI CD-ROM device from the VM configuration.
-        Unlike Dismount-LWProxmoxIsoImage (which ejects the disc but keeps the drive),
+        Unlike Dismount-LWProxmoxIso (which ejects the disc but keeps the drive),
         this function deletes the SCSI device entry entirely.
 
         Can also remove all SCSI CD-ROM drives at once with the -All switch.
@@ -100,7 +100,7 @@ function Remove-LWProxmoxCdDrive
 
                 for ($attempt = 1; $attempt -le $maxRetries; $attempt++)
                 {
-                    $result = New-PveNodesQemuConfig -Node $Node -Vmid $VmId -Delete $drive.Name
+                    $result = Set-PveNodesQemuConfig -Node $Node -Vmid $VmId -Delete $drive.Name
                     if ($result.StatusCode -eq 200)
                     {
                         $success = $true
@@ -120,26 +120,6 @@ function Remove-LWProxmoxCdDrive
                 }
                 else
                 {
-                    # Wait for the async task to complete
-                    $taskUpid = $result.Response.data
-                    if ($taskUpid)
-                    {
-                        $taskTimeout = 30
-                        $taskStart = Get-Date
-                        do
-                        {
-                            Start-Sleep -Seconds 1
-                            $taskStatus = (Get-PveNodesTasksStatus -Node $Node -Upid $taskUpid).Response.data
-                        }
-                        while ($taskStatus.status -ne 'stopped' -and ((Get-Date) - $taskStart).TotalSeconds -lt $taskTimeout)
-
-                        if ($taskStatus.exitstatus -ne 'OK')
-                        {
-                            Write-Error -Message "Task to remove $($drive.Name) from VM ${VmId} failed: $($taskStatus.exitstatus)"
-                            continue
-                        }
-                    }
-
                     Write-PSFMessage -Message "Successfully removed $($drive.Name) from VM $VmId"
                     [PSCustomObject]@{
                         Node          = $Node
@@ -171,7 +151,7 @@ function Remove-LWProxmoxCdDrive
 
             for ($attempt = 1; $attempt -le $maxRetries; $attempt++)
             {
-                $result = New-PveNodesQemuConfig -Node $Node -Vmid $VmId -Delete "scsi$ScsiSlot"
+                $result = Set-PveNodesQemuConfig -Node $Node -Vmid $VmId -Delete "scsi$ScsiSlot"
                 if ($result.StatusCode -eq 200)
                 {
                     $success = $true
@@ -189,26 +169,6 @@ function Remove-LWProxmoxCdDrive
             {
                 Write-Error -Message "Failed to remove scsi${ScsiSlot} from VM ${VmId}: $($result.ReasonPhrase)"
                 return
-            }
-
-            # Wait for the async task to complete
-            $taskUpid = $result.Response.data
-            if ($taskUpid)
-            {
-                $taskTimeout = 30
-                $taskStart = Get-Date
-                do
-                {
-                    Start-Sleep -Seconds 1
-                    $taskStatus = (Get-PveNodesTasksStatus -Node $Node -Upid $taskUpid).Response.data
-                }
-                while ($taskStatus.status -ne 'stopped' -and ((Get-Date) - $taskStart).TotalSeconds -lt $taskTimeout)
-
-                if ($taskStatus.exitstatus -ne 'OK')
-                {
-                    Write-Error -Message "Task to remove scsi${ScsiSlot} from VM ${VmId} failed: $($taskStatus.exitstatus)"
-                    return
-                }
             }
 
             Write-PSFMessage -Message "Successfully removed scsi$ScsiSlot from VM $VmId"
