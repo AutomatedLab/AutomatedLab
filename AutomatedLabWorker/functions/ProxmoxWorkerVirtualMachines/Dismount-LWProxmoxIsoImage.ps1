@@ -10,7 +10,15 @@ function Dismount-LWProxmoxIsoImage
         slot is changed to an empty CD-ROM drive. The SCSI device remains but
         the disc is ejected.
 
+        Can be invoked with either a ComputerName (lab machine name) or with direct
+        Proxmox API parameters (Node, VmId). When ComputerName is used, the CD-ROM
+        drives are fully removed via Remove-LWProxmoxCdDrive.
+
         Requires an active connection to the Proxmox cluster.
+
+    .PARAMETER ComputerName
+        The name of the lab machine. The machine's Proxmox properties are used to
+        resolve the target node and VM ID automatically.
 
     .PARAMETER Node
         The name of the Proxmox node where the VM is running.
@@ -19,25 +27,56 @@ function Dismount-LWProxmoxIsoImage
         The numeric ID of the virtual machine.
 
     .EXAMPLE
+        Dismount-LWProxmoxIsoImage -ComputerName 'Server01'
+
+        Finds and removes all CD-ROM drives from the lab VM 'Server01'.
+
+    .EXAMPLE
         Dismount-LWProxmoxIsoImage -Node 'rz1pinhst101' -VmId 9004
 
         Finds and ejects all mounted ISO images from VM 9004.
     #>
-    [CmdletBinding(SupportsShouldProcess)]
+    [CmdletBinding(SupportsShouldProcess, DefaultParameterSetName = 'ByApiParams')]
     param
     (
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory, ParameterSetName = 'ByComputerName', Position = 0)]
+        [ValidateNotNullOrEmpty()]
+        [string[]]
+        $ComputerName,
+
+        [Parameter(Mandatory, ParameterSetName = 'ByApiParams')]
         [ValidateNotNullOrEmpty()]
         [string]
         $Node,
 
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory, ParameterSetName = 'ByApiParams')]
         [ValidateRange(100, 999999999)]
         [int]
         $VmId
     )
 
     Write-LogFunctionEntry
+
+    if ($PSCmdlet.ParameterSetName -eq 'ByComputerName')
+    {
+        $machines = Get-LabVM -ComputerName $ComputerName
+
+        foreach ($machine in $machines)
+        {
+            $proxmoxVm = Get-LWProxmoxVM -ComputerName $machine.ResourceName
+            if (-not $proxmoxVm)
+            {
+                Write-ScreenInfo -Message "Proxmox VM '$($machine.Name)' could not be found on any node." -Type Error
+                continue
+            }
+
+            $targetNode = $proxmoxVm.node
+            $null = Remove-LWProxmoxCdDrive -Node $targetNode -VmId $proxmoxVm.vmid -All
+        }
+
+        Write-LogFunctionExit
+        return
+    }
 
     if (-not (Test-LabProxmoxConnection))
     {
