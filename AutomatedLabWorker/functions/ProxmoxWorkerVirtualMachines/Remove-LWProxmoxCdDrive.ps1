@@ -6,7 +6,7 @@ function Remove-LWProxmoxCdDrive
 
     .DESCRIPTION
         Completely removes the specified SCSI CD-ROM device from the VM configuration.
-        Unlike Dismount-LWProxmoxIso (which ejects the disc but keeps the drive),
+        Unlike Dismount-LWProxmoxIsoImage (which ejects the disc but keeps the drive),
         this function deletes the SCSI device entry entirely.
 
         Can also remove all SCSI CD-ROM drives at once with the -All switch.
