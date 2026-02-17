@@ -92,7 +92,7 @@ function Get-LabIsoImage
             $params.IsoFile = $IsoFile
         }
 
-        Get-LWProxmoxIso @params
+        Get-LWProxmoxIsoImage @params
     }
 
     Write-LogFunctionExit

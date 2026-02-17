@@ -84,6 +84,7 @@
         'Get-LabConfigurationItem',
         'Get-LabHyperVAvailableMemory',
         'Get-LabInternetFile',
+        'Get-LabIsoImage',
         'Get-LabIssuingCA',
         'Get-LabMachineAutoShutdown',
         'Get-LabPSSession',

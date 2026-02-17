@@ -1,4 +1,4 @@
-function Mount-LWProxmoxIso
+function Mount-LWProxmoxIsoImage
 {
     <#
     .SYNOPSIS
@@ -33,13 +33,13 @@ function Mount-LWProxmoxIso
         to avoid conflicts with disk drives that typically use lower slots.
 
     .EXAMPLE
-        Mount-LWProxmoxIso -Node 'rz1pinhst101' -VmId 9004 -IsoFile 'dsc-resources.iso'
+        Mount-LWProxmoxIsoImage -Node 'rz1pinhst101' -VmId 9004 -IsoFile 'dsc-resources.iso'
 
         Mounts the ISO file 'dsc-resources.iso' to VM 9004, automatically
         discovering which storage contains the file.
 
     .EXAMPLE
-        Mount-LWProxmoxIso -Node 'rz1pinhst101' -VmId 9004 -IsoFile 'setup.iso' -Storage 'cephfs' -ScsiSlot 29
+        Mount-LWProxmoxIsoImage -Node 'rz1pinhst101' -VmId 9004 -IsoFile 'setup.iso' -Storage 'cephfs' -ScsiSlot 29
 
         Mounts the ISO from 'cephfs' storage using SCSI slot 29.
     #>
@@ -91,7 +91,7 @@ function Mount-LWProxmoxIso
         $getIsoParams['Storage'] = $Storage
     }
 
-    $matchingIso = Get-LWProxmoxIso @getIsoParams
+    $matchingIso = Get-LWProxmoxIsoImage @getIsoParams
     if (-not $matchingIso)
     {
         return

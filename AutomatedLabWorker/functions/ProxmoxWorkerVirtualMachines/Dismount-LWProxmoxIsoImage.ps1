@@ -1,4 +1,4 @@
-function Dismount-LWProxmoxIso
+function Dismount-LWProxmoxIsoImage
 {
     <#
     .SYNOPSIS
@@ -19,7 +19,7 @@ function Dismount-LWProxmoxIso
         The numeric ID of the virtual machine.
 
     .EXAMPLE
-        Dismount-LWProxmoxIso -Node 'rz1pinhst101' -VmId 9004
+        Dismount-LWProxmoxIsoImage -Node 'rz1pinhst101' -VmId 9004
 
         Finds and ejects all mounted ISO images from VM 9004.
     #>
