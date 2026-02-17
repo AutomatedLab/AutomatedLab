@@ -38,6 +38,11 @@ function Dismount-LWProxmoxIsoImage
         Finds and removes all CD-ROM drives from the lab VM 'Server01'.
 
     .EXAMPLE
+        Dismount-LWProxmoxIsoImage -ComputerName 'Server01'
+
+        Finds and removes all CD-ROM drives from the lab VM 'Server01'.
+
+    .EXAMPLE
         Dismount-LWProxmoxIsoImage -Node 'rz1pinhst101' -VmId 9004
 
         Finds and ejects all mounted ISO images from VM 9004.
