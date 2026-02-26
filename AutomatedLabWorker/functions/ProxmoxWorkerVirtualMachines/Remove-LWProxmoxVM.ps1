@@ -33,7 +33,7 @@ function Remove-LWProxmoxVM
         $values = @{
             status = 'stopped'
         }
-        Wait-LWProxmoxTasksStatus -Upid $result.Response.data -Node $vm.node -DesiredValues $values -TimeoutInSeconds 600
+        $null = Wait-LWProxmoxTasksStatus -Upid $result.Response.data -Node $vm.node -DesiredValues $values -TimeoutInSeconds 600
     }
 
     $result = Remove-PveQemu -Node $vm.node -Vmid $vm.VmId #-Purge $true -DestroyUnreferencedDisks $true
@@ -45,7 +45,7 @@ function Remove-LWProxmoxVM
     $values = @{
         status = 'stopped'
     }
-    Wait-LWProxmoxTasksStatus -Upid $result.Response.data -Node $vm.node -DesiredValues $values -TimeoutInSeconds 600
+    $null = Wait-LWProxmoxTasksStatus -Upid $result.Response.data -Node $vm.node -DesiredValues $values -TimeoutInSeconds 600
 
     Write-LogFunctionExit
 }
