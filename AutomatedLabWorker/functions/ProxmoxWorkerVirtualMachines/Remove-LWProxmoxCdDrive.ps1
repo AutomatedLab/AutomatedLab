@@ -25,6 +25,12 @@ function Remove-LWProxmoxCdDrive
     .PARAMETER All
         When specified, removes all SCSI CD-ROM drives (scsi0-scsi30) from the VM.
 
+    .PARAMETER Confirm
+        Prompts you for confirmation before running the cmdlet.
+
+    .PARAMETER WhatIf
+        Shows what would happen if the cmdlet runs. The cmdlet is not run.
+
     .EXAMPLE
         Remove-LWProxmoxCdDrive -Node 'rz1pinhst101' -VmId 9004 -ScsiSlot 30
 
