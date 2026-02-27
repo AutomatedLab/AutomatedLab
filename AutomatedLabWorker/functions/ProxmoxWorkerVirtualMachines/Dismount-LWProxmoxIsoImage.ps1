@@ -26,6 +26,12 @@ function Dismount-LWProxmoxIsoImage
     .PARAMETER VmId
         The numeric ID of the virtual machine.
 
+    .PARAMETER Confirm
+        Prompts you for confirmation before running the cmdlet.
+
+    .PARAMETER WhatIf
+        Shows what would happen if the cmdlet runs. The cmdlet is not run.
+
     .EXAMPLE
         Dismount-LWProxmoxIsoImage -ComputerName 'Server01'
 

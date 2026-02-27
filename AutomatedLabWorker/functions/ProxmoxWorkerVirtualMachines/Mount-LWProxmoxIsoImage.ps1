@@ -47,6 +47,12 @@ function Mount-LWProxmoxIsoImage
         The SCSI slot number (0-30) to use for the CD-ROM drive. Defaults to 30,
         to avoid conflicts with disk drives that typically use lower slots.
 
+    .PARAMETER Confirm
+        Prompts you for confirmation before running the cmdlet.
+
+    .PARAMETER WhatIf
+        Shows what would happen if the cmdlet runs. The cmdlet is not run.
+
     .EXAMPLE
         Mount-LWProxmoxIsoImage -ComputerName 'Server01' -IsoPath 'D:\ISOs\setup.iso' -PassThru
 
