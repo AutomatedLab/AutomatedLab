@@ -107,7 +107,7 @@
         {
             foreach ($rootDC in $rootDCs)
             {
-                New-LWProxmoxVM -Machine $rootDC
+                New-LWProxmoxVM -Machine $rootDC | Out-Null
             }
             Wait-LabVM -ComputerName $rootDCs #Stop and start is required to sync the time with the Proxmox host
 
@@ -130,7 +130,7 @@
         {
             foreach ($firstChildDC in $firstChildDCs)
             {
-                New-LWProxmoxVM -Machine $firstChildDC
+                New-LWProxmoxVM -Machine $firstChildDC | Out-Null
             }
             Wait-LabVM -ComputerName $firstChildDCs
 
@@ -150,7 +150,7 @@
         {
             foreach ($otherVM in $otherVMs)
             {
-                New-LWProxmoxVM -Machine $otherVM
+                New-LWProxmoxVM -Machine $otherVM | Out-Null
             }
 
             Wait-LabVM -ComputerName $otherVMs
