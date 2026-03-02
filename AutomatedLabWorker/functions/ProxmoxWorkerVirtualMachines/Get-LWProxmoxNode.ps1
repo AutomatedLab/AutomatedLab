@@ -34,12 +34,34 @@ function Get-LWProxmoxNode
         return
     }
 
-    $result = Get-PveNodes
+    $maxRetries = 3
+    $retryDelaySec = 10
+    $attempt = 0
+    $result = $null
 
-    $result = Get-PveNodes
+    while ($attempt -lt $maxRetries)
+    {
+        $attempt++
+        $result = Get-PveNodes
+
+        if ($result.StatusCode -eq 200)
+        {
+            break
+        }
+
+        if ($attempt -lt $maxRetries)
+        {
+            Write-ScreenInfo -Message "Could not retrieve Proxmox nodes (StatusCode '$($result.StatusCode)'). Retrying in $retryDelaySec seconds (attempt $attempt of $maxRetries)..." -Type Warning
+            Start-Sleep -Seconds $retryDelaySec
+
+            # Refresh the connection in case the ticket expired or the session dropped
+            Connect-LabProxmoxCluster -RefreshExistingConnection
+        }
+    }
+
     if ($result.StatusCode -ne 200)
     {
-        Write-Error "Could not retrieve Proxmox nodes: The error was '$($result.StatusCode)'" -ErrorAction Stop
+        Write-Error "Could not retrieve Proxmox nodes after $maxRetries attempts: The error was '$($result.StatusCode)'" -ErrorAction Stop
     }
 
     $result = if ($Name)
