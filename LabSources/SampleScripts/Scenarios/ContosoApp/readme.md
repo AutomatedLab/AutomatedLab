@@ -78,7 +78,7 @@ Create a dedicated folder for the deployment scripts and download them from GitH
 $scriptFolder = 'C:\ContosoLabDeploy'
 New-Item -Path $scriptFolder -ItemType Directory -Force
 
-$baseUrl = 'https://raw.githubusercontent.com/raandree/AutomatedLabArticle/main/Artikel%202%20-%20Von%20der%20Basis%20zur%20Ma%C3%9Fanfertigung'
+$baseUrl = 'https://raw.githubusercontent.com/AutomatedLab/AutomatedLab/main/LabSources/SampleScripts/Scenarios/ContosoApp'
 Invoke-WebRequest -Uri "$baseUrl/10_New-ContosoLab.ps1" -OutFile "$scriptFolder\10_New-ContosoLab.ps1"
 Invoke-WebRequest -Uri "$baseUrl/20_Install-ContosoApp.ps1" -OutFile "$scriptFolder\20_Install-ContosoApp.ps1"
 Invoke-WebRequest -Uri "$baseUrl/Build-ContosoApp.ps1" -OutFile "$scriptFolder\Build-ContosoApp.ps1"
