@@ -131,7 +131,7 @@
     #endregion
 
     #region network adapter settings
-    $macAddressPrefix = Get-LabConfigurationItem -Name HypervHypervMacAddressPrefix
+    $macAddressPrefix = Get-LabConfigurationItem -Name HypervMacAddressPrefix
     $macAddressesInUse = @(Get-LWHypervVM | Get-VMNetworkAdapter | Select-Object -ExpandProperty MacAddress)
     $macAddressesInUse += (Get-LabVm -IncludeLinux).NetworkAdapters.MacAddress
 
