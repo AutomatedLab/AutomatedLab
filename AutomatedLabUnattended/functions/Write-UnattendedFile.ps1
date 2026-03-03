@@ -1,15 +1,17 @@
-﻿function Set-UnattendedPackage
+function Write-UnattendedFile
 {
-    [CmdletBinding(DefaultParameterSetName = 'Windows')]
-    param (
-        [Parameter(ParameterSetName = 'Windows', Mandatory = $true)]
-        [Parameter(ParameterSetName = 'Kickstart', Mandatory = $true)]
-        [Parameter(ParameterSetName = 'Yast', Mandatory = $true)]
-        [Parameter(ParameterSetName = 'CloudInit', Mandatory = $true)]
-        [string[]]$Package,
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [string]
+        $Content,
 
-        [bool]
-        $IsSnap = $false,
+        [Parameter(Mandatory = $true)]
+        [string]
+        $DestinationPath,
+
+        [switch]
+        $Append,
 
         [Parameter(ParameterSetName = 'Kickstart')]
         [switch]

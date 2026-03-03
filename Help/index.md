@@ -20,7 +20,9 @@ AutomatedLab (AL) enables you to
 
 **Finally**:
 
-- Operating System DVD ISO Images
+- Operating System DVD ISO Images if running locally
+  - Windows: All versions
+  - Linux: CentOS/RHEL/Fedora (any flavor), Ubuntu Server (Desktop ISO is **not** supported), OpenSUSE/SUSE
 
 Build | Status | Last Commit | Latest Release
 --- | --- | --- | ---

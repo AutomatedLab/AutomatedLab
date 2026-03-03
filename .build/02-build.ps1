@@ -4,6 +4,9 @@ function BuildModule
     param
     (
         $Name,
+
+        $ModuleRoot = $PSScriptRoot,
+
         [switch]
         $SkipStringBuilder
     )

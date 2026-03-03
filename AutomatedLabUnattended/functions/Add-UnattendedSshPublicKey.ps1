@@ -1,4 +1,4 @@
-﻿function Set-UnattendedPackage
+function Add-UnattendedSshPublicKey
 {
     [CmdletBinding(DefaultParameterSetName = 'Windows')]
     param (
@@ -6,10 +6,7 @@
         [Parameter(ParameterSetName = 'Kickstart', Mandatory = $true)]
         [Parameter(ParameterSetName = 'Yast', Mandatory = $true)]
         [Parameter(ParameterSetName = 'CloudInit', Mandatory = $true)]
-        [string[]]$Package,
-
-        [bool]
-        $IsSnap = $false,
+        [string]$PublicKey,
 
         [Parameter(ParameterSetName = 'Kickstart')]
         [switch]

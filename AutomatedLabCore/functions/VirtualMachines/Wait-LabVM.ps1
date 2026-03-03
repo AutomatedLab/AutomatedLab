@@ -34,7 +34,7 @@
 
     process
     {
-        $null = Get-LabVM -ComputerName $ComputerName -IncludeLinux | Foreach-Object {$vms.Add($_) }
+        $null = Get-LabVM -ComputerName $ComputerName -IncludeLinux | Foreach-Object { $vms.Add($_) }
 
         if (-not $vms)
         {
@@ -45,20 +45,17 @@
 
     end
     {
-        if ((Get-Command -ErrorAction SilentlyContinue -Name New-PSSession).Parameters.Values.Name -contains 'HostName' )
+        if ( (Get-Command -ErrorAction SilentlyContinue -Name New-PSSession).Parameters.Values.Name -contains 'HostName' )
         {
             # Quicker than reading in the file on unsupported configurations
-            $sshHosts = (Get-LabSshKnownHost -ErrorAction SilentlyContinue).ComputerName
+            $sshHosts = Get-LabSshKnownHost -ErrorAction SilentlyContinue
+            $missingVms = $vms | Where-Object { $_.Name -notin $sshHosts.ComputerName -or $_.IpV4Address -notin $sshHosts.ComputerName }
+            if ($missingVms) { Install-LabSshKnownHost }
         }
+
         $jobs = foreach ($vm in $vms)
         {
             $session = $null
-            #remove the existing sessions to ensure a new one is created and the existing one not reused.
-            if ((Get-Command -ErrorAction SilentlyContinue -Name New-PSSession).Parameters.Values.Name -contains 'HostName' -and $sshHosts -and $vm.Name -notin $sshHosts)
-            {
-                Install-LabSshKnownHost
-                $sshHosts = (Get-LabSshKnownHost -ErrorAction SilentlyContinue).ComputerName
-            }
             Remove-LabPSSession -ComputerName $vm
 
             if (-not ($IsLinux -or $IsMacOs)) { netsh.exe interface ip delete arpcache | Out-Null }
@@ -103,7 +100,7 @@
 
                     $VerbosePreference = $using:VerbosePreference
 
-                    Import-Module -Name Az* -ErrorAction SilentlyContinue
+                    Import-Module -Name (Get-LabConfigurationItem -Name RequiredAzModules).Name -ErrorAction SilentlyContinue -Force -WarningAction SilentlyContinue
                     Import-Module -Name AutomatedLab.Common -ErrorAction Stop
                     Write-Verbose "Importing Lab from $($LabBytes.Count) bytes"
                     Import-Lab -LabBytes $LabBytes -NoValidation -NoDisplay

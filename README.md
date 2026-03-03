@@ -46,9 +46,10 @@ Apart from the module itself your system needs to meet the following requirement
 
 #### Linux, macOS
 
-- Fedora, Ubuntu, Ubuntu WSL & Azure Cloud Shell supported
+- Supported host OS (Azure, Proxmox): Fedora, Ubuntu, Ubuntu WSL & Azure Cloud Shell
+- Supported Linux guests: CentOS/RHEL/Fedora (any flavor), Ubuntu Server (Desktop ISO is **not** supported), OpenSUSE/SUSE
 - macOS supported on best effort due to lack of Apple devices - feel free to sponsor two though :D
-- Tested on Ubuntu and Fedora. Due to fragmented nature of Linux distributions, we cannot support much else.
+- Regularly tested on Fedora (non-WSL) and Ubuntu (WSL). Due to fragmented nature of Linux distributions, support is best-effort and takes time
 - PowerShell Core 6+
 - SSH or gss-ntlmssp to enable remoting (*mandatory - no remoting, no way for AutomatedLab to do its thing*)
   - If in doubt, try to `Install-Module PSWSMAN; Install-WSMAN` - no success warranted

@@ -431,14 +431,14 @@ sudo chmod 777 -R /usr/local/share/powershell
 if [ -n "$(which apt 2>/dev/null)" ]; then
     curl -sSL https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
     curl -sSL https://packages.microsoft.com/keys/microsoft.asc | sudo tee /etc/apt/trusted.gpg.d/microsoft.asc
-    sudo apt update
-    sudo apt install -y wget apt-transport-https software-properties-common
+    sudo apt-get update
+    sudo apt-get install -y wget apt-transport-https software-properties-common
     wget -q "https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb"
     sudo dpkg -i packages-microsoft-prod.deb
-    sudo apt update
-    sudo apt install -y powershell
-    sudo apt install -y openssl omi omi-psrp-server
-    sudo apt install -y oddjob oddjob-mkhomedir sssd adcli krb5-workstation realmd samba-common samba-common-tools authselect-compat openssh-server
+    sudo apt-get update
+    sudo apt-get install -y powershell
+    sudo apt-get install -y openssl omi omi-psrp-server
+    sudo apt-get install -y oddjob oddjob-mkhomedir sssd adcli krb5-workstation realmd samba-common samba-common-tools authselect-compat openssh-server
 elif [ -n "$(which yum 2>/dev/null)" ]; then
     sudo rpm -Uvh "https://packages.microsoft.com/config/rhel/$(sudo cat /etc/redhat-release | grep -oP "(\d)" | head -1)/packages-microsoft-prod.rpm"
     sudo yum install -y powershell

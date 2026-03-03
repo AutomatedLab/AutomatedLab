@@ -1,54 +1,87 @@
 ---
 external help file: AutomatedLabUnattended-help.xml
 Module Name: AutomatedLabUnattended
-online version: https://automatedlab.org/en/latest/AutomatedLabUnattended/en-us/Set-UnattendedPackage
+online version:
 schema: 2.0.0
 ---
 
-# Set-UnattendedPackage
+# Add-UnattendedPreinstallationCommand
 
 ## SYNOPSIS
-Adds additional packages on Linux.
+{{ Fill in the Synopsis }}
 
 ## SYNTAX
 
 ### Windows (Default)
 ```
-Set-UnattendedPackage -Package <String[]> [-IsSnap <Boolean>]
- [<CommonParameters>]
+Add-UnattendedPreinstallationCommand -Command <String> -Description <String> [<CommonParameters>]
 ```
 
 ### CloudInit
 ```
-Set-UnattendedPackage -Package <String[]> [-IsSnap <Boolean>] [-IsCloudInit]
+Add-UnattendedPreinstallationCommand -Command <String> -Description <String> [-IsCloudInit]
  [<CommonParameters>]
 ```
 
 ### Yast
 ```
-Set-UnattendedPackage -Package <String[]> [-IsSnap <Boolean>] [-IsAutoYast]
+Add-UnattendedPreinstallationCommand -Command <String> -Description <String> [-IsAutoYast]
  [<CommonParameters>]
 ```
 
 ### Kickstart
 ```
-Set-UnattendedPackage -Package <String[]> [-IsSnap <Boolean>] [-IsKickstart]
+Add-UnattendedPreinstallationCommand -Command <String> -Description <String> [-IsKickstart]
  [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-Adds additional packages on Linux.
+
+Add a pre-installation command to an unattended setup file.
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> Set-UnattendedPackage -Package '@core','@^graphical-server-environment'
+PS C:\> Add-UnattendedPreinstallationCommand -IsCloudInit -Description 'Enable Hardware Experience' -Command "echo 'linux-generic-hwe-22.04' > /run/kernel-meta-package"
 ```
 
-Add the package group 'core' and the environment 'graphical-server-environment' to the list of packages to install.
+Adds a Ubuntu-specific command to a cloudinit file
 
 ## PARAMETERS
+
+### -Command
+
+The command to run. Usually, try to ensure it does not throw or exit non-zero unless your unattended
+system can take it.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Description
+
+The command description.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
 
 ### -IsAutoYast
 Indicates that this setting is placed in an AutoYAST file
@@ -91,37 +124,6 @@ Aliases:
 Required: False
 Position: Named
 Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -IsSnap
-
-Defaults to false. Indicates that the package is a (Linux-specific) Snap package.
-
-```yaml
-Type: Boolean
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Package
-The packages to install
-
-```yaml
-Type: String[]
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
