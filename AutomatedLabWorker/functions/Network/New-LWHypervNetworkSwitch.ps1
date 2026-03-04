@@ -19,6 +19,11 @@
 
         Write-ScreenInfo -Message "Creating Hyper-V virtual network '$($network.ResourceName)'" -TaskStart
 
+        if ($network.UseNat -and (Get-NetNat -Name $network.ResourceName -ErrorAction SilentlyContinue)) {
+            Write-ScreenInfo -Message "The NAT network '$($network.ResourceName)' already exists, no changes will be made to configuration" -Type Warning
+            continue
+        }
+
         if (Get-VMSwitch -Name $network.ResourceName -ErrorAction SilentlyContinue)
         {
             Write-ScreenInfo -Message "The network switch '$($network.ResourceName)' already exists, no changes will be made to configuration" -Type Warning
@@ -40,7 +45,10 @@
             }
 
             $null = New-Item -Path $switchCreation -ItemType File -Value (Get-Lab).Name
-            if ($network.SwitchType -eq 'External')
+            if ($network.UseNat) {
+                $switch = New-NetNat -Name $network.ResourceName -InternalIPInterfaceAddressPrefix $network.AddressSpace
+            }
+            elseif ($network.SwitchType -eq 'External')
             {
                 $adapterMac = (Get-NetAdapter -Name $network.AdapterName).MacAddress
                 $adapterCountWithSameMac = (Get-NetAdapter | Where-Object { $_.MacAddress -eq $adapterMac -and $_.DriverDescription -ne 'Microsoft Network Adapter Multiplexor Driver' } | Group-Object -Property MacAddress).Count
@@ -69,12 +77,12 @@
                     Start-Sleep -Seconds 2
                     $switch = New-VMSwitch -Name $network.ResourceName -SwitchType ([string]$network.SwitchType) -ErrorAction Stop
                 }
+            }
 
-                Set-LWHypervNetworkSwitchDescription -NetworkSwitchName $network.ResourceName -Hashtable @{
-                    CreatedBy = '{0} ({1})' -f $PSCmdlet.MyInvocation.MyCommand.Module.Name, $PSCmdlet.MyInvocation.MyCommand.Module.Version
-                    CreationTime = Get-Date
-                    LabName = (Get-Lab).Name
-                }
+            Set-LWHypervNetworkSwitchDescription -NetworkSwitchName $network.ResourceName -Hashtable @{
+                CreatedBy = '{0} ({1})' -f $PSCmdlet.MyInvocation.MyCommand.Module.Name, $PSCmdlet.MyInvocation.MyCommand.Module.Version
+                CreationTime = Get-Date
+                LabName = (Get-Lab).Name
             }
         }
         finally

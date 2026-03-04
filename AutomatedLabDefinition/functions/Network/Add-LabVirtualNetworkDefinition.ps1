@@ -17,10 +17,16 @@
 
         [string]$ResourceName,
 
-        [switch]$PassThru
+        [switch]$PassThru,
+
+        [switch]$UseNat = (Get-LabConfigurationItem -Name HyperVUseNAT)
     )
 
     Write-LogFunctionEntry
+
+    if((Get-LabDefinition).DefaultVirtualizationEngine -ne 'HyperV' -and $UseNat.IsPresent) {
+        Write-ScreenInfo -Type Warning -Message "UseNat was specified, but this lab runs on $((Get-LabDefinition).DefaultVirtualizationEngine) and it will be ignored."
+    }
 
     if ((Get-LabDefinition).DefaultVirtualizationEngine -eq 'Azure' -and -not ((Get-LabDefinition).AzureSettings))
     {

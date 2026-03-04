@@ -22,6 +22,8 @@ namespace AutomatedLab
         private bool enableManagementAdapter;
         private SerializableDictionary<string, string> notes;
 
+        public bool UseNat {get; set;}
+
         [XmlAttribute]
         public string AzureDnsLabel {get; set;}
 
