@@ -41,18 +41,18 @@ if (-not (Get-Lab -ErrorAction SilentlyContinue)) {
 }
 
 #region 1. Create ContosoApp demo application
-Write-Host ("=" * 80) -ForegroundColor Cyan
-Write-Host "Step 1: Build ContosoApp" -ForegroundColor Cyan
-Write-Host ("=" * 80) -ForegroundColor Cyan
+Write-ScreenInfo -Message ("=" * 80)
+Write-ScreenInfo -Message "Step 1: Build ContosoApp"
+Write-ScreenInfo -Message ("=" * 80)
 
 & "$PSScriptRoot\Build-ContosoApp.ps1" -ProjectPath "$PSScriptRoot\ContosoApp"
-Write-Host "✓ ContosoApp successfully created" -ForegroundColor Green
+Write-ScreenInfo -Message "✓ ContosoApp successfully created"
 #endregion
 
 #region 3. Set up database
-Write-Host ("`n" + ("=" * 80)) -ForegroundColor Cyan
-Write-Host "Step 3: Configure SQL Server" -ForegroundColor Cyan
-Write-Host ("=" * 80) -ForegroundColor Cyan
+Write-ScreenInfo -Message ("`n" + ("=" * 80))
+Write-ScreenInfo -Message "Step 3: Configure SQL Server"
+Write-ScreenInfo -Message ("=" * 80)
 
 Invoke-LabCommand -ActivityName 'Create database and schema' -ComputerName SQL01 -ScriptBlock {
     $dbScript = @"
@@ -143,13 +143,13 @@ Invoke-LabCommand -ActivityName 'Create database and schema' -ComputerName SQL01
     Write-Host "✓ Database ContosoApp created and initialized"
 }
 
-Write-Host "✓ SQL Server configured" -ForegroundColor Green
+Write-ScreenInfo -Message "✓ SQL Server configured"
 #endregion
 
 #region 4. Configure Application Tier
-Write-Host ("`n" + ("=" * 80)) -ForegroundColor Cyan
-Write-Host "Step 4: Configure Application Server" -ForegroundColor Cyan
-Write-Host ("=" * 80) -ForegroundColor Cyan
+Write-ScreenInfo -Message ("`n" + ("=" * 80))
+Write-ScreenInfo -Message "Step 4: Configure Application Server"
+Write-ScreenInfo -Message ("=" * 80)
 
 $appServers = Get-LabVM | Where-Object { $_.Name -like "APP*" }
 
@@ -182,13 +182,13 @@ Invoke-LabCommand -ActivityName 'Create app configuration' -ComputerName $appSer
     Write-Host "Configuration file created"
 } -Variable (Get-Variable connectionString)
 
-Write-Host "✓ Application Server configured" -ForegroundColor Green
+Write-ScreenInfo -Message "✓ Application Server configured"
 #endregion
 
 #region 5. Configure Web Tier
-Write-Host ("`n" + ("=" * 80)) -ForegroundColor Cyan
-Write-Host "Step 5: Configure web server" -ForegroundColor Cyan
-Write-Host ("=" * 80) -ForegroundColor Cyan
+Write-ScreenInfo -Message ("`n" + ("=" * 80))
+Write-ScreenInfo -Message "Step 5: Configure web server"
+Write-ScreenInfo -Message ("=" * 80)
 
 $webServers = Get-LabVM | Where-Object { $_.Name -like "WEB*" }
 
@@ -266,7 +266,7 @@ Invoke-LabCommand -ActivityName 'Set up IIS site' -ComputerName $webServers -Scr
     Write-Host "✓ IIS site ContosoWebApp configured (Windows Authentication)"
 } -Variable (Get-Variable appServerUrl)
 
-Write-Host "✓ Web server configured" -ForegroundColor Green
+Write-ScreenInfo -Message "✓ Web server configured"
 
 # Create desktop shortcut
 Invoke-LabCommand -ActivityName 'Create desktop shortcut' -ComputerName WEB01 -ScriptBlock {
@@ -280,13 +280,13 @@ Invoke-LabCommand -ActivityName 'Create desktop shortcut' -ComputerName WEB01 -S
     $shortcut.Save()
     Write-Host "✓ Desktop shortcut created: $shortcutPath"
 }
-Write-Host "✓ Desktop shortcut on WEB01 created" -ForegroundColor Green
+Write-ScreenInfo -Message "✓ Desktop shortcut on WEB01 created"
 #endregion
 
 #region 6. Verify deployment
-Write-Host ("`n" + ("=" * 80)) -ForegroundColor Cyan
-Write-Host "Step 6: Verify deployment" -ForegroundColor Cyan
-Write-Host ("=" * 80) -ForegroundColor Cyan
+Write-ScreenInfo -Message ("`n" + ("=" * 80))
+Write-ScreenInfo -Message "Step 6: Verify deployment"
+Write-ScreenInfo -Message ("=" * 80)
 
 # Test database connection
 Invoke-LabCommand -ActivityName 'Test database connection' -ComputerName SQL01 -ScriptBlock {
@@ -304,17 +304,17 @@ Invoke-LabCommand -ActivityName 'Test web application' -ComputerName $webServers
     }
 }
 
-Write-Host ("`n" + ("=" * 80)) -ForegroundColor Green
-Write-Host "✓ DEPLOYMENT SUCCESSFULLY COMPLETED" -ForegroundColor Green
-Write-Host ("=" * 80) -ForegroundColor Green
-Write-Host ""
+Write-ScreenInfo -Message ("`n" + ("=" * 80))
+Write-ScreenInfo -Message "✓ DEPLOYMENT SUCCESSFULLY COMPLETED"
+Write-ScreenInfo -Message ("=" * 80)
+Write-ScreenInfo -Message ""
 #endregion
 
 #region 7. Create snapshot
-Write-Host ("`n" + ("=" * 80)) -ForegroundColor Cyan
-Write-Host "Step 7: Create snapshot" -ForegroundColor Cyan
-Write-Host ("=" * 80) -ForegroundColor Cyan
+Write-ScreenInfo -Message ("`n" + ("=" * 80))
+Write-ScreenInfo -Message "Step 7: Create snapshot"
+Write-ScreenInfo -Message ("=" * 80)
 
 Checkpoint-LabVM -All -SnapshotName 'AfterAppDeployment'
-Write-Host "✓ Snapshot 'AfterAppDeployment' created on all VMs" -ForegroundColor Green
+Write-ScreenInfo -Message "✓ Snapshot 'AfterAppDeployment' created on all VMs"
 #endregion
