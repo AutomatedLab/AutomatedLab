@@ -72,7 +72,7 @@ namespace AutomatedLab
         Tfs2017 = 2147483648,
         TfsBuildWorker = 4294967296,
         Tfs2018 = 8589934592,
-        SQLServer = SQLServer2012 | SQLServer2014 | SQLServer2016 | SQLServer2017 | SQLServer2019 | SQLServer2022,
+        SQLServer = SQLServer2012 | SQLServer2014 | SQLServer2016 | SQLServer2017 | SQLServer2019 | SQLServer2022 | SQLServer2025,
         HyperV = 17179869184,
         AzDevOps = 34359738368,
         SharePoint2019 = 68719476736,
@@ -102,7 +102,8 @@ namespace AutomatedLab
         RDS = RemoteDesktopConnectionBroker | RemoteDesktopGateway | RemoteDesktopLicensing | RemoteDesktopSessionHost | RemoteDesktopVirtualizationHost | RemoteDesktopWebAccess,
         ConfigurationManager = 36028797018963968,
         Scvmm2022 = 72057594037927936,
-        SQLServer2022 = 144115188075855872
+        SQLServer2022 = 144115188075855872,
+        SQLServer2025 = 288230376151711744
     }
 
     public enum ActiveDirectoryFunctionalLevel

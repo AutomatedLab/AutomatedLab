@@ -427,6 +427,7 @@
         if (Get-LabVM -Role SQLServer2017)   { Write-ScreenInfo -Message "Machines to have SQL Server 2017 installed: '$((Get-LabVM -Role SQLServer2017).Name -join ', ')'" }
         if (Get-LabVM -Role SQLServer2019)   { Write-ScreenInfo -Message "Machines to have SQL Server 2019 installed: '$((Get-LabVM -Role SQLServer2019).Name -join ', ')'" }
         if (Get-LabVM -Role SQLServer2022)   { Write-ScreenInfo -Message "Machines to have SQL Server 2022 installed: '$((Get-LabVM -Role SQLServer2022).Name -join ', ')'" }
+        if (Get-LabVM -Role SQLServer2025)   { Write-ScreenInfo -Message "Machines to have SQL Server 2025 installed: '$((Get-LabVM -Role SQLServer2025).Name -join ', ')'" }
         Install-LabSqlServers -CreateCheckPoints:$CreateCheckPoints
 
         Write-ScreenInfo -Message 'Done' -TaskEnd
