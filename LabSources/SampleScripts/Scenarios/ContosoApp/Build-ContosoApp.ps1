@@ -116,6 +116,16 @@ if (-not (Test-DotnetInstalled)) {
     exit 1
 }
 
+# Ensure nuget.org is configured as a package source
+$nugetSources = dotnet nuget list source 2>&1 | Out-String
+if ($nugetSources -notmatch 'nuget\.org') {
+    Write-Info "No nuget.org package source found. Adding it now..."
+    dotnet nuget add source "https://api.nuget.org/v3/index.json" --name "nuget.org" | Out-Null
+    Write-Success "nuget.org package source added"
+} else {
+    Write-Success "nuget.org package source already configured"
+}
+
 Write-Success "All prerequisites met"
 #endregion
 
