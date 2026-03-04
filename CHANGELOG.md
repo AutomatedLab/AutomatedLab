@@ -14,6 +14,10 @@
 
 ### Changed
 
+- Refactored WiX installer to dynamically populate all LabSources content via PreBuild.ps1
+  - Removed all static LabSources file entries, directory definitions, and DirectoryRef fragments from Product.wxs
+  - PreBuild.ps1 now recursively scans `LabSources/` and builds the entire directory tree and file components at build time
+  - Adding or removing files in LabSources no longer requires manual Product.wxs updates
 - Updated `Invoke-LabPester` to scan the `$global:LabSources\CustomRoles` directory for Pester tests (#1764)
 - Use Storage Account kind `storagev2` for all new lab sources storages
   - Storages will be upgraded automatically
