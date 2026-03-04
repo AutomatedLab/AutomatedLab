@@ -1279,6 +1279,17 @@ Default value: https://github.com/Microsoft/sql-server-samples/releases/download
 Set with: `Set-PSFConfig -FullName AutomatedLab.SQLServer2022 -Value <YourValue> -PassThru | Register-PSFConfig`
 
 
+### SQLServer2025
+
+Link to SQL sample DB for SQL 2025
+
+Data type: System.String  
+Hidden?: False  
+Default value: https://github.com/Microsoft/sql-server-samples/releases/download/wide-world-importers-v1.0/WideWorldImporters-Full.bak  
+
+Set with: `Set-PSFConfig -FullName AutomatedLab.SQLServer2025 -Value <YourValue> -PassThru | Register-PSFConfig`
+
+
 ### SqlServerNativeClient2012
 
 Download link to SQL Native Client v2012, used with Dynamics and ConfigMgr

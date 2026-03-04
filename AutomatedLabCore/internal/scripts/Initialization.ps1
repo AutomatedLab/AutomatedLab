@@ -290,6 +290,7 @@ Set-PSFConfig -Module 'AutomatedLab' -Name SQLServer2016 -Value 'https://github.
 Set-PSFConfig -Module 'AutomatedLab' -Name SQLServer2017 -Value 'https://github.com/Microsoft/sql-server-samples/releases/download/wide-world-importers-v1.0/WideWorldImporters-Full.bak' -Initialize -Validation string -Description 'Link to SQL sample DB for SQL 2017'
 Set-PSFConfig -Module 'AutomatedLab' -Name SQLServer2019 -Value 'https://github.com/Microsoft/sql-server-samples/releases/download/wide-world-importers-v1.0/WideWorldImporters-Full.bak' -Initialize -Validation string -Description 'Link to SQL sample DB for SQL 2019'
 Set-PSFConfig -Module 'AutomatedLab' -Name SQLServer2022 -Value 'https://github.com/Microsoft/sql-server-samples/releases/download/wide-world-importers-v1.0/WideWorldImporters-Full.bak' -Initialize -Validation string -Description 'Link to SQL sample DB for SQL 2022'
+Set-PSFConfig -Module 'AutomatedLab' -Name SQLServer2025 -Value 'https://github.com/Microsoft/sql-server-samples/releases/download/wide-world-importers-v1.0/WideWorldImporters-Full.bak' -Initialize -Validation string -Description 'Link to SQL sample DB for SQL 2025'
 
 #Access Database Engine
 Set-PSFConfig -Module 'AutomatedLab' -Name AccessDatabaseEngine2016x86 -Value 'https://download.microsoft.com/download/3/5/C/35C84C36-661A-44E6-9324-8786B8DBE231/AccessDatabaseEngine.exe' -Initialize -Validation string -Description 'Link to Access Database Engine (required for DSC Pull)'
@@ -1019,6 +1020,27 @@ ECDSA_P384#Microsoft Smart Card Key Storage Provider =>'sha256','sha384','sha512
             'SQLSysAdminAccounts'   = '[string[]] The accounts to add to the SQL Server sysadmin role.'
         }
         SQLServer2022            = @{
+            'Features'              = '[string[]] The features to install. Possible values: SQLENGINE, REPLICATION, FULLTEXT, RS, AS, IS, MDS, DQC, CONN, BC, SDK, TOOLS, OCS'
+            'ConfigurationFile'     = '[string] The path to the configuration file.'
+            'InstanceName'          = '[string] The name of the SQL Server instance.'
+            'Collation'             = '[string] The collation for the SQL Server instance.'
+            'SQLSvcAccount'         = '[string] The account to run the SQL Server service.'
+            'SQLSvcPassword'        = '[string] The password for the SQL Server service account.'
+            'AgtSvcAccount'         = '[string] The account to run the SQL Server Agent service.'
+            'AgtSvcPassword'        = '[string] The password for the SQL Server Agent service account.'
+            'RsSvcAccount'          = '[string] The account to run the SQL Server Reporting Services service.'
+            'RsSvcPassword'         = '[string] The password for the SQL Server Reporting Services service account.'
+            'AgtSvcStartupType'     = '[string] The startup type for the SQL Server Agent service.'
+            'BrowserSvcStartupType' = '[string] The startup type for the SQL Server Browser service.'
+            'RsSvcStartupType'      = '[string] The startup type for the SQL Server Reporting Services service.'
+            'AsSysAdminAccounts'    = '[string[]] The accounts to add to the SQL Server sysadmin role.'
+            'AsSvcAccount'          = '[string] The account to run the SQL Server Analysis Services service.'
+            'AsSvcPassword'         = '[string] The password for the SQL Server Analysis Services service account.'
+            'IsSvcAccount'          = '[string] The account to run the SQL Server Integration Services service.'
+            'IsSvcPassword'         = '[string] The password for the SQL Server Integration Services service account.'
+            'SQLSysAdminAccounts'   = '[string[]] The accounts to add to the SQL Server sysadmin role.'
+        }
+        SQLServer2025            = @{
             'Features'              = '[string[]] The features to install. Possible values: SQLENGINE, REPLICATION, FULLTEXT, RS, AS, IS, MDS, DQC, CONN, BC, SDK, TOOLS, OCS'
             'ConfigurationFile'     = '[string] The path to the configuration file.'
             'InstanceName'          = '[string] The name of the SQL Server instance.'
