@@ -4,6 +4,11 @@
 
 ### Added
 
+- Add ContosoApp sample scenario under `LabSources\SampleScripts\Scenarios\ContosoApp`
+  - `10_New-ContosoLab.ps1` — Creates a four-VM lab (DC, SQL, App, Web) on Hyper-V
+  - `20_Install-ContosoApp.ps1` — Builds and deploys a .NET 6 three-tier web application
+  - `Build-ContosoApp.ps1` — Helper script that scaffolds and compiles the ContosoApp
+  - `readme.md` — Step-by-step deployment guide
 - Add option to opt out of Storage Account creation (#1753)
   - Switch to Entra-Auth not possible, as we require storage shares, which would require using ADDS or Azure Domain Services. If SAS keys cannot be used, no storage is the current option.
 - Added The following new ValidRoleProperties: (thanks @constantinhager)

@@ -97,6 +97,7 @@ nav:
     - CM-2002.ps1: Wiki/SampleScripts/Scenarios/en-us/CM-2002.md
     - CM-2103.ps1: Wiki/SampleScripts/Scenarios/en-us/CM-2103.md
     - CM-2203.ps1: Wiki/SampleScripts/Scenarios/en-us/CM-2203.md
+    - ContosoApp: Wiki/SampleScripts/Scenarios/en-us/ContosoApp.md
     - DSC Pull Scenario 1 (Pull Configuration).ps1: Wiki/SampleScripts/Scenarios/en-us/DSC Pull Scenario 1 (Pull Configuration).md
     - DSC Pull Scenario 1 (Pull Configuration, SQL Reporting).ps1: Wiki/SampleScripts/Scenarios/en-us/DSC Pull Scenario 1 (Pull Configuration, SQL Reporting).md
     - DSC Pull Scenario 2 (Pull Partial Configuration).ps1: Wiki/SampleScripts/Scenarios/en-us/DSC Pull Scenario 2 (Pull Partial Configuration).md
