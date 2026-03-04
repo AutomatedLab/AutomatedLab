@@ -10,6 +10,7 @@
   - SQLServer2012 - 2022
   - FailOverNode
   - HyperV
+- Added support for SQL Server 2025
 
 ### Changed
 

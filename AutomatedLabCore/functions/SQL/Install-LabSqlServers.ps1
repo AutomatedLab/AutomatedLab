@@ -242,7 +242,7 @@ GO
                 Invoke-Ternary -Decider { $role.Properties.ContainsKey('AgtSvcPassword') } `
                 { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AgtSvcPassword=" + """$($role.Properties.AgtSvcPassword)""") } `
                 { }
-                if($role.Name -notin 'SQLServer2022')
+                if($role.Name -notin 'SQLServer2022','SQLServer2025')
                 {
                     Invoke-Ternary -Decider { $role.Properties.ContainsKey('RsSvcAccount') } `
                     { $global:setupArguments += Write-ArgumentVerbose -Argument (" /RsSvcAccount=" + """$($role.Properties.RsSvcAccount)""") } `

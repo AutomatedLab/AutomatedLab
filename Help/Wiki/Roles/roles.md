@@ -72,6 +72,7 @@ The list of available roles in AutomatedLab is below. Of course, there are many 
 - [SQLServer2017](sql.md)
 - [SQLServer2019](sql.md)
 - [SQLServer2022](sql.md)
+- [SQLServer2025](sql.md)
 - [Tfs2015](cicd.md)
 - [Tfs2017](cicd.md)
 - [Tfs2018](cicd.md)
