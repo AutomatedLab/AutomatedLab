@@ -4,11 +4,6 @@
 
 ### Added
 
-- Added 95 missing LabSources files to the WiX installer (Product.wxs)
-  - All SampleScripts (Azure, HyperV, Introduction, Scenarios, VMWare, Workshops)
-  - New VMWare directory and component for SampleScripts
-  - Missing `DemoCustomRole.psd1` in CustomRoles
-  - Missing `git.exe` in Tools
 - Add option to opt out of Storage Account creation (#1753)
   - Switch to Entra-Auth not possible, as we require storage shares, which would require using ADDS or Azure Domain Services. If SAS keys cannot be used, no storage is the current option.
 - Added The following new ValidRoleProperties: (thanks @constantinhager)
@@ -18,6 +13,10 @@
 
 ### Changed
 
+- Refactored WiX installer to dynamically populate all LabSources content via PreBuild.ps1
+  - Removed all static LabSources file entries, directory definitions, and DirectoryRef fragments from Product.wxs
+  - PreBuild.ps1 now recursively scans `LabSources/` and builds the entire directory tree and file components at build time
+  - Adding or removing files in LabSources no longer requires manual Product.wxs updates
 - Updated `Invoke-LabPester` to scan the `$global:LabSources\CustomRoles` directory for Pester tests (#1764)
 - Use Storage Account kind `storagev2` for all new lab sources storages
   - Storages will be upgraded automatically
