@@ -1,5 +1,4 @@
-﻿function Get-LabMachineDefinition
-{
+﻿function Get-LabMachineDefinition {
     [CmdletBinding(DefaultParameterSetName = 'ByName')]
     [OutputType([AutomatedLab.Machine])]
 
@@ -15,59 +14,49 @@
         [switch]$All
     )
 
-    begin
-    {
+    begin {
         #required to suporess verbose messages, warnings and errors
         Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
         Write-LogFunctionEntry
 
-        $result = @()
+        [System.Collections.Generic.List[AutomatedLab.Machine]]$result = [System.Collections.Generic.List[AutomatedLab.Machine]]::new()
     }
 
-    process
-    {
-        if ($PSCmdlet.ParameterSetName -eq 'ByName')
-        {
-            if ($ComputerName)
-            {
-                foreach ($n in $ComputerName)
-                {
+    process {
+        if ($PSCmdlet.ParameterSetName -eq 'ByName') {
+            if ($ComputerName) {
+                foreach ($n in $ComputerName) {
                     $machine = $Script:machines | Where-Object Name -in $n
-                    if (-not $machine)
-                    {
+                    if (-not $machine) {
                         continue
                     }
 
-                    $result += $machine
+                    $result.Add($machine)
                 }
             }
-            else
-            {
-                $result = $Script:machines
+            else {
+                $result.AddRange($Script:machines)
             }
         }
 
-        if ($PSCmdlet.ParameterSetName -eq 'ByRole')
-        {
-            $result = $Script:machines |
+        if ($PSCmdlet.ParameterSetName -eq 'ByRole') {
+            $Script:machines |
             Where-Object { $_.Roles.Name } |
-            Where-Object { $_.Roles | Where-Object { $Role.HasFlag([AutomatedLab.Roles]$_.Name) } }
+            Where-Object { $_.Roles | Where-Object { $Role.HasFlag([AutomatedLab.Roles]$_.Name) } } |
+            ForEach-Object { $result.Add($_) }
 
-            if (-not $result)
-            {
+            if (-not $result) {
                 return
             }
         }
 
-        if ($PSCmdlet.ParameterSetName -eq 'All')
-        {
-            $result = $Script:machines
+        if ($PSCmdlet.ParameterSetName -eq 'All') {
+            $result.AddRange($Script:machines)
         }
     }
 
-    end
-    {
+    end {
         $result
     }
 }
