@@ -952,12 +952,20 @@
                 -not ($DnsServer1 -or $DnsServer2
                 ))
             {
-                $adapter.Ipv4DnsServers.Add('0.0.0.0')
+                if ($adapterVirtualNetwork.UseNat) {
+                    $adapter.Ipv4DnsServers.Add((Get-LabConfigurationItem -Name DefaultDnsForwarder1))
+                } else {
+                    $adapter.Ipv4DnsServers.Add('0.0.0.0')
+                }
             }
 
-            if ($Gateway)
+            if ($Gateway -and -not $adapterVirtualNetwork.UseNat)
             {
                 $adapter.Ipv4Gateway.Add($Gateway) 
+            }
+
+            if (-not $Gateway -and $adapterVirtualNetwork.UseNat) {
+                $adapter.Ipv4Gateway.Add($adapterVirtualNetwork.AddressSpace.FirstUsable)
             }
 
             $machine.NetworkAdapters.Add($adapter)

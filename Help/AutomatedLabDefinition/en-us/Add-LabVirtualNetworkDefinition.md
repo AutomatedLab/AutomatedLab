@@ -16,7 +16,7 @@ Adds a definition of a virtual network
 Add-LabVirtualNetworkDefinition [[-Name] <String>] [[-AddressSpace] <IPNetwork>]
  [[-VirtualizationEngine] <VirtualizationHost>] [[-HyperVProperties] <Hashtable[]>]
  [[-AzureProperties] <Hashtable[]>] [[-ManagementAdapter] <NetworkAdapter>] [[-ResourceName] <String>]
- [-PassThru] [<CommonParameters>]
+ [-PassThru] [-UseNat] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -182,6 +182,21 @@ Aliases:
 Required: False
 Position: 6
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -UseNat
+Indicates that NAT should be used - only valid on HyperV
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

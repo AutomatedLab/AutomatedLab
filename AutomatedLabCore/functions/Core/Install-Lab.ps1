@@ -266,6 +266,10 @@
         
         New-LabADSubnet
 
+        if ((Get-Lab).VirtualNetworks.UseNat -contains $true) {
+            Set-LabADDNSServerForwarder
+        }
+
         # Set account expiration for builtin account and lab domain account
         foreach ($machine in (Get-LabVM -Role RootDC -ErrorAction SilentlyContinue))
         {
