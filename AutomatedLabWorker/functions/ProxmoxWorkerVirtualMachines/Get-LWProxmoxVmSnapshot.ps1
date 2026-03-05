@@ -14,7 +14,7 @@ function Get-LWProxmoxVmSnapshot {
     $vms = Get-LWProxmoxVM -Name $ComputerName
 
     $snapshots = foreach ($vm in $vms) {
-        (Get-PveNodesQemuSnapshot -Node $vm.node -Vmid $vm.VmId).Response.data | Where-Object name -ne current
+        (Invoke-LWProxmoxCallWithRetry -ActivityName "Get snapshots for VM '$($vm.Name)'" -ScriptBlock { Get-PveNodesQemuSnapshot -Node $vm.node -Vmid $vm.VmId }).Response.data | Where-Object name -ne current
     }
 
     $snapshots = $snapshots | Where-Object { $_.Name -like '*_*' }

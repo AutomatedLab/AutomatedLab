@@ -39,7 +39,7 @@ function Start-LWProxmoxVM
             if ($proxmoxVm.CurrentStatus.qmpstatus -eq 'paused')
             {
                 Write-PSFMessage -Message "Resuming Proxmox machine '$vm' from paused state." -Level 'Verbose'
-                $result = Resume-PveQemu -Node $proxmoxVm.node -Vmid $vmid
+                $result = Invoke-LWProxmoxCallWithRetry -ActivityName "Resume VM '$vm'" -ScriptBlock { Resume-PveQemu -Node $proxmoxVm.node -Vmid $vmid }
                 if ($result.StatusCode -ne 200)
                 {
                     Write-Error "Could not resume Proxmox machine '$vm': The error was '$($result.StatusCode)'" -ErrorAction Stop
@@ -47,7 +47,7 @@ function Start-LWProxmoxVM
                 continue
             }
 
-            $result = Start-PveVm -VmIdOrName $vmid
+            $result = Invoke-LWProxmoxCallWithRetry -ActivityName "Start VM '$vm'" -ScriptBlock { Start-PveVm -VmIdOrName $vmid }
 
             if ($result.StatusCode -ne 200)
             {

@@ -81,7 +81,7 @@ function Stop-LWProxmoxVM
             $vms = Get-LWProxmoxVM -Name $stopFailures
             foreach ($vm in $vms)
             {
-                Stop-PveVm -VmIdOrName $vm.VmId
+                $null = Invoke-LWProxmoxCallWithRetry -ActivityName "Force-stop VM '$($vm.Name)'" -ScriptBlock { Stop-PveVm -VmIdOrName $vm.VmId }
             }
         }
     }
@@ -92,7 +92,7 @@ function Stop-LWProxmoxVM
         {
             $vm = $vms | Where-Object { $_.Name -eq $name } | Select-Object -ExpandProperty VmId
             $jobs += [PSCustomObject]@{
-                Upid         = (New-PveNodesQemuStatusShutdown -Node $vm.node -Vmid $vm.vmId -Forcestop $true).Response.data
+                Upid         = (Invoke-LWProxmoxCallWithRetry -ActivityName "Shutdown VM '$name'" -ScriptBlock { New-PveNodesQemuStatusShutdown -Node $vm.node -Vmid $vm.vmId -Forcestop $true }).Response.data
                 ComputerName = $name
                 Node         = $vm.node
             }

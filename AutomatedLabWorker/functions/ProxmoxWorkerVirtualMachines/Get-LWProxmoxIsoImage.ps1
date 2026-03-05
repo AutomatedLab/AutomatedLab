@@ -76,7 +76,7 @@ function Get-LWProxmoxIsoImage
     else
     {
         Write-PSFMessage -Message "No storage specified. Discovering all ISO-capable storages on node '$Node'."
-        $storageResponse = Get-PveNodesStorage -Node $Node -Content 'iso'
+        $storageResponse = Invoke-LWProxmoxCallWithRetry -ActivityName "Discover ISO storages on node '$Node'" -ScriptBlock { Get-PveNodesStorage -Node $Node -Content 'iso' }
         if ($storageResponse.StatusCode -ne 200 -or -not $storageResponse.Response.data)
         {
             Write-Error -Message "Failed to discover ISO-capable storages on node '${Node}'." -ErrorAction Stop
@@ -90,7 +90,7 @@ function Get-LWProxmoxIsoImage
 
     foreach ($storageName in $storageList)
     {
-        $response = Get-PveNodesStorageContent -Node $Node -Storage $storageName -Content iso
+        $response = Invoke-LWProxmoxCallWithRetry -ActivityName "Query ISO content on storage '$storageName'" -ScriptBlock { Get-PveNodesStorageContent -Node $Node -Storage $storageName -Content iso }
         if ($response.StatusCode -ne 200)
         {
             Write-PSFMessage -Message "Failed to query storage '$storageName' on node '${Node}': $($response.ReasonPhrase)" -Level Warning

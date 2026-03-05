@@ -41,9 +41,9 @@ function New-LWProxmoxVM
         Write-Error "Multiple templates found for operating system '$($Machine.OperatingSystem)'. Cannot create VM '$($Machine.ResourceName)'. Please ensure only one template exists per operating system." -ErrorAction Stop
     }
 
-    Write-ScreenInfo -Message "Using template '$($template.Name)' (VMID: $($template.VMID)) on Proxmox node '$($template.node)' to create VM '$($Machine.ResourceName)'."
+    Write-PSFMessage "Using template '$($template.Name)' (VMID: $($template.VMID)) on Proxmox node '$($template.node)' to create VM '$($Machine.ResourceName)'."
 
-    $storage = Get-PveStorage
+    $storage = Invoke-LWProxmoxCallWithRetry -ActivityName "Retrieve storage for VM '$($Machine.ResourceName)'" -ScriptBlock { Get-PveStorage }
     if ($storage.StatusCode -ne 200)
     {
         Write-Error "Failed to retrieve storage information from Proxmox cluster: $($storage.ReasonPhrase)"
@@ -98,7 +98,7 @@ function New-LWProxmoxVM
     #    Write-Error 'Neither the Proxmox pool nor the storage have been specified. Using the storage of the template.' -ErrorAction Stop
     #}
 
-    $result = New-PveNodesQemuClone @param
+    $result = Invoke-LWProxmoxCallWithRetry -ActivityName "Clone VM '$($Machine.ResourceName)'" -ScriptBlock { New-PveNodesQemuClone @param }
     if ($result.StatusCode -ne 200)
     {
         Write-Error "Failed to create VM '$($Machine.ResourceName)': $($result.ReasonPhrase)"
@@ -144,7 +144,7 @@ function New-LWProxmoxVM
         $param.Cpu = $Machine.ProxmoxProperties.CpuType
     }
 
-    $result = Set-PveNodesQemuConfig @param
+    $result = Invoke-LWProxmoxCallWithRetry -ActivityName "Configure VM '$($Machine.ResourceName)'" -ScriptBlock { Set-PveNodesQemuConfig @param }
     if ($result.StatusCode -ne 200)
     {
         Write-Error "Failed to configure VM '$($Machine.ResourceName)': $($result.ReasonPhrase)"
@@ -161,7 +161,7 @@ function New-LWProxmoxVM
     $existingDrives = $config | Get-Member | Where-Object Name -Match 'ide\d{1,3}'
     foreach ($existingDrive in $existingDrives)
     {
-        $null = Set-PveNodesQemuConfig -Vmid $nextVmId -Node $Machine.ProxmoxProperties.TargetNode -Delete $existingDrive.Name
+        $null = Invoke-LWProxmoxCallWithRetry -ActivityName "Remove drive '$($existingDrive.Name)' from VM '$($Machine.ResourceName)'" -ScriptBlock { Set-PveNodesQemuConfig -Vmid $nextVmId -Node $Machine.ProxmoxProperties.TargetNode -Delete $existingDrive.Name }
     }
 
     # --------------------------- Disk Configuration ------------------------------------------
@@ -187,7 +187,7 @@ function New-LWProxmoxVM
         Write-PSFMessage "Updating 'cache' from '$($matches.cacheValue)' to 'writeback' in scsi0 configuration"
         $config.scsi0 = $config.scsi0 -replace 'cache=(none|writeback|writethrough|directsync|unsafe)', 'cache=writeback'
     }
-    $result = Set-PveNodesQemuConfig -Vmid $nextVmId -Node $Machine.ProxmoxProperties.TargetNode -ScsiN @{ 0 = $config.scsi0 }
+    $result = Invoke-LWProxmoxCallWithRetry -ActivityName "Configure scsi0 on VM '$($Machine.ResourceName)'" -ScriptBlock { Set-PveNodesQemuConfig -Vmid $nextVmId -Node $Machine.ProxmoxProperties.TargetNode -ScsiN @{ 0 = $config.scsi0 } }
     if ($result.StatusCode -ne 200)
     {
         Write-Error "Failed to configure scsi0 on VM '$($Machine.ResourceName)': $($result.ReasonPhrase)"
@@ -208,7 +208,7 @@ function New-LWProxmoxVM
         $diskHashTable = @{
             $i = "$($storageName):$($disk.DiskSize),aio=threads,cache=writeback"
         }
-        $result = Set-PveNodesQemuConfig -Vmid $nextVmId -Node $Machine.ProxmoxProperties.TargetNode -ScsiN $diskHashTable
+        $result = Invoke-LWProxmoxCallWithRetry -ActivityName "Configure disk $i on VM '$($Machine.ResourceName)'" -ScriptBlock { Set-PveNodesQemuConfig -Vmid $nextVmId -Node $Machine.ProxmoxProperties.TargetNode -ScsiN $diskHashTable }
         if ($result.StatusCode -ne 200)
         {
             Write-Error "Failed to configure disk $i on VM '$($Machine.ResourceName)': $($result.ReasonPhrase)"
@@ -340,7 +340,7 @@ function New-LWProxmoxVM
 
     foreach ($existingNetAdapter in $existingNetAdapters)
     {
-        $null = Set-PveNodesQemuConfig -Vmid $nextVmId -Node $Machine.ProxmoxProperties.TargetNode -Delete $existingNetAdapter.Name
+        $null = Invoke-LWProxmoxCallWithRetry -ActivityName "Remove net adapter '$($existingNetAdapter.Name)' from VM '$($Machine.ResourceName)'" -ScriptBlock { Set-PveNodesQemuConfig -Vmid $nextVmId -Node $Machine.ProxmoxProperties.TargetNode -Delete $existingNetAdapter.Name }
     }
 
     $existingMacAddresses = @(Get-LWProxmoxUsedMacAddresses -NoSeparator)
@@ -481,7 +481,7 @@ function New-LWProxmoxVM
         $netAdapterHashTable = @{
             $i = "model=virtio,macaddr=$($networkAdapter.MacAddress -replace '(.{2})(?!$)', '$1:'),bridge=$($networkAdapter.VirtualSwitch),firewall=1"
         }
-        $null = Set-PveNodesQemuConfig -Vmid $nextVmId -Node $Machine.ProxmoxProperties.TargetNode -NetN $netAdapterHashTable
+        $null = Invoke-LWProxmoxCallWithRetry -ActivityName "Add network adapter $i to VM '$($Machine.ResourceName)'" -ScriptBlock { Set-PveNodesQemuConfig -Vmid $nextVmId -Node $Machine.ProxmoxProperties.TargetNode -NetN $netAdapterHashTable }
         $i++
     }
 

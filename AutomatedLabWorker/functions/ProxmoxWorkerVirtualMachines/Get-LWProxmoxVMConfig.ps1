@@ -18,9 +18,6 @@ function Get-LWProxmoxVMConfig
         $IncludeTemplates
     )
 
-    $maxRetries = 3
-    $retryDelaySeconds = 5
-
     $vms = Get-LWProxmoxVM @PSBoundParameters
     if (-not $vms)
     {
@@ -30,26 +27,11 @@ function Get-LWProxmoxVMConfig
 
     $configs = foreach ($vm in $vms)
     {
-        $vmConfig = $null
-        for ($attempt = 1; $attempt -le $maxRetries; $attempt++)
-        {
-            $vmConfig = Get-PveNodesQemuConfig -Vmid $vm.VMID -Node $vm.node
-
-            if ($vmConfig.StatusCode -eq 200)
-            {
-                break
-            }
-
-            if ($attempt -lt $maxRetries)
-            {
-                Write-PSFMessage -Message "Failed to get VM config for VM '$($vm.Name)' (VMID: $($vm.VMID)) on node '$($vm.node)'. StatusCode: $($vmConfig.StatusCode). Retrying in $retryDelaySeconds seconds (attempt $attempt of $maxRetries)..."
-                Start-Sleep -Seconds $retryDelaySeconds
-            }
-        }
+        $vmConfig = Invoke-LWProxmoxCallWithRetry -ActivityName "Get VM config for '$($vm.Name)'" -RetryDelaySeconds 5 -ScriptBlock { Get-PveNodesQemuConfig -Vmid $vm.VMID -Node $vm.node }
 
         if ($vmConfig.StatusCode -ne 200)
         {
-            Write-Error "Failed to get VM config for VM '$($vm.Name)' (VMID: $($vm.VMID)) on node '$($vm.node)'. StatusCode: $($vmConfig.StatusCode) after $maxRetries attempts."
+            Write-Error "Failed to get VM config for VM '$($vm.Name)' (VMID: $($vm.VMID)) on node '$($vm.node)'. StatusCode: $($vmConfig.StatusCode)."
             continue
         }
 

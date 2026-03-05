@@ -29,14 +29,14 @@ function Remove-LWProxmoxVM
     if ($vm.status -ne 'stopped')
     {
         Write-ScreenInfo -Message "Stopping Proxmox VM '$Name' before removal"
-        $result = Stop-PveVm -VmIdOrName $vm.VmId
+        $result = Invoke-LWProxmoxCallWithRetry -ActivityName "Stop VM '$Name'" -ScriptBlock { Stop-PveVm -VmIdOrName $vm.VmId }
         $values = @{
             status = 'stopped'
         }
         $null = Wait-LWProxmoxTasksStatus -Upid $result.Response.data -Node $vm.node -DesiredValues $values -TimeoutInSeconds 600
     }
 
-    $result = Remove-PveQemu -Node $vm.node -Vmid $vm.VmId #-Purge $true -DestroyUnreferencedDisks $true
+    $result = Invoke-LWProxmoxCallWithRetry -ActivityName "Remove VM '$Name'" -ScriptBlock { Remove-PveQemu -Node $vm.node -Vmid $vm.VmId } #-Purge $true -DestroyUnreferencedDisks $true
     if ($result.StatusCode -ne 200)
     {
         Write-Error "Could not remove Proxmox machine '$Name': The error was '$($result.StatusCode)'" -ErrorAction Stop

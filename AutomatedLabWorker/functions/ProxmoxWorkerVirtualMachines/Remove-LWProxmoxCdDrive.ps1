@@ -73,7 +73,7 @@ function Remove-LWProxmoxCdDrive
     }
 
     # Verify the VM exists
-    $vmConfig = Get-PveNodesQemuConfig -Node $Node -Vmid $VmId
+    $vmConfig = Invoke-LWProxmoxCallWithRetry -ActivityName "Get VM config for VM $VmId" -ScriptBlock { Get-PveNodesQemuConfig -Node $Node -Vmid $VmId }
     if ($vmConfig.StatusCode -ne 200)
     {
         Write-Error -Message "VM with ID $VmId not found on node '${Node}': $($vmConfig.ReasonPhrase)" -ErrorAction Stop
@@ -100,27 +100,9 @@ function Remove-LWProxmoxCdDrive
             {
                 Write-PSFMessage -Message "Removing $($drive.Name) from VM $VmId (node $Node)"
 
-                $maxRetries = 3
-                $retryDelay = 3
-                $success = $false
+                $result = Invoke-LWProxmoxCallWithRetry -ActivityName "Remove $($drive.Name) from VM $VmId" -RetryDelaySeconds 3 -ScriptBlock { Set-PveNodesQemuConfig -Node $Node -Vmid $VmId -Delete $drive.Name }
 
-                for ($attempt = 1; $attempt -le $maxRetries; $attempt++)
-                {
-                    $result = Set-PveNodesQemuConfig -Node $Node -Vmid $VmId -Delete $drive.Name
-                    if ($result.StatusCode -eq 200)
-                    {
-                        $success = $true
-                        break
-                    }
-
-                    if ($attempt -lt $maxRetries)
-                    {
-                        Write-PSFMessage -Message "Attempt $attempt to remove $($drive.Name) failed ($($result.ReasonPhrase)). Retrying in ${retryDelay}s..."
-                        Start-Sleep -Seconds $retryDelay
-                    }
-                }
-
-                if (-not $success)
+                if ($result.StatusCode -ne 200)
                 {
                     Write-Error -Message "Failed to remove $($drive.Name) from VM ${VmId}: $($result.ReasonPhrase)"
                 }
@@ -151,27 +133,9 @@ function Remove-LWProxmoxCdDrive
         {
             Write-PSFMessage -Message "Removing scsi$ScsiSlot from VM $VmId (node $Node)"
 
-            $maxRetries = 3
-            $retryDelay = 3
-            $success = $false
+            $result = Invoke-LWProxmoxCallWithRetry -ActivityName "Remove scsi$ScsiSlot from VM $VmId" -RetryDelaySeconds 3 -ScriptBlock { Set-PveNodesQemuConfig -Node $Node -Vmid $VmId -Delete "scsi$ScsiSlot" }
 
-            for ($attempt = 1; $attempt -le $maxRetries; $attempt++)
-            {
-                $result = Set-PveNodesQemuConfig -Node $Node -Vmid $VmId -Delete "scsi$ScsiSlot"
-                if ($result.StatusCode -eq 200)
-                {
-                    $success = $true
-                    break
-                }
-
-                if ($attempt -lt $maxRetries)
-                {
-                    Write-PSFMessage -Message "Attempt $attempt to remove scsi$ScsiSlot failed ($($result.ReasonPhrase)). Retrying in ${retryDelay}s..."
-                    Start-Sleep -Seconds $retryDelay
-                }
-            }
-
-            if (-not $success)
+            if ($result.StatusCode -ne 200)
             {
                 Write-Error -Message "Failed to remove scsi${ScsiSlot} from VM ${VmId}: $($result.ReasonPhrase)"
                 return

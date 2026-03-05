@@ -130,7 +130,7 @@ function Mount-LWProxmoxIsoImage
             $targetNode = $proxmoxVm.node
 
             # Find the next free SCSI slot for a CD-ROM drive (scanning 30 down to 20)
-            $vmConfig = (Get-PveNodesQemuConfig -Node $targetNode -Vmid $proxmoxVm.vmid).Response.data
+            $vmConfig = (Invoke-LWProxmoxCallWithRetry -ActivityName "Get VM config for VM '$($machine.Name)'" -ScriptBlock { Get-PveNodesQemuConfig -Node $targetNode -Vmid $proxmoxVm.vmid }).Response.data
             $isoFileName = Split-Path -Path $IsoPath -Leaf
 
             # Check if this ISO is already mounted on any slot
@@ -239,7 +239,7 @@ function Mount-LWProxmoxIsoImage
     }
 
     # Verify the VM exists
-    $vmConfig = Get-PveNodesQemuConfig -Node $Node -Vmid $VmId
+    $vmConfig = Invoke-LWProxmoxCallWithRetry -ActivityName "Get VM config for VM $VmId" -ScriptBlock { Get-PveNodesQemuConfig -Node $Node -Vmid $VmId }
     if ($vmConfig.StatusCode -ne 200)
     {
         Write-Error -Message "VM with ID $VmId not found on node '${Node}': $($vmConfig.ReasonPhrase)" -ErrorAction Stop
@@ -252,7 +252,7 @@ function Mount-LWProxmoxIsoImage
     {
         Write-PSFMessage -Message "Mounting ISO '$isoVolId' on VM $VmId (node $Node) as scsi$ScsiSlot"
 
-        $result = Set-PveNodesQemuConfig -Node $Node -Vmid $VmId -ScsiN @{ $ScsiSlot = $isoValue }
+        $result = Invoke-LWProxmoxCallWithRetry -ActivityName "Mount ISO on VM $VmId" -ScriptBlock { Set-PveNodesQemuConfig -Node $Node -Vmid $VmId -ScsiN @{ $ScsiSlot = $isoValue } }
 
         if ($result.StatusCode -ne 200)
         {
@@ -263,7 +263,7 @@ function Mount-LWProxmoxIsoImage
         Write-PSFMessage -Message "Successfully mounted ISO '$IsoFile' on VM $VmId as scsi$ScsiSlot"
 
         # Return the current config to confirm
-        $updatedConfig = (Get-PveNodesQemuConfig -Node $Node -Vmid $VmId).Response.data
+        $updatedConfig = (Invoke-LWProxmoxCallWithRetry -ActivityName "Verify VM config for VM $VmId" -ScriptBlock { Get-PveNodesQemuConfig -Node $Node -Vmid $VmId }).Response.data
         [PSCustomObject]@{
             Node     = $Node
             VmId     = $VmId

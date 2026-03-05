@@ -91,7 +91,7 @@ function Dismount-LWProxmoxIsoImage
     }
 
     # Verify the VM exists and get current config
-    $vmConfig = Get-PveNodesQemuConfig -Node $Node -Vmid $VmId
+    $vmConfig = Invoke-LWProxmoxCallWithRetry -ActivityName "Get VM config for VM $VmId" -ScriptBlock { Get-PveNodesQemuConfig -Node $Node -Vmid $VmId }
     if ($vmConfig.StatusCode -ne 200)
     {
         Write-Error -Message "VM with ID $VmId not found on node '${Node}': $($vmConfig.ReasonPhrase)" -ErrorAction Stop
@@ -129,7 +129,7 @@ function Dismount-LWProxmoxIsoImage
         {
             Write-PSFMessage -Message "Ejecting ISO from $($slot.Name) on VM $VmId (node $Node). Current value: '$($slot.Value)'"
 
-            $result = Set-PveNodesQemuConfig -Node $Node -Vmid $VmId -ScsiN @{ $slot.Slot = 'none,media=cdrom' }
+            $result = Invoke-LWProxmoxCallWithRetry -ActivityName "Dismount ISO from $($slot.Name) on VM $VmId" -ScriptBlock { Set-PveNodesQemuConfig -Node $Node -Vmid $VmId -ScsiN @{ $slot.Slot = 'none,media=cdrom' } }
 
             if ($result.StatusCode -ne 200)
             {

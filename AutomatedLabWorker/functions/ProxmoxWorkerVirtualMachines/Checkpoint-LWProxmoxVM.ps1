@@ -32,7 +32,7 @@ function Checkpoint-LWProxmoxVM
         }
 
         $vmSnapshotName = '{0}_{1}' -f $machine, $SnapshotName
-        $result = New-PveNodesQemuSnapshot -Node $vm.node -Description 'Created by AutomatedLab' -Snapname $vmSnapshotName -Vmid $vm.VmId
+        $result = Invoke-LWProxmoxCallWithRetry -ActivityName "Create snapshot '$SnapshotName' for VM '$machine'" -ScriptBlock { New-PveNodesQemuSnapshot -Node $vm.node -Description 'Created by AutomatedLab' -Snapname $vmSnapshotName -Vmid $vm.VmId }
         if ($result.StatusCode -ne 200)
         {
             Write-Error "Could not create snapshot '$SnapshotName' for Proxmox machine '$machine': The error was '$($result.StatusCode)'" -ErrorAction Stop

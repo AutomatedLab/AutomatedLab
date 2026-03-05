@@ -11,7 +11,7 @@ function Select-LabProxmoxNode {
         return
     }
 
-    $nodes = Get-PveNodes
+    $nodes = Invoke-LWProxmoxCallWithRetry -ActivityName 'Retrieve Proxmox nodes' -ScriptBlock { Get-PveNodes }
 
     if ($nodes.StatusCode -ne 200) {
         Write-Error "Failed to retrieve nodes from Proxmox cluster: $($nodes.ReasonPhrase)"

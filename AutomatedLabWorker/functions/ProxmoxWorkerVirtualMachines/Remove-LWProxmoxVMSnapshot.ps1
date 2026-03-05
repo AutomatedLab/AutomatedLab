@@ -50,7 +50,7 @@ function Remove-LWProxmoxVMSnapshot
         {
             Write-PSFMessage -Message "Removing snapshot '$($snapshot.Name)' for VM '$($vm.Name)'" -Level Verbose
             $vmSnapshotName = '{0}_{1}' -f $vm.Name, $snapshot.SnapshotName
-            $result = Remove-PveNodesQemuSnapshot -Node $vm.node -Vmid $vm.VmId -Snapname $vmSnapshotName
+            $result = Invoke-LWProxmoxCallWithRetry -ActivityName "Remove snapshot '$($snapshot.Name)' for VM '$($vm.Name)'" -ScriptBlock { Remove-PveNodesQemuSnapshot -Node $vm.node -Vmid $vm.VmId -Snapname $vmSnapshotName }
             if ($result.StatusCode -ne 200)
             {
                 Write-Error "Could not remove snapshot '$($snapshot.Name)' for Proxmox machine '$($vm.Name)': The error was '$($result.StatusCode)'"

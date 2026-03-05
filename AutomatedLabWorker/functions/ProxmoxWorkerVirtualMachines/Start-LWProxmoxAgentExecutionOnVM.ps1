@@ -25,7 +25,7 @@ function Start-LWProxmoxAgentExecutionOnVM
             Vmid    = $vm.VmId
             Command = $Command.Split(' ')
         }
-        $result = New-PveNodesQemuAgentExec @param
+        $result = Invoke-LWProxmoxCallWithRetry -ActivityName "Execute command on VM '$name'" -ScriptBlock { New-PveNodesQemuAgentExec @param }
 
         if ($result.StatusCode -ne 200)
         {

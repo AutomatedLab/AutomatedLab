@@ -47,7 +47,7 @@ function Restore-LWProxmoxVmSnapshot
             continue
         }
 
-        $result = Undo-PveVmSnapshot -VmIdOrName $vm.VmId -Snapname $vmSnapshotName
+        $result = Invoke-LWProxmoxCallWithRetry -ActivityName "Restore snapshot '$SnapshotName' for VM '$machine'" -ScriptBlock { Undo-PveVmSnapshot -VmIdOrName $vm.VmId -Snapname $vmSnapshotName }
         if ($result.StatusCode -ne 200)
         {
             Write-Error "Could not restore snapshot '$SnapshotName' for Proxmox machine '$machine': The error was '$($result.StatusCode)'" -ErrorAction Stop
