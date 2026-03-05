@@ -18,21 +18,35 @@ function Test-LabProxmoxConnection
 
     if ($result.StatusCode -ne 200)
     {
-        # Connection failed - attempt reconnection if we have stored credentials
+        # Connection failed - attempt reconnection with retries if we have stored credentials
         if ($script:connectionData)
         {
-            Write-ScreenInfo -Message "Proxmox API returned status $($result.StatusCode). Attempting reconnection..." -Type Warning
-            Connect-LabProxmoxCluster -RefreshExistingConnection
+            $maxRetries = 3
+            $retryDelays = @(5, 15, 30)
 
-            $result = Get-PveClusterStatus -ErrorAction SilentlyContinue
-            if ($result.StatusCode -eq 200)
+            for ($attempt = 1; $attempt -le $maxRetries; $attempt++)
             {
-                Write-ScreenInfo -Message 'Successfully reconnected to Proxmox cluster.' -Type Info
-                return $true
+                Write-ScreenInfo -Message "Proxmox API returned status $($result.StatusCode). Reconnection attempt $attempt of $maxRetries..." -Type Warning
+
+                if ($attempt -gt 1)
+                {
+                    $delay = $retryDelays[$attempt - 1]
+                    Write-ScreenInfo -Message "Waiting $delay seconds before retry..." -Type Warning
+                    Start-Sleep -Seconds $delay
+                }
+
+                Connect-LabProxmoxCluster -RefreshExistingConnection
+
+                $result = Get-PveClusterStatus -ErrorAction SilentlyContinue
+                if ($result.StatusCode -eq 200)
+                {
+                    Write-ScreenInfo -Message 'Successfully reconnected to Proxmox cluster.' -Type Info
+                    return $true
+                }
             }
         }
 
-        Write-ScreenInfo -Message "Failed to connect to Proxmox cluster: $($result.ReasonPhrase)" -Type Verbose
+        Write-ScreenInfo -Message "Failed to connect to Proxmox cluster after all retry attempts: $($result.ReasonPhrase)" -Type Verbose
         return $false
     }
     else
