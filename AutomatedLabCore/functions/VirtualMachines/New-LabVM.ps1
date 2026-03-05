@@ -107,7 +107,16 @@
         {
             foreach ($rootDC in $rootDCs)
             {
-                New-LWProxmoxVM -Machine $rootDC | Out-Null
+                Write-ScreenInfo -Message "Creating Proxmox machine '$rootDC'" -TaskStart -NoNewLine
+                $result = New-LWProxmoxVM -Machine $rootDC
+                if ($result -ne $false)
+                {
+                    Write-ScreenInfo -Message 'Done' -TaskEnd
+                }
+                else
+                {
+                    Write-ScreenInfo -Message "Could not create Proxmox machine '$rootDC'" -TaskEnd -Type Error
+                }
             }
             Wait-LabVM -ComputerName $rootDCs #Stop and start is required to sync the time with the Proxmox host
 
@@ -130,7 +139,16 @@
         {
             foreach ($firstChildDC in $firstChildDCs)
             {
-                New-LWProxmoxVM -Machine $firstChildDC | Out-Null
+                Write-ScreenInfo -Message "Creating Proxmox machine '$firstChildDC'" -TaskStart -NoNewLine
+                $result = New-LWProxmoxVM -Machine $firstChildDC
+                if ($result -ne $false)
+                {
+                    Write-ScreenInfo -Message 'Done' -TaskEnd
+                }
+                else
+                {
+                    Write-ScreenInfo -Message "Could not create Proxmox machine '$firstChildDC'" -TaskEnd -Type Error
+                }
             }
             Wait-LabVM -ComputerName $firstChildDCs
 
@@ -150,7 +168,16 @@
         {
             foreach ($otherVM in $otherVMs)
             {
-                New-LWProxmoxVM -Machine $otherVM | Out-Null
+                Write-ScreenInfo -Message "Creating Proxmox machine '$otherVM'" -TaskStart -NoNewLine
+                $result = New-LWProxmoxVM -Machine $otherVM
+                if ($result -ne $false)
+                {
+                    Write-ScreenInfo -Message 'Done' -TaskEnd
+                }
+                else
+                {
+                    Write-ScreenInfo -Message "Could not create Proxmox machine '$otherVM'" -TaskEnd -Type Error
+                }
             }
 
             Wait-LabVM -ComputerName $otherVMs
