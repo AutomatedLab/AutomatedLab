@@ -17,10 +17,20 @@
 
         [string]$ResourceName,
 
-        [switch]$PassThru
+        [switch]$PassThru,
+
+        [switch]$UseNat = (Get-LabConfigurationItem -Name HyperVUseNAT)
     )
 
     Write-LogFunctionEntry
+
+    if((Get-LabDefinition).DefaultVirtualizationEngine -ne 'HyperV' -and $UseNat.IsPresent) {
+        Write-ScreenInfo -Type Warning -Message "UseNat was specified, but this lab runs on $((Get-LabDefinition).DefaultVirtualizationEngine) and it will be ignored."
+    }
+
+    if((Get-LabDefinition).DefaultVirtualizationEngine -ne 'HyperV' -and $UseNat.IsPresent -and $HyperVProperties.SwitchType -eq 'External') {
+        Write-ScreenInfo -Type Warning -Message "UseNat was specified, but you are deploying an external swithc, so it will be ignored."
+    }
 
     if ((Get-LabDefinition).DefaultVirtualizationEngine -eq 'Azure' -and -not ((Get-LabDefinition).AzureSettings))
     {
@@ -119,6 +129,7 @@
     $network = New-Object -TypeName AutomatedLab.VirtualNetwork
     $network.AddressSpace = $AddressSpace
     $network.Name = $Name
+    $network.UseNat = $UseNat.IsPresent
     if ($ResourceName) {$network.FriendlyName = $ResourceName}
     if ($HyperVProperties.SwitchType) { $network.SwitchType = $HyperVProperties.SwitchType }
     if ($HyperVProperties.AdapterName) {$network.AdapterName = $HyperVProperties.AdapterName }

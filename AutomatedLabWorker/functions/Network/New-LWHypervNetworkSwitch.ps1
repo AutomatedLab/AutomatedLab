@@ -70,6 +70,10 @@
                     $switch = New-VMSwitch -Name $network.ResourceName -SwitchType ([string]$network.SwitchType) -ErrorAction Stop
                 }
 
+                if ($network.UseNat) {
+                    $null = New-NetNat -Name $network.ResourceName -InternalIPInterfaceAddressPrefix $network.AddressSpace
+                }
+
                 Set-LWHypervNetworkSwitchDescription -NetworkSwitchName $network.ResourceName -Hashtable @{
                     CreatedBy = '{0} ({1})' -f $PSCmdlet.MyInvocation.MyCommand.Module.Name, $PSCmdlet.MyInvocation.MyCommand.Module.Version
                     CreationTime = Get-Date

@@ -16,6 +16,23 @@
 
     if ((Get-LWHypervVM -ErrorAction SilentlyContinue | Get-VMNetworkAdapter | Where-Object {$_.SwitchName -eq $Name} | Measure-Object).Count -eq 0)
     {
+        try {
+            $config = Get-NetAdapter | Where-Object Name -Match "^vEthernet \($($Name)\) ?(\d{1,2})?"
+            if ($config.InterfaceIndex) {
+                Get-NetIpAddress -IfIndex $config.InterfaceIndex -ErrorAction SilentlyContinue | Remove-NetIPAddress -Confirm:$false -ErrorAction Stop
+            }
+        }
+        catch {
+            Write-ScreenInfo -Type Error -Message "Unable to remove NAT Gateway IP, $($_.Exception.Message)"
+        }
+
+        try {
+            Get-NetNat -Name $Name -ErrorAction SilentlyContinue | Remove-NetNat -Confirm:$false -ErrorAction Stop
+        }
+        catch {
+            Write-ScreenInfo -Type Error -Message "Unable to remove NAT Gateway, $($_.Exception.Message)"
+        }
+
         try
         {
             Remove-VMSwitch -Name $Name -Force -ErrorAction Stop
@@ -39,5 +56,4 @@
     }
 
     Write-LogFunctionExit
-
 }

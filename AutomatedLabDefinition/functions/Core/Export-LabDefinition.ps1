@@ -53,7 +53,7 @@
 
             foreach ($networkAdapter in $machine.NetworkAdapters)
             {
-                if ($networkAdapter.IPv4DnsServers -contains '0.0.0.0')
+                if ($networkAdapter.IPv4DnsServers -contains '0.0.0.0' -or $networkAdapter.IPv4DnsServers -contains (Get-LabConfigurationItem -Name DefaultDnsForwarder1))
                 {
                     if (-not $machine.IsDomainJoined) #machine is not domain joined, the 1st network adapter's IP of the 1st root DC is used as DNS server
                     {
