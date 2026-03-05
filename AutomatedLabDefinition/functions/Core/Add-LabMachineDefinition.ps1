@@ -953,7 +953,7 @@
                 ))
             {
                 if ($adapterVirtualNetwork.UseNat) {
-                    $adapter.Ipv4DnsServers.Add('1.1.1.1')
+                    $adapter.Ipv4DnsServers.Add((Get-LabConfigurationItem -Name DefaultDnsForwarder1))
                 } else {
                     $adapter.Ipv4DnsServers.Add('0.0.0.0')
                 }
