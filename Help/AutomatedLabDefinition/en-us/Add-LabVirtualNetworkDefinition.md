@@ -198,7 +198,7 @@ Required: False
 Position: Named
 Default value: False
 Accept pipeline input: False
-Accept
+Accept wildcard characters: False
 ```
 
 ### -VirtualizationEngine
