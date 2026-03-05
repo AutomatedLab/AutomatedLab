@@ -71,9 +71,7 @@
                 }
 
                 if ($network.UseNat) {
-                    $adapter = Get-NetAdapter | Where-Object Name -Match "^vEthernet \($($network.ResourceName)\) ?(\d{1,2})?"
-                    New-NetIPAddress -IPAddress $network.AddressSpace.LastUsable -PrefixLength $network.AddressSpace.Cidr -InterfaceIndex $adapter.InterfaceIndex
-                    New-NetNat -Name $network.ResourceName -InternalIPInterfaceAddressPrefix $network.AddressSpace
+                    $null = New-NetNat -Name $network.ResourceName -InternalIPInterfaceAddressPrefix $network.AddressSpace
                 }
 
                 Set-LWHypervNetworkSwitchDescription -NetworkSwitchName $network.ResourceName -Hashtable @{
