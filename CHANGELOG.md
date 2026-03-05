@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [5.60.0] - 2026-03-05
+
 ### Added
 
 - Add ContosoApp sample scenario under `LabSources\SampleScripts\Scenarios\ContosoApp`
