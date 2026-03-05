@@ -16,6 +16,7 @@
   - FailOverNode
   - HyperV
 - Added support for SQL Server 2025
+- Added NAT support
 
 ### Changed
 
