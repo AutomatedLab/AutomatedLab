@@ -24,12 +24,12 @@
     )
     
     $oldPath = $env:PSModulePath
-    $env:PSModulePath = '{0};{1}' -f (Resolve-Path -Path "$rootpath\..\..\publish").Path, $env:PSModulePath
+    $sep = [io.path]::PathSeparator
+    $env:PSModulePath = '{0}{1}{2}' -f (Resolve-Path -Path "$rootpath\..\..\publish").Path, $sep, $env:PSModulePath
 
     $modPath = Get-Item -Path (Resolve-Path -Path "$rootpath\..\..\requiredmodules").Path
     if (-not $env:PSModulePath.Contains($modpath.FullName))
     {
-        $sep = [io.path]::PathSeparator
         $env:PSModulePath = '{0}{1}{2}' -f $modPath.FullName, $sep, $env:PSModulePath
     }
 

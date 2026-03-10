@@ -1,4 +1,6 @@
-BeforeDiscovery {
+BeforeDiscovery {    
+    Import-Module -Name AutomatedLabCore -Force -ErrorAction SilentlyContinue
+
     [System.Collections.Generic.List[hashtable]] $links = Get-PSFConfig -Module AutomatedLab | Where-Object { $_.Value -like 'http*' -and $_.Name -notlike '*SharePoint*' } | ForEach-Object {
         @{
             Setting = $_.Name
