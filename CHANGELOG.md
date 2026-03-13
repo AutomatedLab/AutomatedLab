@@ -4,8 +4,9 @@
 
 ### Fixed
 
-- Issue with labs using NAT and defining a Gateway in which the gateway was incorrectly set to 0.0.0.0
+- Issue with labs using NAT and defining a Gateway in which the gateway was incorrectly set to 0.0.0.0.
 - Issue with AutoLogon when using Add-LabMachineDefinition -InstallationUserCredential. Local and domain accounts were confused (#1816).
+- Fix `Get-LabVirtualNetwork` parameter `-Name` typed as `[string]` instead of `[string[]]`, which caused `Remove-Lab` to fail removing virtual network switches in multi-network labs.
 
 ## [5.60.0] - 2026-03-05
 
