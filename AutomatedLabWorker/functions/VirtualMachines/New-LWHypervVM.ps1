@@ -290,7 +290,17 @@
     #if domain-joined and not a DC
     if ($Machine.IsDomainJoined -eq $true -and -not ($Machine.Roles.Name -contains 'RootDC' -or $Machine.Roles.Name -contains 'FirstChildDC' -or $Machine.Roles.Name -contains 'DC'))
     {
-        Set-UnattendedAutoLogon -DomainName $Machine.DomainName -Username $Machine.InstallationUser.Username -Password $Machine.InstallationUser.Password
+        #BugFix: When used different Add-LabMachineDefinition -InstallationUserCredential, they are not created in the domain, AutoLogon will not work. They should be use the local Account
+		
+		#ORIGINAL Line #mixed up local created account but used with DomainName. That didn't work, because the account is not created in Domain.
+		#Set-UnattendedAutoLogon -DomainName $Machine.DomainName -Username $Machine.InstallationUser.Username -Password $Machine.InstallationUser.Password
+		
+        #Use Domain Account, same as where $Machine.DomainName
+		$domain = (Get-Lab).Domains | Where-Object Name -eq $Machine.DomainName
+		Set-UnattendedAutoLogon -DomainName $Machine.DomainName -Username $domain.Administrator.UserName -Password $domain.Administrator.Password
+		
+		#Use Local Account, same as where $Machine.InstallationUser defined
+        #Set-UnattendedAutoLogon -DomainName $Machine.Name -Username $Machine.InstallationUser.Username -Password $Machine.InstallationUser.Password
     }
     else
     {
