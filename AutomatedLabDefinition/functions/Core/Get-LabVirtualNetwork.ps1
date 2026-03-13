@@ -3,7 +3,7 @@
     [cmdletBinding(DefaultParameterSetName = 'ByName')]
     param (
         [Parameter(ParameterSetName = 'ByName')]
-        [string]$Name,
+        [string[]]$Name,
 
         [Parameter(ParameterSetName = 'All')]
         [switch]$All
