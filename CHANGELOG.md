@@ -5,6 +5,7 @@
 ### Fixed
 
 - Issue with labs using NAT and defining a Gateway in which the gateway was incorrectly set to 0.0.0.0
+- Issue with AutoLogon when using Add-LabMachineDefinition -InstallationUserCredential. Local and domain accounts were confused (#1816).
 
 ## [5.60.0] - 2026-03-05
 
