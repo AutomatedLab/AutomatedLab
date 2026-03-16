@@ -17,7 +17,7 @@ Cmdlet executed by Invoke-LabCommand
 Invoke-LWCommand -ComputerName <String[]> -Session <PSSession[]> [-ActivityName <String>]
  [-DependencyFolderPath <String>] -ScriptFilePath <String> [-KeepFolder] [-ArgumentList <Object[]>]
  [-ParameterVariableName <String>] [-Retries <Int32>] [-RetryIntervalInSeconds <Int32>]
- [-ThrottleLimit <Int32>] [-AsJob] [-PassThru] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+ [-ThrottleLimit <Int32>] [-AsJob] [-PassThru] [<CommonParameters>]
 ```
 
 ### ScriptBlock
@@ -25,7 +25,7 @@ Invoke-LWCommand -ComputerName <String[]> -Session <PSSession[]> [-ActivityName 
 Invoke-LWCommand -ComputerName <String[]> -Session <PSSession[]> [-ActivityName <String>]
  [-DependencyFolderPath <String>] -ScriptBlock <ScriptBlock> [-KeepFolder] [-ArgumentList <Object[]>]
  [-ParameterVariableName <String>] [-Retries <Int32>] [-RetryIntervalInSeconds <Int32>]
- [-ThrottleLimit <Int32>] [-AsJob] [-PassThru] [-ProgressAction <ActionPreference>] [<CommonParameters>]
+ [-ThrottleLimit <Int32>] [-AsJob] [-PassThru] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -246,21 +246,6 @@ The throttle limit for Invoke-Command
 Type: Int32
 Parameter Sets: (All)
 Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ProgressAction
-{{ Fill ProgressAction Description }}
-
-```yaml
-Type: ActionPreference
-Parameter Sets: (All)
-Aliases: proga
 
 Required: False
 Position: Named
