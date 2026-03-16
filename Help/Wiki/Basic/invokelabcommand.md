@@ -51,6 +51,16 @@ Invoke-LabCommand -ComputerName Web1 -ScriptBlock {
     Get-ADUser -Identity John
 }
 ```
+### Running scripts with context
+
+In case you need to run code with some additional files present, be sure to place those files in a single directory. It is then transferred to the VMs by using
+the parameter `DependencyFolderPath`! The dependency folder does not need to contain your script. It will always be copied the OS root, e.g. `/` on Linux and `C:\` on Windows.
+
+```powershell
+# Run the script ./ConfigureSomeAgent.ps1 and send the directory $labsources/Tools/SomeAgentFiles to the VM
+Invoke-LabCommand -FilePath ./ConfigureSomeAgent.ps1 -PassThru -ComputerName (Get-LabVm) -DependencyFolderPath $labsources/Tools/SomeAgentFiles
+```
+
 ## Transferring modules to machines
 Invoke-LabCommand is a comfortable way to run scripts and ScriptsBlocks defined on your host machine in any lab machine. This cmdlet takes care of the authentication and allows you to send variables and functions to the remote machine. But how can you use cmdlets defined in a PowerShell module that exists on your host machine in a lab VM? With Send-ModuleToPSSession we have provided a way to send any PowerShell module available locally to a lab VM. 
 
