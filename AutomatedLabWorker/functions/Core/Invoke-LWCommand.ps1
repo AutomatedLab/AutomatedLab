@@ -105,8 +105,10 @@
         }
     }
 
-    if ($DependencyFolderPath) {
-        $cmd = "& '$ScriptFilePath'"
+    if ($DependencyFolderPath -and $ScriptFilePath) {
+        $remoteDependencyPath = Join-Path -Path (Get-LabConfigurationItem -Name OsRoot) -ChildPath (Split-Path $DependencyFolderPath -Leaf)
+        $newScriptFilePath = Join-Path -Path $remoteDependencyPath -ChildPath (Split-Path -Path $ScriptFilePath -Leaf)
+        $cmd = "& '$newScriptFilePath'"
 
         if ($ParameterVariableName) {
             $cmd += " @$ParameterVariableName"
@@ -114,7 +116,7 @@
         $cmd += "`n"
 
         if (-not $KeepFolder -and $DependencyFolderPath) {
-            $cmd += "Remove-Item '$(Join-Path -Path (Get-LabConfigurationItem -Name OsRoot) -ChildPath (Split-Path $DependencyFolderPath -Leaf))' -Recurse -Force"
+            $cmd += "Remove-Item '$remoteDependencyPath' -Recurse -Force"
         }
 
         Write-PSFMessage -Message "Invoking script '$(Split-Path -Leaf -Path $ScriptFilePath)'"
