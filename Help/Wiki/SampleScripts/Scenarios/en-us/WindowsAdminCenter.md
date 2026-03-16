@@ -22,8 +22,8 @@ $PSDefaultParameterValues = @{
 
 # Domain
 $postInstallActivity = @()
-$postInstallActivity += Get-LabPostInstallationActivity -ScriptFileName 'New-ADLabAccounts 2.0.ps1' -DependencyFolder $labSources\PostInstallationActivities\PrepareFirstChildDomain
-$postInstallActivity += Get-LabPostInstallationActivity -ScriptFileName PrepareRootDomain.ps1 -DependencyFolder $labSources\PostInstallationActivities\PrepareRootDomain
+$postInstallActivity += Get-LabPostInstallationActivity -ScriptFilePath "$labSources\PostInstallationActivities\PrepareFirstChildDomain\New-ADLabAccounts 2.0.ps1" -DependencyFolder $labSources\PostInstallationActivities\PrepareFirstChildDomain
+$postInstallActivity += Get-LabPostInstallationActivity -ScriptFilePath $labSources\PostInstallationActivities\PrepareRootDomain\PrepareRootDomain.ps1 -DependencyFolder $labSources\PostInstallationActivities\PrepareRootDomain
 Add-LabMachineDefinition -Name WACDC1 -Memory 1GB -Roles RootDC -PostInstallationActivity $postInstallActivity
 
 # CA
