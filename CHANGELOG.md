@@ -8,6 +8,13 @@
 - Issue with AutoLogon when using Add-LabMachineDefinition -InstallationUserCredential. Local and domain accounts were confused (#1816).
 - Fix `Get-LabVirtualNetwork` parameter `-Name` typed as `[string]` instead of `[string[]]`, which caused `Remove-Lab` to fail removing virtual network switches in multi-network labs.
 
+### Changed
+
+- **Breaking Change**: Invoke-LWCommand, Invoke-LabCommand, Get-LabInstallationActivity
+  - Parameter `DependencyFolder` is now optional, ScriptFilePath now resembles an actual FILE path, ScriptFileName has been removed
+  - Unused parameter `IsoImagePath` removed
+- Install-LabSshKnownHost now adds machines with `SkipInstall` in case they are not yet known
+
 ## [5.60.0] - 2026-03-05
 
 ### Added

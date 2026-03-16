@@ -121,21 +121,6 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -IsoImage
-The ISO image that should be mounted during post-installation
-
-```yaml
-Type: String
-Parameter Sets: IsoImageDependencyLocalScript, IsoImageDependencyRemoteScript
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -KeepFolder
 Indicates that the target folder should be kept on the machine
 
@@ -173,7 +158,7 @@ The script file path of the script that is executed
 
 ```yaml
 Type: String
-Parameter Sets: FileContentDependencyLocalScript, IsoImageDependencyLocalScript
+Parameter Sets: FileContentDependencyLocalScript
 Aliases:
 
 Required: True
