@@ -12,16 +12,16 @@ Get pre/post-installation activity
 
 ## SYNTAX
 
-### FileContentDependencyLocalScript
+### LocalScript
 ```
 Get-LabInstallationActivity [-DependencyFolder <String>] [-KeepFolder] -ScriptFilePath <String>
  [-Variable <PSVariable[]>] [-Function <FunctionInfo[]>] [-DoNotUseCredSsp] [-CustomRole <String>]
  [<CommonParameters>]
 ```
 
-### FileContentDependencyRemoteScript
+### RemoteScript
 ```
-Get-LabInstallationActivity [-DependencyFolder <String>] [-KeepFolder] -ScriptFileName <String>
+Get-LabInstallationActivity [-DependencyFolder <String>] [-KeepFolder]
  [-Variable <PSVariable[]>] [-Function <FunctionInfo[]>] [-DoNotUseCredSsp] [-CustomRole <String>]
  [<CommonParameters>]
 ```
@@ -80,7 +80,7 @@ A folder of dependency files if necessary
 
 ```yaml
 Type: String
-Parameter Sets: FileContentDependencyLocalScript, FileContentDependencyRemoteScript
+Parameter Sets: LocalScript, RemoteScript
 Aliases:
 
 Required: True
@@ -126,7 +126,7 @@ Indicates that the target folder should be kept on the machine
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: FileContentDependencyLocalScript, FileContentDependencyRemoteScript, CustomRole
+Parameter Sets: LocalScript, RemoteScript, CustomRole
 Aliases:
 
 Required: False
@@ -158,7 +158,7 @@ The script file path of the script that is executed
 
 ```yaml
 Type: String
-Parameter Sets: FileContentDependencyLocalScript
+Parameter Sets: LocalScript
 Aliases:
 
 Required: True
