@@ -14,7 +14,7 @@ Returns all existing virtual networks (switches) on a Hyper-V host
 
 ### ByName
 ```
-Get-LabVirtualNetwork [-Name <String>] [<CommonParameters>]
+Get-LabVirtualNetwork [-Name <String[]>] [<CommonParameters>]
 ```
 
 ### All
