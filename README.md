@@ -114,15 +114,19 @@ to build the entire module locally yourself.
 While the steps remain the same, the prerequisites are slightly different on Windows and Linux
 
 Windows:
-  - WiX 3 targets installed properly (!)
-  - .NET SDKs 4.6.2 and 6.0
+  - Installer required? WiX 3 targets installed properly (!)
+  - .NET SDKs 4.6.2 (targeting) and 6.0+
 Linux:
-  - .NET 6.0
+  - .NET 6.0+
 
-After the prerequisites are satisfied, you can:
-- `./.build/01-prerequisites.ps1`
-- `./.build/02-build.ps1`
-- `./.build/03-validate.ps1` - Optionally validate the built module
+After the prerequisites are satisfied, you can use `.build/StartLocalBuild.ps1` to
+run a local build in a fresh PowerShell session that does not already have AutomatedLab imported.
+We are loading a library, so importing a different library version will not work.
+If you would like to skip the Pester validation, specify the parameter `SkipValidation`.
+To build the installer, use the parameter `BuildInstaller`.
 
-The fourth step, publishing, relies on AppVeyor. The built module will be stores in `./publish`,
-the installer can be found in `./Install/bin
+Running the local build also updates your module path, so that you are directly using your
+freshly built modules.
+
+The result is a folder `publish` containing all AutomatedLab modules, while `requiredmodules`
+contains all required modules.
