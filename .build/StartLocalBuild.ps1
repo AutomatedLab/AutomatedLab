@@ -16,4 +16,4 @@ if (-not $SkipValidation.IsPresent) {
 
 Pop-Location
 
-Get-Item (Join-Path $psscriptroot publish), (Join-Path $psscriptroot requiredmodules)
+Get-Item (Join-Path $psscriptroot ../publish), (Join-Path $psscriptroot ../requiredmodules)
