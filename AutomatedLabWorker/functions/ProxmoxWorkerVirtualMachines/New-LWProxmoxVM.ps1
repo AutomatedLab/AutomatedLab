@@ -1005,6 +1005,12 @@ Stop-Transcript
         Send-LWProxmoxFileCopyToVM -SourceFilePath $file.FullName -ComputerName $Machine.ResourceName
     }
 
+    # Set SkipRearm to prevent Sysprep from calling SLReArmWindows which can fail
+    # with 0xc004f075 (SL_E_SLC_STOPPING) when sppsvc is not yet fully started.
+    Write-PSFMessage "Setting SkipRearm on VM '$($Machine.ResourceName)' to prevent licensing rearm race condition"
+    Start-LWProxmoxAgentExecutionOnVM -ComputerName $Machine.ResourceName -Command 'reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SoftwareLicensingService" /v SkipRearm /t REG_DWORD /d 1 /f'
+    Start-Sleep -Seconds 2
+
     Write-PSFMessage "Starting Sysprep on VM '$($Machine.ResourceName)'"
     Start-LWProxmoxAgentExecutionOnVM -ComputerName $Machine.ResourceName -Command 'C:\Windows\system32\Sysprep\sysprep.exe /generalize /oobe /reboot'
 
