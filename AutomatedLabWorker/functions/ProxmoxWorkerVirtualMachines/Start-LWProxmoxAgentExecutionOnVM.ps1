@@ -20,10 +20,28 @@ function Start-LWProxmoxAgentExecutionOnVM
             continue
         }
 
+        # Parse the command string respecting quoted segments so that paths
+        # with spaces (e.g. "HKLM\SOFTWARE\Microsoft\Windows NT\...") are
+        # kept as a single argument.
+        $commandParts = [System.Collections.Generic.List[string]]::new()
+        foreach ($token in [System.Management.Automation.PSParser]::Tokenize($Command, [ref]$null))
+        {
+            if ($token.Type -in 'String', 'CommandArgument', 'Command', 'Number')
+            {
+                $commandParts.Add($token.Content)
+            }
+        }
+
+        # Fallback to simple split if tokenizer returned nothing useful
+        if ($commandParts.Count -eq 0)
+        {
+            $commandParts.AddRange([string[]]($Command.Split(' ')))
+        }
+
         $param = @{
             Node    = $vm.node
             Vmid    = $vm.VmId
-            Command = $Command.Split(' ')
+            Command = $commandParts.ToArray()
         }
         $result = Invoke-LWProxmoxCallWithRetry -ActivityName "Execute command on VM '$name'" -ScriptBlock { New-PveNodesQemuAgentExec @param }
 
