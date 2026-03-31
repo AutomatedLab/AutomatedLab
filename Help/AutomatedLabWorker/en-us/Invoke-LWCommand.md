@@ -12,65 +12,20 @@ Cmdlet executed by Invoke-LabCommand
 
 ## SYNTAX
 
-### FileContentDependencyScriptBlock
+### LocalScript
 ```
 Invoke-LWCommand -ComputerName <String[]> -Session <PSSession[]> [-ActivityName <String>]
- -DependencyFolderPath <String> -ScriptBlock <ScriptBlock> [-KeepFolder] [-ArgumentList <Object[]>]
+ [-DependencyFolderPath <String>] -ScriptFilePath <String> [-KeepFolder] [-ArgumentList <Object[]>]
  [-ParameterVariableName <String>] [-Retries <Int32>] [-RetryIntervalInSeconds <Int32>]
  [-ThrottleLimit <Int32>] [-AsJob] [-PassThru] [<CommonParameters>]
 ```
 
-### FileContentDependencyRemoteScript
+### ScriptBlock
 ```
 Invoke-LWCommand -ComputerName <String[]> -Session <PSSession[]> [-ActivityName <String>]
- -DependencyFolderPath <String> -ScriptFileName <String> [-KeepFolder] [-ArgumentList <Object[]>]
+ [-DependencyFolderPath <String>] -ScriptBlock <ScriptBlock> [-KeepFolder] [-ArgumentList <Object[]>]
  [-ParameterVariableName <String>] [-Retries <Int32>] [-RetryIntervalInSeconds <Int32>]
  [-ThrottleLimit <Int32>] [-AsJob] [-PassThru] [<CommonParameters>]
-```
-
-### FileContentDependencyLocalScript
-```
-Invoke-LWCommand -ComputerName <String[]> -Session <PSSession[]> [-ActivityName <String>]
- -DependencyFolderPath <String> -ScriptFilePath <String> [-KeepFolder] [-ArgumentList <Object[]>]
- [-ParameterVariableName <String>] -Retries <Int32> -RetryIntervalInSeconds <Int32> [-ThrottleLimit <Int32>]
- [-AsJob] [-PassThru] [<CommonParameters>]
-```
-
-### NoDependencyLocalScript
-```
-Invoke-LWCommand -ComputerName <String[]> -Session <PSSession[]> [-ActivityName <String>]
- -ScriptFilePath <String> [-ArgumentList <Object[]>] [-ParameterVariableName <String>] -Retries <Int32>
- -RetryIntervalInSeconds <Int32> [-ThrottleLimit <Int32>] [-AsJob] [-PassThru] [<CommonParameters>]
-```
-
-### IsoImageDependencyLocalScript
-```
-Invoke-LWCommand -ComputerName <String[]> -Session <PSSession[]> [-ActivityName <String>]
- -ScriptFilePath <String> -IsoImagePath <String> [-ArgumentList <Object[]>] [-ParameterVariableName <String>]
- -Retries <Int32> -RetryIntervalInSeconds <Int32> [-ThrottleLimit <Int32>] [-AsJob] [-PassThru]
- [<CommonParameters>]
-```
-
-### NoDependencyScriptBlock
-```
-Invoke-LWCommand -ComputerName <String[]> -Session <PSSession[]> [-ActivityName <String>]
- -ScriptBlock <ScriptBlock> [-ArgumentList <Object[]>] [-ParameterVariableName <String>] [-Retries <Int32>]
- [-RetryIntervalInSeconds <Int32>] [-ThrottleLimit <Int32>] [-AsJob] [-PassThru] [<CommonParameters>]
-```
-
-### IsoImageDependencyScriptBlock
-```
-Invoke-LWCommand -ComputerName <String[]> -Session <PSSession[]> [-ActivityName <String>]
- -ScriptBlock <ScriptBlock> -IsoImagePath <String> [-ArgumentList <Object[]>] [-ParameterVariableName <String>]
- [-Retries <Int32>] [-RetryIntervalInSeconds <Int32>] [-ThrottleLimit <Int32>] [-AsJob] [-PassThru]
- [<CommonParameters>]
-```
-
-### IsoImageDependencyScript
-```
-Invoke-LWCommand -ComputerName <String[]> -Session <PSSession[]> [-ActivityName <String>]
- -IsoImagePath <String> [-ArgumentList <Object[]>] [-ParameterVariableName <String>] [-ThrottleLimit <Int32>]
- [-AsJob] [-PassThru] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -129,7 +84,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: False
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -154,25 +109,10 @@ The dependencies that should be copied to the VM
 
 ```yaml
 Type: String
-Parameter Sets: FileContentDependencyScriptBlock, FileContentDependencyRemoteScript, FileContentDependencyLocalScript
+Parameter Sets: (All)
 Aliases:
 
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -IsoImagePath
-UNUSED
-
-```yaml
-Type: String
-Parameter Sets: IsoImageDependencyLocalScript, IsoImageDependencyScriptBlock, IsoImageDependencyScript
-Aliases:
-
-Required: True
+Required: False
 Position: Named
 Default value: None
 Accept pipeline input: False
@@ -184,12 +124,12 @@ Indicates that the files copied to the remote host should not be removed
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: FileContentDependencyScriptBlock, FileContentDependencyRemoteScript, FileContentDependencyLocalScript
+Parameter Sets: (All)
 Aliases:
 
 Required: False
 Position: Named
-Default value: False
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -219,7 +159,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: False
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -229,22 +169,10 @@ The number of retries
 
 ```yaml
 Type: Int32
-Parameter Sets: FileContentDependencyScriptBlock, FileContentDependencyRemoteScript, NoDependencyScriptBlock, IsoImageDependencyScriptBlock
+Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-```yaml
-Type: Int32
-Parameter Sets: FileContentDependencyLocalScript, NoDependencyLocalScript, IsoImageDependencyLocalScript
-Aliases:
-
-Required: True
 Position: Named
 Default value: None
 Accept pipeline input: False
@@ -256,22 +184,10 @@ The interval between retries
 
 ```yaml
 Type: Int32
-Parameter Sets: FileContentDependencyScriptBlock, FileContentDependencyRemoteScript, NoDependencyScriptBlock, IsoImageDependencyScriptBlock
+Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-```yaml
-Type: Int32
-Parameter Sets: FileContentDependencyLocalScript, NoDependencyLocalScript, IsoImageDependencyLocalScript
-Aliases:
-
-Required: True
 Position: Named
 Default value: None
 Accept pipeline input: False
@@ -283,22 +199,7 @@ The script block to execute
 
 ```yaml
 Type: ScriptBlock
-Parameter Sets: FileContentDependencyScriptBlock, NoDependencyScriptBlock, IsoImageDependencyScriptBlock
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ScriptFileName
-The name of the local script to execute remotely
-
-```yaml
-Type: String
-Parameter Sets: FileContentDependencyRemoteScript
+Parameter Sets: ScriptBlock
 Aliases:
 
 Required: True
@@ -313,7 +214,7 @@ The path of the local script
 
 ```yaml
 Type: String
-Parameter Sets: FileContentDependencyLocalScript, NoDependencyLocalScript, IsoImageDependencyLocalScript
+Parameter Sets: LocalScript
 Aliases:
 
 Required: True
@@ -365,4 +266,3 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## NOTES
 
 ## RELATED LINKS
-

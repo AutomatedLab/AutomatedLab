@@ -12,5 +12,5 @@ To skip large files or entire ISOs for certain products like e.g. Exchange or Sk
 
 Now you can simply use the other cmdlets provided by AutomatedLab to access files from the file share:
 
-* `$postInstallActivity = Get-LabPostInstallationActivity -ScriptFileName PrepareRootDomain.ps1 -DependencyFolder $labSources\PostInstallationActivities\PrepareRootDomain`
+* `$postInstallActivity = Get-LabPostInstallationActivity -ScriptFilePath $labSources\PostInstallationActivities\PrepareRootDomain\PrepareRootDomain.ps1 -DependencyFolder $labSources\PostInstallationActivities\PrepareRootDomain`
 * `Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePackages\Notepad++.exe -CommandLine /S -AsJob`

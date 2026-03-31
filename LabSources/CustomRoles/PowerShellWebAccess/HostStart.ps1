@@ -5,7 +5,7 @@
     $ComputerName
 )
 
-$lab = Get-Lab
+Import-Lab -Name $data.Name -NoValidation -NoDisplay
 $vm = Get-LabVm -ComputerName $ComputerName
 $cert = 'none'
 

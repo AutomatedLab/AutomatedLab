@@ -4,28 +4,17 @@
     param (
         [string]$ActivityName = '<unnamed>',
 
-        [Parameter(Mandatory, ParameterSetName = 'ScriptBlockFileContentDependency', Position = 0)]
-        [Parameter(Mandatory, ParameterSetName = 'ScriptFileContentDependency', Position = 0)]
-        [Parameter(Mandatory, ParameterSetName = 'ScriptFileNameContentDependency', Position = 0)]
         [Parameter(Mandatory, ParameterSetName = 'Script', Position = 0)]
         [Parameter(Mandatory, ParameterSetName = 'ScriptBlock', Position = 0)]
         [Parameter(Mandatory, ParameterSetName = 'PostInstallationActivity', Position = 0)]
         [string[]]$ComputerName,
 
-        [Parameter(Mandatory, ParameterSetName = 'ScriptBlockFileContentDependency', Position = 1)]
         [Parameter(Mandatory, ParameterSetName = 'ScriptBlock', Position = 1)]
         [scriptblock]$ScriptBlock,
 
-        [Parameter(Mandatory, ParameterSetName = 'ScriptFileContentDependency')]
         [Parameter(Mandatory, ParameterSetName = 'Script')]
         [string]$FilePath,
 
-        [Parameter(Mandatory, ParameterSetName = 'ScriptFileNameContentDependency')]
-        [string]$FileName,
-
-        [Parameter(ParameterSetName = 'ScriptFileNameContentDependency')]
-        [Parameter(Mandatory, ParameterSetName = 'ScriptBlockFileContentDependency')]
-        [Parameter(Mandatory, ParameterSetName = 'ScriptFileContentDependency')]
         [string]$DependencyFolderPath,
 
         [Parameter(ParameterSetName = 'PostInstallationActivity')]
@@ -50,17 +39,11 @@
         [System.Management.Automation.FunctionInfo[]]$Function,
 
         [Parameter(ParameterSetName = 'ScriptBlock')]
-        [Parameter(ParameterSetName = 'ScriptBlockFileContentDependency')]
-        [Parameter(ParameterSetName = 'ScriptFileContentDependency')]
         [Parameter(ParameterSetName = 'Script')]
-        [Parameter(ParameterSetName = 'ScriptFileNameContentDependency')]
         [int]$Retries,
 
         [Parameter(ParameterSetName = 'ScriptBlock')]
-        [Parameter(ParameterSetName = 'ScriptBlockFileContentDependency')]
-        [Parameter(ParameterSetName = 'ScriptFileContentDependency')]
         [Parameter(ParameterSetName = 'Script')]
-        [Parameter(ParameterSetName = 'ScriptFileNameContentDependency')]
         [int]$RetryIntervalInSeconds,
 
         [int]$ThrottleLimit = 32,
@@ -79,9 +62,6 @@
 
     $parameterSetsWithRetries = 'Script',
         'ScriptBlock',
-        'ScriptFileContentDependency',
-        'ScriptBlockFileContentDependency',
-        'ScriptFileNameContentDependency',
         'PostInstallationActivity',
         'PreInstallationActivity'
 
@@ -245,7 +225,6 @@
                 }
 
                 if ($item.DependencyFolder.Value) { $param.Add('DependencyFolderPath', $item.DependencyFolder.Value) }
-                if ($item.ScriptFileName) { $param.Add('ScriptFileName',$item.ScriptFileName) }
                 if ($item.ScriptFilePath) { $param.Add('ScriptFilePath', $item.ScriptFilePath) }
                 if ($item.KeepFolder) { $param.Add('KeepFolder', $item.KeepFolder) }
                 if ($item.ActivityName) { $param.Add('ActivityName', $item.ActivityName) }
@@ -259,10 +238,9 @@
                     $param.Add('ThrottleLimit', $ThrottleLimit)
                 }
 
-                $scriptFullName = Join-Path -Path $param.DependencyFolderPath -ChildPath $param.ScriptFileName
-                if ($item.SerializedProperties -and (Test-Path -Path $scriptFullName))
+                if ($item.SerializedProperties -and (Test-Path -Path $param.ScriptFilePath))
                 {
-                    $script = Get-Command -Name $scriptFullName
+                    $script = Get-Command -Name $param.ScriptFilePath
                     $temp = Sync-Parameter -Command $script -Parameters ($item.SerializedProperties | ConvertFrom-PSFClixml -ErrorAction SilentlyContinue)
 
                     Add-VariableToPSSession -Session $session -PSVariable (Get-Variable -Name temp)
@@ -271,7 +249,7 @@
 
                 if ($item.IsCustomRole)
                 {
-                    if (Test-Path -Path $scriptFullName)
+                    if (Test-Path -Path $param.ScriptFilePath)
                     {
                         $param.PassThru = $true
                         $results += Invoke-LWCommand @param

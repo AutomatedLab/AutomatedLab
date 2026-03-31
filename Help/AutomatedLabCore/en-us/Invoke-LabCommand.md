@@ -36,33 +36,6 @@ Invoke-LabCommand [-ActivityName <String>] [-ComputerName] <String[]> -FilePath 
  [-ThrottleLimit <Int32>] [-AsJob] [-PassThru] [-NoDisplay] [-IgnoreAzureLabSources] [<CommonParameters>]
 ```
 
-### ScriptFileNameContentDependency
-```
-Invoke-LabCommand [-ActivityName <String>] [-ComputerName] <String[]> -FileName <String>
- [-DependencyFolderPath <String>] [-ArgumentList <Object[]>] [-DoNotUseCredSsp] [-UseLocalCredential]
- [-Credential <PSCredential>] [-Variable <PSVariable[]>] [-Function <FunctionInfo[]>] [-Retries <Int32>]
- [-RetryIntervalInSeconds <Int32>] [-ThrottleLimit <Int32>] [-AsJob] [-PassThru] [-NoDisplay]
- [-IgnoreAzureLabSources] [<CommonParameters>]
-```
-
-### ScriptFileContentDependency
-```
-Invoke-LabCommand [-ActivityName <String>] [-ComputerName] <String[]> -FilePath <String>
- -DependencyFolderPath <String> [-ArgumentList <Object[]>] [-DoNotUseCredSsp] [-UseLocalCredential]
- [-Credential <PSCredential>] [-Variable <PSVariable[]>] [-Function <FunctionInfo[]>] [-Retries <Int32>]
- [-RetryIntervalInSeconds <Int32>] [-ThrottleLimit <Int32>] [-AsJob] [-PassThru] [-NoDisplay]
- [-IgnoreAzureLabSources] [<CommonParameters>]
-```
-
-### ScriptBlockFileContentDependency
-```
-Invoke-LabCommand [-ActivityName <String>] [-ComputerName] <String[]> [-ScriptBlock] <ScriptBlock>
- -DependencyFolderPath <String> [-ArgumentList <Object[]>] [-DoNotUseCredSsp] [-UseLocalCredential]
- [-Credential <PSCredential>] [-Variable <PSVariable[]>] [-Function <FunctionInfo[]>] [-Retries <Int32>]
- [-RetryIntervalInSeconds <Int32>] [-ThrottleLimit <Int32>] [-AsJob] [-PassThru] [-NoDisplay]
- [-IgnoreAzureLabSources] [<CommonParameters>]
-```
-
 ## DESCRIPTION
 Invokes a script block or a script file on a lab VM with the ability to add function definitions and variables for the script block to use.
 Scripts and script blocks can also use a dependency folder containing dependencies.
@@ -206,22 +179,10 @@ The folder containing the files the script or the script block depend on
 
 ```yaml
 Type: String
-Parameter Sets: ScriptFileNameContentDependency
+Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-```yaml
-Type: String
-Parameter Sets: ScriptFileContentDependency, ScriptBlockFileContentDependency
-Aliases:
-
-Required: True
 Position: Named
 Default value: None
 Accept pipeline input: False
@@ -243,27 +204,12 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -FileName
-The script file to execute
-
-```yaml
-Type: String
-Parameter Sets: ScriptFileNameContentDependency
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -FilePath
 The script file path if a script file should be used
 
 ```yaml
 Type: String
-Parameter Sets: Script, ScriptFileContentDependency
+Parameter Sets: Script
 Aliases:
 
 Required: True
@@ -368,7 +314,7 @@ The number of retries in case the script block fails
 
 ```yaml
 Type: Int32
-Parameter Sets: ScriptBlock, Script, ScriptFileNameContentDependency, ScriptFileContentDependency, ScriptBlockFileContentDependency
+Parameter Sets: ScriptBlock, Script
 Aliases:
 
 Required: False
@@ -383,7 +329,7 @@ The amount of seconds to wait between each retry
 
 ```yaml
 Type: Int32
-Parameter Sets: ScriptBlock, Script, ScriptFileNameContentDependency, ScriptFileContentDependency, ScriptBlockFileContentDependency
+Parameter Sets: ScriptBlock, Script
 Aliases:
 
 Required: False
@@ -398,7 +344,7 @@ The script block to execute on the machines
 
 ```yaml
 Type: ScriptBlock
-Parameter Sets: ScriptBlock, ScriptBlockFileContentDependency
+Parameter Sets: ScriptBlock
 Aliases:
 
 Required: True

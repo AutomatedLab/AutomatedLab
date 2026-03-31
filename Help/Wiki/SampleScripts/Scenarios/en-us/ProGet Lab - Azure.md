@@ -29,7 +29,7 @@ $PSDefaultParameterValues = @{
 }
 
 #DC
-$postInstallActivity = Get-LabPostInstallationActivity -ScriptFileName PrepareRootDomain.ps1 -DependencyFolder $labSources\PostInstallationActivities\PrepareRootDomain
+$postInstallActivity = Get-LabPostInstallationActivity -ScriptFilePath $labSources\PostInstallationActivities\PrepareRootDomain\PrepareRootDomain.ps1 -DependencyFolder $labSources\PostInstallationActivities\PrepareRootDomain
 Add-LabMachineDefinition -Name PGDC1 -Memory 1GB -Roles RootDC -IpAddress 192.168.110.10 -PostInstallationActivity $postInstallActivity
 
 #web server

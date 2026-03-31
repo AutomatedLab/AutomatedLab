@@ -14,7 +14,7 @@ Returns all existing virtual networks (switches) on a Hyper-V host
 
 ### ByName
 ```
-Get-LabVirtualNetwork [-Name <String>] [<CommonParameters>]
+Get-LabVirtualNetwork [-Name <String[]>] [<CommonParameters>]
 ```
 
 ### All
@@ -44,7 +44,7 @@ Default Switch 172.18.29.64/28
 The name of the virtual network.
 
 ```yaml
-Type: String
+Type: String[]
 Parameter Sets: ByName
 Aliases:
 

@@ -30,12 +30,12 @@ Set-LabInstallationCredential -Username Install -Password Somepass1
 
 #Now we define the domain controllers of the first forest. This forest has two child domains.
 $roles = Get-LabMachineRoleDefinition -Role RootDC
-$postInstallActivity = Get-LabPostInstallationActivity -ScriptFileName PrepareRootDomain.ps1 -DependencyFolder $labSources\PostInstallationActivities\PrepareRootDomain
+$postInstallActivity = Get-LabPostInstallationActivity -ScriptFilePath $labSources\PostInstallationActivities\PrepareRootDomain\PrepareRootDomain.ps1 -DependencyFolder $labSources\PostInstallationActivities\PrepareRootDomain
 Add-LabMachineDefinition -Name F1DC1 -IpAddress 192.168.41.10 -DnsServer1 192.168.41.10 `
     -DomainName forest1.net -Roles $roles -PostInstallationActivity $postInstallActivity
 
 $roles = Get-LabMachineRoleDefinition -Role FirstChildDC
-$postInstallActivity = Get-LabPostInstallationActivity -ScriptFileName 'New-ADLabAccounts 2.0.ps1' -DependencyFolder $labSources\PostInstallationActivities\PrepareFirstChildDomain
+$postInstallActivity = Get-LabPostInstallationActivity -ScriptFilePath "$labSources\PostInstallationActivities\PrepareFirstChildDomain\New-ADLabAccounts 2.0.ps1" -DependencyFolder $labSources\PostInstallationActivities\PrepareFirstChildDomain
 Add-LabMachineDefinition -Name F1ADC1 -IpAddress 192.168.41.11 -DnsServer1 192.168.41.10 `
     -DomainName a.forest1.net -Roles $roles -PostInstallationActivity $postInstallActivity
 
@@ -48,7 +48,7 @@ Set-LabInstallationCredential -Username Install -Password Somepass2
 
 #The next forest is hosted on a single domain controller
 $roles = Get-LabMachineRoleDefinition -Role RootDC
-$postInstallActivity = Get-LabPostInstallationActivity -ScriptFileName PrepareRootDomain.ps1 -DependencyFolder $labSources\PostInstallationActivities\PrepareRootDomain
+$postInstallActivity = Get-LabPostInstallationActivity -ScriptFilePath $labSources\PostInstallationActivities\PrepareRootDomain\PrepareRootDomain.ps1 -DependencyFolder $labSources\PostInstallationActivities\PrepareRootDomain
 Add-LabMachineDefinition -Name F2DC1 -IpAddress 192.168.41.20 -DnsServer1 192.168.41.20 `
     -DomainName forest2.net -Roles $roles -PostInstallationActivity $postInstallActivity
 
@@ -57,7 +57,7 @@ Set-LabInstallationCredential -Username Install -Password Somepass3
 
 #like the third forest - also just one D
 $roles = Get-LabMachineRoleDefinition -Role RootDC @{ DomainFunctionalLevel = 'Win2008R2'; ForestFunctionalLevel = 'Win2008R2' }
-$postInstallActivity = Get-LabPostInstallationActivity -ScriptFileName PrepareRootDomain.ps1 -DependencyFolder $labSources\PostInstallationActivities\PrepareRootDomain
+$postInstallActivity = Get-LabPostInstallationActivity -ScriptFilePath $labSources\PostInstallationActivities\PrepareRootDomain\PrepareRootDomain.ps1 -DependencyFolder $labSources\PostInstallationActivities\PrepareRootDomain
 Add-LabMachineDefinition -Name F3DC1 -IpAddress 192.168.41.30 -DnsServer1 192.168.41.30 `
     -DomainName forest3.net -Roles $roles -PostInstallationActivity $postInstallActivity
 
