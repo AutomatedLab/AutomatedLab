@@ -2,25 +2,16 @@
 {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory, ParameterSetName = 'FileContentDependencyRemoteScript')]
-        [Parameter(Mandatory, ParameterSetName = 'FileContentDependencyLocalScript')]
+        [Parameter(Mandatory, ParameterSetName = 'RemoteScript')]
+        [Parameter(Mandatory, ParameterSetName = 'LocalScript')]
         [string]$DependencyFolder,
 
-        [Parameter(Mandatory, ParameterSetName = 'IsoImageDependencyRemoteScript')]
-        [Parameter(Mandatory, ParameterSetName = 'IsoImageDependencyLocalScript')]
-        [string]$IsoImage,
-
-        [Parameter(ParameterSetName = 'FileContentDependencyRemoteScript')]
-        [Parameter(ParameterSetName = 'FileContentDependencyLocalScript')]
+        [Parameter(ParameterSetName = 'RemoteScript')]
+        [Parameter(ParameterSetName = 'LocalScript')]
         [Parameter(ParameterSetName = 'CustomRole')]
         [switch]$KeepFolder,
 
-        [Parameter(Mandatory, ParameterSetName = 'FileContentDependencyRemoteScript')]
-        [Parameter(Mandatory, ParameterSetName = 'IsoImageDependencyRemoteScript')]
-        [string]$ScriptFileName,
-
-        [Parameter(Mandatory, ParameterSetName = 'IsoImageDependencyLocalScript')]
-        [Parameter(Mandatory, ParameterSetName = 'FileContentDependencyLocalScript')]
+        [Parameter(Mandatory, ParameterSetName = 'LocalScript')]
         [string]$ScriptFilePath,
 
         [Parameter(ParameterSetName = 'CustomRole')]
@@ -49,7 +40,7 @@
 
     process
     {
-        if ($PSCmdlet.ParameterSetName -like 'FileContentDependency*')
+        if ($DependencyFolder)
         {
             $activity.DependencyFolder = $DependencyFolder
             $activity.KeepFolder = $KeepFolder.ToBool()
@@ -57,33 +48,17 @@
             {
                 $activity.ScriptFilePath = $ScriptFilePath
             }
-            else
-            {
-                $activity.ScriptFileName = $ScriptFileName
-            }
-        }
-        elseif ($PSCmdlet.ParameterSetName -like 'IsoImage*')
-        {
-            $activity.IsoImage = $IsoImage
-            if ($ScriptFilePath)
-            {
-                $activity.ScriptFilePath = $ScriptFilePath
-            }
-            else
-            {
-                $activity.ScriptFileName = $ScriptFileName
-            }
         }
         elseif ($PSCmdlet.ParameterSetName -eq 'CustomRole')
         {
             $activity.DependencyFolder = Join-Path -Path (Join-Path -Path (Get-LabSourcesLocation -Local) -ChildPath 'CustomRoles') -ChildPath $CustomRole
             $activity.KeepFolder = $KeepFolder.ToBool()
-            $activity.ScriptFileName = "$CustomRole.ps1"
+            $activity.ScriptFilePath = Join-Path -Path $activity.DependencyFolder -ChildPath "$CustomRole.ps1"
             $activity.IsCustomRole = $true
 
             #The next sections compares the given custom role properties with with the custom role parameters.
             #Custom role parameters are taken form the main role script as well as the HostStart.ps1 and the HostEnd.ps1
-            $scripts = $activity.ScriptFileName, 'HostStart.ps1', 'HostEnd.ps1'
+            $scripts = "$CustomRole.ps1", 'HostStart.ps1', 'HostEnd.ps1'
             $unknownParameters = New-Object System.Collections.Generic.List[string]
 
             foreach ($script in $scripts)

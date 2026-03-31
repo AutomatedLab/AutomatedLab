@@ -21,7 +21,7 @@ $netAdapter = @()
 $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch $labName -Ipv4Address 192.168.130.10
 $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch 'Default Switch' -UseDhcp
 $postInstallActivity = @()
-$postInstallActivity += Get-LabPostInstallationActivity -ScriptFileName PrepareRootDomain.ps1 -DependencyFolder $labSources\PostInstallationActivities\PrepareRootDomain
+$postInstallActivity += Get-LabPostInstallationActivity -ScriptFilePath $labSources\PostInstallationActivities\PrepareRootDomain\PrepareRootDomain.ps1 -DependencyFolder $labSources\PostInstallationActivities\PrepareRootDomain
 Add-LabMachineDefinition -Name LINDC1 -Roles RootDC, Routing -Memory 1GB -PostInstallationActivity $postInstallActivity -NetworkAdapter $netAdapter -DomainName contoso.com
 
 # Make sure to download an ISO that contains the selected packages as well as SSSD,oddjob,oddjob-mkhomedir and adcli

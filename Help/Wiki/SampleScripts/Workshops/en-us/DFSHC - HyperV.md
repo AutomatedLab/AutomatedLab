@@ -42,7 +42,7 @@ Add-LabDiskDefinition -Name DFS-FS-C-D -DiskSizeInGb 60
 
 #Domain Controller
 $roles = Get-LabMachineRoleDefinition -Role RootDC @{ DomainFunctionalLevel = 'Win2008'; ForestFunctionalLevel = 'Win2008' }
-$postInstallActivity = Get-LabPostInstallationActivity -ScriptFileName 'New-ADLabAccounts 2.0.ps1' -DependencyFolder $labSources\PostInstallationActivities\PrepareFirstChildDomain
+$postInstallActivity = Get-LabPostInstallationActivity -ScriptFilePath "$labSources\PostInstallationActivities\PrepareFirstChildDomain\New-ADLabAccounts 2.0.ps1" -DependencyFolder $labSources\PostInstallationActivities\PrepareFirstChildDomain
 Add-LabMachineDefinition -Name DFS-DC1 -Roles $roles -IpAddress 192.168.56.9 -PostInstallationActivity $postInstallActivity
 
 #DFS Namespace Servers
