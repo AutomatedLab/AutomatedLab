@@ -105,7 +105,7 @@ foreach ($command in $commands)
         
         Context "Test parameter help for $commandName" {
             
-            $common = 'Debug', 'ErrorAction', 'ErrorVariable', 'InformationAction', 'InformationVariable', 'OutBuffer', 'OutVariable', 'PipelineVariable', 'Verbose', 'WarningAction', 'WarningVariable'
+            $common =  [System.Management.Automation.Internal.CommonParameters].GetProperties().Name
             
             $parameters = $command.ParameterSets.Parameters | Sort-Object -Property Name -Unique | Where-Object Name -notin $common
             $parameterNames = $parameters.Name
@@ -138,7 +138,7 @@ foreach ($command in $commands)
                     $helpType = if ($parameterHelp.parameterValue) { $parameterHelp.parameterValue.Trim() }
                     # Parameter type in Help should match code
                     It "help for $commandName has correct parameter type for $parameterName" -TestCases @{ helpType = $helpType; codeType = $codeType } {
-                        $helpType | Should -be $codeType
+                        $helpType -as [type] | Should -be ($codeType -as [type])
                     }
                 }
             }

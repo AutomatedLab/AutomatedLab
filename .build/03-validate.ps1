@@ -1,4 +1,9 @@
-if ($IsLinux)
+param (
+    [switch]
+    $IsLocalBuild
+)
+
+if (-not $IsLocalBuild.IsPresent -and $IsLinux)
 {
     # No validation on Linux yet, as we only test configurationitem usage
     return
