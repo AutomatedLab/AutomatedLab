@@ -38,7 +38,7 @@
             $null = $cert | Export-Certificate -FilePath "C:\$($machine.Name).cer" -Type CERT -Force
             try
             {
-                $rdsSettings = Get-CimInstance -ClassName Win32_TSGeneralSetting -Namespace ROOT\CIMV2\TerminalServices
+                $rdsSettings = Get-CimInstance -ClassName Win32_TSGeneralSetting -Namespace ROOT\CIMV2\TerminalServices -ErrorAction Stop
                 $rdsSettings.SSLCertificateSHA1Hash = $cert.Thumbprint
                 $rdsSettings | Set-CimInstance
             }
