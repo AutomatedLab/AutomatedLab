@@ -116,6 +116,13 @@ function New-LWProxmoxVM
     }
     Write-Verbose 'done.'
 
+    # Persist the assigned VMID in the lab definition so Get-LabVM can return it
+    $proxProps = $Machine.ProxmoxProperties
+    $proxProps['VmId'] = $nextVmId.ToString()
+    $Machine.ProxmoxProperties = $proxProps
+    Write-PSFMessage "Stored VmId '$nextVmId' in ProxmoxProperties for VM '$($Machine.ResourceName)'"
+    Export-Lab
+
     Write-PSFMessage "`tSettings RAM, start and stop actions"
 
     if ($Machine.MaxMemory)
