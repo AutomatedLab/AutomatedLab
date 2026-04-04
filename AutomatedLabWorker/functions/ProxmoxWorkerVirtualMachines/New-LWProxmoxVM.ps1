@@ -65,7 +65,7 @@ function New-LWProxmoxVM
     $vhdVolume = "C:\ProgramData\AutomatedLab\Labs\$($lab.Name)\Proxmox\VHD\$($Machine.ResourceName)"
     mkdir -Path $vhdVolume -Force | Out-Null
 
-    $nextVmId = (Get-LWProxmoxVM -IncludeTemplates | Sort-Object -Property vmid -Descending | Select-Object -First 1).vmid + 1
+    $nextVmId = (Get-LWProxmoxVM -IncludeTemplates -NoCache | Sort-Object -Property vmid -Descending | Select-Object -First 1).vmid + 1
 
     $param = @{
         Node        = $template.node
@@ -999,27 +999,43 @@ Stop-Transcript
     Start-LWProxmoxVM -ComputerName $Machine
 
     Write-Verbose "Waiting for QEMU Guest Agent to become available on VM '$($Machine.ResourceName)'..."
+    $agentTimeout = Get-LabConfigurationItem -Name ProxmoxAgentTimeout -Default 300
+    $agentTimer = [System.Diagnostics.Stopwatch]::StartNew()
     while ((New-PveNodesQemuAgentPing -Node $Machine.ProxmoxProperties.TargetNode -Vmid $nextVmId).StatusCode -ne 200)
     {
+        if ($agentTimer.Elapsed.TotalSeconds -ge $agentTimeout)
+        {
+            Write-PSFMessage -Level Warning -Message "QEMU Guest Agent on VM '$($Machine.ResourceName)' did not respond within $agentTimeout seconds. Continuing without agent-based provisioning."
+            break
+        }
         Start-Sleep -Seconds 1
     }
+    $agentTimer.Stop()
+    $agentAvailable = $agentTimer.Elapsed.TotalSeconds -lt $agentTimeout
     Write-Verbose 'done.'
 
-    $files = dir -Path $vhdVolume -File
-    foreach ($file in $files)
+    if ($agentAvailable)
     {
-        Write-PSFMessage "Copying file '$($file.Name)' to VM '$($Machine.ResourceName)'"
-        Send-LWProxmoxFileCopyToVM -SourceFilePath $file.FullName -ComputerName $Machine.ResourceName
+        $files = dir -Path $vhdVolume -File
+        foreach ($file in $files)
+        {
+            Write-PSFMessage "Copying file '$($file.Name)' to VM '$($Machine.ResourceName)'"
+            Send-LWProxmoxFileCopyToVM -SourceFilePath $file.FullName -ComputerName $Machine.ResourceName
+        }
+
+        # Set SkipRearm to prevent Sysprep from calling SLReArmWindows which can fail
+        # with 0xc004f075 (SL_E_SLC_STOPPING) when sppsvc is not yet fully started.
+        Write-PSFMessage "Setting SkipRearm on VM '$($Machine.ResourceName)' to prevent licensing rearm race condition"
+        Start-LWProxmoxAgentExecutionOnVM -ComputerName $Machine.ResourceName -Command 'reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SoftwareLicensingService" /v SkipRearm /t REG_DWORD /d 1 /f'
+        Start-Sleep -Seconds 2
+
+        Write-PSFMessage "Starting Sysprep on VM '$($Machine.ResourceName)'"
+        Start-LWProxmoxAgentExecutionOnVM -ComputerName $Machine.ResourceName -Command 'C:\Windows\system32\Sysprep\sysprep.exe /generalize /oobe /reboot'
     }
-
-    # Set SkipRearm to prevent Sysprep from calling SLReArmWindows which can fail
-    # with 0xc004f075 (SL_E_SLC_STOPPING) when sppsvc is not yet fully started.
-    Write-PSFMessage "Setting SkipRearm on VM '$($Machine.ResourceName)' to prevent licensing rearm race condition"
-    Start-LWProxmoxAgentExecutionOnVM -ComputerName $Machine.ResourceName -Command 'reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SoftwareLicensingService" /v SkipRearm /t REG_DWORD /d 1 /f'
-    Start-Sleep -Seconds 2
-
-    Write-PSFMessage "Starting Sysprep on VM '$($Machine.ResourceName)'"
-    Start-LWProxmoxAgentExecutionOnVM -ComputerName $Machine.ResourceName -Command 'C:\Windows\system32\Sysprep\sysprep.exe /generalize /oobe /reboot'
+    else
+    {
+        Write-PSFMessage -Level Warning -Message "Skipping agent-based provisioning (file copy, SkipRearm, Sysprep) for VM '$($Machine.ResourceName)' because QEMU Guest Agent is not available."
+    }
 
     #TODO: This needs to move to the New-LabVM function
     <#
