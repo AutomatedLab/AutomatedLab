@@ -35,11 +35,18 @@
             {
                 New-SelfSignedCertificate -DnsName $SANs -CertStoreLocation 'Cert:\LocalMachine\my'
             }
-            $rdsSettings = Get-CimInstance -ClassName Win32_TSGeneralSetting -Namespace ROOT\CIMV2\TerminalServices
-            $rdsSettings.SSLCertificateSHA1Hash = $cert.Thumbprint
-            $rdsSettings | Set-CimInstance
             $null = $cert | Export-Certificate -FilePath "C:\$($machine.Name).cer" -Type CERT -Force
-        } -Variable (Get-Variable machine) -AsJob -PassThru
+            try
+            {
+                $rdsSettings = Get-CimInstance -ClassName Win32_TSGeneralSetting -Namespace ROOT\CIMV2\TerminalServices -ErrorAction Stop
+                $rdsSettings.SSLCertificateSHA1Hash = $cert.Thumbprint
+                $rdsSettings | Set-CimInstance
+            }
+            catch
+            {
+                Write-Warning -Message "Failed to configure RDS certificate for $($machine.Name): $_"
+            }
+        } -Variable (Get-Variable -Name machine) -AsJob -PassThru
     }
 
     Wait-LWLabJob -Job $jobs -NoDisplay
@@ -53,5 +60,5 @@
     }
     Invoke-LabCommand -ComputerName $machine -ActivityName 'Removing RDS temporary certs' -NoDisplay -ScriptBlock {
         Remove-Item "C:\$($machine.Name).cer"
-    } -Variable (Get-Variable machine) -PassThru
+    } -Variable (Get-Variable -Name machine) -PassThru
 }
