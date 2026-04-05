@@ -7,7 +7,6 @@ function New-LWProxmoxVM
         [AutomatedLab.Machine]$Machine
     )
 
-    $PSBoundParameters.Add('ProgressIndicator', 1) #enables progress indicator
     if ($Machine.SkipDeployment)
     {
         return
@@ -42,6 +41,7 @@ function New-LWProxmoxVM
     }
 
     Write-PSFMessage "Using template '$($template.Name)' (VMID: $($template.VMID)) on Proxmox node '$($template.node)' to create VM '$($Machine.ResourceName)'."
+    Write-ScreenInfo -Message "Creating Proxmox machine '$($Machine.ResourceName)' from template '$($template.Name)' (VMID $($template.VMID))"
 
     $storage = Invoke-LWProxmoxCallWithRetry -ActivityName "Retrieve storage for VM '$($Machine.ResourceName)'" -ScriptBlock { Get-PveStorage }
     if ($storage.StatusCode -ne 200)
@@ -480,6 +480,7 @@ function New-LWProxmoxVM
     }
 
     $Machine.NetworkAdapters = $adapters
+    Export-Lab
 
     # Add the network adapters to the Proxmox VM
     $i = 0

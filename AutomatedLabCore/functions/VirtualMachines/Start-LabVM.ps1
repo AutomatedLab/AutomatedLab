@@ -171,7 +171,7 @@
         if ($hypervVMs)
         {
             Start-LWHypervVM -ComputerName $hypervVMs -DelayBetweenComputers $DelayBetweenComputers -ProgressIndicator $ProgressIndicator -PreDelaySeconds $PreDelaySeconds -PostDelaySeconds $PostDelaySeconds -NoNewLine:$NoNewline
-            
+
             foreach ($vm in $hypervVMs)
             {
                 $machineMetadata = Get-LWVMDescription -ComputerName $vm.ResourceName
@@ -200,7 +200,7 @@
                 $machineMetadata = Get-LWVMDescription -ComputerName $vm.ResourceName
                 if (($machineMetadata.InitState -band [AutomatedLab.LabVMInitState]::NetworkAdapterBindingCorrected) -ne [AutomatedLab.LabVMInitState]::NetworkAdapterBindingCorrected)
                 {
-                    Repair-LWHypervNetworkConfig -ComputerName $vm
+                    Repair-LWProxmoxNetworkConfig -ComputerName $vm
                     $machineMetadata.InitState = [AutomatedLab.LabVMInitState]::NetworkAdapterBindingCorrected
                     Set-LWVMDescription -Hashtable $machineMetadata -ComputerName $vm.ResourceName
                 }

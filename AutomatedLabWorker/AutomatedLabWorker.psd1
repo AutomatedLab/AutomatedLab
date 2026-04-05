@@ -92,6 +92,7 @@
         'Remove-LWVHDX',
         'Remove-LWVMWareVM',
         'Repair-LWHypervNetworkConfig',
+        'Repair-LWProxmoxNetworkConfig',
         'Restore-LWAzureVmSnapshot',
         'Restore-LWHypervVMSnapshot',
         'Restore-LWProxmoxVmSnapshot',
