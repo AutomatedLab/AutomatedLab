@@ -34,7 +34,7 @@ function Send-LWProxmoxFileCopyToVM
             continue
         }
 
-        $result = Invoke-LWProxmoxCallWithRetry -ActivityName "Send file to VM '$name'" -MaxRetries 5 -RetryDelaySeconds 15 -ScriptBlock { New-PveNodesQemuAgentFileWrite -Node $vm.node -Vmid $vm.VmId -File $destinationFilePath -Content $content }
+        $result = Invoke-LWProxmoxCallWithRetry -ActivityName "Send file to VM '$name'" -MaxRetries 8 -RetryDelaySeconds 3 -ProgressiveBackoff -ScriptBlock { New-PveNodesQemuAgentFileWrite -Node $vm.node -Vmid $vm.VmId -File $destinationFilePath -Content $content }
 
         if ($result.StatusCode -eq 200)
         {

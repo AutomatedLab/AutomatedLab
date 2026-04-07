@@ -1002,6 +1002,8 @@ Stop-Transcript
     Write-Verbose "Waiting for QEMU Guest Agent to become available on VM '$($Machine.ResourceName)'..."
     $agentTimeout = Get-LabConfigurationItem -Name ProxmoxAgentTimeout -Default 300
     $agentTimer = [System.Diagnostics.Stopwatch]::StartNew()
+    $previousEAP = $ErrorActionPreference
+    $ErrorActionPreference = 'SilentlyContinue'
     while ((New-PveNodesQemuAgentPing -Node $Machine.ProxmoxProperties.TargetNode -Vmid $nextVmId).StatusCode -ne 200)
     {
         if ($agentTimer.Elapsed.TotalSeconds -ge $agentTimeout)
@@ -1011,8 +1013,19 @@ Stop-Transcript
         }
         Start-Sleep -Seconds 1
     }
+    $ErrorActionPreference = $previousEAP
     $agentTimer.Stop()
     $agentAvailable = $agentTimer.Elapsed.TotalSeconds -lt $agentTimeout
+
+    if ($agentAvailable)
+    {
+        # Allow the QEMU guest agent to fully initialize file-operation handlers.
+        # On some Proxmox templates the agent responds to ping before it can process
+        # file-write or exec requests, causing avoidable retry delays.
+        $stabilizationSeconds = Get-LabConfigurationItem -Name ProxmoxAgentStabilizationSeconds -Default 10
+        Write-PSFMessage "QEMU Guest Agent responded after $([int]$agentTimer.Elapsed.TotalSeconds)s. Waiting ${stabilizationSeconds}s for agent to stabilize on VM '$($Machine.ResourceName)'."
+        Start-Sleep -Seconds $stabilizationSeconds
+    }
     Write-Verbose 'done.'
 
     if ($agentAvailable)

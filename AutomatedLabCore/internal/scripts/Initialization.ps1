@@ -167,6 +167,7 @@ Set-PSFConfig -Module 'AutomatedLab' -Name ProxmoxRetryCount -Value 3 -Initializ
 
 #Proxmox VM Settings
 Set-PSFConfig -Module 'AutomatedLab' -Name DefaultCpuType -Value x86-64-v3 -Initialize -Validation string -Description 'The default CPU type for Proxmox VMs'
+Set-PSFConfig -Module 'AutomatedLab' -Name ProxmoxAgentStabilizationSeconds -Value 10 -Initialize -Validation integer -Description 'Seconds to wait after QEMU Guest Agent responds to ping before sending files. Allows the agent to fully initialize file-operation handlers on slower templates.'
 
 #Admin Center
 Set-PSFConfig -Module 'AutomatedLab' -Name WacDownloadUrl -Value 'http://aka.ms/WACDownload' -Validation string -Initialize -Description 'Windows Admin Center Download URL'

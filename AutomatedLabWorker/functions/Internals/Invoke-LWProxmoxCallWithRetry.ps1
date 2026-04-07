@@ -13,7 +13,13 @@ function Invoke-LWProxmoxCallWithRetry
         [int]$MaxRetries = 3,
 
         [Parameter()]
-        [int]$RetryDelaySeconds = 10
+        [int]$RetryDelaySeconds = 10,
+
+        [Parameter()]
+        [int]$MaxDelaySeconds = 30,
+
+        [Parameter()]
+        [switch]$ProgressiveBackoff
     )
 
     for ($attempt = 1; $attempt -le $MaxRetries; $attempt++)
@@ -34,7 +40,15 @@ function Invoke-LWProxmoxCallWithRetry
             {
                 Write-PSFMessage -Message 'Proxmox connection lost. Reconnection was attempted by Test-LabProxmoxConnection.'
             }
-            Start-Sleep -Seconds $RetryDelaySeconds
+            $delay = if ($ProgressiveBackoff.IsPresent)
+            {
+                [math]::Min([int]($RetryDelaySeconds * [math]::Pow(2, $attempt - 1)), $MaxDelaySeconds)
+            }
+            else
+            {
+                $RetryDelaySeconds
+            }
+            Start-Sleep -Seconds $delay
         }
     }
 
