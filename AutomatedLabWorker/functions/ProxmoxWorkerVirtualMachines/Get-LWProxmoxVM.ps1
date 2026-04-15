@@ -65,7 +65,7 @@ function Get-LWProxmoxVM
 
             Write-ScreenInfo -Message "Retrieving VM(s) from Proxmox node '$($n)'" -Type Verbose
             Write-ScreenInfo -Message '.' -Type Verbose -NoNewLine
-            $result = Invoke-LWProxmoxCallWithRetry -ActivityName "Retrieve VMs from node '$n'" -ScriptBlock { Get-PveNodesQemu -Node $n }
+            $result = Invoke-LWProxmoxCallWithRetry -ActivityName "Retrieve VMs from node '$n'" -ScriptBlock { Get-PveNodesQemu -Node $n -Full $true }
             if ($result.StatusCode -ne 200)
             {
                 Write-Error "Failed to retrieve VM(s) from Proxmox node '$($n)': $($result.ReasonPhrase)"
@@ -79,9 +79,7 @@ function Get-LWProxmoxVM
             {
                 if (-not $NoStatusCurrent)
                 {
-                    Write-ScreenInfo -Message "Retrieving current status for VM '$($vm.name)' on Proxmox node '$n'" -Type Verbose
-                    $currentStatus = Invoke-LWProxmoxCallWithRetry -ActivityName "Get status for VM '$($vm.name)'" -ScriptBlock { Get-PveNodesQemuStatusCurrent -Node $n -Vmid $vm.vmid }
-                    $vm | Add-Member -Name CurrentStatus -MemberType NoteProperty -Value $currentStatus.Response.data
+                    $vm | Add-Member -Name CurrentStatus -MemberType NoteProperty -Value $vm
                 }
                 if (-not [string]::IsNullOrEmpty($vm.tags))
                 {
