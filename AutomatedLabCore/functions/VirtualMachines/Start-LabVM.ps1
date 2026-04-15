@@ -61,7 +61,10 @@
     {
         if ($PSCmdlet.ParameterSetName -eq 'ByName' -and -not $StartNextMachines -and -not $StartNextDomainControllers)
         {
-            $null = $lab.Machines | Where-Object Name -in $ComputerName | Foreach-Object { $vms.Add($_) }
+            foreach ($n in $ComputerName)
+            {
+                $lab.Machines | Where-Object Name -like $n | Foreach-Object { $vms.Add($_) }
+            }
         }
     }
 
