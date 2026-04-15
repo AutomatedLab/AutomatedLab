@@ -98,7 +98,7 @@
             $param = @{
                 ComputerName = $proxmoxVms
                 ErrorAction = 'SilentlyContinue'
-                ErrorVariable = 'proxmoxErrors '
+                ErrorVariable = 'proxmoxErrors'
             }
             Stop-LWProxmoxVM @param
         }
@@ -117,10 +117,10 @@
         if ($azureErrors) { $remainingTargets += $azureErrors.TargetObject }
         if ($proxmoxErrors) { $remainingTargets += $proxmoxErrors.TargetObject }
         if ($vmwareErrors) { $remainingTargets += $vmwareErrors.TargetObject }
-        
+
         $remainingTargets = if ($remainingTargets.Count -gt 0) {
             foreach ($remainingTarget in $remainingTargets)
-            { 
+            {
                 if ($remainingTarget -is [string])
                 {
                     $remainingTarget
@@ -143,7 +143,7 @@
                     Write-ScreenInfo "Unknown error in 'Stop-LabVM'. Cannot call 'Stop-LabVM2'" -Type Warning
                 }
             }
-            
+
         }
 
         if ($remainingTargets.Count -gt 0) {
