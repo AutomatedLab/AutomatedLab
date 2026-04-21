@@ -129,7 +129,7 @@
         }
         catch
         {
-            Write-Error -Message "There was an error creating the VMs: $($_.Exception.Message)." -Exception $_.Exception
+            Write-Error -Message "There was an error creating the VMs: $($_.Exception.Message)." -Exception $_.Exception -ErrorAction Stop
         }
         finally
         {
@@ -220,7 +220,7 @@
         }
         catch
         {
-            Write-Error -Message "There was an error creating the VMs: $($_.Exception.Message)." -Exception $_.Exception
+            Write-Error -Message "There was an error creating the VMs: $($_.Exception.Message)." -Exception $_.Exception -ErrorAction Stop
         }
         finally
         {
@@ -702,7 +702,7 @@
                 The timeout to wait for VMs to be accessible via PowerShell was reduced from 60 to 15
             minutes."
         }
-    
+
         if ($null -eq $DelayBetweenComputers)
         {
             $hypervMachineCount = (Get-LabVM -IncludeLinux | Where-Object HostType -eq HyperV).Count
