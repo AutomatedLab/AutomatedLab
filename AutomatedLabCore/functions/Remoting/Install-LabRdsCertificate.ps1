@@ -58,7 +58,8 @@
         Receive-File -SourceFilePath "C:\$($session.LabMachineName).cer" -DestinationFilePath $fPath -Session $session
         $null = Import-Certificate -FilePath $fPath -CertStoreLocation 'Cert:\LocalMachine\Root'
     }
-    Invoke-LabCommand -ComputerName $machine -ActivityName 'Removing RDS temporary certs' -NoDisplay -ScriptBlock {
-        Remove-Item "C:\$($machine.Name).cer"
-    } -Variable (Get-Variable -Name machine) -PassThru
+
+    Invoke-LabCommand -ComputerName $machines -ActivityName 'Removing RDS temporary certs' -NoDisplay -ScriptBlock {
+        Remove-Item -Path "C:\$($env:COMPUTERNAME).cer" -ErrorAction SilentlyContinue
+    }
 }
