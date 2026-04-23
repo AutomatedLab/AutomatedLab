@@ -84,9 +84,13 @@
                 ComputerName = $proxmoxVms
                 TimeoutInMinutes = $TimeoutInMinutes
                 ProgressIndicator = $ProgressIndicator
+                NoNewLine = $NoNewLine
+                StartMachinesWhileWaiting = $StartMachinesWhileWaiting
                 ErrorAction = 'SilentlyContinue'
                 ErrorVariable = 'proxmoxWaitError'
                 MonitoringStartTime = $MonitoringStartTime
+                MonitorJob = $MonitorJob
+                DoNotUseCredSsp = $DoNotUseCredSsp
             }
             Wait-LWProxmoxRestartVM @param
         }
