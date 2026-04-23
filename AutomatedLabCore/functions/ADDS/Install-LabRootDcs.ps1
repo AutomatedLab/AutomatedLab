@@ -54,7 +54,7 @@
     $jobs = @()
     if ($machines)
     {
-        Invoke-LabCommand -ComputerName $machines -ActivityName "Create folder '$AL_DeployDebugFolder' for debug info" -NoDisplay -ScriptBlock {            
+        Invoke-LabCommand -ComputerName $machines -ActivityName "Create folder '$AL_DeployDebugFolder' for debug info" -NoDisplay -ScriptBlock {
             $deployDebug = New-Item -ItemType Directory -Path $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder) -ErrorAction SilentlyContinue -Force
 
             $acl = Get-Acl -Path $deployDebug.FullName
@@ -166,6 +166,13 @@
         {
             $machine.HasDomainJoined = $true
         }
+
+        # Remove existing PSSessions to the DC machines before waiting for restart.
+        # During DC promotion, the machine reboots and the PSSession gets disconnected.
+        # PowerShell's auto-reconnection can interfere with the wait logic by generating
+        # errors when the reconnection times out (especially on Proxmox where VMs take
+        # longer to restart than the default 4-minute reconnection window).
+        Remove-LabPSSession -ComputerName $machines
 
         if ($lab.DefaultVirtualizationEngine -ne 'Azure')
         {

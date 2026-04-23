@@ -199,6 +199,10 @@
             $machine.HasDomainJoined = $true
         }
 
+        # Remove existing PSSessions to the child DC machines before waiting for restart.
+        # Same rationale as for RootDC - prevents disconnected session auto-reconnection errors.
+        Remove-LabPSSession -ComputerName $machines
+
         if ($lab.DefaultVirtualizationEngine -ne 'Azure')
         {
             Wait-LabVMRestart -ComputerName $machines.name -StartMachinesWhileWaiting $machinesToStart -ProgressIndicator 45 -TimeoutInMinutes $DcPromotionRestartTimeout -ErrorAction Stop -MonitorJob $jobs -NoNewLine
@@ -253,7 +257,7 @@
             $jobs += Sync-LabActiveDirectory -ComputerName $dc -ProgressIndicator 20 -AsJob -Passthru
         }
         Wait-LWLabJob -Job $jobs -ProgressIndicator 20 -NoDisplay -NoNewLine
-        
+
         foreach ($machine in $machines)
         {
             Reset-LabAdPassword -DomainName $machine.DomainName
