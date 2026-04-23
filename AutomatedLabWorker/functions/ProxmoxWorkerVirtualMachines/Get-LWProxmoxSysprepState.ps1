@@ -27,7 +27,7 @@ function Get-LWProxmoxVMSysprepState {
         [string[]]$ComputerName
     )
 
-    $results = Invoke-LabCommand -ActivityName 'Get Sysprep State' -ComputerName $ComputerName -ScriptBlock {
+    $results = Invoke-LabCommand -ActivityName 'Get Sysprep State' -ComputerName $ComputerName -NoDisplay -ScriptBlock {
         Get-ItemPropertyValue -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Setup\State -Name ImageState
     } -PassThru -UseLocalCredential
 
