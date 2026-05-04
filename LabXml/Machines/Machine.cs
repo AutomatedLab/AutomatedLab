@@ -159,7 +159,13 @@ namespace AutomatedLab
             set { maxMemory = value; }
         }
 
+        // The XmlSerializer must skip this property in both directions:
+        //   - serialization: avoids writing <Type>Unknown</Type> into Machines.xml / Lab.xml
+        //   - deserialization: prevents the setter (which throws NotImplementedException) from
+        //     being invoked when older lab files that still contain <Type> are imported.
+        // See https://github.com/AutomatedLab/AutomatedLab/issues/1836 and #1840.
         [Obsolete("No longer used in V2. Member still defined due to compatibility.")]
+        [XmlIgnore]
         public MachineTypes Type
         {
             get { return MachineTypes.Unknown; }
