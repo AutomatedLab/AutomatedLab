@@ -99,6 +99,8 @@ function Stop-LWProxmoxVM
         }
 
         $d = (Get-Date).AddMinutes($TimeoutInMinutes)
+        # Suppress progress bars from Invoke-RestMethod inside the PVE API module
+        $ProgressPreference = 'SilentlyContinue'
 
         do
         {

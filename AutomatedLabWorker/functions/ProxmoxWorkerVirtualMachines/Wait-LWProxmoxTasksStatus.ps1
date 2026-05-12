@@ -22,6 +22,8 @@ function Wait-LWProxmoxTasksStatus
     }
 
     $startTime = Get-Date
+    # Suppress progress bars from Invoke-RestMethod inside the PVE API module
+    $ProgressPreference = 'SilentlyContinue'
 
     $result = foreach ($id in $Upid)
     {
