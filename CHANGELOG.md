@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [5.61.0] - 2026-05-12
+
 ### Fixed
 
 - Issue with labs using NAT and defining a Gateway in which the gateway was incorrectly set to 0.0.0.0.
