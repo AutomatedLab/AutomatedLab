@@ -51,7 +51,10 @@ namespace AutomatedLab
             return path.GetHashCode();
         }
 
+        // Skipped by the XmlSerializer to keep the obsolete MachineTypes enum out of persisted
+        // ISO definition files. See https://github.com/AutomatedLab/AutomatedLab/issues/1836.
         [Obsolete("No longer used in V2. Member still defined due to compatibility.")]
+        [System.Xml.Serialization.XmlIgnore]
         public MachineTypes? ImageType
         {
             get { return imageType; }

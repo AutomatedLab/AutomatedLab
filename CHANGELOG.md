@@ -2,11 +2,17 @@
 
 ## [Unreleased]
 
+## [5.61.0] - 2026-05-12
+
 ### Fixed
 
 - Issue with labs using NAT and defining a Gateway in which the gateway was incorrectly set to 0.0.0.0.
 - Issue with AutoLogon when using Add-LabMachineDefinition -InstallationUserCredential. Local and domain accounts were confused (#1816).
+- Fixed `Install-LabRdsCertificate` failing when RDS CIM settings could not be configured, now gracefully handles errors (#1832).
+- Fixed `Install-LabRdsCertificate` cleanup of temporary `C:\<VMName>.cer` files: the `Remove-Item` call now uses `-ErrorAction SilentlyContinue` to suppress spurious "Cannot find path" errors, runs once per lab machine inside a `foreach` loop (previously only the last machine was cleaned up), and no longer uses `-PassThru`, which caused error records to surface twice on the host (#1832).
 - Fix `Get-LabVirtualNetwork` parameter `-Name` typed as `[string]` instead of `[string[]]`, which caused `Remove-Lab` to fail removing virtual network switches in multi-network labs.
+- Fixed `Write-ScreenInfo` in PSLog not resetting `$Global:PSLog_NoNewLine` when `-Type Verbose` or `-Type Debug` is used and the preference variable is `SilentlyContinue`, causing subsequent messages to lose their timestamp prefix.
+- Fixed `Import-Lab` / `Import-LabDefinition` failing with `No machines imported from file` on PowerShell 7 / .NET 8+ (#1836, #1840). The obsolete `Machine.Type` and `IsoImage.ImageType` properties are now annotated with `[XmlIgnore]`, so the `XmlSerializer` no longer writes `<Type>Unknown</Type>` into `Machines.xml` / `Lab.xml` and no longer invokes their `NotImplementedException`-throwing setters when importing existing lab files.
 
 ### Changed
 

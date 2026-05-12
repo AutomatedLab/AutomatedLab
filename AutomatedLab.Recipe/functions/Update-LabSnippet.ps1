@@ -19,7 +19,13 @@
             $metadata = Import-PowerShellDataFile -Path $sampleMeta -ErrorAction SilentlyContinue
         }
 
-        $scriptblock = [scriptblock]::Create((Get-Content -Path $samplescript.FullName -Raw))
+        $scriptblock = try {
+            [scriptblock]::Create((Get-Content -Path $samplescript.FullName -Raw -Encoding utf8))
+        } catch {
+            Write-ScreenInfo -Type Warning -Message "Skipping snippet import of '$($samplescript.Name)' due to issues creating a scriptblock from it."
+            Write-ScreenInfo -Type Verbose -Message "Error importing snippet $($samplescript.FullName): $($_.Exception.Message)"
+            continue
+        }
 
         New-LabSnippet -Name $metadata.Name -Description $metadata.Description -Tag $metadata.Tag -Type 'Sample' -ScriptBlock $scriptblock -NoExport -Force
     }
@@ -43,7 +49,13 @@
             $metadata = Import-PowerShellDataFile -Path $customroleMeta -ErrorAction SilentlyContinue
         }
 
-        $scriptblock = [scriptblock]::Create((Get-Content -Path $scriptfile -Raw))
+        $scriptblock = try {
+            [scriptblock]::Create((Get-Content -Path $scriptfile -Raw -Encoding utf8))
+        } catch {
+            Write-ScreenInfo -Type Warning -Message "Skipping snippet import of '$($samplescript.Name)' due to issues creating a scriptblock from it."
+            Write-ScreenInfo -Type Verbose -Message "Error importing snippet $($samplescript.FullName): $($_.Exception.Message)"
+            continue
+        }
 
         New-LabSnippet -Name $customrole.Name -Description $metadata.Description -Tag $metadata.Tag -Type 'CustomRole' -ScriptBlock $scriptblock -NoExport -Force
     }
@@ -95,7 +107,14 @@
     {
         $metadata = Import-PowerShellDataFile -Path $meta.FullName -ErrorAction SilentlyContinue
         $scriptfile = [IO.Path]::ChangeExtension($meta.FullName, 'ps1')
-        $scriptblock = [scriptblock]::Create((Get-Content -Path $scriptfile -Raw))
+        $scriptblock = try {
+            [scriptblock]::Create((Get-Content -Path $scriptfile -Raw -Encoding utf8))
+            } catch {
+            Write-ScreenInfo -Type Warning -Message "Skipping snippet import of '$($samplescript.Name)' due to issues creating a scriptblock from it."
+            Write-ScreenInfo -Type Verbose -Message "Error importing snippet $($samplescript.FullName): $($_.Exception.Message)"
+            continue
+        }
+
         if (-not $metadata) { continue }
 
         New-LabSnippet -Name $metadata.Name -Description $metadata.Description -Tag $metadata.Tag -Type $metadata.Type -ScriptBlock $scriptblock -NoExport -Force

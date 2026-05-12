@@ -36,7 +36,7 @@ body:
       label: Steps to reproduce the issue
       description: |
         Please add all PowerShell Code necessary to reproduce your issue here.
-      placeholder: Tell us what you see!
+      placeholder: Tell us what you did to get there!
       render: PowerShell
     validations:
       required: true

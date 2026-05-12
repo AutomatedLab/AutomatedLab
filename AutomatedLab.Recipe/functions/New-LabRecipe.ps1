@@ -98,7 +98,7 @@
 
     if ($PSCmdlet.ShouldProcess($recipeFileName, 'Storing recipe'))
     {
-        $labContent | ConvertTo-Json | Set-Content -Path $recipeFileName -NoNewline -Force
+        $labContent | ConvertTo-Json | Set-Content -Path $recipeFileName -NoNewline -Force -Encoding utf8
     }
 
     if ($PassThru) {$labContent}
