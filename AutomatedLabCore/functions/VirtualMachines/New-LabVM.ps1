@@ -115,12 +115,14 @@
                 }
                 else
                 {
-                    Write-ScreenInfo -Message "Could not create Proxmox machine '$rootDC'" -TaskEnd -Type Error
+                    Write-ScreenInfo -Message "Could not create Proxmox machine '$rootDC'" -Type Error
                 }
             }
-            Wait-LabVM -ComputerName $rootDCs #Stop and start is required to sync the time with the Proxmox host
+            Write-ScreenInfo -Message 'Waiting for machines to start up' -NoNewLine
+            Wait-LabVM -ComputerName $rootDCs -NoNewLine #Stop and start is required to sync the time with the Proxmox host
+            Write-ScreenInfo -Message 'done'
 
-            Repair-LWHypervNetworkConfig -ComputerName $rootDCs -ErrorAction SilentlyContinue
+            Repair-LWProxmoxNetworkConfig -ComputerName $rootDCs -ErrorAction SilentlyContinue
             #TODO: Is this still required?
             #Stop-LabVM -ComputerName $rootDCs -Wait
             #Start-LabVM -ComputerName $rootDCs -Wait
@@ -139,20 +141,21 @@
         {
             foreach ($firstChildDC in $firstChildDCs)
             {
-                Write-ScreenInfo -Message "Creating Proxmox machine '$firstChildDC'" -TaskStart -NoNewLine
                 $result = New-LWProxmoxVM -Machine $firstChildDC
                 if ($result -ne $false)
                 {
-                    Write-ScreenInfo -Message 'Done' -TaskEnd
+                    Write-ScreenInfo -Message 'Done'
                 }
                 else
                 {
-                    Write-ScreenInfo -Message "Could not create Proxmox machine '$firstChildDC'" -TaskEnd -Type Error
+                    Write-ScreenInfo -Message "Could not create Proxmox machine '$firstChildDC'" -Type Error
                 }
             }
-            Wait-LabVM -ComputerName $firstChildDCs
+            Write-ScreenInfo -Message 'Waiting for machines to start up' -NoNewLine
+            Wait-LabVM -ComputerName $firstChildDCs -NoNewLine
+            Write-ScreenInfo -Message 'done'
 
-            Repair-LWHypervNetworkConfig -ComputerName $firstChildDCs -ErrorAction SilentlyContinue
+            Repair-LWProxmoxNetworkConfig -ComputerName $firstChildDCs -ErrorAction SilentlyContinue
 
             $sysprepState = Get-LWProxmoxVMSysprepState -ComputerName $firstChildDCs
             if ($sysprepState | Where-Object SysprepState -ne 'IMAGE_STATE_COMPLETE')
@@ -168,21 +171,21 @@
         {
             foreach ($otherVM in $otherVMs)
             {
-                Write-ScreenInfo -Message "Creating Proxmox machine '$otherVM'" -TaskStart -NoNewLine
                 $result = New-LWProxmoxVM -Machine $otherVM
                 if ($result -ne $false)
                 {
-                    Write-ScreenInfo -Message 'Done' -TaskEnd
+                    Write-ScreenInfo -Message 'Done'
                 }
                 else
                 {
-                    Write-ScreenInfo -Message "Could not create Proxmox machine '$otherVM'" -TaskEnd -Type Error
+                    Write-ScreenInfo -Message "Could not create Proxmox machine '$otherVM'" -Type Error
                 }
             }
+            Write-ScreenInfo -Message 'Waiting for machines to start up' -NoNewLine
+            Wait-LabVM -ComputerName $otherVMs -NoNewLine
+            Write-ScreenInfo -Message 'done'
 
-            Wait-LabVM -ComputerName $otherVMs
-
-            Repair-LWHypervNetworkConfig -ComputerName $otherVMs -ErrorAction SilentlyContinue
+            Repair-LWProxmoxNetworkConfig -ComputerName $otherVMs -ErrorAction SilentlyContinue
 
             $sysprepState = Get-LWProxmoxVMSysprepState -ComputerName $otherVMs
             # As the machine's name is not yet set we likely run into the default retry behavior resulting in 3 entries returned. Hence, we get only the last one per machine.
