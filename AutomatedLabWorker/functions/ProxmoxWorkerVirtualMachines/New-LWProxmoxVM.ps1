@@ -1002,20 +1002,30 @@ Stop-Transcript
     Write-Verbose "Waiting for QEMU Guest Agent to become available on VM '$($Machine.ResourceName)'..."
     $agentTimeout = Get-LabConfigurationItem -Name ProxmoxAgentTimeout -Default 300
     $agentTimer = [System.Diagnostics.Stopwatch]::StartNew()
-    $previousEAP = $ErrorActionPreference
-    $ErrorActionPreference = 'SilentlyContinue'
-    while ((New-PveNodesQemuAgentPing -Node $Machine.ProxmoxProperties.TargetNode -Vmid $nextVmId).StatusCode -ne 200)
+    $agentReady = $false
+    # Suppress progress bars from Invoke-RestMethod inside the PVE API module
+    # to prevent fragmentation of progress-dot output streams.
+    $ProgressPreference = 'SilentlyContinue'
+    while (-not $agentReady)
     {
         if ($agentTimer.Elapsed.TotalSeconds -ge $agentTimeout)
         {
             Write-PSFMessage -Level Warning -Message "QEMU Guest Agent on VM '$($Machine.ResourceName)' did not respond within $agentTimeout seconds. Continuing without agent-based provisioning."
             break
         }
-        Start-Sleep -Seconds 1
+        try
+        {
+            $pingResult = New-PveNodesQemuAgentPing -Node $Machine.ProxmoxProperties.TargetNode -Vmid $nextVmId -ErrorAction Stop
+            if ($pingResult.StatusCode -eq 200) { $agentReady = $true }
+        }
+        catch
+        {
+            Write-Verbose "QEMU Guest Agent not ready on VM '$($Machine.ResourceName)' yet. Elapsed time: $([int]$agentTimer.Elapsed.TotalSeconds)s"
+        }
+        if (-not $agentReady) { Start-Sleep -Seconds 1 }
     }
-    $ErrorActionPreference = $previousEAP
     $agentTimer.Stop()
-    $agentAvailable = $agentTimer.Elapsed.TotalSeconds -lt $agentTimeout
+    $agentAvailable = $agentReady
 
     if ($agentAvailable)
     {
