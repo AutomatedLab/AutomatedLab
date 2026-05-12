@@ -14,7 +14,7 @@ Waits for Proxmox virtual machines to restart
 ## SYNTAX
 
 ```
-Wait-LWProxmoxRestartVM [-ComputerName] <String[]> [[-TimeoutInMinutes] <Double>] [[-ProgressIndicator] <Int32>] [-MonitoringStartTime] <DateTime> [-DoNotUseCredSsp] [-NoNewLine] [<CommonParameters>]
+Wait-LWProxmoxRestartVM [-ComputerName] <String[]> [[-TimeoutInMinutes] <Double>] [[-ProgressIndicator] <Int32>] [-MonitoringStartTime] <DateTime> [[-MonitorJob] <Job[]>] [[-StartMachinesWhileWaiting] <Machine[]>] [-DoNotUseCredSsp] [-NoNewLine] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -135,6 +135,38 @@ Aliases:
 Required: False
 Position: Named
 Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -MonitorJob
+
+Keep monitoring one or more jobs until the timeout is reached or all VMs have restarted. Failed jobs are inspected for AL_CRITICAL or AL_ERROR markers.
+
+```yaml
+Type: Job[]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 4
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -StartMachinesWhileWaiting
+
+Indicates that other machines can be started while waiting for the monitored machines to restart
+
+```yaml
+Type: Machine[]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 5
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
