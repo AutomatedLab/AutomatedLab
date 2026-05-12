@@ -40,7 +40,7 @@ function Connect-LabProxmoxCluster
         Write-ScreenInfo -Message "Connecting to Proxmox cluster at '$($script:connectionData.HostName):$($script:connectionData.Port)'" -Type Verbose
         Connect-PveCluster -HostsAndPorts "$($script:connectionData.HostName):$($script:connectionData.Port)" -Credential $script:connectionData.Credential -SkipCertificateCheck | Out-Null
         $script:connectionData.TicketTimestamp = Get-Date
-        Write-ScreenInfo -Message "Successfully connected to Proxmox cluster at '$($script:connectionData.HostName):$($script:connectionData.Port)'" -Type Info
+        Write-ScreenInfo -Message "Successfully connected to Proxmox cluster at '$($script:connectionData.HostName):$($script:connectionData.Port)'" -Type Verbose
     }
     catch
     {

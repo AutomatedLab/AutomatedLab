@@ -26,12 +26,12 @@ function Test-LabProxmoxConnection
 
             for ($attempt = 1; $attempt -le $maxRetries; $attempt++)
             {
-                Write-ScreenInfo -Message "Proxmox API returned status $($result.StatusCode). Reconnection attempt $attempt of $maxRetries..." -Type Warning
+                Write-ScreenInfo -Message "Proxmox API returned status $($result.StatusCode). Reconnection attempt $attempt of $maxRetries..." -Type Verbose
 
                 if ($attempt -gt 1)
                 {
                     $delay = $retryDelays[$attempt - 1]
-                    Write-ScreenInfo -Message "Waiting $delay seconds before retry..." -Type Warning
+                    Write-ScreenInfo -Message "Waiting $delay seconds before retry..." -Type Verbose
                     Start-Sleep -Seconds $delay
                 }
 
@@ -40,7 +40,7 @@ function Test-LabProxmoxConnection
                 $result = Get-PveClusterStatus -ErrorAction SilentlyContinue
                 if ($result.StatusCode -eq 200)
                 {
-                    Write-ScreenInfo -Message 'Successfully reconnected to Proxmox cluster.' -Type Info
+                    Write-ScreenInfo -Message 'Successfully reconnected to Proxmox cluster.' -Type Verbose
                     return $true
                 }
             }
