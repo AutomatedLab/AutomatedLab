@@ -24,6 +24,10 @@ function Invoke-LWProxmoxCallWithRetry
 
     for ($attempt = 1; $attempt -le $MaxRetries; $attempt++)
     {
+        # Suppress progress bars from Invoke-RestMethod inside the Proxmox API module.
+        # Without this, the progress output fragments progress-dot streams into
+        # individual lines during long-running wait loops (e.g. DC restart waits).
+        $ProgressPreference = 'SilentlyContinue'
         $result = & $ScriptBlock
 
         if ($result.StatusCode -eq 200)
