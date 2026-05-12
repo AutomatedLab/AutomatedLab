@@ -160,6 +160,15 @@
             $machinesToStart += Get-LabVM | Where-Object { -not $_.IsDomainJoined }
         }
 
+        # On Proxmox, VMs are created in stages (rootDC first, then firstChildDC, then others).
+        # Filter out machines that haven't been created on the hypervisor yet to avoid
+        # 'VmIdOrName null' errors when Start-LabVM is called for non-existent VMs.
+        if ($lab.DefaultVirtualizationEngine -eq 'Proxmox')
+        {
+            $existingProxmoxVMs = (Get-LWProxmoxVM -NoCache -NoError).Name
+            $machinesToStart = @($machinesToStart | Where-Object { $_.ResourceName -in $existingProxmoxVMs })
+        }
+
         # Creating sessions from a Linux host requires the correct user name.
         # By setting HasDomainJoined to $true we ensure that not the local, but the domain admin cred is returned
         foreach ($machine in $machines)
@@ -167,12 +176,11 @@
             $machine.HasDomainJoined = $true
         }
 
-        # Remove existing PSSessions to the DC machines before waiting for restart.
-        # During DC promotion, the machine reboots and the PSSession gets disconnected.
-        # PowerShell's auto-reconnection can interfere with the wait logic by generating
-        # errors when the reconnection times out (especially on Proxmox where VMs take
-        # longer to restart than the default 4-minute reconnection window).
-        Remove-LabPSSession -ComputerName $machines
+        # NOTE: Do NOT call Remove-LabPSSession here! The DC promotion job
+        # (Invoke-LabCommand -AsJob) is still running on the cached PSSession.
+        # Removing the session would kill the job immediately. The session will
+        # be cleaned up naturally when the DC reboots after promotion, and
+        # Wait-LWProxmoxRestartVM handles stale session cleanup after the job completes.
 
         if ($lab.DefaultVirtualizationEngine -ne 'Azure')
         {
