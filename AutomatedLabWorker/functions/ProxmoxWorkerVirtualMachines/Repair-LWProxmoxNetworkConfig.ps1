@@ -16,7 +16,8 @@ function Repair-LWProxmoxNetworkConfig
         return
     }
 
-    Wait-LabVM -ComputerName $machines -NoNewLine
+    # Wait-LabVM is not called here because the caller (New-LabVM) already
+    # waited for the machines to start up before invoking this function.
 
     # If MAC addresses are empty in the lab definition, retrieve them from the Proxmox VM config
     $needsExport = $false
