@@ -11,9 +11,12 @@ function Wait-LWProxmoxRestartVM {
 
         [switch]$NoNewLine,
 
-        [Parameter(Mandatory)]
         [datetime]
-        $MonitoringStartTime
+        $MonitoringStartTime = (Get-Date),
+
+        [System.Management.Automation.Job[]]$MonitorJob,
+
+        [AutomatedLab.Machine[]]$StartMachinesWhileWaiting
     )
 
     #required to suporess verbose messages, warnings and errors
@@ -21,58 +24,87 @@ function Wait-LWProxmoxRestartVM {
 
     Write-LogFunctionEntry
 
-    #TODO: Add Proxmox config item
-    $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
-
-    $start = $MonitoringStartTime.ToUniversalTime()
+    $start = (Get-Date)
 
     Write-PSFMessage -Message "Starting monitoring the servers at '$start'"
 
     $machines = Get-LabVM -ComputerName $ComputerName
 
-    $cmd = {
-        param (
-            [datetime]$Start
-        )
-
-        $Start = $Start.ToLocalTime()
-
-        (Get-CimInstance -ClassName Win32_OperatingSystem).LastBootupTime -ge $Start
-    }
+    # Track initial state - mark all machines as not yet stopped
+    $machines | Add-Member -Name HasStopped -MemberType NoteProperty -Value $false -Force
 
     $ProgressIndicatorTimer = (Get-Date)
 
+    # Phase 1: Use Proxmox API to detect when each VM has stopped (rebooting).
+    # This avoids relying on WinRM which is unavailable during reboot and whose
+    # disconnected-session auto-reconnection can cause cascading errors.
     do {
-        $machines = foreach ($machine in $machines) {
-            if (((Get-Date) - $ProgressIndicatorTimer).TotalSeconds -ge $ProgressIndicator) {
-                Write-ProgressIndicator
-                $ProgressIndicatorTimer = (Get-Date)
-            }
+        if (((Get-Date) - $ProgressIndicatorTimer).TotalSeconds -ge $ProgressIndicator) {
+            Write-ProgressIndicator
+            $ProgressIndicatorTimer = (Get-Date)
+        }
 
-            $hasRestarted = Invoke-LabCommand -ComputerName $machine -ActivityName WaitForRestartEvent -ScriptBlock $cmd -ArgumentList $start.Ticks -UseLocalCredential -DoNotUseCredSsp:$DoNotUseCredSsp -PassThru -Verbose:$false -NoDisplay -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+        # Check MonitorJob for failures (mirrors HyperV handler behavior)
+        if ($MonitorJob) {
+            foreach ($job in $MonitorJob) {
+                if ($job.State -eq 'Failed') {
+                    $result = $job | Receive-Job -ErrorVariable jobError
 
-            if (-not $hasRestarted) {
-                $events = Invoke-LabCommand -ComputerName $machine -ActivityName WaitForRestartEvent -ScriptBlock $cmd -ArgumentList $start.Ticks -DoNotUseCredSsp:$DoNotUseCredSsp -PassThru -Verbose:$false -NoDisplay -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
-            }
+                    $criticalError = $jobError | Where-Object { $_.Exception.Message -like 'AL_CRITICAL*' }
+                    if ($criticalError) { throw $criticalError.Exception }
 
-            if ($hasRestarted) {
-                Write-PSFMessage -Message "VM '$machine' has been restarted"
-            }
-            else {
-                Start-Sleep -Seconds 10
-                $machine
+                    $nonCriticalErrors = $jobError | Where-Object { $_.Exception.Message -like 'AL_ERROR*' }
+                    foreach ($nonCriticalError in $nonCriticalErrors) {
+                        Write-PSFMessage "There was a non-critical error in job $($job.ID) '$($job.Name)' with the message: '($nonCriticalError.Exception.Message)'"
+                    }
+                }
             }
         }
+
+        # Start additional machines while waiting (mirrors HyperV handler behavior)
+        if ($StartMachinesWhileWaiting) {
+            Start-LabVM -ComputerName $StartMachinesWhileWaiting[0] -NoNewline:$NoNewLine
+            $StartMachinesWhileWaiting = $StartMachinesWhileWaiting | Where-Object { $_ -ne $StartMachinesWhileWaiting[0] }
+        }
+
+        $vmStatus = Get-LWProxmoxVMStatus -ComputerName $ComputerName -ErrorAction SilentlyContinue
+
+        foreach ($machine in $machines) {
+            if ($machine.HasStopped) { continue }
+
+            $status = if ($vmStatus) { $vmStatus[$machine.Name] } else { $null }
+            if ($status -eq 'Stopped') {
+                Write-PSFMessage -Message "VM '$($machine.Name)' has stopped (reboot in progress)"
+                $machine.HasStopped = $true
+            }
+        }
+
+        if (($machines | Where-Object { -not $_.HasStopped }).Count -gt 0) {
+            Start-Sleep -Seconds 5
+        }
     }
-    until ($machines.Count -eq 0 -or (Get-Date).ToUniversalTime().AddMinutes( - $TimeoutInMinutes) -gt $start)
+    until (($machines | Where-Object { -not $_.HasStopped }).Count -eq 0 -or (Get-Date).AddMinutes(-$TimeoutInMinutes) -gt $start)
+
+    if (($machines | Where-Object { -not $_.HasStopped }).Count -gt 0) {
+        Write-PSFMessage -Message "Not all machines stopped within timeout. Proceeding to wait for them to come back online."
+    }
+    else {
+        Write-PSFMessage -Message "All machines have stopped: ($($machines.Name -join ', '))"
+    }
+
+    # Phase 2: Wait for the VMs to come back online via WinRM (same as HyperV handler).
+    # By this point, the original job sessions should have been cleaned up or timed out,
+    # so we can safely poll via WinRM without interference.
+    $remainingMinutes = [math]::Max(1, $TimeoutInMinutes - ((Get-Date) - $start).TotalMinutes)
+    Wait-LabVM -ComputerName $ComputerName -ProgressIndicator $ProgressIndicator -TimeoutInMinutes $remainingMinutes -DoNotUseCredSsp:$DoNotUseCredSsp -NoNewLine:$NoNewLine
 
     if (-not $NoNewLine) {
         Write-ProgressIndicatorEnd
     }
 
-    if ((Get-Date).ToUniversalTime().AddMinutes( - $TimeoutInMinutes) -gt $start) {
-        foreach ($machine in ($machines)) {
-            Write-Error -Message "Timeout while waiting for computers to restart. Computers '$machine' not restarted" -TargetObject $machine
+    if ((Get-Date).AddMinutes(-$TimeoutInMinutes) -gt $start) {
+        foreach ($machine in $machines) {
+            Write-Error -Message "Timeout while waiting for computers to restart. Computers '$($machine.Name)' not restarted" -TargetObject $machine.Name
         }
     }
 
