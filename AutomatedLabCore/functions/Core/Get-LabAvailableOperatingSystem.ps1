@@ -223,6 +223,14 @@
                 try { $proxmoxOs.Version = [AutomatedLab.Version]$versionTag } catch { }
             }
 
+            # Record the original Proxmox VM/template name so downstream callers
+            # (e.g. New-LWProxmoxVM) know which template to clone, analogous to
+            # VMWareImageName for vSphere deployments.
+            if ($template.Name)
+            {
+                $proxmoxOs.ProxmoxImageName = $template.Name
+            }
+
             $osList.Add($proxmoxOs)
         }
 
