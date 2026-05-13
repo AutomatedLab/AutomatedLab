@@ -104,7 +104,12 @@ function Get-LWProxmoxVM
         $vms = $vms | Where-Object { $_.Name -in $ComputerName }
     }
 
-    $vms = $vms | Sort-Object -Unique -Property Name
+    # PATCH: Proxmox VMs are uniquely identified by node+vmid, NOT by Name.
+    # The original `Sort-Object -Unique -Property Name` silently dropped
+    # templates that happen to share a Name (legal in Proxmox), causing
+    # Get-LabAvailableOperatingSystem -Proxmox to return non-deterministic
+    # results. See ProjectDagger debugging-insights for context.
+    $vms = $vms | Sort-Object -Property node, vmid -Unique
 
     if (-not $NoError.IsPresent -and $ComputerName.Count -gt 0 -and -not $vms)
     {
