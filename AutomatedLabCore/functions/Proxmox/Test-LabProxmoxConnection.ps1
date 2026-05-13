@@ -14,7 +14,14 @@ function Test-LabProxmoxConnection
         Connect-LabProxmoxCluster -RefreshExistingConnection
     }
 
-    $result = Get-PveClusterStatus -ErrorAction SilentlyContinue
+    # PATCH (ProjectDagger, 2026-05-13): probe with Get-PveVersion instead of
+    # Get-PveClusterStatus. Get-PveClusterStatus requires 'Sys.Audit' on '/',
+    # which API tokens do not have unless an admin grants it explicitly. The
+    # /version endpoint is the standard "is the API reachable and is my auth
+    # valid" probe and works for every authenticated principal (user or
+    # token) without any RBAC grants. This fixes the 50-second hang and the
+    # spurious 'no connection to the Proxmox cluster' for token sessions.
+    $result = Get-PveVersion -ErrorAction SilentlyContinue
 
     if ($result.StatusCode -ne 200)
     {
@@ -37,7 +44,7 @@ function Test-LabProxmoxConnection
 
                 Connect-LabProxmoxCluster -RefreshExistingConnection
 
-                $result = Get-PveClusterStatus -ErrorAction SilentlyContinue
+                $result = Get-PveVersion -ErrorAction SilentlyContinue
                 if ($result.StatusCode -eq 200)
                 {
                     Write-ScreenInfo -Message 'Successfully reconnected to Proxmox cluster.' -Type Verbose
