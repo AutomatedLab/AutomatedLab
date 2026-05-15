@@ -127,9 +127,13 @@
 
             Write-ScreenInfo -Message 'Done' -TaskEnd
         }
+        catch
+        {
+            Write-Error -Message "There was an error creating the VMs: $($_.Exception.Message)." -Exception $_.Exception -ErrorAction Stop
+        }
         finally
         {
-            Remove-Item -Path $labDiskDeploymentInProgressPath -Force
+            Remove-Item -Path $labDiskDeploymentInProgressPath -Force -ErrorAction SilentlyContinue
         }
     }
 
@@ -162,7 +166,7 @@
             $hostFileAddedEntries = 0
             foreach ($machine in ($Script:data.Machines | Where-Object { [string]::IsNullOrEmpty($_.FriendlyName) }))
             {
-                if ($machine.HostType -ne 'HyperV' -or (Get-LabConfigurationItem -Name SkipHostFileModification))
+                if ($machine.HostType -notin 'HyperV', 'Proxmox' -or (Get-LabConfigurationItem -Name SkipHostFileModification))
                 {
                     continue
                 }
@@ -196,7 +200,7 @@
                 New-LabVM -Name ($script:data.Machines | Where-Object SkipDeployment -eq $false) -CreateCheckPoints:$CreateCheckPoints
             }
 
-            if ($engine -eq 'Azure') {                
+            if ($engine -eq 'Azure') {
                 foreach ($network in $script:data.VirtualNetworks) {
                     $remoteNet = Get-AzVirtualNetwork -Name $network.ResourceName
                     foreach ($externalPeer in $network.PeeringVnetResourceIds) {
@@ -213,6 +217,10 @@
             Export-LabDefinition -Force -ExportDefaultUnattendedXml -Silent
 
             Write-ScreenInfo -Message 'Done' -TaskEnd
+        }
+        catch
+        {
+            Write-Error -Message "There was an error creating the VMs: $($_.Exception.Message)." -Exception $_.Exception -ErrorAction Stop
         }
         finally
         {
@@ -261,9 +269,26 @@
         $jobs = Invoke-LabCommand -PreInstallationActivity -ActivityName 'Pre-installation' -ComputerName $(Get-LabVM -Role RootDC | Where-Object { -not $_.SkipDeployment }) -PassThru -NoDisplay
         $jobs | Where-Object { $_ -is [System.Management.Automation.Job] } | Wait-Job | Out-Null
 
-        Write-ScreenInfo -Message "Machines with RootDC role to be installed: '$((Get-LabVM -Role RootDC).Name -join ', ')'"
-        Install-LabRootDcs -CreateCheckPoints:$CreateCheckPoints
-        
+        $rootDCs = Get-LabVM -Role RootDC
+        Write-ScreenInfo -Message "Machines with 'RootDC' role to be installed: '$($rootDCs.Name -join ', ')'"
+        if ($engine -eq 'Proxmox')
+        {
+            Write-ScreenInfo -Message "Machines with role 'RootDC' are already installed in a Proxmox deployment."
+            #For some reason, the sysprepped Proxmox machines need to be restarted once more, otherwise we get this error when connecting:
+            #'We can't sign you in with this credential because your domain isn't available. Make sure your device is connected to your organization's network and try again.'
+            $machinesToRestart = Get-LabVM | Where-Object { $_.DomainName -in $rootDCs.DomainName -and $_.Name -notin $rootDCs.Name -and (Get-LabVMStatus -ComputerName $_) -eq 'Started' }
+            if ($machinesToRestart.Count -gt 0)
+            {
+                Write-ScreenInfo -Message "Restarting dependent machines: '$($machinesToRestart.Name -join ', ')'" -NoNewLine
+                Restart-LabVM -ComputerName $machinesToRestart -Wait
+                Write-ScreenInfo -Message 'done'
+            }
+        }
+        else
+        {
+            Install-LabRootDcs -CreateCheckPoints:$CreateCheckPoints
+        }
+
         New-LabADSubnet
 
         if ((Get-Lab).VirtualNetworks.UseNat -contains $true) {
@@ -309,8 +334,24 @@
 
         $jobs = Invoke-LabCommand -PreInstallationActivity -ActivityName 'Pre-installation' -ComputerName $(Get-LabVM -Role FirstChildDC | Where-Object { -not $_.SkipDeployment }) -PassThru -NoDisplay
         $jobs | Where-Object { $_ -is [System.Management.Automation.Job] } | Wait-Job | Out-Null
-        Write-ScreenInfo -Message "Machines with FirstChildDC role to be installed: '$((Get-LabVM -Role FirstChildDC).Name -join ', ')'"
-        Install-LabFirstChildDcs -CreateCheckPoints:$CreateCheckPoints
+
+        $firstChildDCs = Get-LabVM -Role FirstChildDC
+        Write-ScreenInfo -Message "Machines with 'FirstChildDC' role to be installed: '$($firstChildDCs.Name -join ', ')'"
+        if ($engine -eq 'Proxmox')
+        {
+            Write-ScreenInfo -Message "Machines with role 'FirstChildDC' are already installed in a Proxmox deployment."
+            $machinesToRestart = Get-LabVM | Where-Object { $_.DomainName -in $firstChildDCs.DomainName -and $_.Name -notin $firstChildDCs.Name -and (Get-LabVMStatus -ComputerName $_) -eq 'Started' }
+            if ($machinesToRestart.Count -gt 0)
+            {
+                Write-ScreenInfo -Message "Restarting dependent machines: '$($machinesToRestart.Name -join ', ')'" -NoNewLine
+                Restart-LabVM -ComputerName $machinesToRestart -Wait
+            }
+            Write-ScreenInfo -Message 'done'
+        }
+        else
+        {
+            Install-LabFirstChildDcs -CreateCheckPoints:$CreateCheckPoints
+        }
 
         New-LabADSubnet
 
@@ -333,8 +374,17 @@
 
         $jobs = Invoke-LabCommand -PreInstallationActivity -ActivityName 'Pre-installation' -ComputerName $(Get-LabVM -Role DC | Where-Object { -not $_.SkipDeployment }) -PassThru -NoDisplay
         $jobs | Where-Object { $_ -is [System.Management.Automation.Job] } | Wait-Job | Out-Null
-        Write-ScreenInfo -Message "Machines with DC role to be installed: '$((Get-LabVM -Role DC).Name -join ', ')'"
-        Install-LabDcs -CreateCheckPoints:$CreateCheckPoints
+
+        $dcs = Get-LabVM -Role DC
+        Write-ScreenInfo -Message "Machines with 'DC' role to be installed: '$(($dcs.Name) -join ', ')'"
+        if ($engine -eq 'Proxmox')
+        {
+            Write-ScreenInfo -Message "Machines with role 'DC' are already installed in a Proxmox deployment."
+        }
+        else
+        {
+            Install-LabDcs -CreateCheckPoints:$CreateCheckPoints
+        }
 
         New-LabADSubnet
 
@@ -364,7 +414,7 @@
         $jobs = Invoke-LabCommand -PreInstallationActivity -ActivityName 'Pre-installation' -ComputerName (Get-LabVm -Filter { -not $_.SkipDeployment -and $_.Roles.Count -eq 0 }) -PassThru -NoDisplay
         $jobs | Where-Object { $_ -is [System.Management.Automation.Job] } | Wait-Job | Out-Null
     }
-    
+
     if (($FileServer -or $performAll) -and (Get-LabVM -Role FileServer))
     {
         Write-ScreenInfo -Message 'Installing File Servers' -TaskStart
@@ -395,7 +445,7 @@
 
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
-    
+
     if (($FailoverStorage -or $performAll) -and (Get-LabVM -Role FailoverStorage | Where-Object { -not $_.SkipDeployment }))
     {
         Write-ScreenInfo -Message 'Installing Failover Storage' -TaskStart
@@ -645,14 +695,14 @@
             $timeoutRemaining = 15
             Write-ScreenInfo -Type Warning -Message "There are $linuxHosts Linux hosts in the lab.
                 On Windows, those are installed from scratch and do not use differencing disks.
-        
+
                 If you did not connect them to an external switch or deploy a router in your lab,
                 AutomatedLab will not be able to reach your VMs, as PowerShell will not be installed.
 
                 The timeout to wait for VMs to be accessible via PowerShell was reduced from 60 to 15
             minutes."
         }
-    
+
         if ($null -eq $DelayBetweenComputers)
         {
             $hypervMachineCount = (Get-LabVM -IncludeLinux | Where-Object HostType -eq HyperV).Count
@@ -664,7 +714,7 @@
             else
             {
                 $DelayBetweenComputers = 0
-            }            
+            }
         }
 
         Write-ScreenInfo -Message 'Waiting for machines to start up...' -NoNewLine
@@ -721,18 +771,18 @@
     if ($InstallRdsCertificates -or $performAll)
     {
         Write-ScreenInfo -Message 'Installing RDS certificates of lab machines' -TaskStart
-        
+
         Install-LabRdsCertificate
-        
+
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
     if (($InstallSshKnownHosts -and (Get-LabVm).SshPublicKey) -or ($performAll -and (Get-LabVm).SshPublicKey))
     {
         Write-ScreenInfo -Message "Adding lab machines to $home/.ssh/known_hosts" -TaskStart
-        
+
         Install-LabSshKnownHost
-        
+
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
@@ -759,7 +809,7 @@
                 Write-PSFMessage "The loaded version of Pester $($m.Version) is not compatible with AutomatedLab. Unloading it." -Level Verbose
                 $m | Remove-Module
             }
-            
+
             Write-ScreenInfo -Type Verbose -Message "Testing deployment with Pester"
             $result = Invoke-LabPester -Lab (Get-Lab) -Show Normal -PassThru
             if ($result.Result -eq 'Failed')

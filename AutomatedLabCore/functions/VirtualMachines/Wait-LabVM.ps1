@@ -61,16 +61,17 @@
             if (-not ($IsLinux -or $IsMacOs)) { netsh.exe interface ip delete arpcache | Out-Null }
 
             #if called without using DoNotUseCredSsp and the machine is not yet configured for CredSsp, call Wait-LabVM again but with DoNotUseCredSsp. Wait-LabVM enables CredSsp if called with DoNotUseCredSsp switch.
-            if (-not $vm.SkipDeployment -and $lab.DefaultVirtualizationEngine -eq 'HyperV')
+            if (-not $vm.SkipDeployment -and $lab.DefaultVirtualizationEngine -in 'HyperV', 'Proxmox')
             {
-                $machineMetadata = Get-LWHypervVMDescription -ComputerName $vm.ResourceName
+                $machineMetadata = Get-LWVMDescription -ComputerName $vm.ResourceName
                 if (($machineMetadata.InitState -band [AutomatedLab.LabVMInitState]::EnabledCredSsp) -ne [AutomatedLab.LabVMInitState]::EnabledCredSsp -and -not $DoNotUseCredSsp)
                 {
                     Wait-LabVM -ComputerName $vm -TimeoutInMinutes $TimeoutInMinutes -PostDelaySeconds $PostDelaySeconds -ProgressIndicator $ProgressIndicator -DoNotUseCredSsp -NoNewLine:$NoNewLine
                 }
             }
 
-            $session = New-LabPSSession -ComputerName $vm -UseLocalCredential -Retries 1 -DoNotUseCredSsp:$DoNotUseCredSsp -ErrorAction SilentlyContinue
+            $useLocalCred = -not $vm.HasDomainJoined
+            $session = New-LabPSSession -ComputerName $vm -UseLocalCredential:$useLocalCred -Retries 1 -DoNotUseCredSsp:$DoNotUseCredSsp -ErrorAction SilentlyContinue
 
             if ($session)
             {
@@ -107,7 +108,7 @@
 
                     #do 5000 retries. This job is cancelled anyway if the timeout is reached
                     Write-Verbose "Trying to create session to '$ComputerName'"
-                    $session = New-LabPSSession -ComputerName $ComputerName -UseLocalCredential  -Retries 5000 -DoNotUseCredSsp:$DoNotUseCredSsp
+                    $session = New-LabPSSession -ComputerName $ComputerName -Retries 5000 -DoNotUseCredSsp:$DoNotUseCredSsp
 
                     return $ComputerName
                 } -ArgumentList $lab.Export(), $vm.Name, $DoNotUseCredSsp
@@ -142,11 +143,11 @@
             foreach ($machine in (Get-LabVM -ComputerName $completed))
             {
                 if ($machine.SkipDeployment -or $machine.HostType -ne 'HyperV') { continue }
-                $machineMetadata = Get-LWHypervVMDescription -ComputerName $machine.ResourceName
+                $machineMetadata = Get-LWVMDescription -ComputerName $machine.ResourceName
                 if ($machineMetadata.InitState -eq [AutomatedLab.LabVMInitState]::Uninitialized)
                 {
                     $machineMetadata.InitState = [AutomatedLab.LabVMInitState]::ReachedByAutomatedLab
-                    Set-LWHypervVMDescription -Hashtable $machineMetadata -ComputerName $machine.ResourceName
+                    Set-LWVMDescription -Hashtable $machineMetadata -ComputerName $machine.ResourceName
                     Enable-LabAutoLogon -ComputerName $ComputerName
                 }
 
@@ -193,7 +194,7 @@
                         Write-ScreenInfo "CredSsp could not be enabled on machine '$machine'" -Type Warning
                     }
 
-                    Set-LWHypervVMDescription -Hashtable $machineMetadata -ComputerName $(Get-LabVM -ComputerName $machine).ResourceName
+                    Set-LWVMDescription -Hashtable $machineMetadata -ComputerName $(Get-LabVM -ComputerName $machine).ResourceName
                 }
             }
 

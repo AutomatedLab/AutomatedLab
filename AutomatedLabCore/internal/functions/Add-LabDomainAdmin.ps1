@@ -32,7 +32,7 @@
         }
         catch
         {
-            #if adding the groups failed, this is executed propably in a child domain
+            #if adding the groups failed, this is executed probably in a child domain
         }
     }
 

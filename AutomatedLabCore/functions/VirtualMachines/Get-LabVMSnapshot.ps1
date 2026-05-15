@@ -54,6 +54,7 @@
     {
         'HyperV' { Get-LWHypervVMSnapshot @parameters}
         'Azure'  { Get-LWAzureVmSnapshot @parameters}
+        'Proxmox' { Get-LWProxmoxVMSnapshot @parameters }
         'VMWare' { Write-ScreenInfo -Type Warning -Message 'No VMWare snapshots possible, nothing will be listed'}
     }
 

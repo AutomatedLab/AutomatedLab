@@ -32,6 +32,11 @@
         $sessions = @()
         $lab = Get-Lab
 
+        if ($lab.DefaultVirtualizationEngine -eq 'Proxmox')
+        {
+            $Retries = 10
+        }
+
         #Due to a problem in Windows 10 not being able to reach VMs from the host
         if (-not ($IsLinux -or $IsMacOs)) { netsh.exe interface ip delete arpcache | Out-Null }
         $testPortTimeout = (Get-LabConfigurationItem -Name Timeout_TestPortInSeconds) * 1000
@@ -136,7 +141,7 @@
                     $param.UseSSL = $true
                 }
             }
-            elseif ($m.HostType -eq 'HyperV' -or $m.HostType -eq 'VMWare')
+            elseif ($m.HostType -in 'HyperV', 'VMWare', 'Proxmox')
             {
                 # DoNotUseGetHostEntryInNewLabPSSession is used when existing DNS is possible
                 # SkipHostFileModification is used when the local hosts file should not be used

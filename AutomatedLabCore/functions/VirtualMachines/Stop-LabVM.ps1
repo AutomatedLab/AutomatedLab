@@ -68,29 +68,59 @@
 
         $hypervVms = $machines | Where-Object HostType -eq 'HyperV'
         $azureVms = $machines | Where-Object HostType -eq 'Azure'
+        $proxmoxVms = $machines | Where-Object HostType -eq 'Proxmox'
         $vmwareVms = $machines | Where-Object HostType -eq 'VMWare'
 
         if ($hypervVms)
         {
-            Stop-LWHypervVM -ComputerName $hypervVms -TimeoutInMinutes $ShutdownTimeoutInMinutes -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewLine -ErrorAction SilentlyContinue
+            $param = @{
+                ComputerName = $hypervVms
+                TimeoutInMinutes = $ShutdownTimeoutInMinutes
+                ProgressIndicator = $ProgressIndicator
+                NoNewLine = $NoNewLine
+                ErrorVariable = 'hypervErrors'
+                ErrorAction = 'SilentlyContinue'
+            }
+            Stop-LWHypervVM @param
         }
         if ($azureVms)
         {
-            Stop-LWAzureVM -ComputerName $azureVms -ErrorVariable azureErrors -ErrorAction SilentlyContinue -StayProvisioned $KeepAzureVmProvisioned
+            $param = @{
+                ComputerName = $azureVms
+                StayProvisioned = $KeepAzureVmProvisioned
+                ErrorAction = 'SilentlyContinue'
+                ErrorVariable = 'azureErrors'
+            }
+            Stop-LWAzureVM @param
+        }
+        if ($proxmoxVms)
+        {
+            $param = @{
+                ComputerName = $proxmoxVms
+                ErrorAction = 'SilentlyContinue'
+                ErrorVariable = 'proxmoxErrors'
+            }
+            Stop-LWProxmoxVM @param
         }
         if ($vmwareVms)
         {
-            Stop-LWVMWareVM -ComputerName $vmwareVms -ErrorVariable vmwareErrors -ErrorAction SilentlyContinue
+            $param = @{
+                ComputerName = $vmwareVms
+                ErrorAction = 'SilentlyContinue'
+                ErrorVariable = 'vmwareErrors'
+            }
+            Stop-LWVMWareVM @param
         }
 
         $remainingTargets = @()
         if ($hypervErrors) { $remainingTargets += $hypervErrors.TargetObject }
         if ($azureErrors) { $remainingTargets += $azureErrors.TargetObject }
+        if ($proxmoxErrors) { $remainingTargets += $proxmoxErrors.TargetObject }
         if ($vmwareErrors) { $remainingTargets += $vmwareErrors.TargetObject }
-        
+
         $remainingTargets = if ($remainingTargets.Count -gt 0) {
             foreach ($remainingTarget in $remainingTargets)
-            { 
+            {
                 if ($remainingTarget -is [string])
                 {
                     $remainingTarget
@@ -113,7 +143,7 @@
                     Write-ScreenInfo "Unknown error in 'Stop-LabVM'. Cannot call 'Stop-LabVM2'" -Type Warning
                 }
             }
-            
+
         }
 
         if ($remainingTargets.Count -gt 0) {

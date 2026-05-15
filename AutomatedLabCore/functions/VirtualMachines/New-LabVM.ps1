@@ -30,9 +30,9 @@
         Write-LogFunctionExitWithError -Message $message
         return
     }
-    
+
     Write-ScreenInfo -Message 'Waiting for all machines to finish installing' -TaskStart
-    foreach ($machine in $machines.Where({$_.HostType -ne 'Azure'}))
+    foreach ($machine in $machines.Where({$_.HostType -notin 'Azure', 'Proxmox'}))
     {
         $fdvDenyWriteAccess = (Get-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Policies\Microsoft\FVE -Name FDVDenyWriteAccess -ErrorAction SilentlyContinue).FDVDenyWriteAccess
         if ($fdvDenyWriteAccess) {
@@ -83,10 +83,121 @@
 
             Start-LabVM -ComputerName $machine
         }
-        
+
         if ($fdvDenyWriteAccess) {
             Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Policies\Microsoft\FVE -Name FDVDenyWriteAccess -Value $fdvDenyWriteAccess
         }
+    }
+
+    if ($proxmoxVMs = $machines.Where({$_.HostType -eq 'Proxmox' -and -not $_.SkipDeployment }))
+    {
+        if (-not (Test-LabProxmoxConnection))
+        {
+            Write-ScreenInfo -Message 'There is no connection to Proxmox, cannot create VMs.' -Type Error
+            Write-Error 'There is no connection to Proxmox, cannot create VMs.' -ErrorAction Stop
+        }
+
+        $rootDCs = $proxmoxVMs.Where({$_.Roles.Name -contains 'RootDC'})
+        $firstChildDCs = $proxmoxVMs.Where({$_.Roles.Name -contains 'FirstChildDC'})
+        $otherVMs = $proxmoxVMs.Where({ $_.Roles.Name -notin 'RootDC', 'FirstChildDC' })
+
+        #-------------------------------------------------------------------
+
+        if ($rootDCs)
+        {
+            foreach ($rootDC in $rootDCs)
+            {
+                Write-ScreenInfo -Message "Creating Proxmox machine '$rootDC'" -TaskStart -NoNewLine
+                $result = New-LWProxmoxVM -Machine $rootDC
+                if ($result -ne $false)
+                {
+                    Write-ScreenInfo -Message 'Done' -TaskEnd
+                }
+                else
+                {
+                    Write-ScreenInfo -Message "Could not create Proxmox machine '$rootDC'" -Type Error
+                }
+            }
+            Write-ScreenInfo -Message 'Waiting for machines to start up' -NoNewLine
+            Wait-LabVM -ComputerName $rootDCs -NoNewLine #Stop and start is required to sync the time with the Proxmox host
+            Write-ScreenInfo -Message 'done'
+
+            Repair-LWProxmoxNetworkConfig -ComputerName $rootDCs -ErrorAction SilentlyContinue
+            #TODO: Is this still required?
+            #Stop-LabVM -ComputerName $rootDCs -Wait
+            #Start-LabVM -ComputerName $rootDCs -Wait
+
+            $sysprepState = Get-LWProxmoxVMSysprepState -ComputerName $rootDCs
+            if ($sysprepState | Where-Object SysprepState -ne 'IMAGE_STATE_COMPLETE')
+            {
+                Write-Error "The following Proxmox VMs did not complete sysprep: $($sysprepState | Where-Object SysprepState -ne 'IMAGE_STATE_COMPLETE' | Select-Object -ExpandProperty ComputerName -Unique -Join ', ')"
+            }
+            Install-LabRootDcs
+        }
+
+        #-------------------------------------------------------------------
+
+        if ($firstChildDCs)
+        {
+            foreach ($firstChildDC in $firstChildDCs)
+            {
+                $result = New-LWProxmoxVM -Machine $firstChildDC
+                if ($result -ne $false)
+                {
+                    Write-ScreenInfo -Message 'Done'
+                }
+                else
+                {
+                    Write-ScreenInfo -Message "Could not create Proxmox machine '$firstChildDC'" -Type Error
+                }
+            }
+            Write-ScreenInfo -Message 'Waiting for machines to start up' -NoNewLine
+            Wait-LabVM -ComputerName $firstChildDCs -NoNewLine
+            Write-ScreenInfo -Message 'done'
+
+            Repair-LWProxmoxNetworkConfig -ComputerName $firstChildDCs -ErrorAction SilentlyContinue
+
+            $sysprepState = Get-LWProxmoxVMSysprepState -ComputerName $firstChildDCs
+            if ($sysprepState | Where-Object SysprepState -ne 'IMAGE_STATE_COMPLETE')
+            {
+                Write-Error "The following Proxmox VMs did not complete sysprep: $($sysprepState | Where-Object SysprepState -ne 'IMAGE_STATE_COMPLETE' | Select-Object -ExpandProperty ComputerName -Unique -Join ', ')"
+            }
+            Install-LabFirstChildDcs
+        }
+
+        #-------------------------------------------------------------------
+
+        if ($otherVMs)
+        {
+            foreach ($otherVM in $otherVMs)
+            {
+                $result = New-LWProxmoxVM -Machine $otherVM
+                if ($result -ne $false)
+                {
+                    Write-ScreenInfo -Message 'Done'
+                }
+                else
+                {
+                    Write-ScreenInfo -Message "Could not create Proxmox machine '$otherVM'" -Type Error
+                }
+            }
+            Write-ScreenInfo -Message 'Waiting for machines to start up' -NoNewLine
+            Wait-LabVM -ComputerName $otherVMs -NoNewLine
+            Write-ScreenInfo -Message 'done'
+
+            Repair-LWProxmoxNetworkConfig -ComputerName $otherVMs -ErrorAction SilentlyContinue
+
+            $sysprepState = Get-LWProxmoxVMSysprepState -ComputerName $otherVMs
+            # As the machine's name is not yet set we likely run into the default retry behavior resulting in 3 entries returned. Hence, we get only the last one per machine.
+            $sysprepState = $sysprepState | Group-Object -Property ComputerName | ForEach-Object { $_.Group[-1] }
+
+            if ($sysprepState | Where-Object SysprepState -ne 'IMAGE_STATE_COMPLETE')
+            {
+                Write-Error "The following Proxmox VMs did not complete sysprep: $(($sysprepState | Where-Object SysprepState -ne 'IMAGE_STATE_COMPLETE' | Select-Object -ExpandProperty ComputerName -Unique) -Join ', ')"
+            }
+        }
+
+        Write-Host 'done.'
     }
 
     if ($lab.DefaultVirtualizationEngine -eq 'Azure')

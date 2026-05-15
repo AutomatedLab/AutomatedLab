@@ -96,15 +96,18 @@
                 @(Get-LabAzureResourceGroup -CurrentLab).Clone() | Remove-LabAzureResourceGroup -Force
             }
 
-            $labMachines = Get-LabVM -IncludeLinux | Where-Object HostType -eq 'HyperV' | Where-Object { -not $_.SkipDeployment }
+            $labMachines = Get-LabVM -IncludeLinux |
+            Where-Object HostType -in 'HyperV', 'Proxmox' |
+            Where-Object { -not $_.SkipDeployment }
+
             if ($labMachines)
             {
                 $labName = (Get-Lab).Name
 
                 $removeMachines = foreach ($machine in $labMachines)
                 {
-                    $machineMetadata = Get-LWHypervVMDescription -ComputerName $machine.ResourceName -ErrorAction SilentlyContinue
-                    $vm = Get-LWHypervVM -Name $machine.ResourceName -ErrorAction SilentlyContinue
+                    $machineMetadata = Get-LWVMDescription -ComputerName $machine.ResourceName -ErrorAction SilentlyContinue
+                    $vm = Get-LabVM -ComputerName $machine -ErrorAction SilentlyContinue
                     if (-not $machineMetadata)
                     {
                         Write-Error -Message "Cannot remove machine '$machine' because lab meta data could not be retrieved"
@@ -146,7 +149,7 @@
                         }
                     }
 
-                    if ($Script:data.Target.Path)
+                    if ($Script:data.Target.Path -and (Get-Lab).DefaultVirtualizationEngine -eq 'HyperV')
                     {
                         $diskPath = (Join-Path -Path $Script:data.Target.Path -ChildPath Disks)
                         #Only remove disks folder if empty
@@ -158,7 +161,7 @@
                 }
 
                 #Only remove folder for VMs if folder is empty
-                if ($Script:data.Target.Path -and (-not (Get-ChildItem -Path $Script:data.Target.Path)))
+                if ($Script:data.Target.Path -and (Get-Lab).DefaultVirtualizationEngine -eq 'HyperV' -and (Test-Path -Path $Script:data.Target.Path) -and (-not (Get-ChildItem -Path $Script:data.Target.Path)))
                 {
                     Remove-Item -Path $Script:data.Target.Path -Recurse -Force -Confirm:$false
                 }

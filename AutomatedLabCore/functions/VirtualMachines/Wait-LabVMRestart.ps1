@@ -45,27 +45,72 @@
     {
         $azureVms = $vms | Where-Object HostType -eq 'Azure'
         $hypervVms = $vms | Where-Object HostType -eq 'HyperV'
+        $proxmoxVms = $vms | Where-Object HostType -eq 'Proxmox'
         $vmwareVms = $vms | Where-Object HostType -eq 'VMWare'
 
         if ($azureVms)
         {
-            Wait-LWAzureRestartVM -ComputerName $azureVms -DoNotUseCredSsp:$DoNotUseCredSsp -TimeoutInMinutes $TimeoutInMinutes `
-            -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewLine -ErrorAction SilentlyContinue -ErrorVariable azureWaitError -MonitoringStartTime $MonitoringStartTime
+            $param = @{
+                ComputerName = $azureVms
+                DoNotUseCredSsp = $DoNotUseCredSsp
+                TimeoutInMinutes = $TimeoutInMinutes
+                ProgressIndicator = $ProgressIndicator
+                NoNewLine = $NoNewLine
+                ErrorAction = 'SilentlyContinue'
+                ErrorVariable = 'azureWaitError'
+                MonitoringStartTime = $MonitoringStartTime
+            }
+            Wait-LWAzureRestartVM @param
         }
 
         if ($hypervVms)
         {
-            Wait-LWHypervVMRestart -ComputerName $hypervVms -TimeoutInMinutes $TimeoutInMinutes -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewLine -StartMachinesWhileWaiting $StartMachinesWhileWaiting -ErrorAction SilentlyContinue -ErrorVariable hypervWaitError -MonitorJob $MonitorJob
+            $param = @{
+                ComputerName = $hypervVms
+                TimeoutInMinutes = $TimeoutInMinutes
+                ProgressIndicator = $ProgressIndicator
+                NoNewLine = $NoNewLine
+                StartMachinesWhileWaiting = $StartMachinesWhileWaiting
+                ErrorAction = 'SilentlyContinue'
+                ErrorVariable = 'hypervWaitError'
+                MonitorJob = $MonitorJob
+            }
+            Wait-LWHypervVMRestart @param
+        }
+
+        if ($proxmoxVms)
+        {
+            $param = @{
+                ComputerName = $proxmoxVms
+                TimeoutInMinutes = $TimeoutInMinutes
+                ProgressIndicator = $ProgressIndicator
+                NoNewLine = $NoNewLine
+                StartMachinesWhileWaiting = $StartMachinesWhileWaiting
+                ErrorAction = 'SilentlyContinue'
+                ErrorVariable = 'proxmoxWaitError'
+                MonitoringStartTime = $MonitoringStartTime
+                MonitorJob = $MonitorJob
+                DoNotUseCredSsp = $DoNotUseCredSsp
+            }
+            Wait-LWProxmoxRestartVM @param
         }
 
         if ($vmwareVms)
         {
-            Wait-LWVMWareRestartVM -ComputerName $vmwareVms -TimeoutInMinutes $TimeoutInMinutes -ProgressIndicator $ProgressIndicator -ErrorAction SilentlyContinue -ErrorVariable vmwareWaitError
+            $param = @{
+                 ComputerName = $vmwareVms
+                 TimeoutInMinutes = $TimeoutInMinutes
+                 ProgressIndicator = $ProgressIndicator
+                 ErrorAction = 'SilentlyContinue'
+                 ErrorVariable = 'vmwareWaitError'
+            }
+            Wait-LWVMWareRestartVM @param
         }
 
         $waitError = New-Object System.Collections.ArrayList
         if ($azureWaitError) { $waitError.AddRange($azureWaitError) }
         if ($hypervWaitError) { $waitError.AddRange($hypervWaitError) }
+        if ($proxmoxWaitError) { $waitError.AddRange($proxmoxWaitError) }
         if ($vmwareWaitError) { $waitError.AddRange($vmwareWaitError) }
 
         $waitError = $waitError | Where-Object { $_.Exception.Message -like 'Timeout while waiting for computers to restart*' }

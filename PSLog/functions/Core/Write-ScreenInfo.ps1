@@ -1,4 +1,4 @@
-﻿function Write-ScreenInfo
+function Write-ScreenInfo
 {
 
     param
@@ -78,73 +78,65 @@
     {
         if ($Global:PSLog_NoNewLine)
         {
+            # Continuation of an existing no-newline run.
+            # Only actually write (and keep the flag) if the message type is visible.
             switch ($Type)
             {
-                Error { Microsoft.PowerShell.Utility\Write-Host $Message -NoNewline -ForegroundColor Red }
+                Error   { Microsoft.PowerShell.Utility\Write-Host $Message -NoNewline -ForegroundColor Red }
                 Warning { Microsoft.PowerShell.Utility\Write-Host $Message -NoNewline -ForegroundColor DarkYellow }
-                Info { Microsoft.PowerShell.Utility\Write-Host $Message -NoNewline }
-                Debug { if ($DebugPreference -eq 'Continue') { Microsoft.PowerShell.Utility\Write-Host $Message -NoNewline -ForegroundColor Cyan } }
+                Info    { Microsoft.PowerShell.Utility\Write-Host $Message -NoNewline }
+                Debug   { if ($DebugPreference -eq 'Continue') { Microsoft.PowerShell.Utility\Write-Host $Message -NoNewline -ForegroundColor Cyan } }
                 Verbose { if ($VerbosePreference -eq 'Continue') { Microsoft.PowerShell.Utility\Write-Host $Message -NoNewline -ForegroundColor Cyan } }
             }
         }
         else
         {
+            # Starting a new no-newline run (with timestamp prefix).
+            # Only write and set the flag if the message type is visible.
+            $__wroteOutput = $true
             if ($Global:PSLog_Indent -gt 0) { $Message = ('  ' * ($Global:PSLog_Indent - 1)) + '- ' + $Message }
 
             switch ($Type)
             {
-                Error { Microsoft.PowerShell.Utility\Write-Host "$timeCurrent|$timeDeltaString|$timeDeltaString2| $Message" -NoNewline -ForegroundColor Red }
+                Error   { Microsoft.PowerShell.Utility\Write-Host "$timeCurrent|$timeDeltaString|$timeDeltaString2| $Message" -NoNewline -ForegroundColor Red }
                 Warning { Microsoft.PowerShell.Utility\Write-Host "$timeCurrent|$timeDeltaString|$timeDeltaString2| $Message" -NoNewline -ForegroundColor Yellow }
-                Info { Microsoft.PowerShell.Utility\Write-Host "$timeCurrent|$timeDeltaString|$timeDeltaString2| $Message" -NoNewline }
-                Debug { if ($DebugPreference -eq 'Continue') { Microsoft.PowerShell.Utility\Write-Host "$timeCurrent|$timeDeltaString|$timeDeltaString2| $Message" -NoNewline -ForegroundColor Cyan } }
-                Verbose { if ($VerbosePreference -eq 'Continue') { Microsoft.PowerShell.Utility\Write-Host "$timeCurrent|$timeDeltaString|$timeDeltaString2| $Message" -NoNewline -ForegroundColor Cyan } }
+                Info    { Microsoft.PowerShell.Utility\Write-Host "$timeCurrent|$timeDeltaString|$timeDeltaString2| $Message" -NoNewline }
+                Debug   { if ($DebugPreference -eq 'Continue') { Microsoft.PowerShell.Utility\Write-Host "$timeCurrent|$timeDeltaString|$timeDeltaString2| $Message" -NoNewline -ForegroundColor Cyan } else { $__wroteOutput = $false } }
+                Verbose { if ($VerbosePreference -eq 'Continue') { Microsoft.PowerShell.Utility\Write-Host "$timeCurrent|$timeDeltaString|$timeDeltaString2| $Message" -NoNewline -ForegroundColor Cyan } else { $__wroteOutput = $false } }
             }
 
             $Message | ForEach-Object { Write-PSFMessage -Level Verbose -Message "$timeCurrent|$timeDeltaString|$timeDeltaString2| $_" }
+            if ($__wroteOutput) { $Global:PSLog_NoNewLine = $true }
         }
-        $Global:PSLog_NoNewLine = $true
     }
     else
     {
-        if ($Global:PSLog_NoNewLine)
+        # Determine if this message type will actually produce visible output.
+        $__willDisplay = switch ($Type)
         {
-            switch ($Type)
-            {
-                Error
-                {
-                    $Message | ForEach-Object { Microsoft.PowerShell.Utility\Write-Host $_ -ForegroundColor Red }
-                    $Global:PSLog_NoNewLine = $false
-                }
-                Warning
-                {
-                    $Message | ForEach-Object { Microsoft.PowerShell.Utility\Write-Host $_ -ForegroundColor Yellow }
-                    $Global:PSLog_NoNewLine = $false
-                }
-                Info
-                {
-                    $Message | ForEach-Object { Microsoft.PowerShell.Utility\Write-Host $_ }
-                    $Global:PSLog_NoNewLine = $false
-                }
-                Verbose
-                {
-                    if ($VerbosePreference -eq 'Continue')
-                    {
-                        $Message | ForEach-Object { Microsoft.PowerShell.Utility\Write-Host $_ -ForegroundColor Cyan }
-                    }
-                    $Global:PSLog_NoNewLine = $false
-                }
-                Debug
-                {
-                    if ($DebugPreference -eq 'Continue')
-                    {
-                        $Message | ForEach-Object { Microsoft.PowerShell.Utility\Write-Host $_ -ForegroundColor Cyan }
-                    }
-                    $Global:PSLog_NoNewLine = $false
-                }
-            }
+            'Error'   { $true }
+            'Warning' { $true }
+            'Info'    { $true }
+            'Debug'   { $DebugPreference -eq 'Continue' }
+            'Verbose' { $VerbosePreference -eq 'Continue' }
+        }
+
+        if ($Global:PSLog_NoNewLine -and $__willDisplay)
+        {
+            # A previous -NoNewLine call (progress dots, etc.) left the cursor mid-line.
+            # Close that line first, then emit the new message with a full timestamp prefix.
+            Microsoft.PowerShell.Utility\Write-Host ''
+            $Global:PSLog_NoNewLine = $false
+        }
+
+        if (-not $__willDisplay)
+        {
+            # Verbose/Debug suppressed — don't emit anything, don't touch the flag.
+            # But still handle TaskStart/TaskEnd indent tracking below.
         }
         else
         {
+            # Normal full-line output with timestamp prefix
             if ($Global:PSLog_Indent -gt 0) { $Message = ('  ' * ($Global:PSLog_Indent - 1)) + '- ' + $Message }
             $Message | ForEach-Object { Write-PSFMessage -Level Verbose -Message "$timeCurrent|$timeDeltaString|$timeDeltaString2| $_" }
             switch ($Type)
