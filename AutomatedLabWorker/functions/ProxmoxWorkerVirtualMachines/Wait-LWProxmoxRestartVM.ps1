@@ -1,4 +1,5 @@
-function Wait-LWProxmoxRestartVM {
+function Wait-LWProxmoxRestartVM
+{
     param (
         [Parameter(Mandatory)]
         [string[]]$ComputerName,
