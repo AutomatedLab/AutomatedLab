@@ -41,6 +41,11 @@
         $sessions = @()
         $lab = Get-Lab
 
+        if ($lab.DefaultVirtualizationEngine -eq 'Proxmox')
+        {
+            $Retries = 10
+        }
+
         #Due to a problem in Windows 10 not being able to reach VMs from the host
         $testPortTimeout = (Get-LabConfigurationItem -Name Timeout_TestPortInSeconds) * 1000
 
