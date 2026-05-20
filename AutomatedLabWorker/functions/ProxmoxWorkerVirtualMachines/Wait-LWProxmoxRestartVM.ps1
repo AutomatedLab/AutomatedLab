@@ -98,7 +98,9 @@ function Wait-LWProxmoxRestartVM
             $agentUp = $false
             if ($vmInfo) {
                 try {
-                    $pingResult = New-PveNodesQemuAgentPing -Node $vmInfo.Node -Vmid $vmInfo.Vmid -ErrorAction Stop
+                    # 2>$null suppresses transcript noise from caught terminating errors
+                    # while we probe for guest-initiated reboots (expected to fail repeatedly).
+                    $pingResult = New-PveNodesQemuAgentPing -Node $vmInfo.Node -Vmid $vmInfo.Vmid -ErrorAction Stop 2>$null
                     if ($pingResult.StatusCode -eq 200) { $agentUp = $true }
                 }
                 catch {

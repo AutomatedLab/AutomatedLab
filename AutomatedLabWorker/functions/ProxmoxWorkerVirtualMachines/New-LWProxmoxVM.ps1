@@ -1015,7 +1015,9 @@ Stop-Transcript
         }
         try
         {
-            $pingResult = New-PveNodesQemuAgentPing -Node $Machine.ProxmoxProperties.TargetNode -Vmid $nextVmId -ErrorAction Stop
+            # 2>$null suppresses transcript noise from caught terminating errors
+            # while the agent comes up (QEMU guest agent returns 500 until ready).
+            $pingResult = New-PveNodesQemuAgentPing -Node $Machine.ProxmoxProperties.TargetNode -Vmid $nextVmId -ErrorAction Stop 2>$null
             if ($pingResult.StatusCode -eq 200) { $agentReady = $true }
         }
         catch
