@@ -195,6 +195,22 @@
                 if (Test-Path "$($Script:data.LabPath)/AzureNetworkConfig.Xml") { Remove-Item -Path "$($Script:data.LabPath)/AzureNetworkConfig.Xml" -Recurse -Force -Confirm:$false }
                 if (Test-Path "$($Script:data.LabPath)/Certificates") { Remove-Item -Path "$($Script:data.LabPath)/Certificates" -Recurse -Force -Confirm:$false }
 
+                #Remove per-machine artefacts (machine xml at lab root, Proxmox staging folder per VM)
+                foreach ($machine in $Script:data.Machines)
+                {
+                    $machineXml = Join-Path -Path $Script:data.LabPath -ChildPath "$($machine.Name).xml"
+                    if (Test-Path -Path $machineXml) { Remove-Item -Path $machineXml -Force -Confirm:$false }
+
+                    $proxmoxVmFolder = Join-Path -Path $Script:data.LabPath -ChildPath "Proxmox/VHD/$($machine.Name)"
+                    if (Test-Path -Path $proxmoxVmFolder) { Remove-Item -Path $proxmoxVmFolder -Recurse -Force -Confirm:$false }
+                }
+
+                #Prune empty Proxmox staging folders
+                $proxmoxVhd  = Join-Path -Path $Script:data.LabPath -ChildPath 'Proxmox/VHD'
+                $proxmoxRoot = Join-Path -Path $Script:data.LabPath -ChildPath 'Proxmox'
+                if ((Test-Path -Path $proxmoxVhd)  -and -not (Get-ChildItem -Path $proxmoxVhd))  { Remove-Item -Path $proxmoxVhd  -Force -Confirm:$false }
+                if ((Test-Path -Path $proxmoxRoot) -and -not (Get-ChildItem -Path $proxmoxRoot)) { Remove-Item -Path $proxmoxRoot -Force -Confirm:$false }
+
                 #Only remove lab path folder if empty
                 if ((Test-Path "$($Script:data.LabPath)") -and (-not (Get-ChildItem -Path $Script:data.LabPath)))
                 {
