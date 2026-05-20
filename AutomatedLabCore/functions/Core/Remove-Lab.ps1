@@ -7,7 +7,7 @@
 
         [Parameter(ParameterSetName = 'ByName', ValueFromPipelineByPropertyName)]
         [string]$Name,
-        
+
         [switch]$RemoveExternalSwitches
     )
 
@@ -27,7 +27,7 @@
         elseif ($Path)
         {
             Import-Lab -Path $Path -NoValidation -NoDisplay
-            
+
         }
 
         if (-not $Script:data)
@@ -46,7 +46,7 @@
                 Write-ScreenInfo -Type Info -Message "Your Azure session is expired. Please log in to remove your resource group"
                 $param = @{
                     UseDeviceAuthentication = $true
-                    ErrorAction             = 'SilentlyContinue' 
+                    ErrorAction             = 'SilentlyContinue'
                     WarningAction           = 'Continue'
                     Environment             = $(Get-Lab).AzureSettings.Environment
                 }
@@ -79,7 +79,7 @@
 
             if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
             {
-                Write-ScreenInfo -Message "Removing Resource Group '$labName' and all resources in this group"             
+                Write-ScreenInfo -Message "Removing Resource Group '$labName' and all resources in this group"
                 foreach ($network in $(Get-Lab).VirtualNetworks) {
                     $remoteNet = Get-AzVirtualNetwork -Name $network.ResourceName
                     foreach ($externalPeer in $network.PeeringVnetResourceIds) {
@@ -89,7 +89,7 @@
                         $null = Remove-AzVirtualNetworkPeering -VirtualNetworkName $vnet.Name -ResourceGroupname $vnet.ResourceGroupName -Name "$($network.ResourceName)To$($peerName)" -Force
                     }
                 }
-                
+
                 #without cloning the collection, a Runtime Exceptionis thrown: An error occurred while enumerating through a collection: Collection was modified; enumeration operation may not execute
                 # If RG contains Recovery Vault, remove vault properly
                 Remove-LWAzureRecoveryServicesVault
@@ -187,7 +187,7 @@
                 if (Test-Path "$($Script:data.LabPath)/$(Get-LabConfigurationItem -Name MachineFileName)") { Remove-Item -Path "$($Script:data.LabPath)/Machines.xml" -Force -Confirm:$false }
                 if (Test-Path "$($Script:data.LabPath)/Unattended*.xml") { Remove-Item -Path "$($Script:data.LabPath)/Unattended*.xml" -Force -Confirm:$false }
                 if (Test-Path "$($Script:data.LabPath)/armtemplate.json") { Remove-Item -Path "$($Script:data.LabPath)/armtemplate.json" -Force -Confirm:$false }
-                if (Test-Path "$($Script:data.LabPath)/Network_$labName.xml") { Remove-Item -Path "$($Script:data.LabPath)/Network_$labName.xml" -Force -Confirm:$false }
+                if (Test-Path "$($Script:data.LabPath)/Network_*.xml") { Remove-Item -Path "$($Script:data.LabPath)/Network_*.xml" -Force -Confirm:$false }
                 if (Test-Path "$($Script:data.LabPath)/ks*.cfg") { Remove-Item -Path "$($Script:data.LabPath)/ks*.cfg" -Force -Confirm:$false }
                 if (Test-Path "$($Script:data.LabPath)/*.bash") { Remove-Item -Path "$($Script:data.LabPath)/*.bash" -Force -Confirm:$false }
                 if (Test-Path "$($Script:data.LabPath)/autoinst*.xml") { Remove-Item -Path "$($Script:data.LabPath)/autoinst*.xml" -Force -Confirm:$false }
