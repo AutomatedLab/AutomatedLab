@@ -1,5 +1,28 @@
 function Initialize-LWProxmoxVM
 {
+    <#
+    .SYNOPSIS
+        Initializes Windows-based Proxmox VMs after deployment.
+
+    .DESCRIPTION
+        Performs post-deployment initialization tasks on Windows-based virtual machines running on
+        Proxmox VE. The function applies a set of default registry tweaks (suppressing first-logon
+        animations, Server Manager auto-launch, UAC prompts and IE Enhanced Security Configuration)
+        and prepares the deploy debug folder used by AutomatedLab on each target machine.
+
+    .PARAMETER Machine
+        One or more AutomatedLab.Machine objects representing the Proxmox-hosted VMs to initialize.
+        Only machines whose OperatingSystemType is 'Windows' are processed.
+
+    .PARAMETER DeployDebugPath
+        Path on the target machine that is used as the AutomatedLab deploy debug folder. Defaults to
+        the value of the global $AL_DeployDebugFolder variable.
+
+    .EXAMPLE
+        Initialize-LWProxmoxVM -Machine (Get-LabVM -ComputerName Server1)
+
+        Initializes the Proxmox-hosted VM 'Server1' using the default deploy debug path.
+    #>
     [Cmdletbinding()]
     Param (
         [Parameter(Mandatory)]
