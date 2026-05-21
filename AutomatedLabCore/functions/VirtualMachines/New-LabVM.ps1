@@ -123,15 +123,16 @@
             Write-ScreenInfo -Message 'done'
 
             Repair-LWProxmoxNetworkConfig -ComputerName $rootDCs -ErrorAction SilentlyContinue
-            #TODO: Is this still required?
-            #Stop-LabVM -ComputerName $rootDCs -Wait
-            #Start-LabVM -ComputerName $rootDCs -Wait
 
             $sysprepState = Get-LWProxmoxVMSysprepState -ComputerName $rootDCs
             if ($sysprepState | Where-Object SysprepState -ne 'IMAGE_STATE_COMPLETE')
             {
                 Write-Error "The following Proxmox VMs did not complete sysprep: $($sysprepState | Where-Object SysprepState -ne 'IMAGE_STATE_COMPLETE' | Select-Object -ExpandProperty ComputerName -Unique -Join ', ')"
             }
+
+            Write-ScreenInfo -Message "Calling 'Initialize-LWProxmoxVM'" -Type Verbose
+            Initialize-LWProxmoxVM -Machine $rootDCs
+
             Install-LabRootDcs
         }
 
@@ -162,6 +163,10 @@
             {
                 Write-Error "The following Proxmox VMs did not complete sysprep: $($sysprepState | Where-Object SysprepState -ne 'IMAGE_STATE_COMPLETE' | Select-Object -ExpandProperty ComputerName -Unique -Join ', ')"
             }
+
+            Write-ScreenInfo -Message "Calling 'Initialize-LWProxmoxVM'" -Type Verbose
+            Initialize-LWProxmoxVM -Machine $firstChildDCs
+
             Install-LabFirstChildDcs
         }
 
@@ -195,6 +200,9 @@
             {
                 Write-Error "The following Proxmox VMs did not complete sysprep: $(($sysprepState | Where-Object SysprepState -ne 'IMAGE_STATE_COMPLETE' | Select-Object -ExpandProperty ComputerName -Unique) -Join ', ')"
             }
+
+            Write-ScreenInfo -Message "Calling 'Initialize-LWProxmoxVM'" -Type Verbose
+            Initialize-LWProxmoxVM -Machine $otherVMs
         }
 
         Write-Host 'done.'

@@ -61,6 +61,7 @@
         'Get-LWVMWareNetworkSwitch',
         'Get-LWVMWareVMStatus',
         'Initialize-LWAzureVM',
+        'Initialize-LWProxmoxVM',
         'Install-LWAzureWindowsFeature',
         'Install-LWHypervWindowsFeature',
         'Install-LWLabCAServers',
