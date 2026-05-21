@@ -13,7 +13,7 @@ function Initialize-LWProxmoxVM
 
     $machines = $Machine | Where-Object OperatingSystemType -eq 'Windows'
 
-    $result = Invoke-LabCommand -ComputerName tegaMachine1 -ScriptBlock {
+    $result = Invoke-LabCommand -ActivityName "Initialize Proxmox VM" -ComputerName $machines -ScriptBlock {
         $deployDebugPath = (New-Item -ItemType Directory -Path $ExecutionContext.InvokeCommand.ExpandString($AL_DeployDebugFolder) -ErrorAction SilentlyContinue -Force).FullName
 
         $alPath = Join-Path -Path $deployDebugPath -ChildPath AL
@@ -37,7 +37,7 @@ function Initialize-LWProxmoxVM
             AlPath = $alPath
         }
 
-    } -Variable (Get-Variable -Name AL_DeployDebugFolder -Scope Global) -PassThru
+    } -Variable (Get-Variable -Name AL_DeployDebugFolder -Scope Global) -PassThru -NoDisplay
 
     $alCommonModule = Get-Module -ListAvailable -Name AutomatedLab.Common | Sort-Object -Property Version -Descending | Select-Object -First 1
     $alToolsPath = "$((Get-Module -Name AutomatedLabCore)[0].ModuleBase)\Tools\HyperV\*"
@@ -46,6 +46,7 @@ function Initialize-LWProxmoxVM
     Copy-LabFileItem -Path $alToolsPath -ComputerName $machines -DestinationFolderPath $result.AlPath
     Send-ModuleToPSSession -Module $alCommonModule -Session $psSessions -IncludeDependencies -Force
 
+    Write-ScreenInfo "Restarting machines to apply configuration changes..." -Type Verbose
     Restart-LabVM -ComputerName $machines -Wait
 
     Write-LogFunctionExit
