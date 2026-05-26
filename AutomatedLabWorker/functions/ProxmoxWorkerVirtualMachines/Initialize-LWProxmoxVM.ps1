@@ -58,6 +58,7 @@ function Initialize-LWProxmoxVM
         [pscustomobject]@{
             DeployDebugPath = $deployDebugPath
             AlPath = $alPath
+            ComputerName = $env:COMPUTERNAME
         }
 
     } -Variable (Get-Variable -Name AL_DeployDebugFolder -Scope Global) -PassThru -NoDisplay
@@ -66,7 +67,12 @@ function Initialize-LWProxmoxVM
     $alToolsPath = "$((Get-Module -Name AutomatedLabCore)[0].ModuleBase)\Tools\HyperV\*"
     $psSessions = New-LabPSSession -ComputerName $machines
 
-    Copy-LabFileItem -Path $alToolsPath -ComputerName $machines -DestinationFolderPath $result.AlPath
+    foreach ($m in $Machine)
+    {
+        $selectedResult = $result | Where-Object ComputerName -eq $m
+        Copy-LabFileItem -Path $alToolsPath -ComputerName $machines -DestinationFolderPath $selectedResult.AlPath
+    }
+
     Send-ModuleToPSSession -Module $alCommonModule -Session $psSessions -IncludeDependencies -Force
 
     Write-ScreenInfo "Restarting machines to apply configuration changes..." -Type Verbose
