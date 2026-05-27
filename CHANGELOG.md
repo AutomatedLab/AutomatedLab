@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- DSC Pull Server lab validator (`DscSqlServerPresent`) now accepts SQL Server 2022 and 2025 in addition to 2016/2017/2019 as the backend database engine, and the validation error message has been clarified accordingly (#1844).
+
 ## [5.61.0] - 2026-05-12
 
 ### Fixed
