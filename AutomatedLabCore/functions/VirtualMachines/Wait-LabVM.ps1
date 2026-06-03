@@ -142,7 +142,7 @@
 
             foreach ($machine in (Get-LabVM -ComputerName $completed))
             {
-                if ($machine.SkipDeployment -or $machine.HostType -ne 'HyperV') { continue }
+                if ($machine.SkipDeployment -or $machine.HostType -notin 'HyperV', 'Proxmox') { continue }
                 $machineMetadata = Get-LWVMDescription -ComputerName $machine.ResourceName
                 if ($machineMetadata.InitState -eq [AutomatedLab.LabVMInitState]::Uninitialized)
                 {
