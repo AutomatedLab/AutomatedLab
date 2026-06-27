@@ -148,6 +148,7 @@ exit
         if ($PartitionStyle -eq 'MBR')
         {
             bcdboot.exe $vhdWindowsVolume\Windows /s $vhdWindowsVolume /f BIOS | Out-Null
+            $bcdbootExitCode = $LASTEXITCODE
         }
         else
         {
@@ -165,6 +166,7 @@ exit
             $diskpartCmd | diskpart.exe | Out-Null
 
             bcdboot.exe $vhdWindowsVolume\Windows /s "$($freeDrive):" /f UEFI | Out-Null
+            $bcdbootExitCode = $LASTEXITCODE
 
             $diskpartCmd = @"
     select disk $vhdDiskNumber
@@ -173,6 +175,15 @@ exit
     exit
 "@
             $diskpartCmd | diskpart.exe | Out-Null
+        }
+
+        # Do not proceed with an unbootable base image. Previously bcdboot's exit code
+        # was discarded (| Out-Null with no check), turning a failed boot-store write
+        # into a generic firmware error ("the boot loader did not load an operating
+        # system") that surfaced only when a VM was started much later.
+        if ($bcdbootExitCode -ne 0)
+        {
+            throw "bcdboot failed (exit code $bcdbootExitCode) while writing the boot store for operating system '$OsName'. The base image would be unbootable. This usually means the host's bcdboot.exe cannot service the guest image (for example a host/guest Windows build mismatch)."
         }
     }
     catch
