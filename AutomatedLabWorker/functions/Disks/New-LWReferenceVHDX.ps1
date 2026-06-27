@@ -155,12 +155,17 @@ exit
         $bcdbootExe = if (Test-Path -Path $imageBcdboot) { $imageBcdboot } else { 'bcdboot.exe' }
         if ($PartitionStyle -eq 'MBR')
         {
-            & $bcdbootExe $vhdWindowsVolume\Windows /s $vhdWindowsVolume /f BIOS | Out-Null
+            # Capture bcdboot's own output (stdout and stderr) so a failure can be
+            # diagnosed from the message it prints (for example 'Failure when attempting
+            # to copy boot files.') rather than only from the numeric exit code. The
+            # surrounding try/catch handles any terminating error from native stderr.
+            $bcdbootOutput = & $bcdbootExe $vhdWindowsVolume\Windows /s $vhdWindowsVolume /f BIOS 2>&1
             $bcdbootExitCode = $LASTEXITCODE
             if ($bcdbootExitCode -ne 0 -and $bcdbootExe -ne 'bcdboot.exe')
             {
-                Write-PSFMessage -Level Warning -Message "Image bcdboot.exe failed (exit $bcdbootExitCode) for '$OsName'; retrying with the host bcdboot.exe."
-                bcdboot.exe $vhdWindowsVolume\Windows /s $vhdWindowsVolume /f BIOS | Out-Null
+                Write-PSFMessage -Level Warning -Message "Image bcdboot.exe failed (exit $bcdbootExitCode) for '$OsName'; retrying with the host bcdboot.exe. bcdboot output: $($bcdbootOutput -join ' ')"
+                # Keep $bcdbootOutput pointing at the run that ultimately failed (the host's).
+                $bcdbootOutput = bcdboot.exe $vhdWindowsVolume\Windows /s $vhdWindowsVolume /f BIOS 2>&1
                 $bcdbootExitCode = $LASTEXITCODE
             }
         }
@@ -179,12 +184,14 @@ exit
 "@
             $diskpartCmd | diskpart.exe | Out-Null
 
-            & $bcdbootExe $vhdWindowsVolume\Windows /s "$($freeDrive):" /f UEFI | Out-Null
+            # Capture bcdboot's own output (stdout and stderr); see the BIOS path above.
+            $bcdbootOutput = & $bcdbootExe $vhdWindowsVolume\Windows /s "$($freeDrive):" /f UEFI 2>&1
             $bcdbootExitCode = $LASTEXITCODE
             if ($bcdbootExitCode -ne 0 -and $bcdbootExe -ne 'bcdboot.exe')
             {
-                Write-PSFMessage -Level Warning -Message "Image bcdboot.exe failed (exit $bcdbootExitCode) for '$OsName'; retrying with the host bcdboot.exe."
-                bcdboot.exe $vhdWindowsVolume\Windows /s "$($freeDrive):" /f UEFI | Out-Null
+                Write-PSFMessage -Level Warning -Message "Image bcdboot.exe failed (exit $bcdbootExitCode) for '$OsName'; retrying with the host bcdboot.exe. bcdboot output: $($bcdbootOutput -join ' ')"
+                # Keep $bcdbootOutput pointing at the run that ultimately failed (the host's).
+                $bcdbootOutput = bcdboot.exe $vhdWindowsVolume\Windows /s "$($freeDrive):" /f UEFI 2>&1
                 $bcdbootExitCode = $LASTEXITCODE
             }
 
@@ -203,7 +210,8 @@ exit
         # system") that surfaced only when a VM was started much later.
         if ($bcdbootExitCode -ne 0)
         {
-            throw "bcdboot failed (exit code $bcdbootExitCode) while writing the boot store for operating system '$OsName'. The base image would be unbootable. This usually means the host's bcdboot.exe cannot service the guest image (for example a host/guest Windows build mismatch)."
+            $bcdbootMessage = ($bcdbootOutput | Where-Object { $_ } | ForEach-Object { $_.ToString().Trim() }) -join ' '
+            throw "bcdboot failed (exit code $bcdbootExitCode) while writing the boot store for operating system '$OsName'. The base image would be unbootable. This usually means the host's bcdboot.exe cannot service the guest image (for example a host/guest Windows build mismatch). bcdboot output: $bcdbootMessage"
         }
     }
     catch
