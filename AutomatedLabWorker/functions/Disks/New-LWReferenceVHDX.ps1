@@ -145,10 +145,24 @@ exit
         Start-Sleep -Seconds 10
 
         Write-PSFMessage 'Setting BCDBoot'
+        # Prefer the image's own bcdboot.exe (version-matched to the guest OS) and
+        # fall back to the host's. On newer hosts the host bcdboot can fail to write
+        # a boot store for an older guest image (observed exit 193 / ERROR_BAD_EXE_FORMAT:
+        # host Windows 11 25H2, build 26200, servicing a Windows Server 2022, build 20348,
+        # image). Previously the exit code was discarded, so this produced a silently
+        # unbootable base image with an empty EFI System Partition.
+        $imageBcdboot = Join-Path $vhdWindowsVolume 'Windows\System32\bcdboot.exe'
+        $bcdbootExe = if (Test-Path -Path $imageBcdboot) { $imageBcdboot } else { 'bcdboot.exe' }
         if ($PartitionStyle -eq 'MBR')
         {
-            bcdboot.exe $vhdWindowsVolume\Windows /s $vhdWindowsVolume /f BIOS | Out-Null
+            & $bcdbootExe $vhdWindowsVolume\Windows /s $vhdWindowsVolume /f BIOS | Out-Null
             $bcdbootExitCode = $LASTEXITCODE
+            if ($bcdbootExitCode -ne 0 -and $bcdbootExe -ne 'bcdboot.exe')
+            {
+                Write-PSFMessage -Level Warning -Message "Image bcdboot.exe failed (exit $bcdbootExitCode) for '$OsName'; retrying with the host bcdboot.exe."
+                bcdboot.exe $vhdWindowsVolume\Windows /s $vhdWindowsVolume /f BIOS | Out-Null
+                $bcdbootExitCode = $LASTEXITCODE
+            }
         }
         else
         {
@@ -165,8 +179,14 @@ exit
 "@
             $diskpartCmd | diskpart.exe | Out-Null
 
-            bcdboot.exe $vhdWindowsVolume\Windows /s "$($freeDrive):" /f UEFI | Out-Null
+            & $bcdbootExe $vhdWindowsVolume\Windows /s "$($freeDrive):" /f UEFI | Out-Null
             $bcdbootExitCode = $LASTEXITCODE
+            if ($bcdbootExitCode -ne 0 -and $bcdbootExe -ne 'bcdboot.exe')
+            {
+                Write-PSFMessage -Level Warning -Message "Image bcdboot.exe failed (exit $bcdbootExitCode) for '$OsName'; retrying with the host bcdboot.exe."
+                bcdboot.exe $vhdWindowsVolume\Windows /s "$($freeDrive):" /f UEFI | Out-Null
+                $bcdbootExitCode = $LASTEXITCODE
+            }
 
             $diskpartCmd = @"
     select disk $vhdDiskNumber
