@@ -176,7 +176,7 @@ If ($ENV:APPVEYOR_JOB_ID)
 Remove-Item "$ProjectRoot\$TestFile" -Force -ErrorAction SilentlyContinue
 
 # Failed tests?
-if ($TestResults.FailedCount -gt 0)
+if (($TestResults.FailedCount + $TestResults.FailedBlocksCount + $TestResults.FailedContainersCount) -gt 0)
 {
     throw "Failed '$($TestResults.FailedCount)' tests, build failed"
 }
