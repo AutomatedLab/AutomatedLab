@@ -4,7 +4,7 @@
 
 ### Fixed
 
-- Fixed base image creation silently producing an unbootable image when `bcdboot` fails. `New-LWReferenceVHDX` now writes the UEFI/BIOS boot store with the OS image's own `bcdboot.exe` (falling back to the host's) and throws if `bcdboot` returns a non-zero exit code instead of discarding it. The thrown error and the fallback warning now include `bcdboot`'s own output so the underlying cause (for example "Failure when attempting to copy boot files.") is visible. Previously the host's `bcdboot.exe` could fail to service an older guest image on newer hosts (for example Windows 11 24H2/25H2 building a Windows Server 2022 base — host `bcdboot` exits 193), leaving the EFI System Partition empty, so VMs failed to boot with "the boot loader did not load an operating system" with nothing in the AutomatedLab log indicating the cause (#1662, #1805).
+- Fixed `New-LWReferenceVHDX` silently producing unbootable base images when `bcdboot` fails (#1662, #1805)
 - DSC Pull Server lab validator (`DscSqlServerPresent`) now accepts SQL Server 2022 and 2025 in addition to 2016/2017/2019 as the backend database engine, and the validation error message has been clarified accordingly (#1844).
 
 ## [5.61.0] - 2026-05-12
