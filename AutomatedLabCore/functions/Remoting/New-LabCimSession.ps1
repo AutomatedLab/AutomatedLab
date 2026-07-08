@@ -41,7 +41,7 @@
         $sessions = @()
         $lab = Get-Lab
 
-        if ($lab.DefaultVirtualizationEngine -eq 'Proxmox')
+        if (-not $PSBoundParameters.ContainsKey('Retries') -and $lab.DefaultVirtualizationEngine -eq 'Proxmox')
         {
             $Retries = 10
         }
