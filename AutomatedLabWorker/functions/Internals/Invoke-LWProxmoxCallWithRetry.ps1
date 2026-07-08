@@ -59,3 +59,62 @@ function Invoke-LWProxmoxCallWithRetry
     # Return the last failed result so callers can inspect StatusCode/ReasonPhrase
     return $result
 }
+
+function Wait-LWProxmoxGuestAgentReady
+{
+    # Pinging the agent - and even guest-file-write - succeeds BEFORE the agent's guest-exec
+    # (process-spawning) subsystem is ready; under host load guest-exec also intermittently
+    # returns 'not running' / 'got timeout'. Phase 1 waits for a ping; with -RequireExec,
+    # Phase 2 probes a trivial 'cmd /c ver' guest-exec until it actually executes.
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory)] [string]$Node,
+        [Parameter(Mandatory)] [int]$Vmid,
+        [Parameter()] [string]$Name = "VMID $Vmid",
+        [Parameter()] [int]$TimeoutSeconds = 300,
+        [Parameter()] [int]$PollIntervalSeconds = 3,
+        [switch]$RequireExec
+    )
+
+    $ProgressPreference = 'SilentlyContinue'
+    $timer = [System.Diagnostics.Stopwatch]::StartNew()
+
+    $pingReady = $false
+    while ($timer.Elapsed.TotalSeconds -lt $TimeoutSeconds)
+    {
+        try
+        {
+            $pingResult = New-PveNodesQemuAgentPing -Node $Node -Vmid $Vmid -ErrorAction Stop 2>$null
+            if ($pingResult.StatusCode -eq 200) { $pingReady = $true; break }
+        }
+        catch { }
+        Start-Sleep -Seconds $PollIntervalSeconds
+    }
+
+    if (-not $pingReady)
+    {
+        Write-PSFMessage -Level Warning -Message "QEMU guest agent on VM '$Name' did not answer a ping within $TimeoutSeconds s."
+        return $false
+    }
+
+    if (-not $RequireExec.IsPresent) { return $true }
+
+    while ($timer.Elapsed.TotalSeconds -lt $TimeoutSeconds)
+    {
+        try
+        {
+            $execResult = New-PveNodesQemuAgentExec -Node $Node -Vmid $Vmid -Command @('cmd', '/c', 'ver') -ErrorAction Stop 2>$null
+            if ($execResult.StatusCode -eq 200)
+            {
+                Write-PSFMessage -Message "QEMU guest agent guest-exec ready on VM '$Name' after $([int]$timer.Elapsed.TotalSeconds)s."
+                return $true
+            }
+        }
+        catch { }
+        Start-Sleep -Seconds $PollIntervalSeconds
+    }
+
+    Write-PSFMessage -Level Warning -Message "QEMU guest agent on VM '$Name' answered pings but guest-exec was not ready within $TimeoutSeconds s."
+    return $false
+}

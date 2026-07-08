@@ -64,14 +64,14 @@ function Send-LWProxmoxFileCopyToVM
         {
             # Rename temp file to final destination (overwrite if exists)
             $renameCmd = "cmd", "/c", "move", "/Y", $tempFilePath, $destinationFilePath
-            $renameResult = Invoke-LWProxmoxCallWithRetry -ActivityName "Rename file on VM '$name'" -MaxRetries 3 -RetryDelaySeconds 5 -ScriptBlock { New-PveNodesQemuAgentExec -Node $vm.node -Vmid $vm.VmId -Command $renameCmd }
+            $renameResult = Invoke-LWProxmoxCallWithRetry -ActivityName "Rename file on VM '$name'" -MaxRetries 8 -RetryDelaySeconds 5 -MaxDelaySeconds 30 -ProgressiveBackoff -ScriptBlock { New-PveNodesQemuAgentExec -Node $vm.node -Vmid $vm.VmId -Command $renameCmd }
             if ($renameResult.StatusCode -eq 200)
             {
                 Write-ScreenInfo -Message "File '$SourceFilePath' successfully sent to VM '$name' at '$DestinationPath'." -Type Verbose
             }
             else
             {
-                Write-Warning "File written as '$tempFilePath' on VM '$name' but rename failed: $($renameResult.ReasonPhrase). The temp file may need manual cleanup."
+                Write-Error "File written as '$tempFilePath' on VM '$name' but the rename to '$destinationFilePath' failed after all retries: $($renameResult.ReasonPhrase). The destination file is NOT in place, so the VM will not initialize correctly (e.g. Disks.xml missing). The temp file may need manual cleanup."
             }
         }
         else

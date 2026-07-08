@@ -1031,12 +1031,18 @@ Stop-Transcript
 
     if ($agentAvailable)
     {
-        # Allow the QEMU guest agent to fully initialize file-operation handlers.
-        # On some Proxmox templates the agent responds to ping before it can process
-        # file-write or exec requests, causing avoidable retry delays.
-        $stabilizationSeconds = Get-LabConfigurationItem -Name ProxmoxAgentStabilizationSeconds -Default 10
-        Write-PSFMessage "QEMU Guest Agent responded after $([int]$agentTimer.Elapsed.TotalSeconds)s. Waiting ${stabilizationSeconds}s for agent to stabilize on VM '$($Machine.ResourceName)'."
-        Start-Sleep -Seconds $stabilizationSeconds
+        # Ping succeeds well before guest-exec is ready; probe guest-exec so the file copy
+        # (temp-file rename), SkipRearm reg add and Sysprep below do not fire against an agent
+        # that can ping but cannot execute commands - the failure that leaves Disks.xml unrenamed.
+        $execTimeout = Get-LabConfigurationItem -Name ProxmoxAgentExecTimeout -Default 300
+        Write-PSFMessage "QEMU Guest Agent ping responded after $([int]$agentTimer.Elapsed.TotalSeconds)s on VM '$($Machine.ResourceName)'. Probing guest-exec readiness (timeout ${execTimeout}s)."
+        $execReady = Wait-LWProxmoxGuestAgentReady -Node $Machine.ProxmoxProperties.TargetNode -Vmid $nextVmId -Name $Machine.ResourceName -TimeoutSeconds $execTimeout -RequireExec
+        if (-not $execReady)
+        {
+            $stabilizationSeconds = Get-LabConfigurationItem -Name ProxmoxAgentStabilizationSeconds -Default 10
+            Write-PSFMessage -Level Warning -Message "guest-exec not confirmed ready on VM '$($Machine.ResourceName)'; falling back to a ${stabilizationSeconds}s stabilization wait before provisioning."
+            Start-Sleep -Seconds $stabilizationSeconds
+        }
     }
     Write-Verbose 'done.'
 
