@@ -109,7 +109,11 @@ function New-LWProxmoxVM
         status = 'stopped'
     }
     $result = Wait-LWProxmoxTasksStatus -Node $template.node -Upid $result.Response.data -DesiredValues $values -TimeoutInSeconds 600
-    if ($result -ne 'OK')
+    if ($result -like 'WARNINGS:*')
+    {
+        Write-PSFMessage -Level Warning -Message "Clone of VM '$($Machine.ResourceName)' finished with a non-fatal Proxmox task warning ('$result'); treating as success."
+    }
+    elseif ($result -ne 'OK')
     {
         Write-Error "Failed to create VM '$($Machine.ResourceName)': $($result.Message)"
         return
