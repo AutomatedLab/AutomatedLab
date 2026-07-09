@@ -47,6 +47,7 @@
     {
         'HyperV' { Restore-LWHypervVMSnapshot -ComputerName $machines.ResourceName -SnapshotName $SnapshotName}
         'Azure'  { Restore-LWAzureVmSnapshot -ComputerName $machines.ResourceName -SnapshotName $SnapshotName}
+        'Proxmox' { Restore-LWProxmoxVMSnapshot -ComputerName $machines.ResourceName -SnapshotName $SnapshotName}
         'VMWare' { Write-ScreenInfo -Type Error -Message 'Restoring snapshots of VMWare VMs is not yet implemented'}
     }
 

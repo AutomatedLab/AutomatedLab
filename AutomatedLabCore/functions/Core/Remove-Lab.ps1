@@ -7,7 +7,7 @@
 
         [Parameter(ParameterSetName = 'ByName', ValueFromPipelineByPropertyName)]
         [string]$Name,
-        
+
         [switch]$RemoveExternalSwitches
     )
 
@@ -27,7 +27,7 @@
         elseif ($Path)
         {
             Import-Lab -Path $Path -NoValidation -NoDisplay
-            
+
         }
 
         if (-not $Script:data)
@@ -46,7 +46,7 @@
                 Write-ScreenInfo -Type Info -Message "Your Azure session is expired. Please log in to remove your resource group"
                 $param = @{
                     UseDeviceAuthentication = $true
-                    ErrorAction             = 'SilentlyContinue' 
+                    ErrorAction             = 'SilentlyContinue'
                     WarningAction           = 'Continue'
                     Environment             = $(Get-Lab).AzureSettings.Environment
                 }
@@ -79,7 +79,7 @@
 
             if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
             {
-                Write-ScreenInfo -Message "Removing Resource Group '$labName' and all resources in this group"             
+                Write-ScreenInfo -Message "Removing Resource Group '$labName' and all resources in this group"
                 foreach ($network in $(Get-Lab).VirtualNetworks) {
                     $remoteNet = Get-AzVirtualNetwork -Name $network.ResourceName
                     foreach ($externalPeer in $network.PeeringVnetResourceIds) {
@@ -89,22 +89,25 @@
                         $null = Remove-AzVirtualNetworkPeering -VirtualNetworkName $vnet.Name -ResourceGroupname $vnet.ResourceGroupName -Name "$($network.ResourceName)To$($peerName)" -Force
                     }
                 }
-                
+
                 #without cloning the collection, a Runtime Exceptionis thrown: An error occurred while enumerating through a collection: Collection was modified; enumeration operation may not execute
                 # If RG contains Recovery Vault, remove vault properly
                 Remove-LWAzureRecoveryServicesVault
                 @(Get-LabAzureResourceGroup -CurrentLab).Clone() | Remove-LabAzureResourceGroup -Force
             }
 
-            $labMachines = Get-LabVM -IncludeLinux | Where-Object HostType -eq 'HyperV' | Where-Object { -not $_.SkipDeployment }
+            $labMachines = Get-LabVM -IncludeLinux |
+            Where-Object HostType -in 'HyperV', 'Proxmox' |
+            Where-Object { -not $_.SkipDeployment }
+
             if ($labMachines)
             {
                 $labName = (Get-Lab).Name
 
                 $removeMachines = foreach ($machine in $labMachines)
                 {
-                    $machineMetadata = Get-LWHypervVMDescription -ComputerName $machine.ResourceName -ErrorAction SilentlyContinue
-                    $vm = Get-LWHypervVM -Name $machine.ResourceName -ErrorAction SilentlyContinue
+                    $machineMetadata = Get-LWVMDescription -ComputerName $machine.ResourceName -ErrorAction SilentlyContinue
+                    $vm = Get-LabVM -ComputerName $machine -ErrorAction SilentlyContinue
                     if (-not $machineMetadata)
                     {
                         Write-Error -Message "Cannot remove machine '$machine' because lab meta data could not be retrieved"
@@ -146,7 +149,7 @@
                         }
                     }
 
-                    if ($Script:data.Target.Path)
+                    if ($Script:data.Target.Path -and (Get-Lab).DefaultVirtualizationEngine -eq 'HyperV')
                     {
                         $diskPath = (Join-Path -Path $Script:data.Target.Path -ChildPath Disks)
                         #Only remove disks folder if empty
@@ -158,7 +161,7 @@
                 }
 
                 #Only remove folder for VMs if folder is empty
-                if ($Script:data.Target.Path -and (-not (Get-ChildItem -Path $Script:data.Target.Path)))
+                if ($Script:data.Target.Path -and (Get-Lab).DefaultVirtualizationEngine -eq 'HyperV' -and (Test-Path -Path $Script:data.Target.Path) -and (-not (Get-ChildItem -Path $Script:data.Target.Path)))
                 {
                     Remove-Item -Path $Script:data.Target.Path -Recurse -Force -Confirm:$false
                 }
@@ -184,13 +187,29 @@
                 if (Test-Path "$($Script:data.LabPath)/$(Get-LabConfigurationItem -Name MachineFileName)") { Remove-Item -Path "$($Script:data.LabPath)/Machines.xml" -Force -Confirm:$false }
                 if (Test-Path "$($Script:data.LabPath)/Unattended*.xml") { Remove-Item -Path "$($Script:data.LabPath)/Unattended*.xml" -Force -Confirm:$false }
                 if (Test-Path "$($Script:data.LabPath)/armtemplate.json") { Remove-Item -Path "$($Script:data.LabPath)/armtemplate.json" -Force -Confirm:$false }
-                if (Test-Path "$($Script:data.LabPath)/Network_$labName.xml") { Remove-Item -Path "$($Script:data.LabPath)/Network_$labName.xml" -Force -Confirm:$false }
+                if (Test-Path "$($Script:data.LabPath)/Network_*.xml") { Remove-Item -Path "$($Script:data.LabPath)/Network_*.xml" -Force -Confirm:$false }
                 if (Test-Path "$($Script:data.LabPath)/ks*.cfg") { Remove-Item -Path "$($Script:data.LabPath)/ks*.cfg" -Force -Confirm:$false }
                 if (Test-Path "$($Script:data.LabPath)/*.bash") { Remove-Item -Path "$($Script:data.LabPath)/*.bash" -Force -Confirm:$false }
                 if (Test-Path "$($Script:data.LabPath)/autoinst*.xml") { Remove-Item -Path "$($Script:data.LabPath)/autoinst*.xml" -Force -Confirm:$false }
                 if (Test-Path "$($Script:data.LabPath)/cloudinit*") { Remove-Item -Path "$($Script:data.LabPath)/cloudinit*" -Force -Confirm:$false }
                 if (Test-Path "$($Script:data.LabPath)/AzureNetworkConfig.Xml") { Remove-Item -Path "$($Script:data.LabPath)/AzureNetworkConfig.Xml" -Recurse -Force -Confirm:$false }
                 if (Test-Path "$($Script:data.LabPath)/Certificates") { Remove-Item -Path "$($Script:data.LabPath)/Certificates" -Recurse -Force -Confirm:$false }
+
+                #Remove per-machine artefacts (machine xml at lab root, Proxmox staging folder per VM)
+                foreach ($machine in $Script:data.Machines)
+                {
+                    $machineXml = Join-Path -Path $Script:data.LabPath -ChildPath "$($machine.Name).xml"
+                    if (Test-Path -Path $machineXml) { Remove-Item -Path $machineXml -Force -Confirm:$false }
+
+                    $proxmoxVmFolder = Join-Path -Path $Script:data.LabPath -ChildPath "Proxmox/VHD/$($machine.Name)"
+                    if (Test-Path -Path $proxmoxVmFolder) { Remove-Item -Path $proxmoxVmFolder -Recurse -Force -Confirm:$false }
+                }
+
+                #Prune empty Proxmox staging folders
+                $proxmoxVhd  = Join-Path -Path $Script:data.LabPath -ChildPath 'Proxmox/VHD'
+                $proxmoxRoot = Join-Path -Path $Script:data.LabPath -ChildPath 'Proxmox'
+                if ((Test-Path -Path $proxmoxVhd)  -and -not (Get-ChildItem -Path $proxmoxVhd))  { Remove-Item -Path $proxmoxVhd  -Force -Confirm:$false }
+                if ((Test-Path -Path $proxmoxRoot) -and -not (Get-ChildItem -Path $proxmoxRoot)) { Remove-Item -Path $proxmoxRoot -Force -Confirm:$false }
 
                 #Only remove lab path folder if empty
                 if ((Test-Path "$($Script:data.LabPath)") -and (-not (Get-ChildItem -Path $Script:data.LabPath)))

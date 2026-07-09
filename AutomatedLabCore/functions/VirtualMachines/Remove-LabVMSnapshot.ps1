@@ -64,6 +64,7 @@
     {
         'HyperV' { Remove-LWHypervVMSnapshot @parameters}
         'Azure'  { Remove-LWAzureVmSnapshot @parameters}
+        'Proxmox' { Remove-LWProxmoxVMSnapshot @parameters }
         'VMWare' { Write-ScreenInfo -Type Warning -Message 'No VMWare snapshots possible, nothing will be removed'}
     }
 

@@ -15,7 +15,13 @@
         [switch]$Azure,
 
         [Parameter(Mandatory, ParameterSetName = 'Azure')]
-        $Location
+        $Location,
+
+        [Parameter(Mandatory, ParameterSetName = 'Proxmox')]
+        [switch]$Proxmox,
+
+        [Parameter(ParameterSetName = 'Proxmox')]
+        [string[]]$Node
     )
 
     Write-LogFunctionEntry
@@ -27,7 +33,8 @@
 
     $labData = if (Get-LabDefinition -ErrorAction SilentlyContinue) {Get-LabDefinition} elseif (Get-Lab -ErrorAction SilentlyContinue) {Get-Lab}
     if ($labData -and $labData.DefaultVirtualizationEngine -eq 'Azure') { $Azure = $true }
-    $storeLocationName = if ($Azure.IsPresent) { 'Azure' } else { 'Local' }
+    if ($labData -and $labData.DefaultVirtualizationEngine -eq 'Proxmox' -and -not $Azure.IsPresent) { $Proxmox = $true }
+    $storeLocationName = if ($Azure.IsPresent) { 'Azure' } elseif ($Proxmox.IsPresent) { 'Proxmox' } else { 'Local' }
 
     if ($Azure)
     {
@@ -83,6 +90,152 @@
 
         $osList.Timestamp = Get-Date
     
+        if ($IsLinux -or $IsMacOS)
+        {
+            $osList.Export((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath "Stores/$($storeLocationName)OperatingSystems.xml"))
+        }
+        else
+        {
+            $osList.ExportToRegistry('Cache', "$($storeLocationName)OperatingSystems")
+        }
+
+        return $osList.ToArray()
+    }
+
+    if ($Proxmox)
+    {
+        if (-not (Test-LabProxmoxConnection))
+        {
+            throw 'There is no active connection to a Proxmox cluster. Please call Connect-LabProxmoxCluster before listing available operating systems.'
+        }
+
+        $type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.OperatingSystem
+
+        # Read local ISO-based cache once so we can reverse-map normalised Proxmox tags
+        # (e.g. 'windowsserver2025datacenterevaluationdesktopexperience') back to the
+        # friendly OS name expected by Add-LabMachineDefinition.
+        try
+        {
+            if ($IsLinux -or $IsMacOS)
+            {
+                $localCachedOsList = $type::Import((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/LocalOperatingSystems.xml'))
+            }
+            else
+            {
+                $localCachedOsList = $type::ImportFromRegistry('Cache', 'LocalOperatingSystems')
+            }
+        }
+        catch
+        {
+            Write-PSFMessage 'Could not read local OS image cache for Proxmox name resolution'
+        }
+
+        $nameMap = @{}
+
+        # Seed the reverse-map from the curated ProductKeys.xml catalog (and the optional
+        # user-supplied override). This covers every OS AL ships keys for, even when the
+        # matching ISO is not present on this machine.
+        $productKeyFiles = @(
+            (Get-PSFConfigValue -FullName AutomatedLab.ProductKeyFilePath -FallBack $null)
+            (Get-PSFConfigValue -FullName AutomatedLab.ProductKeyFilePathCustom -FallBack $null)
+        ) | Where-Object { $_ -and (Test-Path -Path $_) }
+
+        foreach ($productKeyFile in $productKeyFiles)
+        {
+            try
+            {
+                [xml]$productKeysXml = Get-Content -Path $productKeyFile -Raw
+            }
+            catch
+            {
+                Write-PSFMessage "Could not parse product key catalog '$productKeyFile': $_"
+                continue
+            }
+
+            foreach ($entry in $productKeysXml.DocumentElement.ChildNodes)
+            {
+                $osName = $entry.OperatingSystemName
+                if (-not $osName) { continue }
+                $key = ($osName -replace '[\s\(\)]', '').ToLower()
+                if (-not $nameMap.ContainsKey($key))
+                {
+                    $nameMap[$key] = $osName
+                }
+            }
+        }
+
+        # Locally scanned ISO names take precedence because they represent what is
+        # actually installable on this host.
+        foreach ($localOs in $localCachedOsList)
+        {
+            if (-not $localOs.OperatingSystemName) { continue }
+            $key = ($localOs.OperatingSystemName -replace '[\s\(\)]', '').ToLower()
+            $nameMap[$key] = $localOs.OperatingSystemName
+        }
+
+        if ($UseOnlyCache)
+        {
+            try
+            {
+                if ($IsLinux -or $IsMacOS)
+                {
+                    $cachedProxmoxOsList = $type::Import((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath "Stores/$($storeLocationName)OperatingSystems.xml"))
+                }
+                else
+                {
+                    $cachedProxmoxOsList = $type::ImportFromRegistry('Cache', "$($storeLocationName)OperatingSystems")
+                }
+            }
+            catch
+            {
+                Write-PSFMessage 'Could not read Proxmox OS image cache'
+            }
+
+            return $cachedProxmoxOsList
+        }
+
+        $osList = New-Object $type
+
+        $vmParam = @{ IncludeTemplates = $true; NoCache = $true }
+        if ($Node) { $vmParam.Node = $Node }
+        $templates = @(Get-LWProxmoxVM @vmParam | Where-Object { $_.template -eq 1 })
+
+        Write-ScreenInfo -Message "Found $($templates.Count) Proxmox template(s) to inspect" -Type Verbose
+
+        $versionPattern = '^\d+(\.\d+){1,3}$'
+
+        foreach ($template in $templates)
+        {
+            $tags = @($template.tags | Where-Object { $_ })
+            if ($tags -notcontains 'template') { continue }
+
+            $versionTag = $tags | Where-Object { $_ -match $versionPattern } | Select-Object -First 1
+            $osTag = $tags | Where-Object { $_ -ne 'template' -and $_ -ne $versionTag } | Select-Object -First 1
+
+            if (-not $osTag) { continue }
+
+            $osName = if ($nameMap.ContainsKey($osTag)) { $nameMap[$osTag] } else { $osTag }
+            $proxmoxOs = [AutomatedLab.OperatingSystem]::new($osName)
+            if (-not $proxmoxOs.OperatingSystemName) { continue }
+
+            if ($versionTag)
+            {
+                try { $proxmoxOs.Version = [AutomatedLab.Version]$versionTag } catch { }
+            }
+
+            # Record the original Proxmox VM/template name so downstream callers
+            # (e.g. New-LWProxmoxVM) know which template to clone, analogous to
+            # VMWareImageName for vSphere deployments.
+            if ($template.Name)
+            {
+                $proxmoxOs.ProxmoxImageName = $template.Name
+            }
+
+            $osList.Add($proxmoxOs)
+        }
+
+        $osList.Timestamp = Get-Date
+
         if ($IsLinux -or $IsMacOS)
         {
             $osList.Export((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath "Stores/$($storeLocationName)OperatingSystems.xml"))

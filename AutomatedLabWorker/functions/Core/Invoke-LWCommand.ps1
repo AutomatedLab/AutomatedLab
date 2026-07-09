@@ -39,13 +39,13 @@
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
     if ($DependencyFolderPath) {
-        $result = if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure' -and (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $DependencyFolderPath) ) { 
+        $result = if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure' -and (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $DependencyFolderPath) ) {
             Test-LabPathIsOnLabAzureLabSourcesStorage -Path $DependencyFolderPath
         }
         else {
             Test-Path -Path $DependencyFolderPath
         }
-        
+
         if (-not $result) {
             Write-Error "The DependencyFolderPath '$DependencyFolderPath' could not be found"
             return
@@ -59,7 +59,7 @@
         else {
             Test-Path -Path $ScriptFilePath
         }
-        
+
         if (-not $result) {
             Write-Error "The ScriptFilePath '$ScriptFilePath' could not be found"
             return

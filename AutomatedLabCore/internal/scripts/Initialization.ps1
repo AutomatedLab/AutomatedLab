@@ -151,12 +151,24 @@ Set-PSFConfig -Module 'AutomatedLab' -Name VMConnectUseAllMonitors -Value $false
 Set-PSFConfig -Module 'AutomatedLab' -Name VMConnectRedirectedDrives -Value 'none' -Initialize -Validation string -Description "Drives to mount in a VMConnect session. Use '*' for all drives or a semicolon seperated list."
 
 #Hyper-V Network settings
-Set-PSFConfig -Module 'AutomatedLab' -Name MacAddressPrefix -Value '0017FB' -Initialize -Validation string -Description 'The MAC address prefix for Hyper-V labs' -Handler { if ($args[0].Length -eq 0 -or $args[0].Length -gt 11) { Write-PSFMessage -Level Error -Message "Invalid prefix length for MacAddressPrefix! $($args[0]) needs to be at least one character and at most 11 characters"; throw "Invalid prefix length for MacAddressPrefix! $($args[0]) needs to be at least one character and at most 11 characters" } }
+Set-PSFConfig -Module 'AutomatedLab' -Name HypervMacAddressPrefix -Value '0017FB' -Initialize -Validation string -Description 'The MAC address prefix for Hyper-V labs' -Handler { if ($args[0].Length -eq 0 -or $args[0].Length -gt 11) { Write-PSFMessage -Level Error -Message "Invalid prefix length for HypervMacAddressPrefix! $($args[0]) needs to be at least one character and at most 11 characters"; throw "Invalid prefix length for HypervMacAddressPrefix! $($args[0]) needs to be at least one character and at most 11 characters" } }
 Set-PSFConfig -Module 'AutomatedLab' -Name DisableDeviceNaming -Value $false -Validation bool -Initialize -Description 'Disables Device Naming for VM NICs. Enabled by default for Hosts > 2016 and Gen 2 Guests > 2016'
 Set-PSFConfig -Module 'AutomatedLab' -Name HyperVUseNAT -Value $false -Validation bool -Initialize -Description 'Indicates if a NAT should be created for all lab environments'
 
 #Hyper-V Disk Settings
 Set-PSFConfig -Module 'AutomatedLab' -Name CreateOnlyReferencedDisks -Value $true -Initialize -Validation bool -Description 'Disks that are not references by a VM will not be created'
+
+#Proxmox Authentication settings
+Set-PSFConfig -Module 'AutomatedLab' -Name MaxAuthTicketLifetimeMinutes -Value 60 -Initialize -Validation integer -Description 'Maximum lifetime of the Proxmox authentication ticket in minutes'
+
+#Proxmox Network settings
+Set-PSFConfig -Module 'AutomatedLab' -Name ProxmoxMacAddressPrefix -Value BC2411 -Initialize -Validation string -Description 'The MAC address prefix for Proxmox labs' -Handler { if ($args[0].Length -eq 0 -or $args[0].Length -gt 11) { Write-PSFMessage -Level Error -Message "Invalid prefix length for ProxmoxMacAddressPrefix! $($args[0]) needs to be at least one character and at most 11 characters"; throw "Invalid prefix length for ProxmoxMacAddressPrefix! $($args[0]) needs to be at least one character and at most 11 characters" } }
+Set-PSFConfig -Module 'AutomatedLab' -Name ProxmoxRetryCount -Value 3 -Initialize -Validation integer -Description 'The number of retries for Proxmox actions like creating a virtual network'
+
+#Proxmox VM Settings
+Set-PSFConfig -Module 'AutomatedLab' -Name DefaultCpuType -Value x86-64-v3 -Initialize -Validation string -Description 'The default CPU type for Proxmox VMs'
+Set-PSFConfig -Module 'AutomatedLab' -Name ProxmoxAgentTimeout -Value 300 -Initialize -Validation integer -Description 'Timeout in seconds for the QEMU Guest Agent to become responsive during VM provisioning.'
+Set-PSFConfig -Module 'AutomatedLab' -Name ProxmoxAgentStabilizationSeconds -Value 10 -Initialize -Validation integer -Description 'Seconds to wait after QEMU Guest Agent responds to ping before sending files. Allows the agent to fully initialize file-operation handlers on slower templates.'
 
 #Admin Center
 Set-PSFConfig -Module 'AutomatedLab' -Name WacDownloadUrl -Value 'http://aka.ms/WACDownload' -Validation string -Initialize -Description 'Windows Admin Center Download URL'

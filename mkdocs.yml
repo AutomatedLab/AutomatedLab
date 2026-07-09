@@ -276,7 +276,7 @@ nav:
   - Get-LWAzureVMStatus: AutomatedLabWorker/en-us/Get-LWAzureVMStatus.md
   - Get-LWAzureWindowsFeature: AutomatedLabWorker/en-us/Get-LWAzureWindowsFeature.md
   - Get-LWHypervVM: AutomatedLabWorker/en-us/Get-LWHypervVM.md
-  - Get-LWHypervVMDescription: AutomatedLabWorker/en-us/Get-LWHypervVMDescription.md
+  - Get-LWVMDescription: AutomatedLabWorker/en-us/Get-LWVMDescription.md
   - Get-LWHypervVMSnapshot: AutomatedLabWorker/en-us/Get-LWHypervVMSnapshot.md
   - Get-LWHypervVMStatus: AutomatedLabWorker/en-us/Get-LWHypervVMStatus.md
   - Get-LWHypervWindowsFeature: AutomatedLabWorker/en-us/Get-LWHypervWindowsFeature.md
@@ -423,7 +423,7 @@ nav:
   - Set-LabSnippet: AutomatedLab.Recipe/en-us/Set-LabSnippet.md
   - Set-LabVMUacStatus: AutomatedLabCore/en-us/Set-LabVMUacStatus.md
   - Set-LWAzureDnsServer: AutomatedLabWorker/en-us/Set-LWAzureDnsServer.md
-  - Set-LWHypervVMDescription: AutomatedLabWorker/en-us/Set-LWHypervVMDescription.md
+  - Set-LWVMDescription: AutomatedLabWorker/en-us/Set-LWVMDescription.md
   - Set-UnattendedAdministratorName: AutomatedLabUnattended/en-us/Set-UnattendedAdministratorName.md
   - Set-UnattendedAdministratorPassword: AutomatedLabUnattended/en-us/Set-UnattendedAdministratorPassword.md
   - Set-UnattendedAntiMalware: AutomatedLabUnattended/en-us/Set-UnattendedAntiMalware.md

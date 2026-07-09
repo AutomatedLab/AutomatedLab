@@ -78,6 +78,12 @@
             {
                 Remove-LWVMWareVM -Name $machine.ResourceName
             }
+            elseif ($machine.HostType -eq 'Proxmox')
+            {
+                Remove-LWProxmoxVM -Name $machine.ResourceName
+            }
+
+            UnInstall-LabSshKnownHost -ComputerName $machine
 
             UnInstall-LabSshKnownHost -ComputerName $machine
 

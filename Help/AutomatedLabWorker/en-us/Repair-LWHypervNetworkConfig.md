@@ -13,7 +13,7 @@ Reorder and rename Hyper-V VM network adapters
 ## SYNTAX
 
 ```
-Repair-LWHypervNetworkConfig [-ComputerName] <String> [<CommonParameters>]
+Repair-LWHypervNetworkConfig [-ComputerName] <String[]> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -32,10 +32,10 @@ Reorders and renames all NICs of Router01
 ## PARAMETERS
 
 ### -ComputerName
-Host name to repair
+One or more host names to repair
 
 ```yaml
-Type: String
+Type: String[]
 Parameter Sets: (All)
 Aliases:
 

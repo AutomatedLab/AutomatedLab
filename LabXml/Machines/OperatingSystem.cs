@@ -20,6 +20,7 @@ namespace AutomatedLab
         private string edition;
         private string installation;
         private int imageIndex;
+        private string proxmoxImageName;
         private Dictionary<string, string> azureToIsoName = new Dictionary<string, string>(){
             {"2012-datacenter_microsoftwindowsserver", "Windows Server 2012 Datacenter (Server with a GUI)" },
             {"2012-r2-datacenter_microsoftwindowsserver", "Windows Server 2012 R2 Datacenter (Server with a GUI)" },
@@ -195,6 +196,17 @@ namespace AutomatedLab
                         return string.Empty;
                 }
             }
+        }
+
+        // Unlike VMWareImageName, the Proxmox template name is not derivable from the
+        // operating system name. It is discovered at runtime by inspecting the templates
+        // present on the connected Proxmox cluster (see Get-LabAvailableOperatingSystem
+        // -Proxmox), and is therefore a settable property whose value is populated by
+        // the caller.
+        public string ProxmoxImageName
+        {
+            get { return proxmoxImageName; }
+            set { proxmoxImageName = value; }
         }
 
         public string ProductKey

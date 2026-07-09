@@ -22,6 +22,12 @@ Get-LabAvailableOperatingSystem [[-Path] <String[]>] [-UseOnlyCache] [-NoDisplay
 Get-LabAvailableOperatingSystem [-UseOnlyCache] [-NoDisplay] [-Azure] -Location <Object> [<CommonParameters>]
 ```
 
+### Proxmox
+```
+Get-LabAvailableOperatingSystem [-UseOnlyCache] [-NoDisplay] [-Node <String[]>] -Proxmox
+ [<CommonParameters>]
+```
+
 ## DESCRIPTION
 Shows all available operating systems that are available for an imported or newly created lab.
 Available after either calling New-LabDefinition or Import-Lab or by specifying a path to the ISO folder
@@ -80,6 +86,22 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -Node
+Optional name(s) of one or more Proxmox cluster nodes to which the template lookup should be restricted.
+When omitted, all nodes of the connected Proxmox cluster are searched for VM templates.
+
+```yaml
+Type: String[]
+Parameter Sets: Proxmox
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -NoDisplay
 Do not display console messages
 
@@ -106,6 +128,22 @@ Aliases:
 Required: False
 Position: 0
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Proxmox
+Indicates that available operating systems should be enumerated from VM templates on the currently connected Proxmox cluster instead of from local ISO files.
+Connect-LabProxmoxCluster must have been called first.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: Proxmox
+Aliases:
+
+Required: True
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

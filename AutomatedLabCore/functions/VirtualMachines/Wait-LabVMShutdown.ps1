@@ -29,8 +29,14 @@
 
     process
     {
-        $null = Get-LabVM -ComputerName $ComputerName |
-            Add-Member -Name HasShutdown -MemberType NoteProperty -Value $false -Force -PassThru |
+        $labVMs = Get-LabVM -ComputerName $ComputerName
+        if (-not $labVMs)
+        {
+            Write-Error "The machine(s) '$($ComputerName -join ', ')' could not be found in the lab."
+            return
+        }
+
+        $labVMs | Add-Member -Name HasShutdown -MemberType NoteProperty -Value $false -Force -PassThru |
             Foreach-Object {$vms.Add($_)}
     }
 
