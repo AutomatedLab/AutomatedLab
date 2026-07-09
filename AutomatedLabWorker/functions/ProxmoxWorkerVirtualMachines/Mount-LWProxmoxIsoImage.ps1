@@ -134,13 +134,24 @@ function Mount-LWProxmoxIsoImage
 
             $targetNode = $proxmoxVm.node
 
-            # Find the next free SCSI slot for a CD-ROM drive (scanning 30 down to 20)
+            # PROXMOX-ISO-SLOT-FIX v1
+            # Pick a free SCSI CD-ROM slot by scanning UPWARD from scsi2 (scsi0/scsi1 hold
+            # the OS + data disks) and choosing the LOWEST free slot in scsi2..scsi29.
+            # The previous logic scanned scsi30 -> scsi20 and grabbed scsi30, which FAILS on
+            # VMs using the 'virtio-scsi-single' controller (the Dagger template default):
+            # that controller gives every SCSI device its own PCI controller, and the top
+            # index scsi30 cannot be hot-added to a running VM, so the Proxmox API returns
+            # HTTP 400 'Parameter verification failed.' (and leaves a stray pending entry).
+            # Low indices hot-add cleanly, so preferring the lowest free slot is robust for
+            # both 'virtio-scsi-single' and the shared 'virtio-scsi-pci' controller.
             $vmConfig = (Invoke-LWProxmoxCallWithRetry -ActivityName "Get VM config for VM '$($machine.Name)'" -ScriptBlock { Get-PveNodesQemuConfig -Node $targetNode -Vmid $proxmoxVm.vmid }).Response.data
             $isoFileName = Split-Path -Path $IsoPath -Leaf
 
-            # Check if this ISO is already mounted on any slot
+            # Check if this ISO is already mounted on any CD-ROM slot. Scan the full range
+            # (up to scsi30) so a leftover high-slot mount from an older AutomatedLab or a
+            # failed hot-add is still detected and not duplicated.
             $alreadyMounted = $false
-            for ($slot = 30; $slot -ge 20; $slot--)
+            for ($slot = 2; $slot -le 30; $slot++)
             {
                 $slotValue = $vmConfig."scsi$slot"
                 if ($slotValue -and $slotValue -match 'media=cdrom' -and $slotValue -match [regex]::Escape($isoFileName))
@@ -153,7 +164,7 @@ function Mount-LWProxmoxIsoImage
             if ($alreadyMounted) { continue }
 
             $freeSlot = $null
-            for ($slot = 30; $slot -ge 20; $slot--)
+            for ($slot = 2; $slot -le 29; $slot++)
             {
                 $slotValue = $vmConfig."scsi$slot"
                 if (-not $slotValue)
@@ -165,7 +176,7 @@ function Mount-LWProxmoxIsoImage
 
             if ($null -eq $freeSlot)
             {
-                Write-ScreenInfo -Message "No free SCSI CD-ROM slot (scsi20-scsi30) available on VM '$($machine.Name)'." -Type Error
+                Write-ScreenInfo -Message "No free SCSI CD-ROM slot (scsi2-scsi29) available on VM '$($machine.Name)'." -Type Error
                 continue
             }
 
@@ -251,13 +262,37 @@ function Mount-LWProxmoxIsoImage
         return
     }
 
+    # PROXMOX-ISO-SLOT-FIX v1
+    # When the caller did not request a specific slot, auto-select the LOWEST free SCSI
+    # slot in scsi2..scsi29 (scsi0/scsi1 are the OS + data disks). The historical default
+    # of scsi30 FAILS on 'virtio-scsi-single' VMs (the Dagger template default: one PCI
+    # controller per SCSI device) because the top index scsi30 cannot be hot-added to a
+    # running VM -> the Proxmox API returns HTTP 400 'Parameter verification failed.'.
+    # Low indices hot-add cleanly. The public Mount-LabIsoImage (AutomatedLabCore) calls
+    # this function WITHOUT -ScsiSlot, so this is the path exercised by a lab deployment.
+    $effectiveSlot = $ScsiSlot
+    if (-not $PSBoundParameters.ContainsKey('ScsiSlot'))
+    {
+        $cfgData = $vmConfig.Response.data
+        $effectiveSlot = -1
+        for ($slot = 2; $slot -le 29; $slot++)
+        {
+            if (-not $cfgData."scsi$slot") { $effectiveSlot = $slot; break }
+        }
+        if ($effectiveSlot -lt 0)
+        {
+            Write-Error -Message "No free SCSI CD-ROM slot (scsi2-scsi29) available on VM $VmId." -ErrorAction Stop
+            return
+        }
+    }
+
     $isoValue = "$isoVolId,media=cdrom"
 
-    if ($PSCmdlet.ShouldProcess("VM $VmId on node $Node", "Mount ISO '$IsoFile' on scsi$ScsiSlot"))
+    if ($PSCmdlet.ShouldProcess("VM $VmId on node $Node", "Mount ISO '$IsoFile' on scsi$effectiveSlot"))
     {
-        Write-PSFMessage -Message "Mounting ISO '$isoVolId' on VM $VmId (node $Node) as scsi$ScsiSlot"
+        Write-PSFMessage -Message "Mounting ISO '$isoVolId' on VM $VmId (node $Node) as scsi$effectiveSlot"
 
-        $result = Invoke-LWProxmoxCallWithRetry -ActivityName "Mount ISO on VM $VmId" -ScriptBlock { Set-PveNodesQemuConfig -Node $Node -Vmid $VmId -ScsiN @{ $ScsiSlot = $isoValue } }
+        $result = Invoke-LWProxmoxCallWithRetry -ActivityName "Mount ISO on VM $VmId" -ScriptBlock { Set-PveNodesQemuConfig -Node $Node -Vmid $VmId -ScsiN @{ $effectiveSlot = $isoValue } }
 
         if ($result.StatusCode -ne 200)
         {
@@ -265,15 +300,15 @@ function Mount-LWProxmoxIsoImage
             return
         }
 
-        Write-PSFMessage -Message "Successfully mounted ISO '$IsoFile' on VM $VmId as scsi$ScsiSlot"
+        Write-PSFMessage -Message "Successfully mounted ISO '$IsoFile' on VM $VmId as scsi$effectiveSlot"
 
         # Return the current config to confirm
         $updatedConfig = (Invoke-LWProxmoxCallWithRetry -ActivityName "Verify VM config for VM $VmId" -ScriptBlock { Get-PveNodesQemuConfig -Node $Node -Vmid $VmId }).Response.data
         [PSCustomObject]@{
             Node     = $Node
             VmId     = $VmId
-            ScsiSlot = "scsi$ScsiSlot"
-            Value    = $updatedConfig."scsi$ScsiSlot"
+            ScsiSlot = "scsi$effectiveSlot"
+            Value    = $updatedConfig."scsi$effectiveSlot"
             IsoFile  = $IsoFile
             Storage  = $resolvedStorage
         }
