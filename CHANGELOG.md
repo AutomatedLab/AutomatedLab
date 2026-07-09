@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Registered the missing PSFramework configuration items `ProxmoxAgentExecTimeout` (default 300s) and `ProxmoxDelayBetweenComputers` (default 60s) that `New-LWProxmoxVM` reads through `Get-LabConfigurationItem`. Without a registration the `Get-LabConfigurationItem` integration tests failed the build (2 failing tests). Also corrected the stale fallback comment (45 -> 60) in `New-LWProxmoxVM`.
+
 ## [5.61.0] - 2026-05-12
 
 ### Fixed

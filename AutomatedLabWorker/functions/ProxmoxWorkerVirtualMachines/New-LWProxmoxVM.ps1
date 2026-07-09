@@ -1116,7 +1116,7 @@ Stop-Transcript
     # boot/OOBE storm and gives the guest-exec readiness gate room to succeed. Configurable
     # via 'AutomatedLab.ProxmoxDelayBetweenComputers' (seconds); the Deploy script sets it from
     # LabConfig.yml (MachineConfig.ProxmoxDelayBetweenComputersSeconds). Read without -Default
-    # so an explicit 0 disables the delay; unset falls back to 45.
+    # so an explicit 0 disables the delay; unset falls back to 60.
     $staggerSeconds = Get-LabConfigurationItem -Name ProxmoxDelayBetweenComputers
     
     if ($null -eq $staggerSeconds -or "$staggerSeconds" -eq '') { $staggerSeconds = 60 }

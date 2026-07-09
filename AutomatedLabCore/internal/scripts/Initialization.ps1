@@ -168,7 +168,9 @@ Set-PSFConfig -Module 'AutomatedLab' -Name ProxmoxRetryCount -Value 3 -Initializ
 #Proxmox VM Settings
 Set-PSFConfig -Module 'AutomatedLab' -Name DefaultCpuType -Value x86-64-v3 -Initialize -Validation string -Description 'The default CPU type for Proxmox VMs'
 Set-PSFConfig -Module 'AutomatedLab' -Name ProxmoxAgentTimeout -Value 300 -Initialize -Validation integer -Description 'Timeout in seconds for the QEMU Guest Agent to become responsive during VM provisioning.'
+Set-PSFConfig -Module 'AutomatedLab' -Name ProxmoxAgentExecTimeout -Value 300 -Initialize -Validation integer -Description 'Timeout in seconds for the QEMU Guest Agent guest-exec subsystem to become ready (able to run commands) during VM provisioning.'
 Set-PSFConfig -Module 'AutomatedLab' -Name ProxmoxAgentStabilizationSeconds -Value 10 -Initialize -Validation integer -Description 'Seconds to wait after QEMU Guest Agent responds to ping before sending files. Allows the agent to fully initialize file-operation handlers on slower templates.'
+Set-PSFConfig -Module 'AutomatedLab' -Name ProxmoxDelayBetweenComputers -Value 60 -Initialize -Validation integer -Description 'Seconds to wait after provisioning a Proxmox VM before creating the next one, to stagger the boot/OOBE load on the Proxmox hosts. Set to 0 to disable the delay.'
 
 #Admin Center
 Set-PSFConfig -Module 'AutomatedLab' -Name WacDownloadUrl -Value 'http://aka.ms/WACDownload' -Validation string -Initialize -Description 'Windows Admin Center Download URL'
