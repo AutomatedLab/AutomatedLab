@@ -1101,6 +1101,29 @@ Stop-Transcript
     }
     #>
 
+    # PROXMOX-DEPLOY-STAGGER v1
+    # New-LWProxmoxVM is invoked back-to-back by New-LabVM's per-machine foreach loops.
+    # Each call starts the VM and launches Sysprep (/generalize /oobe /reboot), which then
+    # runs OOBE in the background while the loop creates the next VM. Without spacing, a
+    # growing number of VMs boot/OOBE at once and saturate the Proxmox hosts' storage I/O;
+    # under that load the QEMU guest-exec subsystem of later VMs times out, leaving them
+    # uninitialized (Disks.xml not copied, Sysprep not launched -> black screen, no desktop).
+    # Waiting here, after this machine's provisioning, reduces the peak number of VMs in the
+    # boot/OOBE storm and gives the guest-exec readiness gate room to succeed. Configurable
+    # via 'AutomatedLab.ProxmoxDelayBetweenComputers' (seconds); the Deploy script sets it from
+    # LabConfig.yml (MachineConfig.ProxmoxDelayBetweenComputersSeconds). Read without -Default
+    # so an explicit 0 disables the delay; unset falls back to 45.
+    $staggerSeconds = Get-LabConfigurationItem -Name ProxmoxDelayBetweenComputers
+    
+    if ($null -eq $staggerSeconds -or "$staggerSeconds" -eq '') { $staggerSeconds = 60 }
+
+    $staggerSeconds = [int]$staggerSeconds
+    if ($staggerSeconds -gt 0)
+    {
+        Write-ScreenInfo -Message "Waiting $staggerSeconds second(s) before creating the next Proxmox machine to stagger the boot/OOBE load"
+        Start-Sleep -Seconds $staggerSeconds
+    }
+
     Write-LogFunctionExit
 
     return $true
