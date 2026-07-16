@@ -1066,7 +1066,7 @@ Stop-Transcript
         Start-Sleep -Seconds 2
 
         Write-PSFMessage "Starting Sysprep on VM '$($Machine.ResourceName)'"
-        Start-LWProxmoxAgentExecutionOnVM -ComputerName $Machine.ResourceName -Command 'C:\Windows\system32\Sysprep\sysprep.exe /generalize /oobe /reboot'
+        Start-LWProxmoxWindowsSysprep -ComputerName $Machine.ResourceName
     }
     else
     {

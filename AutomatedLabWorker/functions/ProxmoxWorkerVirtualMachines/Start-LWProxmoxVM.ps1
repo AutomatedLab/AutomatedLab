@@ -60,7 +60,15 @@ function Start-LWProxmoxVM
             $result = Wait-LWProxmoxTasksStatus -Upid $result.Response.data -Node $proxmoxVm.node -DesiredValues $values -TimeoutInSeconds 600
             if ($result -like 'WARNINGS:*')
             {
-                Write-PSFMessage -Level Warning -Message "Proxmox machine '$vm' started with a non-fatal task warning ('$result'); treating as success. See the node's task log for details (e.g. the UEFI 2011->2023 Secure Boot certificate enrollment advisory)."
+                $currentVm = Get-LWProxmoxVM -Name $vm -NoCache
+                if ($currentVm.status -eq 'running' -and $currentVm.CurrentStatus.qmpstatus -eq 'running')
+                {
+                    Write-PSFMessage -Message "Proxmox machine '$vm' started with non-fatal task warning '$result'." -Level Warning
+                }
+                else
+                {
+                    Write-Error -Message "Could not start Proxmox machine '$vm'. The error was '$result'." -ErrorAction Stop
+                }
             }
             elseif ($result -ne 'OK' -and $result -ne "VM $vmid already running")
             {

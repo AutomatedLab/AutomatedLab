@@ -197,17 +197,6 @@
         if ($proxmoxVms)
         {
             Start-LWProxmoxVM -ComputerName $proxmoxVms -DelayBetweenComputers $DelayBetweenComputers -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewline
-
-            foreach ($vm in $proxmoxVms)
-            {
-                $machineMetadata = Get-LWVMDescription -ComputerName $vm.ResourceName
-                if (($machineMetadata.InitState -band [AutomatedLab.LabVMInitState]::NetworkAdapterBindingCorrected) -ne [AutomatedLab.LabVMInitState]::NetworkAdapterBindingCorrected)
-                {
-                    Repair-LWProxmoxNetworkConfig -ComputerName $vm
-                    $machineMetadata.InitState = [AutomatedLab.LabVMInitState]::NetworkAdapterBindingCorrected
-                    Set-LWVMDescription -Hashtable $machineMetadata -ComputerName $vm.ResourceName
-                }
-            }
         }
 
         $vmwareVms = $vms | Where-Object HostType -eq 'VmWare'
@@ -219,6 +208,17 @@
         if ($Wait -and $vmsCopy)
         {
             Wait-LabVM -ComputerName ($vmsCopy) -Timeout $TimeoutInMinutes -DoNotUseCredSsp:$DoNotUseCredSsp -ProgressIndicator $ProgressIndicator -NoNewLine
+        }
+
+        foreach ($vm in $proxmoxVms)
+        {
+            $machineMetadata = Get-LWVMDescription -ComputerName $vm.ResourceName
+            if (($machineMetadata.InitState -band [AutomatedLab.LabVMInitState]::NetworkAdapterBindingCorrected) -ne [AutomatedLab.LabVMInitState]::NetworkAdapterBindingCorrected)
+            {
+                Repair-LWProxmoxNetworkConfig -ComputerName $vm
+                $machineMetadata.InitState = $machineMetadata.InitState -bor [AutomatedLab.LabVMInitState]::NetworkAdapterBindingCorrected
+                Set-LWVMDescription -Hashtable $machineMetadata -ComputerName $vm.ResourceName
+            }
         }
 
         Write-ProgressIndicatorEnd
