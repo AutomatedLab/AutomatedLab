@@ -171,6 +171,7 @@ Set-PSFConfig -Module 'AutomatedLab' -Name ProxmoxAgentTimeout -Value 300 -Initi
 Set-PSFConfig -Module 'AutomatedLab' -Name ProxmoxAgentExecTimeout -Value 300 -Initialize -Validation integer -Description 'Timeout in seconds for the QEMU Guest Agent guest-exec subsystem to become ready (able to run commands) during VM provisioning.'
 Set-PSFConfig -Module 'AutomatedLab' -Name ProxmoxAgentStabilizationSeconds -Value 10 -Initialize -Validation integer -Description 'Seconds to wait after QEMU Guest Agent responds to ping before sending files. Allows the agent to fully initialize file-operation handlers on slower templates.'
 Set-PSFConfig -Module 'AutomatedLab' -Name ProxmoxDelayBetweenComputers -Value 60 -Initialize -Validation integer -Description 'Seconds to wait after provisioning a Proxmox VM before creating the next one, to stagger the boot/OOBE load on the Proxmox hosts. Set to 0 to disable the delay.'
+Set-PSFConfig -Module 'AutomatedLab' -Name ProxmoxImageStateCompleteTimeout -Value 1800 -Initialize -Validation integer -Description 'Timeout in seconds to wait for a cloned Proxmox VM to reach Windows IMAGE_STATE_COMPLETE (its own first-boot specialize) before injecting the answer file and running Sysprep. Allows generalized (sysprepped) templates to be used, not only specialized golden images.'
 
 #Admin Center
 Set-PSFConfig -Module 'AutomatedLab' -Name WacDownloadUrl -Value 'http://aka.ms/WACDownload' -Validation string -Initialize -Description 'Windows Admin Center Download URL'

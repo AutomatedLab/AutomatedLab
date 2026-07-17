@@ -1052,6 +1052,17 @@ Stop-Transcript
 
     if ($agentAvailable)
     {
+        # A supplied template may be a *generalized* (sysprepped) image instead of a
+        # *specialized* golden image. A generalized clone boots into its OWN first-boot
+        # specialize/OOBE, during which the QEMU guest agent already answers while
+        # ImageState is still IMAGE_STATE_UNDEPLOYABLE. Running Sysprep in that state
+        # corrupts the machine ("Windows could not start the installation process").
+        # Wait for the clone's own specialize to settle (IMAGE_STATE_COMPLETE) before
+        # injecting the answer file and generalizing. A specialized template is already
+        # COMPLETE, so this returns immediately with no added delay.
+        $imageStateTimeout = Get-LabConfigurationItem -Name ProxmoxImageStateCompleteTimeout -Default 1800
+        $null = Wait-LWProxmoxWindowsImageStateComplete -Node $Machine.ProxmoxProperties.TargetNode -Vmid $nextVmId -Name $Machine.ResourceName -TimeoutSeconds $imageStateTimeout
+
         $files = dir -Path $vhdVolume -File
         foreach ($file in $files)
         {
