@@ -21,6 +21,7 @@
 
     FunctionsToExport      = @(
         'Add-LWAzureLoadBalancedPort',
+        'Add-LWProxmoxIsoImage',
         'Add-LWVMVHDX',
         'Checkpoint-LWAzureVM',
         'Checkpoint-LWHypervVM',
@@ -88,6 +89,7 @@
         'Remove-LWHypervVMSnapshot',
         'Remove-LWNetworkSwitch',
         'Remove-LWProxmoxCdDrive',
+        'Remove-LWProxmoxIsoImage',
         'Remove-LWProxmoxVM',
         'Remove-LWProxmoxVMSnapshot',
         'Remove-LWVHDX',

@@ -87,6 +87,7 @@
         'Get-LabIsoImage',
         'Get-LabIssuingCA',
         'Get-LabMachineAutoShutdown',
+        'Get-LabProxmoxConnectionInfo',
         'Get-LabPSSession',
         'Get-LabReleaseStep',
         'Get-LabSoftwarePackage',

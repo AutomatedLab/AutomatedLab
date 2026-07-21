@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+### Added
+
+- Proxmox: add `Add-LWProxmoxIsoImage` and `Remove-LWProxmoxIsoImage` so ISO images on a Proxmox storage can now be uploaded and deleted. Together with the existing `Get-LWProxmoxIsoImage` this completes list/upload/remove management of ISO images on Proxmox storages.
+  - `Add-LWProxmoxIsoImage` uploads via SFTP by default (Posh-SSH), copying the file straight into the storage's `<path>/template/iso` directory and bypassing the `pveproxy` HTTP upload endpoint, which spools uploads to a temporary file and can fail for large ISO images. When the cluster connection was made with a `@pam` credential that password is reused as the SSH credential (realm stripped, e.g. `root@pam` -> `root`); `-SshCredential`, `-SshHostName` and `-SshPort` override this. It falls back automatically to the HTTP upload endpoint (streamed with `curl`, because that endpoint forces a TLS renegotiation the .NET web stack cannot perform) when SSH is unavailable, or on demand via `-TransferMethod Http`. Also supports `-Storage`, `-Checksum`/`-ChecksumAlgorithm` (HTTP only), `-Force` (overwrite) and `-PassThru`.
+  - `Remove-LWProxmoxIsoImage` deletes an ISO by file name (auto-searching all ISO-capable storages on the node) or by full volume id, with `-Force` and `-PassThru`.
+  - `Get-LabProxmoxConnectionInfo` exposes the active Proxmox connection (host, port, auth type and, with `-IncludeCredential`, the stored credential) so the SFTP upload can reuse the session credential.
+- Add `Posh-SSH` as a dependency, used for the SFTP-based Proxmox ISO upload.
+
 ### Fixed
 
 - Registered the missing PSFramework configuration items `ProxmoxAgentExecTimeout` (default 300s) and `ProxmoxDelayBetweenComputers` (default 60s) that `New-LWProxmoxVM` reads through `Get-LabConfigurationItem`. Without a registration the `Get-LabConfigurationItem` integration tests failed the build (2 failing tests). Also corrected the stale fallback comment (45 -> 60) in `New-LWProxmoxVM`.

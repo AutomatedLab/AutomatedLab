@@ -42,6 +42,7 @@
         'Pester'
         'powershell-yaml'
         'PSFramework'
+        'Posh-SSH'
         'SHiPS'
     )
 
