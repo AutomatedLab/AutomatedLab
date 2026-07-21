@@ -72,6 +72,12 @@ function Add-LWProxmoxIsoImage
     .PARAMETER PassThru
         Return the uploaded ISO image object (as produced by Get-LWProxmoxIsoImage).
 
+    .PARAMETER Confirm
+        Prompts for confirmation before uploading the ISO image.
+
+    .PARAMETER WhatIf
+        Shows what would happen if the command runs. The ISO image is not uploaded.
+
     .EXAMPLE
         Add-LWProxmoxIsoImage -Node 'rz1pinhst101' -Path 'D:\ISOs\WinServer2025.iso'
 

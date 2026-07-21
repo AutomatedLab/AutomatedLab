@@ -38,6 +38,12 @@ function Remove-LWProxmoxIsoImage
     .PARAMETER PassThru
         Return an object describing the deleted ISO.
 
+    .PARAMETER Confirm
+        Prompts for confirmation before deleting the ISO image.
+
+    .PARAMETER WhatIf
+        Shows what would happen if the command runs. The ISO image is not deleted.
+
     .EXAMPLE
         Remove-LWProxmoxIsoImage -Node 'rz1pinhst101' -IsoFile 'WinServer2025.iso'
 
