@@ -68,14 +68,24 @@
                     '$($domainAdministrator.Password -replace "'","''" )')
                 `$otherForest = [System.DirectoryServices.ActiveDirectory.Forest]::GetForest(`$otherForestCtx)
 
-                Write-Verbose "Creating forest trust between forests '`$(`$thisForest.Name)' and '`$(`$otherForest.Name)'"
+                if (@(`$thisForest.GetAllTrustRelationships()).TargetName -contains `$otherForest.Name)
+                {
+                    Write-Verbose "Forest trust between forests '`$(`$thisForest.Name)' and '`$(`$otherForest.Name)' already exists"
+                }
+                else
+                {
+                    Write-Verbose "Creating forest trust between forests '`$(`$thisForest.Name)' and '`$(`$otherForest.Name)'"
 
-                `$thisForest.CreateTrustRelationship(
-                    `$otherForest,
-                    [System.DirectoryServices.ActiveDirectory.TrustDirection]::Bidirectional
-                )
+                    `$thisForest.CreateTrustRelationship(
+                        `$otherForest,
+                        [System.DirectoryServices.ActiveDirectory.TrustDirection]::Bidirectional
+                    )
 
-                Write-Verbose 'Forest trust created'
+                    Write-Verbose 'Forest trust created'
+                }
+
+                # Invoke-LWCommand retries a script block that returns nothing.
+                "`$(`$thisForest.Name) -> `$(`$otherForest.Name)"
 "@
 
             Invoke-LabCommand -ComputerName $rootDc -ScriptBlock ([scriptblock]::Create($cmd)) -NoDisplay

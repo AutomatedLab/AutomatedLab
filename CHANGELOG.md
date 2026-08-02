@@ -6,6 +6,7 @@
 
 - Fixed `New-LWReferenceVHDX` silently producing unbootable base images when `bcdboot` fails (#1662, #1805)
 - DSC Pull Server lab validator (`DscSqlServerPresent`) now accepts SQL Server 2022 and 2025 in addition to 2016/2017/2019 as the backend database engine, and the validation error message has been clarified accordingly (#1844).
+- Fixed `Install-LabADDSTrust` emitting `MethodInvocationException: ... A forest trust relationship exists between ...` for every forest pair during the `Configuring AD trusts` phase of multi-forest labs. The trust script block now skips `CreateTrustRelationship` when the trust already exists and returns a string, so `Invoke-LWCommand` no longer retries it as a command that never ran. This also makes re-running `Install-LabADDSTrust` on an existing lab safe.
 
 ## [5.61.0] - 2026-05-12
 
