@@ -68,8 +68,11 @@ function Get-LWProxmoxVM
             $result = Invoke-LWProxmoxCallWithRetry -ActivityName "Retrieve VMs from node '$n'" -ScriptBlock { Get-PveNodesQemu -Node $n -Full $true }
             if ($result.StatusCode -ne 200)
             {
-                Write-Error "Failed to retrieve VM(s) from Proxmox node '$($n)': $($result.ReasonPhrase)"
-                return
+                # One failing node must neither discard the VMs of the healthy nodes nor poison the
+                # cache with a null entry that later calls would happily serve as a cache hit.
+                $script:proxmoxVmCache.Remove($n)
+                Write-ScreenInfo -Message "Failed to retrieve VM(s) from Proxmox node '$($n)': $($result.ReasonPhrase). Continuing with the remaining node(s)." -Type Warning
+                continue
             }
 
             $result = $result.response.data

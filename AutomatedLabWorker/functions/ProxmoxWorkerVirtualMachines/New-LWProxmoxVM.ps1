@@ -17,6 +17,14 @@ function New-LWProxmoxVM
     $script:lab = Get-Lab
 
     $proxmoxNodes = Get-LWProxmoxNode
+
+    if ($Machine.ProxmoxProperties.TargetNode -and $proxmoxNodes.node -notcontains $Machine.ProxmoxProperties.TargetNode)
+    {
+        Write-ScreenInfo -Message "The Proxmox node '$($Machine.ProxmoxProperties.TargetNode)' assigned to machine '$($Machine.ResourceName)' is not available. Skipping the machine instead of deploying it to an unavailable node. Available node(s): $($proxmoxNodes.node -join ', ')." -Type Error
+        Write-LogFunctionExit
+        return $false
+    }
+
     $proxmoxVMs = Get-LWProxmoxVM -Node $proxmoxNodes -IncludeTemplates
 
     if ($vm = $proxmoxVMs | Where-Object { $_.Name -eq $Machine.ResourceName })
@@ -1129,7 +1137,7 @@ Stop-Transcript
     # LabConfig.yml (MachineConfig.ProxmoxDelayBetweenComputersSeconds). Read without -Default
     # so an explicit 0 disables the delay; unset falls back to 60.
     $staggerSeconds = Get-LabConfigurationItem -Name ProxmoxDelayBetweenComputers
-    
+
     if ($null -eq $staggerSeconds -or "$staggerSeconds" -eq '') { $staggerSeconds = 60 }
 
     $staggerSeconds = [int]$staggerSeconds
