@@ -975,7 +975,7 @@
 
             if ($Gateway -and -not $adapterVirtualNetwork.UseNat)
             {
-                $adapter.Ipv4Gateway.Add($Gateway) 
+                $adapter.Ipv4Gateway.Add($Gateway)
             } elseif ($adapterVirtualNetwork.UseNat) {
                 $adapter.Ipv4Gateway.Add($adapterVirtualNetwork.AddressSpace.FirstUsable)
             }
@@ -1041,6 +1041,15 @@
         if ($PSBoundParameters.ContainsKey('MaxMemory'))
         {
             $machine.MaxMemory = $MaxMemory
+        }
+
+        # Proxmox has no dynamic memory. Without this a machine defined only with MinMemory/MaxMemory
+        # keeps the memory *weight* assigned above instead of a startup memory.
+        if ($machine.HostType -eq 'Proxmox' -and -not $PSBoundParameters.ContainsKey('Memory') -and
+            ($PSBoundParameters.ContainsKey('MaxMemory') -or $PSBoundParameters.ContainsKey('MinMemory')))
+        {
+            $machine.Memory = if ($PSBoundParameters.ContainsKey('MaxMemory')) { $MaxMemory } else { $MinMemory }
+            Write-ScreenInfo -Message "Machine '$Name': Proxmox does not support dynamic memory, using $([int]($machine.Memory / 1MB)) MB as startup memory." -Type Verbose
         }
 
         $machine.EnableWindowsFirewall = $EnableWindowsFirewall

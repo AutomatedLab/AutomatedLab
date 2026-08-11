@@ -33,6 +33,13 @@ Describe 'Get-LWProxmoxNode' {
                 [switch]$TaskEnd
             )
         }
+        function Get-PveNodesStatus
+        {
+            param
+            (
+                [string]$Node
+            )
+        }
     }
 
     BeforeEach {
@@ -89,7 +96,7 @@ Describe 'Get-LWProxmoxNode' {
             [pscustomobject]@{
                 StatusCode = 200
                 Response   = [pscustomobject]@{
-                    data = @([pscustomobject]@{ node = 'pve1'; status = 'online' })
+                    data = @([pscustomobject]@{ node = 'pve1'; status = 'online'; maxcpu = 48; maxmem = 400GB })
                 }
             }
         }
@@ -99,5 +106,72 @@ Describe 'Get-LWProxmoxNode' {
         Should -Invoke -CommandName Write-ScreenInfo -Times 0 -Exactly -ParameterFilter {
             $Type -eq 'Warning'
         }
+    }
+
+    It 'excludes an online node that reports no CPU or memory capacity' {
+        Mock -CommandName Invoke-LWProxmoxCallWithRetry -MockWith {
+            [pscustomobject]@{
+                StatusCode = 200
+                Response   = [pscustomobject]@{
+                    data = @(
+                        [pscustomobject]@{ node = 'pve1'; status = 'online'; maxcpu = 48; maxmem = 400GB }
+                        [pscustomobject]@{ node = 'pve2'; status = 'online'; maxcpu = 0; maxmem = 0 }
+                    )
+                }
+            }
+        }
+
+        (Get-LWProxmoxNode).node | Should -Be 'pve1'
+        Should -Invoke -CommandName Write-ScreenInfo -Times 1 -Exactly -ParameterFilter {
+            $Type -eq 'Warning' -and $Message -match 'pve2 \(reports no CPU or memory capacity\)'
+        }
+    }
+
+    It 'does not probe node-scoped API calls unless -TestNodeConnection is used' {
+        Mock -CommandName Get-PveNodesStatus -MockWith { [pscustomobject]@{ StatusCode = 200 } }
+
+        $null = Get-LWProxmoxNode
+
+        Should -Invoke -CommandName Get-PveNodesStatus -Times 0 -Exactly
+    }
+
+    It 'excludes a node that does not answer node-scoped API calls' {
+        Mock -CommandName Get-PveNodesStatus -MockWith {
+            if ($Node -eq 'pve2') { [pscustomobject]@{ StatusCode = 596 } } else { [pscustomobject]@{ StatusCode = 200 } }
+        }
+
+        (Get-LWProxmoxNode -TestNodeConnection).node | Should -Be 'pve1'
+    }
+
+    It 'treats a throwing node probe as unavailable' {
+        Mock -CommandName Get-PveNodesStatus -MockWith {
+            if ($Node -eq 'pve2') { throw "hostname lookup 'pve2' failed" } else { [pscustomobject]@{ StatusCode = 200 } }
+        }
+
+        (Get-LWProxmoxNode -TestNodeConnection).node | Should -Be 'pve1'
+    }
+
+    It 'fails closed when no node can host a virtual machine' {
+        Mock -CommandName Invoke-LWProxmoxCallWithRetry -MockWith {
+            [pscustomobject]@{
+                StatusCode = 200
+                Response   = [pscustomobject]@{
+                    data = @([pscustomobject]@{ node = 'pve1'; status = 'offline'; maxcpu = $null; maxmem = $null })
+                }
+            }
+        }
+
+        { Get-LWProxmoxNode } | Should -Throw -ExpectedMessage '*No Proxmox node of the connected cluster can host a virtual machine*'
+    }
+
+    It 'fails closed when the cluster returns no node at all' {
+        Mock -CommandName Invoke-LWProxmoxCallWithRetry -MockWith {
+            [pscustomobject]@{
+                StatusCode = 200
+                Response   = [pscustomobject]@{ data = @() }
+            }
+        }
+
+        { Get-LWProxmoxNode } | Should -Throw -ExpectedMessage '*did not return any node*'
     }
 }

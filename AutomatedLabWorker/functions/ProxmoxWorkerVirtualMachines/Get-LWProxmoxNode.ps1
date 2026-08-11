@@ -8,11 +8,12 @@ function Get-LWProxmoxNode
         Retrieves information about Proxmox cluster nodes. Can filter by node name or return all nodes
         sorted by name.
 
-        Only nodes that report the status 'online' are returned. A node that is part of the cluster
-        configuration but not available - for example a node that was physically removed without being
-        deleted from the cluster - is skipped, so no lab machine is ever placed on it and no API call is
-        directed at it. An explicit -Name request is always honoured, and -IncludeUnavailable returns the
-        full cluster membership.
+        Only nodes that can actually host a VM are returned: the cluster must report them as 'online'
+        and they must report CPU and memory capacity. A node that is part of the cluster configuration
+        but not available - for example a node that was physically removed without being deleted from
+        the cluster - is skipped, so no lab machine is ever placed on it and no API call is directed at
+        it. An explicit -Name request is always honoured, and -IncludeUnavailable returns the full
+        cluster membership. When no node is left, the function fails instead of returning an empty list.
 
     .PARAMETER Name
         The name(s) of the Proxmox node(s) to retrieve. If not specified, all nodes are returned.
@@ -23,10 +24,16 @@ function Get-LWProxmoxNode
         membership, for example to verify that a lab machine's target node belongs to the connected
         cluster. Do not use it to select a node for a deployment.
 
+    .PARAMETER TestNodeConnection
+        Additionally verifies that every remaining node answers a node-scoped API call. This catches a
+        node the cluster still reports as online but whose name no longer resolves, which otherwise
+        surfaces much later as "hostname lookup '<node>' failed" on every VM operation. Costs one extra
+        API call per node, so use it when selecting nodes for a deployment rather than on every query.
+
     .EXAMPLE
         Get-LWProxmoxNode
 
-        Gets all online Proxmox nodes in the cluster.
+        Gets all Proxmox nodes in the cluster that can host a VM.
 
     .EXAMPLE
         Get-LWProxmoxNode -Name 'pve1', 'pve2'
@@ -37,13 +44,21 @@ function Get-LWProxmoxNode
         Get-LWProxmoxNode -IncludeUnavailable
 
         Gets all nodes known to the cluster, including nodes that are offline or in an unknown state.
+
+    .EXAMPLE
+        Get-LWProxmoxNode -TestNodeConnection
+
+        Gets all usable nodes and additionally proves that each one answers node-scoped API calls.
     #>
     param (
         [Parameter()]
         [string[]]$Name,
 
         [Parameter()]
-        [switch]$IncludeUnavailable
+        [switch]$IncludeUnavailable,
+
+        [Parameter()]
+        [switch]$TestNodeConnection
     )
 
     Write-LogFunctionEntry
@@ -72,24 +87,70 @@ function Get-LWProxmoxNode
 
     if (-not $IncludeUnavailable -and -not $Name)
     {
-        $unavailableNodes = @($result | Where-Object { $_.status -ne 'online' })
+        $availableNodes = [System.Collections.Generic.List[object]]::new()
+        $unavailableNodes = [System.Collections.Generic.List[string]]::new()
 
-        if ($unavailableNodes)
+        foreach ($candidate in $result)
         {
-            $unavailableNodeInfo = ($unavailableNodes | ForEach-Object { "$($_.node) (status '$($_.status)')" }) -join ', '
+            $status = "$($candidate.status)"
+            if ($status -ne 'online')
+            {
+                $unavailableNodes.Add("$($candidate.node) (cluster reports '$(if ($status) { $status } else { 'no status' })')")
+                continue
+            }
+
+            # A node removed from the hardware but not from the cluster configuration is still listed,
+            # but without any capacity.
+            if (-not ($candidate.maxcpu -as [double]) -or -not ($candidate.maxmem -as [double]))
+            {
+                $unavailableNodes.Add("$($candidate.node) (reports no CPU or memory capacity)")
+                continue
+            }
+
+            if ($TestNodeConnection)
+            {
+                $nodeAnswers = try
+                {
+                    (Get-PveNodesStatus -Node $candidate.node -ErrorAction Stop).StatusCode -eq 200
+                }
+                catch
+                {
+                    $false
+                }
+
+                if (-not $nodeAnswers)
+                {
+                    $unavailableNodes.Add("$($candidate.node) (does not answer node-scoped API calls)")
+                    continue
+                }
+            }
+
+            $availableNodes.Add($candidate)
+        }
+
+        if ($unavailableNodes.Count -gt 0)
+        {
+            $unavailableNodeInfo = $unavailableNodes -join ', '
             Write-PSFMessage -Message "Skipping unavailable Proxmox node(s): $unavailableNodeInfo"
 
             # Warn on screen only for nodes not reported before. Get-LWProxmoxNode runs on every VM
             # operation, so an unconditional warning would flood the deployment output.
-            $newlyUnavailableNodes = @($unavailableNodes.node | Where-Object { $_ -notin $script:proxmoxUnavailableNodes })
+            $newlyUnavailableNodes = @($unavailableNodes | Where-Object { $_ -notin $script:proxmoxUnavailableNodes })
             if ($newlyUnavailableNodes)
             {
                 $script:proxmoxUnavailableNodes = @($script:proxmoxUnavailableNodes | Where-Object { $_ }) + $newlyUnavailableNodes
                 Write-ScreenInfo -Message "The following Proxmox node(s) are not available and will not be used: $unavailableNodeInfo. Use 'Get-LWProxmoxNode -IncludeUnavailable' to list all cluster nodes." -Type Warning
             }
-
-            $result = @($result | Where-Object { $_.status -eq 'online' })
         }
+
+        if ($availableNodes.Count -eq 0)
+        {
+            $reason = if ($unavailableNodes.Count -gt 0) { "Skipped: $($unavailableNodes -join ', ')" } else { 'The cluster did not return any node.' }
+            Write-Error "No Proxmox node of the connected cluster can host a virtual machine. $reason" -ErrorAction Stop
+            return
+        }
+
+        $result = $availableNodes.ToArray()
     }
 
     $result | Add-Member -Name ToString -MemberType ScriptMethod -Value { $this.node } -Force
