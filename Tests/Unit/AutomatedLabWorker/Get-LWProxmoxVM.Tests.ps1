@@ -96,4 +96,18 @@ Describe 'Get-LWProxmoxVM' {
             $ActivityName -match 'pve1'
         }
     }
+
+    It 'fails a targeted lookup that an unanswered node could have answered' {
+        { Get-LWProxmoxVM -ComputerName 'VM2' } | Should -Throw -ExpectedMessage '*Cannot determine*pve2*'
+    }
+
+    It 'succeeds when the requested VM was found on a node that answered' {
+        $result = Get-LWProxmoxVM -ComputerName 'VM1'
+
+        $result.Name | Should -Be 'VM1'
+    }
+
+    It 'still honours -NoError when a node did not answer' {
+        { Get-LWProxmoxVM -ComputerName 'VM2' -NoError } | Should -Not -Throw
+    }
 }

@@ -18,7 +18,11 @@ function Remove-LWProxmoxVM
     Write-ScreenInfo -Message "Removing Proxmox VM '$Name'"
 
     $vm = Get-LWProxmoxVM -Name $Name
-    $vm = Get-LWProxmoxVM -Name $Name -Node $vm.Node -NoCache #to refresh the status
+    if ($vm)
+    {
+        $vm = Get-LWProxmoxVM -Name $Name -Node $vm.node -NoCache #to refresh the status
+    }
+
     if (-not $vm)
     {
         Write-PSFMessage -Message "Proxmox VM '$Name' does not exist. Skipping removal." -Level 'Verbose'

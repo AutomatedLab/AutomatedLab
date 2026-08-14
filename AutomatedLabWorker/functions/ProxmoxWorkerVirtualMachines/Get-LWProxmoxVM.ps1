@@ -57,6 +57,8 @@ function Get-LWProxmoxVM
         Write-ScreenInfo -Message "Retrieving VM(s) from Proxmox node(s) '$($Node -join ', ')'" -Type Verbose -NoNewLine -TaskStart
     }
 
+    $unansweredNodes = [System.Collections.Generic.List[string]]::new()
+
     $vms = foreach ($n in $Node)
     {
         if ($NoCache.IsPresent -or -not $script:proxmoxVmCache.ContainsKey($n))
@@ -71,6 +73,7 @@ function Get-LWProxmoxVM
                 # One failing node must neither discard the VMs of the healthy nodes nor poison the
                 # cache with a null entry that later calls would happily serve as a cache hit.
                 $script:proxmoxVmCache.Remove($n)
+                $unansweredNodes.Add("$n ($($result.ReasonPhrase))")
                 Write-ScreenInfo -Message "Failed to retrieve VM(s) from Proxmox node '$($n)': $($result.ReasonPhrase). Continuing with the remaining node(s)." -Type Warning
                 continue
             }
@@ -113,6 +116,20 @@ function Get-LWProxmoxVM
     # Get-LabAvailableOperatingSystem -Proxmox to return non-deterministic
     # results. See ProjectDagger debugging-insights for context.
     $vms = $vms | Sort-Object -Property node, vmid -Unique
+
+    if (-not $NoError.IsPresent -and $ComputerName.Count -gt 0 -and $unansweredNodes.Count -gt 0)
+    {
+        $foundNames = @($vms | ForEach-Object { $_.Name })
+        $undetermined = @($ComputerName | Where-Object { $_ -notin $foundNames })
+
+        # A node that did not answer cannot prove absence. Without this, an empty result reads as
+        # 'the machine is gone' and Remove-Lab reports a running VM as removed.
+        if ($undetermined)
+        {
+            Write-Error -Message "Cannot determine whether virtual machine(s) '$($undetermined -join ', ')' exist because these Proxmox node(s) did not answer: $($unansweredNodes -join ', '). Retry once the node(s) respond." -ErrorAction Stop
+            return
+        }
+    }
 
     if (-not $NoError.IsPresent -and $ComputerName.Count -gt 0 -and -not $vms)
     {
