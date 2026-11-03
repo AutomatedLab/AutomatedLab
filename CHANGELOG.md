@@ -13,6 +13,7 @@
 ### Fixed
 
 - Registered the missing PSFramework configuration items `ProxmoxAgentExecTimeout` (default 300s) and `ProxmoxDelayBetweenComputers` (default 60s) that `New-LWProxmoxVM` reads through `Get-LabConfigurationItem`. Without a registration the `Get-LabConfigurationItem` integration tests failed the build (2 failing tests). Also corrected the stale fallback comment (45 -> 60) in `New-LWProxmoxVM`.
+- Fix `Remove-Lab` reporting Proxmox VMs as removed when it had skipped them because the session cache placed them on a node they had left, or when their destroy task failed. `Remove-LWProxmoxVM` now looks the VM up afresh on all available nodes, removes only the VMID the lab recorded (new `-VmId` parameter), checks the stop and destroy tasks, verifies that the VM is gone and otherwise fails with node, VMID and the Proxmox status text. `Remove-LabVM` reports a VM that no node lists as not found instead of removed, and removing or cloning a VM drops that node from the session VM cache.
 
 ## [5.61.0] - 2026-05-12
 

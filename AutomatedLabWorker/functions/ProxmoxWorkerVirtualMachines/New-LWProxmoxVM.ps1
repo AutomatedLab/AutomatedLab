@@ -128,6 +128,17 @@ function New-LWProxmoxVM
     }
     Write-Verbose 'done.'
 
+    # Later lookups in this session must list the new VM, so they may not serve its node from the cache
+    $clonedVmNode = $template.node
+    if ($param.Target)
+    {
+        $clonedVmNode = $param.Target
+    }
+    if ($script:proxmoxVmCache)
+    {
+        $script:proxmoxVmCache.Remove($clonedVmNode)
+    }
+
     # Persist the assigned VMID in the lab definition so Get-LabVM can return it
     $proxProps = $Machine.ProxmoxProperties
     $proxProps['VmId'] = $nextVmId.ToString()
