@@ -19,7 +19,17 @@ function Start-LWProxmoxWindowsSysprep
         After the cleanup completes successfully the function starts
         'sysprep.exe /generalize /oobe /reboot /unattend:C:\Unattend.xml' on the guest. The cleanup step
         is executed with -Wait so that Sysprep is only started once the AppX removal has finished; if the
-        cleanup fails, Sysprep is not started.
+        cleanup fails, Sysprep is not started. The cleanup runs VM by VM, and Sysprep is started on all VMs
+        only after the cleanup succeeded on every VM.
+
+        The cleanup is idempotent, so it may run again. When its result is lost together with the QEMU Guest
+        Agent (the agent restarted or the guest rebooted while the cleanup ran, which
+        Start-LWProxmoxAgentExecutionOnVM -Wait reports with the error id 'ProxmoxAgentCommandResultLost'),
+        the function waits until the guest agent can execute commands again (timeout: configuration item
+        ProxmoxAgentExecTimeout, 300 seconds by default) and runs the cleanup again, at most
+        ProxmoxAgentCleanupRetries more times (default 2; 0 disables the re-run). Any other cleanup failure,
+        such as a non-zero exit code, a signal or a timeout, still ends the function without starting
+        Sysprep. The Sysprep command itself is never run twice.
 
     .PARAMETER ComputerName
         The name(s) of the Proxmox-hosted Windows VM(s) to prepare and Sysprep.
@@ -76,7 +86,56 @@ Get-AppxPackage -AllUsers |
 
     $encodedCleanup = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($cleanupScript))
     $cleanupCommand = "powershell.exe -NoProfile -NonInteractive -EncodedCommand $encodedCleanup"
-    Start-LWProxmoxAgentExecutionOnVM -ComputerName $ComputerName -Command $cleanupCommand -Wait
+
+    $cleanupRetries = -1
+    foreach ($name in $ComputerName)
+    {
+        $run = 0
+        while ($true)
+        {
+            $run++
+            try
+            {
+                Start-LWProxmoxAgentExecutionOnVM -ComputerName $name -Command $cleanupCommand -Wait
+                break
+            }
+            catch
+            {
+                $cleanupError = $_
+
+                # Write-Error appends the name of the calling command to the error id.
+                if ($cleanupError.FullyQualifiedErrorId -notmatch '^ProxmoxAgentCommandResultLost(,|$)')
+                {
+                    throw
+                }
+
+                if ($cleanupRetries -lt 0)
+                {
+                    # No -Default: Get-LabConfigurationItem would turn a configured 0 into the default.
+                    $configuredRetries = Get-LabConfigurationItem -Name ProxmoxAgentCleanupRetries
+                    $cleanupRetries = 2
+                    if (-not [string]::IsNullOrEmpty([string]$configuredRetries))
+                    {
+                        $cleanupRetries = [Math]::Max(0, [int]$configuredRetries)
+                    }
+                }
+
+                if ($run -gt $cleanupRetries)
+                {
+                    Write-Error -Message "The AppX cleanup on VM '$name' lost its result on every run (runs: $run, re-runs allowed by ProxmoxAgentCleanupRetries: $cleanupRetries). Sysprep was not started. Last error: $($cleanupError.Exception.Message)" -TargetObject $name -ErrorAction Stop
+                }
+
+                $proxmoxVm = Get-LWProxmoxVM -ComputerName $name -ErrorAction Stop | Select-Object -First 1
+                $execTimeout = Get-LabConfigurationItem -Name ProxmoxAgentExecTimeout -Default 300
+                Write-PSFMessage -Level Warning -Message "The AppX cleanup on VM '$name' lost its result (run $run of $($cleanupRetries + 1)): $($cleanupError.Exception.Message) Waiting for the guest agent to run commands again, then running the cleanup again."
+                $execReady = Wait-LWProxmoxGuestAgentReady -Node $proxmoxVm.node -Vmid $proxmoxVm.VmId -Name $name -TimeoutSeconds $execTimeout -RequireExec
+                if (-not $execReady)
+                {
+                    Write-Error -Message "The QEMU guest agent on VM '$name' did not run commands again within $execTimeout seconds after the AppX cleanup lost its result. The cleanup was not run again and Sysprep was not started." -TargetObject $name -ErrorAction Stop
+                }
+            }
+        }
+    }
 
     $sysprepCommand = 'C:\Windows\System32\Sysprep\sysprep.exe /generalize /oobe /reboot /unattend:C:\Unattend.xml'
     Start-LWProxmoxAgentExecutionOnVM -ComputerName $ComputerName -Command $sysprepCommand -ErrorAction Stop

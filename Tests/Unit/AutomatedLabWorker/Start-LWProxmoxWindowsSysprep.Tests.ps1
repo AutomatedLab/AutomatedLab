@@ -239,4 +239,211 @@
 
         Should -Invoke -CommandName Start-LWProxmoxAgentExecutionOnVM -Times 2 -Exactly
     }
+
+    Context 'When the cleanup result is lost' {
+        BeforeAll {
+            $functionRoot = Join-Path $PSScriptRoot (
+                '..\..\..\AutomatedLabWorker\functions\ProxmoxWorkerVirtualMachines'
+            )
+            . (Join-Path $functionRoot 'Start-LWProxmoxAgentExecutionOnVM.ps1')
+            . (Join-Path $functionRoot 'Start-LWProxmoxWindowsSysprep.ps1')
+
+            function Get-LWProxmoxVM {
+                [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', '')]
+                [CmdletBinding()]
+                param
+                (
+                    [string[]]$ComputerName
+                )
+            }
+            function Wait-LWProxmoxGuestAgentReady {
+                [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', '')]
+                [CmdletBinding()]
+                param
+                (
+                    [string]$Node,
+                    [int]$Vmid,
+                    [string]$Name,
+                    [int]$TimeoutSeconds,
+                    [int]$PollIntervalSeconds,
+                    [switch]$RequireExec
+                )
+            }
+            function Get-LabConfigurationItem {
+                [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', '')]
+                param
+                (
+                    [string]$Name,
+                    $Default
+                )
+            }
+            function Write-PSFMessage {
+                [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', '')]
+                param
+                (
+                    [string]$Level,
+                    [string]$Message
+                )
+            }
+        }
+
+        BeforeEach {
+            $script:operations = [System.Collections.Generic.List[string]]::new()
+            $script:cleanupOutcomes = [System.Collections.Generic.Queue[string]]::new()
+            $script:vmIds = @{ Client1 = 101; Client2 = 102 }
+            $script:agentReady = $true
+
+            Mock -CommandName Get-LWProxmoxVM -MockWith {
+                [pscustomobject]@{
+                    Name = $ComputerName[0]
+                    node = 'pve1'
+                    VmId = $script:vmIds[$ComputerName[0]]
+                }
+            }
+            Mock -CommandName Wait-LWProxmoxGuestAgentReady -MockWith {
+                $script:operations.Add("wait:$Name")
+                $script:agentReady
+            }
+            Mock -CommandName Get-LabConfigurationItem -MockWith {
+                switch ($Name)
+                {
+                    'ProxmoxAgentCleanupRetries' { 2 }
+                    'ProxmoxAgentExecTimeout' { 300 }
+                }
+            }
+            Mock -CommandName Write-PSFMessage
+            Mock -CommandName Start-LWProxmoxAgentExecutionOnVM -MockWith {
+                if (-not $Wait.IsPresent)
+                {
+                    $script:operations.Add("sysprep:$($ComputerName -join ',')")
+                    return
+                }
+
+                $script:operations.Add("cleanup:$($ComputerName -join ',')")
+                $outcome = 'ok'
+                if ($script:cleanupOutcomes.Count -gt 0)
+                {
+                    $outcome = $script:cleanupOutcomes.Dequeue()
+                }
+                switch ($outcome)
+                {
+                    'lost' {
+                        Write-Error -Message "The result of the command on VM '$($ComputerName[0])' was lost." -ErrorId 'ProxmoxAgentCommandResultLost' -Category ResourceUnavailable -ErrorAction Stop
+                    }
+                    'exit' {
+                        Write-Error -Message "Command on VM '$($ComputerName[0])' failed with exit code 5. AppX cleanup failed" -ErrorAction Stop
+                    }
+                    'status' {
+                        Write-Error -Message "Failed to retrieve command status on VM '$($ComputerName[0])'." -ErrorId 'ProxmoxAgentStatusQueryFailed' -Category ConnectionError -ErrorAction Stop
+                    }
+                    'stopped' {
+                        Write-Error -Message "Failed to retrieve command status on VM '$($ComputerName[0])': the VM is not running." -ErrorId 'ProxmoxAgentVmNotRunning' -Category ResourceUnavailable -ErrorAction Stop
+                    }
+                }
+            }
+        }
+
+        It 'looks nothing up while the cleanup succeeds' {
+            Start-LWProxmoxWindowsSysprep -ComputerName 'Client2'
+
+            $script:operations | Should -Be @('cleanup:Client2', 'sysprep:Client2')
+            Should -Invoke -CommandName Get-LWProxmoxVM -Times 0 -Exactly
+            Should -Invoke -CommandName Get-LabConfigurationItem -Times 0 -Exactly
+            Should -Invoke -CommandName Wait-LWProxmoxGuestAgentReady -Times 0 -Exactly
+        }
+
+        It 'waits for the guest agent and runs the cleanup again after its result was lost' {
+            $script:cleanupOutcomes.Enqueue('lost')
+
+            {
+                Start-LWProxmoxWindowsSysprep -ComputerName 'Client2'
+            } | Should -Not -Throw
+
+            $script:operations | Should -Be @(
+                'cleanup:Client2', 'wait:Client2', 'cleanup:Client2', 'sysprep:Client2'
+            )
+            Should -Invoke -CommandName Wait-LWProxmoxGuestAgentReady -Times 1 -Exactly -ParameterFilter {
+                $Node -eq 'pve1' -and $Vmid -eq 102 -and $TimeoutSeconds -eq 300 -and $RequireExec
+            }
+            Should -Invoke -CommandName Write-PSFMessage -Times 1 -Exactly -ParameterFilter {
+                $Level -eq 'Warning' -and $Message -like "*VM 'Client2'*lost its result*"
+            }
+        }
+
+        It 'runs the cleanup again only for the VM whose result was lost and starts Sysprep once for all VMs' {
+            $script:cleanupOutcomes.Enqueue('ok')
+            $script:cleanupOutcomes.Enqueue('lost')
+
+            Start-LWProxmoxWindowsSysprep -ComputerName 'Client1', 'Client2'
+
+            $script:operations | Should -Be @(
+                'cleanup:Client1', 'cleanup:Client2', 'wait:Client2', 'cleanup:Client2', 'sysprep:Client1,Client2'
+            )
+            Should -Invoke -CommandName Wait-LWProxmoxGuestAgentReady -Times 1 -Exactly -ParameterFilter {
+                $Vmid -eq 102
+            }
+        }
+
+        It 'does not run the cleanup again after another cleanup failure (<Outcome>)' -ForEach @(
+            @{ Outcome = 'exit'; Message = '*exit code 5*AppX cleanup failed*' }
+            @{ Outcome = 'status'; Message = '*Failed to retrieve command status*' }
+            @{ Outcome = 'stopped'; Message = '*the VM is not running*' }
+        ) {
+            $script:cleanupOutcomes.Enqueue($Outcome)
+
+            {
+                Start-LWProxmoxWindowsSysprep -ComputerName 'Client2'
+            } | Should -Throw -ExpectedMessage $Message
+
+            $script:operations | Should -Be @('cleanup:Client2')
+            Should -Invoke -CommandName Wait-LWProxmoxGuestAgentReady -Times 0 -Exactly
+        }
+
+        It 'fails without starting Sysprep when every run loses its cleanup result' {
+            1..3 | ForEach-Object { $script:cleanupOutcomes.Enqueue('lost') }
+
+            {
+                Start-LWProxmoxWindowsSysprep -ComputerName 'Client2'
+            } | Should -Throw -ExpectedMessage (
+                "*VM 'Client2' lost its result on every run (runs: 3, " +
+                're-runs allowed by ProxmoxAgentCleanupRetries: 2)*Sysprep was not started*'
+            )
+
+            $script:operations | Should -Be @(
+                'cleanup:Client2', 'wait:Client2', 'cleanup:Client2', 'wait:Client2', 'cleanup:Client2'
+            )
+        }
+
+        It 'fails without a second run when the guest agent does not run commands again' {
+            $script:agentReady = $false
+            $script:cleanupOutcomes.Enqueue('lost')
+
+            {
+                Start-LWProxmoxWindowsSysprep -ComputerName 'Client2'
+            } | Should -Throw -ExpectedMessage (
+                "*VM 'Client2'*did not run commands again within 300 seconds*Sysprep was not started*"
+            )
+
+            $script:operations | Should -Be @('cleanup:Client2', 'wait:Client2')
+        }
+
+        It 'does not run the cleanup again when ProxmoxAgentCleanupRetries is 0' {
+            Mock -CommandName Get-LabConfigurationItem -MockWith {
+                switch ($Name)
+                {
+                    'ProxmoxAgentCleanupRetries' { 0 }
+                    'ProxmoxAgentExecTimeout' { 300 }
+                }
+            }
+            $script:cleanupOutcomes.Enqueue('lost')
+
+            {
+                Start-LWProxmoxWindowsSysprep -ComputerName 'Client2'
+            } | Should -Throw -ExpectedMessage (
+                '*lost its result on every run (runs: 1, re-runs allowed by ProxmoxAgentCleanupRetries: 0)*'
+            )
+
+            $script:operations | Should -Be @('cleanup:Client2')
+        }
+    }
 }
