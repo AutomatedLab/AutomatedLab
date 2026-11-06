@@ -347,7 +347,20 @@
         $Message = "Failed to validate install, could not find site code '{0}' in SMS_Site class ({1})" -f $CMSiteCode, $ReceiveJobErr.ErrorRecord.Exception.Message
         Write-ScreenInfo -Message $Message -Type "Error" -TaskEnd
         Write-PSFMessage -Message "====ConfMgrSetup log content===="
-        Invoke-LabCommand -ComputerName $CMServer -PassThru -ScriptBlock { Get-Content -Path C:\ConfigMgrSetup.log } | Write-PSFMessage
+
+        # Write-PSFMessage does not accept pipeline input, and the machine may still be rebooting after the site installation
+        $setupLogJob = Invoke-LabCommand -ComputerName $CMServer -PassThru -ScriptBlock { Get-Content -Path C:\ConfigMgrSetup.log -ErrorAction SilentlyContinue } -AsJob
+        if ($setupLogJob -and (Wait-Job -Job $setupLogJob -Timeout 60))
+        {
+            $setupLog = Receive-Job -Job $setupLogJob -ErrorAction SilentlyContinue
+            $setupLog | ForEach-Object { Write-PSFMessage -Message $_ }
+        }
+        else
+        {
+            Write-PSFMessage -Message "(ConfigMgrSetup log could not be read, the machine may still be restarting)"
+        }
+
+        if ($setupLogJob) { Remove-Job -Job $setupLogJob -Force -ErrorAction SilentlyContinue }
         return
     }
     Write-ScreenInfo -Message "Activity done" -TaskEnd
