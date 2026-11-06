@@ -41,7 +41,9 @@
 
         $someAdfsServer = Get-LabVM -Role ADFS | Where-Object DomainName -eq $adfsDomainName | Get-Random
         Write-PSFMessage "Getting certificate from some ADFS server '$someAdfsServer'"
-        $cert = Get-LabCertificate -ComputerName $someAdfsServer -DnsName $adfsFullName
+
+        # Get-LabCertificate has no -DnsName parameter, and the private key is required on the proxy
+        $cert = Get-LabCertificate -ComputerName $someAdfsServer -SearchString $adfsFullName -FindType FindBySubjectName -Store My -Location CERT_SYSTEM_STORE_LOCAL_MACHINE -ExportPrivateKey
         if (-not $cert)
         {
             Write-Error "Could not get certificate from '$someAdfsServer'. Cannot continue with ADFS Proxy setup."
@@ -49,8 +51,8 @@
         }
         Write-PSFMessage "Got certificate with thumbprint '$($cert.Thumbprint)'"
 
-        Write-PSFMessage "Adding certificate to '$labAdfsProxy'"
-        $cert | Add-LabCertificate -ComputerName $labAdfsProxy
+        # Without the private key the proxy cannot use the certificate
+        $cert | Add-LabCertificate -ComputerName $labAdfsProxy -CertificateType PFX
 
         $certThumbprint = $cert.Thumbprint
         $cred = ($lab.Domains | Where-Object Name -eq $adfsDomainName).GetCredential()
