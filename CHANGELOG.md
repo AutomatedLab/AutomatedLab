@@ -4,6 +4,10 @@
 
 ### Fixed
 
+- Fixed `Install-LabConfigurationManager` staging the Configuration Manager binaries in the per-user `DeployDebug` folder on the site server, while `Install-CMSite` expects them in `C:\Install`. Setup, the AD schema extension and the prerequisite downloader were invoked from non-existent paths, so the site installation failed.
+- Fixed `Install-LabConfigurationManager` copying the Windows ADK offline installers to the site server without `-Recurse`, leaving only empty folders, while the installation was invoked from the per-user `DeployDebug` folder. The ADK was never installed, so the Configuration Manager prerequisite check failed. The offline installers are now staged in `C:\ADKoffline` and `C:\ADKPEoffline` on HyperV.
+- Fixed `Install-CMSite` crashing while logging the `ConfigMgrSetup.log` content after a failed site validation. `Write-PSFMessage` does not accept pipeline input, so the resulting parameter binding error prevented the graceful error handling from running. The log content is now retrieved as a job with a timeout, since the site server may still be restarting after the failed installation.
+- Fixed `Install-LabAdfsProxy` calling `Get-LabCertificate` with a non-existent `-DnsName` parameter, which caused a parameter binding error. The certificate is now looked up with `-SearchString` and `-FindType` and copied with its private key, since `Install-WebApplicationProxy` rejects a certificate without one.
 - Fixed `New-LWReferenceVHDX` silently producing unbootable base images when `bcdboot` fails (#1662, #1805)
 - DSC Pull Server lab validator (`DscSqlServerPresent`) now accepts SQL Server 2022 and 2025 in addition to 2016/2017/2019 as the backend database engine, and the validation error message has been clarified accordingly (#1844).
 
