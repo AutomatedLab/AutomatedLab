@@ -25,12 +25,17 @@
     {
         Start-Process -FilePath $adkFile.FullName -ArgumentList "/quiet /layout $($ExecutionContext.SessionState.Path.Combine($labSources, 'SoftwarePackages/ADKoffline'))" -Wait -NoNewWindow
         Start-Process -FilePath $adkpeFile.FullName -ArgumentList " /quiet /layout $($ExecutionContext.SessionState.Path.Combine($labSources, 'SoftwarePackages/ADKPEoffline'))" -Wait -NoNewWindow
-        Copy-LabFileItem -Path ($ExecutionContext.SessionState.Path.Combine($labSources, 'SoftwarePackages/ADKoffline')) -ComputerName $vms
-        Copy-LabFileItem -Path ($ExecutionContext.SessionState.Path.Combine($labSources, 'SoftwarePackages/ADKPEoffline')) -ComputerName $vms
+
+        # Without -Recurse only empty folders are copied, and the setup is later invoked from a path that does not exist
+        Copy-LabFileItem -Path "$($ExecutionContext.SessionState.Path.Combine($labSources, 'SoftwarePackages/ADKoffline'))\*" -DestinationFolderPath 'C:\ADKoffline' -ComputerName $vms -Recurse
+        Copy-LabFileItem -Path "$($ExecutionContext.SessionState.Path.Combine($labSources, 'SoftwarePackages/ADKPEoffline'))\*" -DestinationFolderPath 'C:\ADKPEoffline' -ComputerName $vms -Recurse
     }
-    
-    Install-LabSoftwarePackage -LocalPath $deployDebugPath\ADKOffline\adksetup.exe -ComputerName $vms -CommandLine '/norestart /q /ceip off /features OptionId.DeploymentTools OptionId.UserStateMigrationTool OptionId.ImagingAndConfigurationDesigner' -NoDisplay
-    Install-LabSoftwarePackage -LocalPath $deployDebugPath\ADKPEOffline\adkwinpesetup.exe -ComputerName $vms -CommandLine '/norestart /q /ceip off /features OptionId.WindowsPreinstallationEnvironment' -NoDisplay
+
+    # On Azure the offline installers are laid out in the per-user DeployDebug folder, on HyperV they are staged in the folder root
+    $adkStagingPath = if ($(Get-Lab).DefaultVirtualizationEngine -eq 'Azure') { $deployDebugPath } else { 'C:' }
+
+    Install-LabSoftwarePackage -LocalPath "$adkStagingPath\ADKOffline\adksetup.exe" -ComputerName $vms -CommandLine '/norestart /q /ceip off /features OptionId.DeploymentTools OptionId.UserStateMigrationTool OptionId.ImagingAndConfigurationDesigner' -NoDisplay
+    Install-LabSoftwarePackage -LocalPath "$adkStagingPath\ADKPEOffline\adkwinpesetup.exe" -ComputerName $vms -CommandLine '/norestart /q /ceip off /features OptionId.WindowsPreinstallationEnvironment' -NoDisplay
 
     $ncliUrl = Get-LabConfigurationItem -Name SqlServerNativeClient2012
     try
@@ -77,7 +82,8 @@
         $cmVersion = if ($role.Properties.ContainsKey('Version')) { $role.Properties.Version } else { '2103' }
         $cmBranch = if ($role.Properties.ContainsKey('Branch')) { $role.Properties.Branch } else { 'CB' }
 
-        $VMInstallDirectory = "$deployDebugPath\Install"
+        # Binaries and prerequisites are staged where Install-CMSite expects them
+        $VMInstallDirectory = "C:\Install"
         $CMBinariesDirectory = "$labSources\SoftwarePackages\CM-$($cmVersion)-$cmBranch"
         $CMPreReqsDirectory = "$labSources\SoftwarePackages\CM-Prereqs-$($cmVersion)-$cmBranch"
         $VMCMBinariesDirectory = "{0}\CM" -f $VMInstallDirectory
