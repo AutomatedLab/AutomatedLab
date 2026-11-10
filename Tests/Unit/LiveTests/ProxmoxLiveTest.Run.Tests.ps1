@@ -60,6 +60,7 @@ Describe 'Invoke-ProxmoxLiveTestRun' {
             $script:plan
         }
         Mock -CommandName Format-ProxmoxLiveTestPlan -MockWith { 'plan text' }
+        Mock -CommandName Write-Information
         Mock -CommandName Get-ProxmoxLiveTestLeftoverVm
         Mock -CommandName Remove-ProxmoxLiveTestVm -MockWith { [pscustomobject]@{ Name = $Vm.Name; Outcome = 'Removed' } }
     }
@@ -323,11 +324,11 @@ Describe 'Invoke-ProxmoxLiveTestRun' {
             $p = $script:common.Clone()
             $p.KeepVm = $true
 
-            $result = Invoke-ProxmoxLiveTestRun @p -InformationVariable information
+            $result = Invoke-ProxmoxLiveTestRun @p
 
             Should -Invoke -CommandName Remove-ProxmoxLiveTestVm -Times 0 -Exactly
             @($result.Kept) | Should -HaveCount 2
-            ($information -join ' ') | Should -BeLike '*allive-*'
+            Should -Invoke -CommandName Write-Information -Times 2 -Exactly -ParameterFilter { $MessageData -like "Kept live-test VM 'allive-*" }
         }
 
         It 'warns instead of failing when a VM cannot be removed' {
