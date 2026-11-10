@@ -52,7 +52,16 @@ if ($IsLinux -and -not $IsLocalBuild.IsPresent)
 
 $modpath = New-Item -ItemType Directory -Force -Path (Join-Path $buildFolder requiredmodules)
 Write-Host "Downloading required modules"
-Save-Module -Name powershell-yaml, Pester, AutomatedLab.Common, PSFramework, Posh-SSH, xPSDesiredStateConfiguration, xDscDiagnostics, xWebAdministration, PackageManagement, PowerShellGet, PlatyPS, Ships -Repository PSGallery -Path $modpath.FullName
+# Saving a module version that already exists deletes its folder first. When a running session has one of its files loaded, that
+# fails halfway and leaves a broken module behind, so only the versions that are missing are downloaded.
+foreach ($moduleName in 'powershell-yaml', 'Pester', 'AutomatedLab.Common', 'PSFramework', 'Posh-SSH', 'xPSDesiredStateConfiguration', 'xDscDiagnostics', 'xWebAdministration', 'PackageManagement', 'PowerShellGet', 'PlatyPS', 'Ships')
+{
+  $latest = Find-Module -Name $moduleName -Repository PSGallery
+  if ($latest -and -not (Test-Path -Path (Join-Path (Join-Path $modpath.FullName $latest.Name) ([string]$latest.Version))))
+  {
+    Save-Module -Name $moduleName -RequiredVersion $latest.Version -Repository PSGallery -Path $modpath.FullName
+  }
+}
 if (-not $env:PSModulePath.Contains($modpath.FullName))
 {
   $sep = [io.path]::PathSeparator
