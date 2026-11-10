@@ -183,14 +183,17 @@ foreach ($helpfile in $helpFiles)
     $rolename = $helpFile.BaseName
 
     $roleContent -f $rolename | Set-Content -Path (Join-Path $buildFolder -ChildPath Help/AutomatedLabCore/en-us/about_AutomatedLab_$rolename.md)
-    foreach ($line in ($helpFile | Get-Content))
+    # A topic is appended with one Add-Content call. Appending line by line opened the file thousands of times, and Windows
+    # PowerShell lost lines whenever an editor read the file at the same moment.
+    $topicContent = foreach ($line in ($helpFile | Get-Content))
     {
         if ($line.StartsWith('#'))
         {
             $line = $line.Insert(0, '#')
         }
-        $line | Add-Content -Path (Join-Path $buildFolder -ChildPath Help/AutomatedLabCore/en-us/about_AutomatedLab_$rolename.md)
+        $line
     }
+    $topicContent | Add-Content -Path (Join-Path $buildFolder -ChildPath Help/AutomatedLabCore/en-us/about_AutomatedLab_$rolename.md)
 }
 
 @'
@@ -205,14 +208,15 @@ Generic help about the basics of AutomatedLab
 '@ | Set-Content -Path (Join-Path $buildFolder -ChildPath Help/AutomatedLabCore/en-us/about_AutomatedLabBasics.md)
 [System.Collections.Generic.List[System.IO.FileInfo]]$helpFiles = Get-Item -Path (Join-Path $buildFolder -ChildPath Help/Wiki/Basic/gettingstarted.md)
 $helpFiles.AddRange([IO.FileInfo[]](Get-ChildItem -Path (Join-Path $buildFolder -ChildPath Help/Wiki/Basic)))
-foreach ($line in ($helpFiles | Get-Content))
+$topicContent = foreach ($line in ($helpFiles | Get-Content))
 {
     if ($line.StartsWith('#'))
     {
         $line = $line.Insert(0, '#')
     }
-    $line | Add-Content -Path (Join-Path $buildFolder -ChildPath Help/AutomatedLabCore/en-us/about_AutomatedLabBasics.md)
+    $line
 }
+$topicContent | Add-Content -Path (Join-Path $buildFolder -ChildPath Help/AutomatedLabCore/en-us/about_AutomatedLabBasics.md)
 
 @'
 # AutomatedLab Advanced
@@ -225,14 +229,15 @@ Generic help about the advanced mechanics of AutomatedLab
 
 '@ | Set-Content -Path (Join-Path $buildFolder -ChildPath Help/AutomatedLabCore/en-us/about_AutomatedLabAdvanced.md)
 $advHelp = Get-ChildItem -Path (Join-Path $buildFolder -ChildPath Help/Wiki/Advanced)
-foreach ($line in ($advHelp | Get-Content))
+$topicContent = foreach ($line in ($advHelp | Get-Content))
 {
     if ($line.StartsWith('#'))
     {
         $line = $line.Insert(0, '#')
     }
-    $line | Add-Content -Path (Join-Path $buildFolder -ChildPath Help/AutomatedLabCore/en-us/about_AutomatedLabAdvanced.md)
+    $line
 }
+$topicContent | Add-Content -Path (Join-Path $buildFolder -ChildPath Help/AutomatedLabCore/en-us/about_AutomatedLabAdvanced.md)
 
 foreach ($moduleName in (Get-ChildItem -Path $buildFolder/Help -Directory -Exclude Wiki))
 {
