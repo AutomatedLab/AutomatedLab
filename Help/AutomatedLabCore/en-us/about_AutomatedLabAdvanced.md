@@ -600,7 +600,7 @@ Download url for Exchange Server 2019 ISO
 
 Data type: System.String  
 Hidden?: False  
-Default value: https://download.microsoft.com/download/b/c/7/bc766694-8398-4258-8e1e-ce4ddb9b3f7d/ExchangeServer2019-x64-CU12.ISO  
+Default value: https://download.microsoft.com/download/7/0/a/70a4d908-eacb-426e-ad9f-e7768e27f873/ExchangeServer2019-x64-cu15.iso  
 
 Set with: `Set-PSFConfig -FullName AutomatedLab.Exchange2019DownloadUrl -Value <YourValue> -PassThru | Register-PSFConfig`
 
