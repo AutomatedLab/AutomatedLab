@@ -29,6 +29,44 @@
     [string]$MailboxLogPath
 )
 
+function Get-ExchangeInstallFile
+{
+    param
+    (
+        [AllowNull()]
+        [AllowEmptyString()]
+        [string]$DownloadLink,
+
+        [Parameter(Mandatory)]
+        [string]$Folder
+    )
+
+    if ($DownloadLink)
+    {
+        return Get-LabInternetFile -Uri $DownloadLink -Path $Folder -PassThru -ErrorAction Stop
+    }
+
+    # Microsoft no longer publishes the Exchange 2013 download, so there is no default link.
+    # A setup file that was downloaded earlier or copied into the folder is still used.
+    $fileName = 'Exchange2013-x64-cu23.exe'
+    $filePath = Join-Path -Path $Folder -ChildPath $fileName
+    if (Test-Path -LiteralPath $filePath -PathType Leaf)
+    {
+        return [pscustomobject]@{
+            Uri      = $null
+            Path     = $Folder
+            FileName = $fileName
+            FullName = $filePath
+            Length   = (Get-Item -LiteralPath $filePath).Length
+        }
+    }
+
+    throw ("The Exchange 2013 setup is not available. Microsoft no longer publishes the Exchange 2013 download, so AutomatedLab has no default link. " +
+        "Provide the setup in one of these ways: set the role property 'IsoPath' to an Exchange 2013 ISO image, " +
+        "copy '$fileName' to '$Folder', or set the configuration item 'Exchange2013DownloadUrl' " +
+        "(Set-PSFConfig -FullName AutomatedLab.Exchange2013DownloadUrl -Value <url> -PassThru | Register-PSFConfig).")
+}
+
 function Copy-ExchangeSources
 {
     Write-ScreenInfo -Message 'Download Exchange 2013 requirements' -TaskStart
@@ -39,8 +77,15 @@ function Copy-ExchangeSources
     }
     else
     {
-        Write-ScreenInfo -Message "Downloading Exchange 2013 from '$exchangeDownloadLink'" -TaskStart
-        $script:exchangeInstallFile = Get-LabInternetFile -Uri $exchangeDownloadLink -Path $downloadTargetFolder -PassThru -ErrorAction Stop
+        if ($exchangeDownloadLink)
+        {
+            Write-ScreenInfo -Message "Downloading Exchange 2013 from '$exchangeDownloadLink'" -TaskStart
+        }
+        else
+        {
+            Write-ScreenInfo -Message "Looking for the Exchange 2013 setup in '$downloadTargetFolder'" -TaskStart
+        }
+        $script:exchangeInstallFile = Get-ExchangeInstallFile -DownloadLink $exchangeDownloadLink -Folder $downloadTargetFolder
         Write-ScreenInfo 'Done' -TaskEnd
     }
 
@@ -489,7 +534,7 @@ else
     }
     else
     {
-        Write-ScreenInfo -Message ("Unable to locate ISO at '{0}', defaulting to downloading Exchange source files" -f $isoPath) -Type Warning
+        Write-ScreenInfo -Message ("Unable to locate ISO at '{0}', defaulting to the Exchange source files from the download link or from the SoftwarePackages folder" -f $isoPath) -Type Warning
         $false
     }
 }

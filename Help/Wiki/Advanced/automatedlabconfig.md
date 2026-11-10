@@ -566,11 +566,11 @@ Set with: `Set-PSFConfig -FullName AutomatedLab.Dynamics365Uri -Value <YourValue
 
 ### Exchange2013DownloadUrl
 
-Download url for Exchange Server 2013 exe
+Download url for the Exchange Server 2013 setup exe. There is no default because Microsoft no longer publishes the download. Without a url the Exchange2013 role uses Exchange2013-x64-cu23.exe from LabSources\SoftwarePackages, or an ISO image passed with the role property IsoPath
 
-Data type: System.String  
+Data type:   
 Hidden?: False  
-Default value: https://download.microsoft.com/download/7/F/D/7FDCC96C-26C0-4D49-B5DB-5A8B36935903/Exchange2013-x64-cu23.exe  
+Default value:   
 
 Set with: `Set-PSFConfig -FullName AutomatedLab.Exchange2013DownloadUrl -Value <YourValue> -PassThru | Register-PSFConfig`
 

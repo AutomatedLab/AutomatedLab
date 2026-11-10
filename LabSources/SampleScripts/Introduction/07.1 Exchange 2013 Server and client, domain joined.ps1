@@ -1,8 +1,9 @@
 ﻿#The is almost the same like '05 SQL Server and client, domain joined.ps1' but installs an Exchange 2013 server instead
 #of a SQL Server.
 #
-# IMPORTANT NOTE: The Exchange 2013 bits are downloaded automatically and stored into LabSources\SoftwarePackages
-# The link to the Exchange bits is stored in the AutomatedLab.psd1 file.
+# IMPORTANT NOTE: Microsoft no longer publishes the Exchange 2013 download, so AutomatedLab cannot download it.
+# Provide the setup yourself: copy Exchange2013-x64-cu23.exe to LabSources\SoftwarePackages, or pass an Exchange 2013
+# ISO image with the role property IsoPath, or set the configuration item Exchange2013DownloadUrl.
 
 New-LabDefinition -Name LabEx2013 -DefaultVirtualizationEngine HyperV
 
