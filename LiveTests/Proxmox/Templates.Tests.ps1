@@ -34,6 +34,8 @@ Describe 'Proxmox templates' -Tag 'ProxmoxLive', 'ReadOnly' -Skip:(-not ($LiveTe
 
 Describe 'Proxmox template <TemplateName>' -ForEach $templateCases -Tag 'ProxmoxLive', 'ReadOnly' -Skip:(-not ($LiveTest -and $LiveTest.Ready)) {
     BeforeAll {
+        . (Join-Path $PSScriptRoot 'ProxmoxLiveTest.Support.ps1')
+
         $script:lookupError = $null
         $script:allTemplates = @()
         $script:templateConfig = $null
@@ -80,6 +82,6 @@ Describe 'Proxmox template <TemplateName>' -ForEach $templateCases -Tag 'Proxmox
 
         $agent = [string]$script:templateConfig.agent
 
-        $agent | Should -Match '^(1|enabled=1)' -Because "the option 'agent' is '$agent'. Enable it in the VM options of the template and install the QEMU guest agent in the guest"
+        Test-ProxmoxLiveTestAgentOption -Value $agent | Should -Be $true -Because "the option 'agent' is '$agent'. Enable it in the VM options of the template and install the QEMU guest agent in the guest"
     }
 }

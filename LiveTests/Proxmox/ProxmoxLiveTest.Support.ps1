@@ -664,6 +664,88 @@ function Test-ProxmoxLiveTestCapability
     }
 }
 
+function Test-ProxmoxLiveTestAgentOption
+{
+    <#
+    .SYNOPSIS
+        Tells whether the 'agent' option of a VM turns the QEMU guest agent on.
+
+    .DESCRIPTION
+        Proxmox returns the option as a property string such as '1', 'enabled=1,fstrim_cloned_disks=1' or, when a
+        tool wrote the booleans differently, 'enabled=true,type=virtio'. The first value without a key is the
+        'enabled' flag, and a property string without that flag leaves the agent off. Proxmox reads 1, true, yes
+        and on as true.
+    #>
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param
+    (
+        [Parameter()]
+        [string]$Value
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Value))
+    {
+        return $false
+    }
+
+    $flag = $null
+    $segments = @($Value.Split(','))
+    for ($index = 0; $index -lt $segments.Count; $index++)
+    {
+        $segment = $segments[$index].Trim()
+        if ($segment -match '^enabled\s*=\s*(?<flag>.*)$')
+        {
+            $flag = $Matches.flag.Trim()
+            break
+        }
+
+        if ($index -eq 0 -and $segment -notmatch '=')
+        {
+            $flag = $segment
+        }
+    }
+
+    [bool]($flag -match '^(1|true|yes|on)$')
+}
+
+function Read-ProxmoxLiveTestGuestFile
+{
+    <#
+    .SYNOPSIS
+        Reads a text file in the guest through the guest agent, to explain a failed test. Never throws.
+
+    .DESCRIPTION
+        Returns the content, or a sentence that says why the file could not be read. A diagnostic must not hide the
+        failure it is meant to explain.
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param
+    (
+        [Parameter(Mandatory)]
+        [object]$Vm,
+
+        [Parameter(Mandatory)]
+        [string]$Path
+    )
+
+    try
+    {
+        $reply = Get-PveNodesQemuAgentFileRead -Node $Vm.Node -Vmid $Vm.VmId -File $Path
+        if ($reply.StatusCode -ne 200)
+        {
+            return "(the file '$Path' could not be read: $($reply.ReasonPhrase))"
+        }
+
+        [string]$reply.Response.data.content
+    }
+    catch
+    {
+        "(the file '$Path' could not be read: $($_.Exception.Message))"
+    }
+}
+
 function Get-ProxmoxLiveTestLeftoverVm
 {
     <#

@@ -37,6 +37,7 @@ Describe 'QEMU guest agent in a clone of <TemplateName>' -ForEach $vmCases -Tag 
     BeforeAll {
         . (Join-Path $PSScriptRoot 'ProxmoxLiveTest.Support.ps1')
 
+        $script:restartScriptPath = Join-Path $PSScriptRoot 'Guest\Restart-GuestAgentDuringCommand.ps1'
         $script:vm = $null
         $script:setupError = $null
         try
@@ -138,33 +139,26 @@ Describe 'QEMU guest agent in a clone of <TemplateName>' -ForEach $vmCases -Tag 
         It 'reports the lost result, and the agent runs commands again afterwards' {
             if ($script:setupError) { Set-ItResult -Skipped -Because 'the clone could not be set up'; return }
 
-            # A task running as SYSTEM restarts the agent service eight seconds from now. The task lives outside the
-            # agent's process tree, so the restart cannot take itself down.
-            $restartScript = @'
-$ErrorActionPreference = 'Stop'
-$service = Get-Service | Where-Object { $_.Name -eq 'QEMU-GA' -or $_.DisplayName -like '*QEMU*Guest*Agent*' } | Select-Object -First 1
-if (-not $service) { throw 'The QEMU guest agent service was not found in the guest.' }
-$command = "Start-Sleep -Seconds 8; Restart-Service -Name '$($service.Name)' -Force"
-$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument ('-NoProfile -NonInteractive -Command "{0}"' -f $command)
-Register-ScheduledTask -TaskName 'ALLiveRestartAgent' -Action $action -User 'SYSTEM' -RunLevel Highest -Force | Out-Null
-Start-ScheduledTask -TaskName 'ALLiveRestartAgent'
-'@
-            $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($restartScript))
+            # The guest script is the waited command itself: it schedules the restart of the agent and keeps running, so
+            # the restart always falls inside the command and the agent loses its result. It logs to a file in the
+            # guest, which is read below when nothing was lost. The comment lines are removed to keep the command short.
+            $guestScript = @(Get-Content -LiteralPath $script:restartScriptPath | Where-Object { $_ -notmatch '^\s*(#.*)?$' }) -join "`r`n"
+            $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($guestScript))
+            $command = "powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -EncodedCommand $encoded"
 
-            $scheduleFailure = Invoke-ProxmoxLiveTestWorkerCommand -ArgumentList $script:vm.Name, "powershell.exe -NoProfile -NonInteractive -EncodedCommand $encoded" -ScriptBlock {
+            $failure = Invoke-ProxmoxLiveTestWorkerCommand -ArgumentList $script:vm.Name, $command -ScriptBlock {
                 param ($name, $command)
 
-                try { Start-LWProxmoxAgentExecutionOnVM -ComputerName $name -Command $command -Wait } catch { $_ }
-            }
-            $scheduleFailure | Should -BeNullOrEmpty -Because "scheduling the agent restart failed: $scheduleFailure"
-
-            $failure = Invoke-ProxmoxLiveTestWorkerCommand -ArgumentList $script:vm.Name -ScriptBlock {
-                param ($name)
-
-                try { Start-LWProxmoxAgentExecutionOnVM -ComputerName $name -Command 'powershell.exe -NoProfile -Command Start-Sleep -Seconds 90' -Wait -TimeoutSeconds 150 -StatusFailureToleranceSeconds 120 } catch { $_ }
+                try { Start-LWProxmoxAgentExecutionOnVM -ComputerName $name -Command $command -Wait -TimeoutSeconds 150 -StatusFailureToleranceSeconds 120 } catch { $_ }
             }
 
-            $failure | Should -Not -BeNullOrEmpty -Because 'the command ran to its end, so the agent was not restarted while it ran'
+            $guestLog = ''
+            if (-not $failure)
+            {
+                $guestLog = Read-ProxmoxLiveTestGuestFile -Vm $script:vm -Path 'C:\Windows\Temp\ALLiveRestartAgent.log'
+            }
+
+            $failure | Should -Not -BeNullOrEmpty -Because "the command ran to its end, so the agent was not restarted while it ran. The log of the guest: $guestLog"
             $failure.FullyQualifiedErrorId | Should -Match '^ProxmoxAgentCommandResultLost(,|$)' -Because "the error was: $($failure.Exception.Message)"
 
             $ready = Invoke-ProxmoxLiveTestWorkerCommand -ArgumentList $script:vm.Node, $script:vm.VmId, $script:vm.Name -ScriptBlock {

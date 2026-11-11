@@ -70,7 +70,11 @@ rather than coverage, so more than two is opt-in through `-TemplateCount`.
 The tests tagged `Outage` restart the QEMU guest agent inside a clone while a
 command runs. They need an AutomatedLabWorker that knows
 `-StatusFailureToleranceSeconds`; with an older one they are skipped and the plan
-says so.
+says so. The waited command is the guest script
+`Proxmox\Guest\Restart-GuestAgentDuringCommand.ps1`: it schedules the restart of
+the agent service as a SYSTEM task and keeps running, so the restart always
+falls inside the command. It logs to `C:\Windows\Temp\ALLiveRestartAgent.log` in
+the clone, and the test prints that log when the result was not lost.
 
 ### Safety
 
@@ -93,9 +97,12 @@ says so.
   and are a candidate for a separate suite.
 - A tolerated outage after which the command still finishes (the agent
   stays alive but unreachable for a while).
-- The suites were developed against a simulated Proxmox backend. The first run
-  on a real host may need small adjustments, for example the guest agent
-  service name in the `Outage` test.
+- The suites were developed against a simulated Proxmox backend. Their first run
+  on a real host (2026-11-11, Proxmox VE 9.2, Windows Server 2025 and Windows 11
+  clones) passed all tests but three: the agent option of one template, which
+  Proxmox returned as `enabled=true`, and the two outage tests, in which the
+  agent was not restarted during the command. Both are fixed; the outage test
+  has not run again yet.
 
 ### Adding a suite
 
@@ -112,3 +119,8 @@ suites do. Pester 6 reports an error that escapes `BeforeAll` only as a stray
 test are reported normally. Tests that depend on the setup call
 `Set-ItResult -Skipped` when it failed, so one failure is not repeated by every
 test of the suite.
+
+Scripts that run inside the guest belong in `Proxmox\Guest\`. A suite sends one
+as an encoded command; keep it in Windows PowerShell 5.1 and ASCII, and unit
+test the logic that needs no guest, as `Select-QemuGuestAgentService` is tested
+in `Tests\Unit\LiveTests`.

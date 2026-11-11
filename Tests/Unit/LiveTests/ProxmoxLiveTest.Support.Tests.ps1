@@ -468,3 +468,75 @@ Describe 'Resolve-ProxmoxLiveTestConnection' {
         }
     }
 }
+
+Describe 'Test-ProxmoxLiveTestAgentOption' {
+    It 'accepts the agent option <Value>' -ForEach @(
+        @{ Value = '1' }
+        @{ Value = 'enabled=1' }
+        @{ Value = 'enabled=1,fstrim_cloned_disks=1' }
+        @{ Value = 'fstrim_cloned_disks=1,enabled=1' }
+        @{ Value = '1,fstrim_cloned_disks=1,type=virtio' }
+        @{ Value = 'enabled=true,fstrim_cloned_disks=true,type=virtio' }
+        @{ Value = 'ENABLED=Yes' }
+        @{ Value = 'on' }
+    ) {
+        Test-ProxmoxLiveTestAgentOption -Value $Value | Should -Be $true
+    }
+
+    It 'rejects the agent option <Value>' -ForEach @(
+        @{ Value = '0' }
+        @{ Value = 'enabled=0' }
+        @{ Value = 'enabled=false,type=virtio' }
+        @{ Value = 'fstrim_cloned_disks=1' }
+        @{ Value = 'type=virtio' }
+        @{ Value = 'enabled=maybe' }
+        @{ Value = '' }
+        @{ Value = $null }
+    ) {
+        Test-ProxmoxLiveTestAgentOption -Value $Value | Should -Be $false
+    }
+}
+
+Describe 'Read-ProxmoxLiveTestGuestFile' {
+    BeforeAll {
+        function Get-PveNodesQemuAgentFileRead
+        {
+            [CmdletBinding()]
+            param ($Node, $Vmid, $File)
+        }
+
+        $script:vm = [pscustomobject]@{ Name = 'allive-0123abcd-1'; Node = 'pve1'; VmId = 123 }
+    }
+
+    It 'returns the content of the guest file' {
+        Mock -CommandName Get-PveNodesQemuAgentFileRead -MockWith {
+            [pscustomobject]@{
+                StatusCode   = 200
+                ReasonPhrase = 'OK'
+                Response     = [pscustomobject]@{ data = [pscustomobject]@{ content = "first line`nsecond line"; truncated = $false } }
+            }
+        }
+
+        Read-ProxmoxLiveTestGuestFile -Vm $script:vm -Path 'C:\Windows\Temp\x.log' | Should -Be "first line`nsecond line"
+        Should -Invoke -CommandName Get-PveNodesQemuAgentFileRead -Times 1 -Exactly -ParameterFilter {
+            $Node -eq 'pve1' -and $Vmid -eq 123 -and $File -eq 'C:\Windows\Temp\x.log'
+        }
+    }
+
+    It 'says why when Proxmox refuses to read the file' {
+        Mock -CommandName Get-PveNodesQemuAgentFileRead -MockWith {
+            [pscustomobject]@{ StatusCode = 500; ReasonPhrase = 'No such file or directory'; Response = $null }
+        }
+
+        $text = Read-ProxmoxLiveTestGuestFile -Vm $script:vm -Path 'C:\Windows\Temp\x.log'
+
+        $text | Should -BeLike '*C:\Windows\Temp\x.log*could not be read*No such file or directory*'
+    }
+
+    It 'says why when the call itself fails, and does not throw' {
+        Mock -CommandName Get-PveNodesQemuAgentFileRead -MockWith { throw 'connection reset' }
+
+        { Read-ProxmoxLiveTestGuestFile -Vm $script:vm -Path 'C:\Windows\Temp\x.log' } | Should -Not -Throw
+        Read-ProxmoxLiveTestGuestFile -Vm $script:vm -Path 'C:\Windows\Temp\x.log' | Should -BeLike '*could not be read*connection reset*'
+    }
+}

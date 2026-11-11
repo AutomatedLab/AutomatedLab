@@ -92,4 +92,19 @@ Describe 'Live test files' {
 
         $errors | Should -HaveCount 0
     }
+
+    It 'Templates.Tests.ps1 reads the agent option with Test-ProxmoxLiveTestAgentOption' {
+        $ast = Get-ParsedAst -Path (Join-Path $script:repositoryRoot 'LiveTests\Proxmox\Templates.Tests.ps1')
+
+        $commands = @($ast.FindAll({ param ($node) $node -is [System.Management.Automation.Language.CommandAst] }, $true) | ForEach-Object { $_.GetCommandName() })
+
+        $commands | Should -Contain 'Test-ProxmoxLiveTestAgentOption'
+    }
+
+    It 'GuestAgent.Tests.ps1 restarts the agent with the guest script that lies next to it' {
+        $suite = Get-Content -LiteralPath (Join-Path $script:repositoryRoot 'LiveTests\Proxmox\GuestAgent.Tests.ps1') -Raw
+
+        $suite | Should -Match 'Guest\\Restart-GuestAgentDuringCommand\.ps1'
+        Test-Path -LiteralPath (Join-Path $script:repositoryRoot 'LiveTests\Proxmox\Guest\Restart-GuestAgentDuringCommand.ps1') | Should -Be $true
+    }
 }
