@@ -45,16 +45,23 @@
         ErrorAction = 'SilentlyContinue'
     }
 
+    # The Proxmox worker has no Name parameter and looks the VMs up by their resource names
+    $proxmoxParameters = @{
+        ComputerName = $machines.ResourceName
+        ErrorAction = 'SilentlyContinue'
+    }
+
     if ($SnapshotName)
     {
         $parameters.Name = $SnapshotName
+        $proxmoxParameters.SnapshotName = $SnapshotName
     }
 
     switch ($lab.DefaultVirtualizationEngine)
     {
         'HyperV' { Get-LWHypervVMSnapshot @parameters}
         'Azure'  { Get-LWAzureVmSnapshot @parameters}
-        'Proxmox' { Get-LWProxmoxVMSnapshot @parameters }
+        'Proxmox' { Get-LWProxmoxVMSnapshot @proxmoxParameters }
         'VMWare' { Write-ScreenInfo -Type Warning -Message 'No VMWare snapshots possible, nothing will be listed'}
     }
 

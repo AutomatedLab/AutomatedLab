@@ -21,6 +21,7 @@
 - Fix the `AutomatedLab.Recipe` module manifest, which was the only one stored as UTF-16 and was corrupted by a checkout with `core.autocrlf=true`, so that the build stopped in `Import-PowerShellDataFile`. It is now UTF-8 with BOM like the others.
 - Fix the local build on machines where an editor watches the workspace: it no longer fails on files in use, downloads only the required modules that are missing, stops when `dotnet restore` or `dotnet publish` fails and writes each generated `about_` help topic with a single call.
 - Fix the Exchange 2013 role after Microsoft removed the Exchange 2013 download: `Exchange2013DownloadUrl` returned HTTP 404 and now has no default. The role uses the link when one is set, otherwise `Exchange2013-x64-cu23.exe` from `LabSources\SoftwarePackages`, and otherwise stops with a message that names the ways to provide the setup (role property `IsoPath`, that file, or the configuration item).
+- Fix `Get-LabVMSnapshot -SnapshotName` on Proxmox labs, which failed with `A parameter cannot be found that matches parameter name 'Name'` instead of listing the snapshots. It now passes the snapshot name as `SnapshotName` and the resource names of the machines to `Get-LWProxmoxVmSnapshot`, so it also finds the snapshots of machines that have a `FriendlyName`. Hyper-V and Azure labs are unchanged.
 
 ## [5.61.0] - 2026-05-12
 
