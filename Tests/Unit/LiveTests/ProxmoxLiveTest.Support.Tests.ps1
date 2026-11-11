@@ -51,11 +51,19 @@ Describe 'Get-ProxmoxLiveTestSetting' {
         $name | Should -Match (Get-ProxmoxLiveTestSetting).VmNamePattern
     }
 
-    It 'does not recognise <Name> as a live-test VM name' -ForEach @(
-        @{ Name = 'ALServer2025' }
-        @{ Name = 'allive-0123abcd' }
-        @{ Name = 'allive-xyz-1' }
-        @{ Name = 'DJSRV2025R005' }
+    It 'recognises a two-digit index' {
+        'allive-0123abcd-12' | Should -Match (Get-ProxmoxLiveTestSetting).VmNamePattern
+    }
+
+    It 'does not recognise <Label> as a live-test VM name' -ForEach @(
+        @{ Label = 'ALServer2025'; Name = 'ALServer2025' }
+        @{ Label = 'allive-0123abcd'; Name = 'allive-0123abcd' }
+        @{ Label = 'allive-xyz-1'; Name = 'allive-xyz-1' }
+        @{ Label = 'DJSRV2025R005'; Name = 'DJSRV2025R005' }
+        @{ Label = 'upper-case letters'; Name = 'ALLIVE-0123ABCD-1' }
+        @{ Label = 'a trailing line feed'; Name = "allive-0123abcd-1`n" }
+        @{ Label = 'a non-ASCII digit'; Name = "allive-0123abcd-$([char]0x0661)" }
+        @{ Label = 'a three-digit index'; Name = 'allive-0123abcd-123' }
     ) {
         $Name | Should -Not -Match (Get-ProxmoxLiveTestSetting).VmNamePattern
     }

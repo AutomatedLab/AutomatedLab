@@ -1,5 +1,6 @@
 ﻿BeforeAll {
     . (Join-Path $PSScriptRoot '..\..\..\LiveTests\Proxmox\ProxmoxLiveTest.Support.ps1')
+    . (Join-Path $PSScriptRoot 'Find-SecretLeak.ps1')
 }
 
 Describe 'Invoke-ProxmoxLiveTestRun' {
@@ -147,6 +148,33 @@ Describe 'Invoke-ProxmoxLiveTestRun' {
             Should -Invoke -CommandName Remove-ProxmoxLiveTestVm -Times 0 -Exactly
         }
 
+        It 'prints the plan and starts nothing with -WhatIf' {
+            $p = $script:common.Clone()
+
+            $result = Invoke-ProxmoxLiveTestRun @p -WhatIf
+
+            $result.Mode | Should -Be 'WhatIf'
+            $result.Ready | Should -Be $true
+            $result.RunId | Should -BeNullOrEmpty
+            $result.PesterResult | Should -BeNullOrEmpty
+            $script:capturedConfiguration | Should -BeNullOrEmpty -Because 'a run under -WhatIf would clone and start VMs that it then cannot remove'
+            Should -Invoke -CommandName Get-ProxmoxLiveTestLeftoverVm -Times 0 -Exactly
+            Should -Invoke -CommandName Remove-ProxmoxLiveTestVm -Times 0 -Exactly
+            Should -Invoke -CommandName Write-Information -Times 1 -Exactly -ParameterFilter { $MessageData -like 'What if:*2 template(s)*' }
+        }
+
+        It 'still refuses to run under -WhatIf when the plan is not ready' {
+            $script:plan.Ready = $false
+            $script:plan.Problems = @('Found 1 usable template(s); at least 2 are required.')
+            $p = $script:common.Clone()
+
+            $result = Invoke-ProxmoxLiveTestRun @p -WhatIf -WarningVariable warnings -WarningAction SilentlyContinue
+
+            $result.Mode | Should -Be 'Run'
+            $result.Ready | Should -Be $false
+            ($warnings -join ' ') | Should -BeLike '*preflight*'
+        }
+
         It 'does not start the tests when the plan is not ready' {
             $script:plan.Ready = $false
             $script:plan.Problems = @('Found 1 usable template(s); at least 2 are required.')
@@ -225,7 +253,8 @@ Describe 'Invoke-ProxmoxLiveTestRun' {
             $null = Invoke-ProxmoxLiveTestRun @p
 
             $data = @($script:capturedConfiguration.Run.Container.Value) | ForEach-Object { $_.Data }
-            ($data | ConvertTo-Json -Depth 8) | Should -Not -BeLike '*topsecret*'
+            $data | Should -Not -BeNullOrEmpty
+            @(Find-SecretLeak -InputObject $data -SecretText 'topsecret') | Should -HaveCount 0
             ($data.LiveTest.Keys) | Should -Not -Contain 'ApiToken'
             ($data.LiveTest.Keys) | Should -Not -Contain 'Credential'
         }

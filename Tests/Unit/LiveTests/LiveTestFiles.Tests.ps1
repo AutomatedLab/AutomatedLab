@@ -107,4 +107,16 @@ Describe 'Live test files' {
         $suite | Should -Match 'Guest\\Restart-GuestAgentDuringCommand\.ps1'
         Test-Path -LiteralPath (Join-Path $script:repositoryRoot 'LiveTests\Proxmox\Guest\Restart-GuestAgentDuringCommand.ps1') | Should -Be $true
     }
+
+    It 'GuestAgent.Tests.ps1 words an unknown process id with the pattern that Start-LWProxmoxAgentExecutionOnVM matches' {
+        $worker = Get-Content -LiteralPath (Join-Path $script:repositoryRoot 'AutomatedLabWorker\functions\ProxmoxWorkerVirtualMachines\Start-LWProxmoxAgentExecutionOnVM.ps1') -Raw
+        $suite = Get-Content -LiteralPath (Join-Path $script:repositoryRoot 'LiveTests\Proxmox\GuestAgent.Tests.ps1') -Raw
+
+        $workerPattern = [regex]::Match($worker, '\$unknownProcessPattern\s*=\s*''([^'']+)''')
+        $suitePattern = [regex]::Match($suite, '(?s)\$unknownProcessPattern.*?Should -Match ''([^'']+)''')
+
+        $workerPattern.Success | Should -Be $true -Because 'the pattern of the worker function must stay easy to find'
+        $suitePattern.Success | Should -Be $true -Because 'the live test must state the pattern it checks as a literal'
+        $suitePattern.Groups[1].Value | Should -BeExactly $workerPattern.Groups[1].Value -Because 'the live test is the only proof that Proxmox words an unknown process id the way the worker expects'
+    }
 }

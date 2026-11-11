@@ -4,11 +4,16 @@
 
 .DESCRIPTION
     Takes the host and the credentials, checks the prerequisites and the templates on the host, and only then runs
-    the suites in this folder against throwaway clones. Use -PreflightOnly to see what would happen without
-    creating anything.
+    the suites in this folder against throwaway clones. Use -PreflightOnly or -WhatIf to see what would happen
+    without creating anything; -WhatIf also names the suites and templates a run would use.
 
-    Credentials are asked for when they are not passed. They are held in memory only, never written to disk and
-    never printed.
+    Credentials are asked for when they are not passed. The runner keeps them as SecureString or PSCredential
+    objects, never writes them to disk and never prints them. The connection that AutomatedLab makes with them
+    (Connect-LabProxmoxCluster) holds the token as plain text in the memory of the session until the session ends,
+    and it does not check the certificate of the host, so run the tests from a network you trust and close the
+    session afterwards.
+
+    The script needs PowerShell 7 or later, because the Corsinvest.ProxmoxVE.Api module does.
 
     A host is ready when it has at least two supported templates: Windows 10, Windows 11, Windows Server 2019,
     2022 or 2025, each a VM with the template flag and the tags 'template' plus the operating system (for example
@@ -91,6 +96,11 @@
     .\Invoke-ProxmoxLiveTest.ps1 -HostName pve1 -RemoveLeftovers -WhatIf
 
     Shows which live-test VMs of earlier runs would be removed.
+
+.EXAMPLE
+    .\Invoke-ProxmoxLiveTest.ps1 -HostName pve1 -WhatIf
+
+    Connects, prints the plan and states which suites and templates a run would use. Nothing is cloned or started.
 #>
 [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'High')]
 param

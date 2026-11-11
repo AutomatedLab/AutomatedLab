@@ -1,5 +1,6 @@
 ﻿BeforeAll {
     . (Join-Path $PSScriptRoot '..\..\..\LiveTests\Proxmox\ProxmoxLiveTest.Support.ps1')
+    . (Join-Path $PSScriptRoot 'Find-SecretLeak.ps1')
 
     # Stubs for everything outside the support file. The AutomatedLab and Proxmox modules are never loaded here.
     function Get-LWProxmoxVM
@@ -342,6 +343,17 @@ Describe 'Get-ProxmoxLiveTestLeftoverVm' {
 
         @(Get-ProxmoxLiveTestLeftoverVm) | Should -HaveCount 0
     }
+
+    It 'does not take a VM whose name only resembles the live-test form' {
+        Mock -CommandName Get-LWProxmoxVM -MockWith {
+            New-RawVm -Name 'ALLIVE-0123ABCD-1' -Tags 'al-live-test' -VmId 401 -Template 0
+            New-RawVm -Name "allive-0123abcd-1`n" -Tags 'al-live-test' -VmId 402 -Template 0
+            New-RawVm -Name 'allive-0123abcd-1' -Tags 'al-live-test' -VmId 403 -Template 0
+        }
+
+        @(Get-ProxmoxLiveTestLeftoverVm).vmid | Should -Be @(403)
+        @(Get-ProxmoxLiveTestLeftoverVm -RunId '0123abcd').vmid | Should -Be @(403)
+    }
 }
 
 Describe 'Remove-ProxmoxLiveTestVm' {
@@ -555,12 +567,12 @@ Describe 'New-ProxmoxLiveTestVm' {
         } | Should -Throw -ExpectedMessage "*clone task for 'allive-0123abcd-1'*ended with 'clone failed: no space left'*"
     }
 
-    It 'names the VM when it was cloned but could not be prepared' {
+    It 'names the VM when it was cloned but could not be prepared and says how to find it' {
         Mock -CommandName Set-PveNodesQemuConfig -MockWith { New-PveReply -Data $null -StatusCode 403 -ReasonPhrase 'Permission check failed' }
 
         {
             New-ProxmoxLiveTestVm -Template $script:template -Name 'allive-0123abcd-1'
-        } | Should -Throw -ExpectedMessage "*'allive-0123abcd-1' (VMID 301)*cloned but could not be prepared*Permission check failed*"
+        } | Should -Throw -ExpectedMessage "*'allive-0123abcd-1' (VMID 301)*cloned but could not be prepared*Permission check failed*may not carry the live-test tag*"
     }
 }
 
@@ -782,7 +794,7 @@ Describe 'Get-ProxmoxLiveTestPlan' {
 
         $plan.PSObject.Properties.Name | Should -Not -Contain 'Credential'
         $plan.PSObject.Properties.Name | Should -Not -Contain 'ApiToken'
-        ($plan | ConvertTo-Json -Depth 6) | Should -Not -BeLike '*topsecret*'
+        @(Find-SecretLeak -InputObject $plan -SecretText 'topsecret') | Should -HaveCount 0
     }
 }
 

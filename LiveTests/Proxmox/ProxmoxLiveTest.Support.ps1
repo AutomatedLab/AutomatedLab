@@ -12,7 +12,8 @@ function Get-ProxmoxLiveTestSetting
         Port          = 8006
         VmTag         = 'al-live-test'
         VmNamePrefix  = 'allive'
-        VmNamePattern = '^allive-[0-9a-f]{8}-\d{1,2}$'
+        # Strict on purpose: -match ignores case, '$' accepts a trailing line feed and '\d' accepts non-ASCII digits.
+        VmNamePattern = '(?-i)^allive-[0-9a-f]{8}-[0-9]{1,2}\z'
     }
 }
 
@@ -772,7 +773,7 @@ function Get-ProxmoxLiveTestLeftoverVm
     $namePattern = $settings.VmNamePattern
     if ($RunId)
     {
-        $namePattern = '^{0}-{1}-\d{{1,2}}$' -f $settings.VmNamePrefix, $RunId
+        $namePattern = '(?-i)^{0}-{1}-[0-9]{{1,2}}\z' -f $settings.VmNamePrefix, $RunId
     }
 
     Get-LWProxmoxVM -NoCache | Where-Object {
@@ -998,7 +999,7 @@ function New-ProxmoxLiveTestVm
     }
     catch
     {
-        throw "The VM '$Name' (VMID $newId) was cloned but could not be prepared: $($_.Exception.Message). It still exists on node '$($Template.Node)'; the run removes it, or use -RemoveLeftovers."
+        throw "The VM '$Name' (VMID $newId) was cloned but could not be prepared: $($_.Exception.Message). It still exists on node '$($Template.Node)' and may not carry the live-test tag. The run removes it when it ends (not with -KeepVm); -RemoveLeftovers finds only tagged VMs, so remove it by hand in Proxmox if the run is gone."
     }
 
     [pscustomobject]@{
@@ -1599,6 +1600,23 @@ function Invoke-ProxmoxLiveTestRun
             return [pscustomobject]@{
                 Mode         = 'Run'
                 Ready        = $false
+                Plan         = $plan
+                RunId        = $null
+                PesterResult = $null
+                Passed       = $false
+                Removed      = @()
+                Kept         = @()
+            }
+        }
+
+        # -WhatIf must not clone or start anything: Remove-ProxmoxLiveTestVm honors it as well and would leave the VMs behind.
+        if ($WhatIfPreference)
+        {
+            $templateNames = @($plan.Selected | ForEach-Object { $_.Name }) -join ', '
+            & $say "What if: would run $(@($suiteFiles).Count) suite(s) on $(@($plan.Selected).Count) template(s): $templateNames. Nothing was cloned or started."
+            return [pscustomobject]@{
+                Mode         = 'WhatIf'
+                Ready        = $true
                 Plan         = $plan
                 RunId        = $null
                 PesterResult = $null

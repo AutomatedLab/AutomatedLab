@@ -17,6 +17,9 @@ PowerShell session, so that no older AutomatedLab module is already loaded.
 # Look first. Connects, checks, prints the plan, creates nothing.
 .\Proxmox\Invoke-ProxmoxLiveTest.ps1 -HostName 192.168.1.10 -PreflightOnly
 
+# The same, but it also names the suites and templates a run would use.
+.\Proxmox\Invoke-ProxmoxLiveTest.ps1 -HostName 192.168.1.10 -WhatIf
+
 # Run all suites with an API token and the modules of a local build.
 $token = Read-Host -Prompt 'API token' -AsSecureString
 .\Proxmox\Invoke-ProxmoxLiveTest.ps1 -HostName pve1.lab.local -ApiToken $token -ModulePath ..\publish
@@ -34,11 +37,18 @@ Run `Get-Help .\Proxmox\Invoke-ProxmoxLiveTest.ps1 -Full` for every parameter.
 
 1. The input is checked: test folder, suites, module path.
 2. Host, port and either a user with password or an API token are collected.
-   Whatever is missing is asked for. Nothing is written to disk or printed;
-   the secrets stay `SecureString` or `PSCredential` objects in memory, and
-   a malformed token is rejected without being echoed.
-3. The prerequisites are checked, and nothing is installed: Pester 5.3 or later,
-   `Corsinvest.ProxmoxVE.Api`, `PSFramework` and the AutomatedLab modules.
+   Whatever is missing is asked for. Nothing is written to disk or printed, and
+   a malformed token is rejected without being echoed. The runner keeps the
+   secrets as `SecureString` or `PSCredential` objects and hands none to the
+   suites. The connection that AutomatedLab makes with them
+   (`Connect-LabProxmoxCluster`) is different: it holds the token as plain text,
+   like the ticket of the Proxmox module, in the memory of the PowerShell
+   session until the session ends, and it does not check the certificate of the
+   host. Run the tests from a network you trust and close the session
+   afterwards.
+3. The prerequisites are checked, and nothing is installed: PowerShell 7 or
+   later (the manifest of `Corsinvest.ProxmoxVE.Api` requires it), Pester 5.3 or
+   later, `Corsinvest.ProxmoxVE.Api`, `PSFramework` and the AutomatedLab modules.
    Use `-ModulePath` for a build output such as `publish`.
 4. The modules are imported and the connection is made and proven.
 5. The host is inspected: nodes, templates, the loaded worker's capabilities and
@@ -79,8 +89,10 @@ the clone, and the test prints that log when the result was not lost.
 ### Safety
 
 - A VM is only ever created or removed when its name has the form
-  `allive-<8 hex characters>-<number>`. Leftover removal additionally requires
-  the tag `al-live-test`.
+  `allive-<8 lower-case hex characters>-<number>`. Leftover removal additionally requires
+  the tag `al-live-test`. It cannot tell the VMs of an interrupted run from those
+  of a run that is still going on, so use `-RemoveLeftovers` only while no other
+  run is active.
 - A clone is tagged, loses all its network adapters (the guest agent needs
   none, and a booted copy of a golden image cannot clash with a lab machine)
   and is removed after the run, also when the tests fail. `-KeepVm` keeps it.
@@ -88,7 +100,10 @@ the clone, and the test prints that log when the result was not lost.
   chooses a target storage and implies a full clone.
 - The user or token needs enough rights to clone, configure, start and destroy
   VMs and to use the guest agent, for example the `PVEVMAdmin` role on `/vms`
-  plus `PVEDatastoreUser` on the target storage.
+  plus `PVEDatastoreUser` on the target storage. That role covers every VM of
+  the cluster, so use a dedicated user or token for the tests and remove it when
+  you no longer need it. The tests only read the selected templates and only
+  create, start and remove VMs named `allive-...`.
 
 ### Not covered
 
@@ -101,8 +116,8 @@ the clone, and the test prints that log when the result was not lost.
   on a real host (2026-11-11, Proxmox VE 9.2, Windows Server 2025 and Windows 11
   clones) passed all tests but three: the agent option of one template, which
   Proxmox returned as `enabled=true`, and the two outage tests, in which the
-  agent was not restarted during the command. Both are fixed; the outage test
-  has not run again yet.
+  agent was not restarted during the command. Both are fixed, and a rerun on
+  the same host passed every test.
 
 ### Adding a suite
 
