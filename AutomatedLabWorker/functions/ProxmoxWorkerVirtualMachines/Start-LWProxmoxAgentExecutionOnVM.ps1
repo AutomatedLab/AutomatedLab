@@ -26,12 +26,16 @@ function Start-LWProxmoxAgentExecutionOnVM
 
         When the guest agent answers again but no longer knows the process, the result of the command is gone
         (the agent restarted or the guest rebooted). The function then stops waiting and raises the error
-        'ProxmoxAgentCommandResultLost'. The command may or may not have completed. The function never starts
-        the command a second time, because a command is not idempotent in general; the caller decides whether
-        a re-run is safe. The guest agent reports an unknown process as "Invalid parameter 'pid'" (QEMU up to
-        8.1) or as "PID <n> does not exist" (QEMU 8.2 and later, where the number is missing from the text
-        because of an upstream formatting bug); Proxmox passes that text on in the reason phrase. These texts
-        come from the QEMU and Proxmox sources and were not captured on a live system.
+        'ProxmoxAgentCommandResultLost'. The command may or may not have completed. Once the start call has
+        returned a process id, the function never starts the command a second time, because a command is not
+        idempotent in general; the caller decides whether a re-run is safe. The start call itself is retried
+        up to 8 times when Proxmox answers it with an error, so a start that the guest agent executed but
+        Proxmox reported as failed (for example with a timeout) can run the command more than once. The guest
+        agent reports an unknown process as "Invalid parameter 'pid'" (QEMU up to 8.1) or as "PID <n> does not
+        exist" (QEMU 8.2 and later, where the number is missing from the text because of an upstream formatting
+        bug); Proxmox passes that text on in the reason phrase. These texts come from the QEMU and Proxmox
+        sources. The GuestAgent live test in LiveTests\Proxmox confirmed on Proxmox VE 9.2 that the reason
+        phrase of an unknown process matches the pattern that this function uses.
 
     .PARAMETER Command
         The full command line to execute on the guest, for example
@@ -47,7 +51,8 @@ function Start-LWProxmoxAgentExecutionOnVM
 
     .PARAMETER TimeoutSeconds
         Maximum number of seconds to wait for the command to finish when -Wait is specified. Defaults to
-        300 seconds and accepts values from 1 to 3600. Tolerated status failures never extend this limit.
+        300 seconds and accepts values from 1 to 3600. Tolerated status failures do not extend this limit; the
+        wait ends at the first check after the limit has elapsed, so it can overshoot by one poll.
 
     .PARAMETER PollIntervalSeconds
         Number of seconds to wait between guest-exec status checks when -Wait is specified. Defaults to 2

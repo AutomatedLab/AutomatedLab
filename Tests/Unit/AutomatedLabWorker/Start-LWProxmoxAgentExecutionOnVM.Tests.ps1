@@ -260,6 +260,16 @@
         Should -Invoke -CommandName Get-PveNodesQemuAgentExecStatus -Times 1 -Exactly
     }
 
+    It 'starts the command and returns without a configuration lookup, a status poll or a wait when Wait is omitted' {
+        Start-LWProxmoxAgentExecutionOnVM -ComputerName 'Client2' -Command 'cmd /c ver'
+
+        Should -Invoke -CommandName Invoke-LWProxmoxCallWithRetry -Times 1 -Exactly
+        Should -Invoke -CommandName Get-LabConfigurationItem -Times 0 -Exactly
+        Should -Invoke -CommandName Get-PveNodesQemuAgentExecStatus -Times 0 -Exactly
+        Should -Invoke -CommandName Start-Sleep -Times 0 -Exactly
+        Should -Invoke -CommandName Write-PSFMessage -Times 0 -Exactly
+    }
+
     It 'polls at the requested interval and looks nothing up while every poll succeeds' {
         $script:statusReplies = @(
             (New-StatusReply)
