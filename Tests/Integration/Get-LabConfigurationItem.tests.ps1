@@ -47,9 +47,12 @@
 
     $functionCalls = (Get-ChildItem -Path "$rootpath\..\.." -Recurse -Filter *.ps*1 | Select-String -Pattern 'Get-LabConfigurationItem -Name [\w\.-]+').Matches.Value | Sort-Object -Unique
     
-    # LabSourcesLocation and VmPath are user-defined and just pre-initialized with $null
+    # VmPath is user-defined and just pre-initialized with $null
+    # LabSourcesLocation is user-defined and not registered at all
     # Exchange2013DownloadUrl has no default because Microsoft no longer publishes the download
-    $skippedCalls = @('Sql', 'LabSourcesLocation', 'VmPath', 'AzureJitTimestamp', 'DisableVersionCheck', 'Exchange2013DownloadUrl')
+    # The value test skips all three. The registration test below still covers the two that Initialization.ps1 registers.
+    $registeredWithoutValue = @('VmPath', 'Exchange2013DownloadUrl')
+    $skippedCalls = @('Sql', 'LabSourcesLocation', 'AzureJitTimestamp', 'DisableVersionCheck') + $registeredWithoutValue
     $testCases = foreach ($call in $functionCalls)
     {
         if ($call -notmatch '-Name\s(?<Name>[\w\.-]+)') { continue }
@@ -61,6 +64,17 @@
         }
         
     }
+
+    $registrationCases = foreach ($call in $functionCalls)
+    {
+        if ($call -notmatch '-Name\s(?<Name>[\w\.-]+)') { continue }
+        if ($Matches.Name -notin $registeredWithoutValue) { continue }
+
+        @{
+            Name = $Matches.Name
+            Call = $call
+        }
+    }
 }
 
 Describe 'Get-LabConfigurationItem' {   
@@ -71,5 +85,9 @@ Describe 'Get-LabConfigurationItem' {
 
     It "Should contain a key for setting <Name>" -TestCases $testCases {
         Get-LabConfigurationItem -Name $Name | Should -Not -BeNullOrEmpty -Because "Function '$Call' uses this item"
+    }
+
+    It "Should register the setting <Name>, which has no default value" -TestCases $registrationCases {
+        Get-PSFConfig -FullName "AutomatedLab.$Name" | Should -Not -BeNullOrEmpty -Because "Function '$Call' reads this item, so Initialization.ps1 has to register it even though its value is `$null"
     }
 }

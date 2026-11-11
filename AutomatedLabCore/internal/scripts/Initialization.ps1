@@ -420,7 +420,7 @@ Set-PSFConfig -Module AutomatedLab -Name SqlSmo2016 -Value "https://download.mic
 Set-PSFConfig -Module AutomatedLab -Name Dynamics365Uri -Value 'https://download.microsoft.com/download/B/D/0/BD0FA814-9885-422A-BA0E-54CBB98C8A33/CRM9.0-Server-ENU-amd64.exe' -Initialize -Validation String -Description 'Dynamics 365 Download URI, defaults to CRM9.0'
 
 # Exchange Server
-Set-PSFConfig -Module AutomatedLab -Name Exchange2013DownloadUrl -Value $null -Initialize -Validation string -Description 'Download url for the Exchange Server 2013 setup exe. There is no default because Microsoft no longer publishes the download. Without a url the Exchange2013 role uses Exchange2013-x64-cu23.exe from LabSources\SoftwarePackages, or an ISO image passed with the role property IsoPath'
+Set-PSFConfig -Module AutomatedLab -Name Exchange2013DownloadUrl -Value $null -Initialize -Validation string -Description 'Download url for the Exchange Server 2013 setup exe. There is no default because Microsoft no longer publishes the download. An existing ISO image passed with the role property IsoPath takes precedence over the url. Without an ISO image and without a url the Exchange2013 role uses Exchange2013-x64-cu23.exe from LabSources\SoftwarePackages'
 Set-PSFConfig -Module AutomatedLab -Name Exchange2016DownloadUrl -Value 'https://download.microsoft.com/download/8/d/2/8d2d01b4-5bbb-4726-87da-0e331bc2b76f/ExchangeServer2016-x64-CU23.ISO' -Initialize -Description 'Download url for Exchange Server 2016 ISO'
 Set-PSFConfig -Module AutomatedLab -Name Exchange2019DownloadUrl -Value 'https://download.microsoft.com/download/7/0/a/70a4d908-eacb-426e-ad9f-e7768e27f873/ExchangeServer2019-x64-cu15.iso' -Initialize -Description 'Download url for Exchange Server 2019 ISO'
 

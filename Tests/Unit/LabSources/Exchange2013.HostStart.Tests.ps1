@@ -43,6 +43,8 @@ Describe 'Exchange2013 role: Get-ExchangeInstallFile' {
         It 'ends with a terminating error when the download fails' {
             $folder = Join-Path -Path $TestDrive -ChildPath 'download-fails'
             Mock -CommandName Get-LabInternetFile -MockWith { Write-Error -Message 'The remote server returned an error: (404) Not Found.' }
+            # Pester runs a test with 'Stop'. With 'Continue' only the -ErrorAction Stop of the helper can end the run.
+            $ErrorActionPreference = 'Continue'
 
             { Get-ExchangeInstallFile -DownloadLink 'https://download.example.invalid/Exchange2013-x64-cu99.exe' -Folder $folder } |
                 Should -Throw -ExpectedMessage '*404*'
