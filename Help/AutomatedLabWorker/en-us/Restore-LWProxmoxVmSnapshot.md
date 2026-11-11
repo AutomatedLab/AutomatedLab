@@ -9,7 +9,7 @@ schema: 2.0.0
 
 ## SYNOPSIS
 
-Restores a Proxmox virtual machine to a previous snapshot
+Restores Proxmox virtual machines to a previous snapshot
 
 ## SYNTAX
 
@@ -19,7 +19,27 @@ Restore-LWProxmoxVmSnapshot [-ComputerName] <String[]> [-SnapshotName] <String> 
 
 ## DESCRIPTION
 
-Restores one or more Proxmox virtual machines to a previously created snapshot. Running VMs will be stopped before restoration and can optionally be restarted.
+Rolls each Proxmox VM in ComputerName back to the snapshot
+`<VM name>_<SnapshotName>` that AutomatedLab created. The lab machines among
+them that are running are stopped first and started again afterwards.
+
+When a rollback task fails, the VM is rolled back again, at most
+ProxmoxSnapshotRollbackRetries more times (default 2) and
+ProxmoxSnapshotRollbackRetryDelaySeconds apart (default 20). Before each new
+attempt the VM is read afresh from the cluster: a running VM is stopped, and a
+lock in the VM configuration, for example 'rollback', gets at most one more
+delay period to clear. A lock that stays ends the attempts for this VM, because
+the Proxmox API cannot remove it. A task that ends with `WARNINGS: <n>` counts
+as a successful rollback only when the VM is stopped and not locked afterwards.
+
+All VMs are processed before a failure is reported. A VM whose rollback failed
+is not started again. The function then throws one terminating error with the
+error id ProxmoxSnapshotRollbackFailed that lists every failed VM with its
+VMID, node, task UPID and the text of the Proxmox task.
+
+A rollback request that the Proxmox API does not answer with status 200 still
+ends the function at once. A VM without the snapshot is skipped with a warning
+and started again if it was running.
 
 ## EXAMPLES
 
@@ -43,7 +63,8 @@ Restores multiple VMs to the same snapshot
 
 ### -ComputerName
 
-The name(s) of the virtual machine(s) to restore
+The names of the Proxmox VMs to restore, which are the resource names of the
+lab machines.
 
 ```yaml
 Type: String[]
@@ -59,7 +80,8 @@ Accept wildcard characters: False
 
 ### -SnapshotName
 
-The name of the snapshot to restore to. Must not contain spaces.
+The name of the snapshot to restore to, without the prefix `<VM name>_`. Must
+not contain spaces.
 
 ```yaml
 Type: String
