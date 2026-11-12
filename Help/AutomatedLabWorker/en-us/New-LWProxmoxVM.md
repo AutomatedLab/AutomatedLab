@@ -21,6 +21,8 @@ New-LWProxmoxVM [-Machine] <Machine> [<CommonParameters>]
 
 Creates a new Proxmox virtual machine by cloning a template and configuring it according to the machine definition. Handles network adapters, disks, unattended installation, and initial configuration.
 
+The VM gets the VMID after the highest VMID of all guests of the cluster, virtual machines and containers. When Proxmox refuses that VMID as taken, for example because another host cloned a VM at the same time, the function clones again with a higher VMID, at most ProxmoxRetryCount (default 3) more times. It does not clone again when a VM with the name of the machine exists by then. The VMID is stored as VmId in the ProxmoxProperties of the machine.
+
 ## EXAMPLES
 
 ### Example 1

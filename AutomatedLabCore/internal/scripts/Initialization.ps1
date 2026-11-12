@@ -163,7 +163,7 @@ Set-PSFConfig -Module 'AutomatedLab' -Name MaxAuthTicketLifetimeMinutes -Value 6
 
 #Proxmox Network settings
 Set-PSFConfig -Module 'AutomatedLab' -Name ProxmoxMacAddressPrefix -Value BC2411 -Initialize -Validation string -Description 'The MAC address prefix for Proxmox labs' -Handler { if ($args[0].Length -eq 0 -or $args[0].Length -gt 11) { Write-PSFMessage -Level Error -Message "Invalid prefix length for ProxmoxMacAddressPrefix! $($args[0]) needs to be at least one character and at most 11 characters"; throw "Invalid prefix length for ProxmoxMacAddressPrefix! $($args[0]) needs to be at least one character and at most 11 characters" } }
-Set-PSFConfig -Module 'AutomatedLab' -Name ProxmoxRetryCount -Value 3 -Initialize -Validation integer -Description 'The number of retries for Proxmox actions like creating a virtual network'
+Set-PSFConfig -Module 'AutomatedLab' -Name ProxmoxRetryCount -Value 3 -Initialize -Validation integer -Description 'How many more times New-LWProxmoxVM clones a VM, each time with a higher VMID, when Proxmox refuses the VMID as taken'
 
 #Proxmox VM Settings
 Set-PSFConfig -Module 'AutomatedLab' -Name DefaultCpuType -Value x86-64-v3 -Initialize -Validation string -Description 'The default CPU type for Proxmox VMs'

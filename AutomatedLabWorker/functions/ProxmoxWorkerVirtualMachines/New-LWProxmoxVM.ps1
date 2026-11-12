@@ -73,14 +73,19 @@ function New-LWProxmoxVM
     $vhdVolume = "C:\ProgramData\AutomatedLab\Labs\$($lab.Name)\Proxmox\VHD\$($Machine.ResourceName)"
     mkdir -Path $vhdVolume -Force | Out-Null
 
-    $nextVmId = (Get-LWProxmoxVM -IncludeTemplates -NoCache | Sort-Object -Property vmid -Descending | Select-Object -First 1).vmid + 1
+    # No -Default: Get-LabConfigurationItem would turn a configured 0 into the default.
+    $cloneRetries = 3
+    $configuredRetries = Get-LabConfigurationItem -Name ProxmoxRetryCount
+    if (-not [string]::IsNullOrEmpty([string]$configuredRetries))
+    {
+        $cloneRetries = [Math]::Max(0, [int]$configuredRetries)
+    }
 
     $param = @{
         Node        = $template.node
         Name        = $Machine.ResourceName
         Description = "Lab '$($lab.Name)'. Created by AutomatedLab"
         Vmid        = $template.vmid
-        Newid       = $nextVmId
     }
 
     if ($Machine.ProxmoxProperties.TargetNode)
@@ -106,26 +111,73 @@ function New-LWProxmoxVM
     #    Write-Error 'Neither the Proxmox pool nor the storage have been specified. Using the storage of the template.' -ErrorAction Stop
     #}
 
-    $result = Invoke-LWProxmoxCallWithRetry -ActivityName "Clone VM '$($Machine.ResourceName)'" -ScriptBlock { New-PveNodesQemuClone @param }
-    if ($result.StatusCode -ne 200)
-    {
-        Write-Error "Failed to create VM '$($Machine.ResourceName)': $($result.ReasonPhrase)"
-        return
-    }
-    Write-Verbose "Waiting for VM '$($Machine.ResourceName)' to be created..."
     $values = @{
         status = 'stopped'
     }
-    $cloneUpid = $result.Response.data
-    $result = Wait-LWProxmoxTasksStatus -Node $template.node -Upid $cloneUpid -DesiredValues $values -TimeoutInSeconds 600
-    if ($result -like 'WARNINGS:*')
+    $triedVmIds = [System.Collections.Generic.List[int]]::new()
+    $nextVmId = 0
+    $refusal = ''
+    $cloned = $false
+    # Proxmox refuses a VMID that is taken, for example by a clone that another host started at the same time
+    while (-not $cloned -and $triedVmIds.Count -le $cloneRetries)
     {
-        Write-PSFMessage -Level Warning -Message "Clone of VM '$($Machine.ResourceName)' finished with a non-fatal Proxmox task warning ('$result'); treating as success."
+        $nextVmId = Get-LWProxmoxNextVmId -After $nextVmId
+        if (-not $nextVmId)
+        {
+            return
+        }
+        $triedVmIds.Add($nextVmId)
+        $param.Newid = $nextVmId
+
+        $result = Invoke-LWProxmoxCallWithRetry -ActivityName "Clone VM '$($Machine.ResourceName)'" -ScriptBlock { New-PveNodesQemuClone @param }
+        if ($result.StatusCode -eq 200)
+        {
+            Write-Verbose "Waiting for VM '$($Machine.ResourceName)' to be created..."
+            $cloneUpid = $result.Response.data
+            $result = Wait-LWProxmoxTasksStatus -Node $template.node -Upid $cloneUpid -DesiredValues $values -TimeoutInSeconds 600
+            $taskText = ConvertTo-LWProxmoxTaskResultText -TaskResult $result -TimeoutInSeconds 600
+            if ($taskText -like 'WARNINGS:*')
+            {
+                Write-PSFMessage -Level Warning -Message "Clone of VM '$($Machine.ResourceName)' finished with a non-fatal Proxmox task warning ('$taskText'); treating as success."
+                $cloned = $true
+                break
+            }
+            if ($taskText -eq 'OK')
+            {
+                $cloned = $true
+                break
+            }
+            if ($taskText -notmatch 'already exists')
+            {
+                Write-Error "Failed to create VM '$($Machine.ResourceName)' as VMID $nextVmId from template '$($template.Name)' (VMID $($template.VMID)) on node '$($template.node)': the clone task '$cloneUpid' ended with '$taskText'."
+                return
+            }
+            $refusal = $taskText
+        }
+        elseif ($result.ReasonPhrase -match 'already exists')
+        {
+            $refusal = $result.ReasonPhrase
+        }
+        else
+        {
+            Write-Error "Failed to create VM '$($Machine.ResourceName)': $($result.ReasonPhrase)"
+            return
+        }
+
+        # A VM with this name may be the clone of an earlier attempt whose answer got lost, or the same machine
+        # deployed by another host. Another clone would duplicate it.
+        $sameNameVm = @(Get-LWProxmoxVM -ComputerName $Machine.ResourceName -NoCache -NoError | Where-Object Name -eq $Machine.ResourceName)
+        if ($sameNameVm.Count -gt 0)
+        {
+            Write-Error "Failed to create VM '$($Machine.ResourceName)': Proxmox refused VMID $nextVmId as taken ('$refusal'), and a VM named '$($Machine.ResourceName)' exists now (VMID $($sameNameVm.vmid -join ', ')). Another AutomatedLab host may deploy the same machine, or an earlier attempt created it, so it is not cloned again."
+            return
+        }
+        Write-PSFMessage -Level Warning -Message "Proxmox refused VMID $nextVmId for VM '$($Machine.ResourceName)' as taken ('$refusal')."
     }
-    elseif ($result -ne 'OK')
+
+    if (-not $cloned)
     {
-        $taskText = ConvertTo-LWProxmoxTaskResultText -TaskResult $result -TimeoutInSeconds 600
-        Write-Error "Failed to create VM '$($Machine.ResourceName)' as VMID $nextVmId from template '$($template.Name)' (VMID $($template.VMID)) on node '$($template.node)': the clone task '$cloneUpid' ended with '$taskText'."
+        Write-Error "Failed to create VM '$($Machine.ResourceName)' from template '$($template.Name)' (VMID $($template.VMID)) on node '$($template.node)': Proxmox refused each VMID it tried as taken ($($triedVmIds -join ', ')), the last time with '$refusal'."
         return
     }
     Write-Verbose 'done.'
