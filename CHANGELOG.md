@@ -2,8 +2,14 @@
 
 ## [Unreleased]
 
+### Changed
+
+- **Breaking Change**: rename the configuration item `MacAddressPrefix` to `HypervMacAddressPrefix`, because Proxmox labs use their own `ProxmoxMacAddressPrefix` (#1829). A value registered for `AutomatedLab.MacAddressPrefix` is no longer read; register it again under the new name.
+- **Breaking Change**: rename the worker functions `Get-LWHypervVMDescription` and `Set-LWHypervVMDescription` to `Get-LWVMDescription` and `Set-LWVMDescription`, because Proxmox machines use them too (#1829). The old names are no longer exported.
+
 ### Added
 
+- Add Proxmox VE as a virtualization engine next to Hyper-V, Azure and VMware (#1829). A lab uses it with `New-LabDefinition -DefaultVirtualizationEngine Proxmox` after `Connect-LabProxmoxCluster` (credential or API token). Each machine is cloned from the Proxmox template of its operating system; `Add-LabMachineDefinition -ProxmoxProperties` sets `TargetNode`, `Storage`, `Pool`, `VmId`, `CpuType` and `FullClone`. The lab cmdlets create, start, stop, snapshot and remove the VMs, and `Test-LabProxmoxConnection` and `Get-LabProxmoxConnectionInfo` report the connection. The engine needs PowerShell 7 and the `Corsinvest.ProxmoxVE.Api` module, which is not installed with AutomatedLab. New configuration items: `MaxAuthTicketLifetimeMinutes`, `DefaultCpuType`, `ProxmoxMacAddressPrefix`, `ProxmoxRetryCount`, `ProxmoxDelayBetweenComputers`, `ProxmoxImageStateCompleteTimeout` and the `ProxmoxAgent*` and `ProxmoxSnapshotRollback*` items.
 - Proxmox: add `Add-LWProxmoxIsoImage` and `Remove-LWProxmoxIsoImage` so ISO images on a Proxmox storage can now be uploaded and deleted. Together with the existing `Get-LWProxmoxIsoImage` this completes list/upload/remove management of ISO images on Proxmox storages.
   - `Add-LWProxmoxIsoImage` uploads via SFTP by default (Posh-SSH), copying the file straight into the storage's `<path>/template/iso` directory and bypassing the `pveproxy` HTTP upload endpoint, which spools uploads to a temporary file and can fail for large ISO images. When the cluster connection was made with a `@pam` credential that password is reused as the SSH credential (realm stripped, e.g. `root@pam` -> `root`); `-SshCredential`, `-SshHostName` and `-SshPort` override this. It falls back automatically to the HTTP upload endpoint (streamed with `curl`, because that endpoint forces a TLS renegotiation the .NET web stack cannot perform) when SSH is unavailable, or on demand via `-TransferMethod Http`. Also supports `-Storage`, `-Checksum`/`-ChecksumAlgorithm` (HTTP only), `-Force` (overwrite) and `-PassThru`.
   - `Remove-LWProxmoxIsoImage` deletes an ISO by file name (auto-searching all ISO-capable storages on the node) or by full volume id, with `-Force` and `-PassThru`.
