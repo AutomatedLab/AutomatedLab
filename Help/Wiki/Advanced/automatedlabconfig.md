@@ -300,6 +300,17 @@ Default value: D
 Set with: `Set-PSFConfig -FullName AutomatedLab.DefaultAzureRoleSize -Value <YourValue> -PassThru | Register-PSFConfig`
 
 
+### DefaultCpuType
+
+The default CPU type for Proxmox VMs
+
+Data type: System.String  
+Hidden?: False  
+Default value: x86-64-v3  
+
+Set with: `Set-PSFConfig -FullName AutomatedLab.DefaultCpuType -Value <YourValue> -PassThru | Register-PSFConfig`
+
+
 ### DefaultDnsForwarder1
 
 If routing is installed on a Root DC, this forwarder is used
@@ -597,6 +608,28 @@ Default value: https://download.microsoft.com/download/7/0/a/70a4d908-eacb-426e-
 Set with: `Set-PSFConfig -FullName AutomatedLab.Exchange2019DownloadUrl -Value <YourValue> -PassThru | Register-PSFConfig`
 
 
+### HypervMacAddressPrefix
+
+The MAC address prefix for Hyper-V labs
+
+Data type: System.String  
+Hidden?: False  
+Default value: 0017FB  
+
+Set with: `Set-PSFConfig -FullName AutomatedLab.HypervMacAddressPrefix -Value <YourValue> -PassThru | Register-PSFConfig`
+
+
+### HyperVUseNAT
+
+Indicates if a NAT should be created for all lab environments
+
+Data type: System.Boolean  
+Hidden?: False  
+Default value: False  
+
+Set with: `Set-PSFConfig -FullName AutomatedLab.HyperVUseNAT -Value <YourValue> -PassThru | Register-PSFConfig`
+
+
 ### IisUrlRewriteDownloadUrl
 
 Link to IIS URL Rewrite Module needed for Exchange 2016 and 2019
@@ -685,17 +718,6 @@ Default value: 60
 Set with: `Set-PSFConfig -FullName AutomatedLab.LabSourcesSyncIntervalDays -Value <YourValue> -PassThru | Register-PSFConfig`
 
 
-### MacAddressPrefix
-
-The MAC address prefix for Hyper-V labs
-
-Data type: System.String  
-Hidden?: False  
-Default value: 0017FB  
-
-Set with: `Set-PSFConfig -FullName AutomatedLab.MacAddressPrefix -Value <YourValue> -PassThru | Register-PSFConfig`
-
-
 ### MachineFileName
 
 The file name for the deserialized machines. Do not change unless you know what you are doing.
@@ -705,6 +727,17 @@ Hidden?: False
 Default value: Machines.xml  
 
 Set with: `Set-PSFConfig -FullName AutomatedLab.MachineFileName -Value <YourValue> -PassThru | Register-PSFConfig`
+
+
+### MaxAuthTicketLifetimeMinutes
+
+Maximum lifetime of the Proxmox authentication ticket in minutes
+
+Data type: System.Int32  
+Hidden?: False  
+Default value: 60  
+
+Set with: `Set-PSFConfig -FullName AutomatedLab.MaxAuthTicketLifetimeMinutes -Value <YourValue> -PassThru | Register-PSFConfig`
 
 
 ### MaxPSSessionsPerVM
@@ -925,6 +958,127 @@ Hidden?: False
 Default value: $HOME/.automatedlab/Assets/ProductKeysCustom.xml  
 
 Set with: `Set-PSFConfig -FullName AutomatedLab.ProductKeyFilePathCustom -Value <YourValue> -PassThru | Register-PSFConfig`
+
+
+### ProxmoxAgentCleanupRetries
+
+How many times the idempotent AppX cleanup of the Proxmox Sysprep preparation is run again when its result was lost together with the QEMU Guest Agent, for example after an agent restart or a guest reboot. 0 disables the re-run.
+
+Data type: System.Int32  
+Hidden?: False  
+Default value: 2  
+
+Set with: `Set-PSFConfig -FullName AutomatedLab.ProxmoxAgentCleanupRetries -Value <YourValue> -PassThru | Register-PSFConfig`
+
+
+### ProxmoxAgentExecTimeout
+
+Timeout in seconds for the QEMU Guest Agent guest-exec subsystem to become ready (able to run commands) during VM provisioning.
+
+Data type: System.Int32  
+Hidden?: False  
+Default value: 300  
+
+Set with: `Set-PSFConfig -FullName AutomatedLab.ProxmoxAgentExecTimeout -Value <YourValue> -PassThru | Register-PSFConfig`
+
+
+### ProxmoxAgentStabilizationSeconds
+
+Seconds to wait after QEMU Guest Agent responds to ping before sending files. Allows the agent to fully initialize file-operation handlers on slower templates.
+
+Data type: System.Int32  
+Hidden?: False  
+Default value: 10  
+
+Set with: `Set-PSFConfig -FullName AutomatedLab.ProxmoxAgentStabilizationSeconds -Value <YourValue> -PassThru | Register-PSFConfig`
+
+
+### ProxmoxAgentStatusFailureTolerance
+
+Seconds the status queries of a waited QEMU Guest Agent command may keep failing, for example while the agent is briefly unreachable, before the wait fails. A successful query resets the window and the command timeout still applies. 0 fails at the first failed query.
+
+Data type: System.Int32  
+Hidden?: False  
+Default value: 120  
+
+Set with: `Set-PSFConfig -FullName AutomatedLab.ProxmoxAgentStatusFailureTolerance -Value <YourValue> -PassThru | Register-PSFConfig`
+
+
+### ProxmoxAgentTimeout
+
+Timeout in seconds for the QEMU Guest Agent to become responsive during VM provisioning.
+
+Data type: System.Int32  
+Hidden?: False  
+Default value: 300  
+
+Set with: `Set-PSFConfig -FullName AutomatedLab.ProxmoxAgentTimeout -Value <YourValue> -PassThru | Register-PSFConfig`
+
+
+### ProxmoxDelayBetweenComputers
+
+Seconds to wait after provisioning a Proxmox VM before creating the next one, to stagger the boot/OOBE load on the Proxmox hosts. Set to 0 to disable the delay.
+
+Data type: System.Int32  
+Hidden?: False  
+Default value: 60  
+
+Set with: `Set-PSFConfig -FullName AutomatedLab.ProxmoxDelayBetweenComputers -Value <YourValue> -PassThru | Register-PSFConfig`
+
+
+### ProxmoxImageStateCompleteTimeout
+
+Timeout in seconds to wait for a cloned Proxmox VM to reach Windows IMAGE_STATE_COMPLETE (its own first-boot specialize) before injecting the answer file and running Sysprep. Allows generalized (sysprepped) templates to be used, not only specialized golden images.
+
+Data type: System.Int32  
+Hidden?: False  
+Default value: 1800  
+
+Set with: `Set-PSFConfig -FullName AutomatedLab.ProxmoxImageStateCompleteTimeout -Value <YourValue> -PassThru | Register-PSFConfig`
+
+
+### ProxmoxMacAddressPrefix
+
+The MAC address prefix for Proxmox labs
+
+Data type: System.String  
+Hidden?: False  
+Default value: BC2411  
+
+Set with: `Set-PSFConfig -FullName AutomatedLab.ProxmoxMacAddressPrefix -Value <YourValue> -PassThru | Register-PSFConfig`
+
+
+### ProxmoxRetryCount
+
+How many more times New-LWProxmoxVM clones a VM, each time with a higher VMID, when Proxmox refuses the VMID as taken
+
+Data type: System.Int32  
+Hidden?: False  
+Default value: 3  
+
+Set with: `Set-PSFConfig -FullName AutomatedLab.ProxmoxRetryCount -Value <YourValue> -PassThru | Register-PSFConfig`
+
+
+### ProxmoxSnapshotRollbackRetries
+
+How many more times Restore-LabVMSnapshot rolls a Proxmox VM back to the snapshot when the rollback task failed, for example with an rbd error. Before each new attempt a running VM is stopped, and a lock on the VM must clear within ProxmoxSnapshotRollbackRetryDelaySeconds. 0 disables the retry.
+
+Data type: System.Int32  
+Hidden?: False  
+Default value: 2  
+
+Set with: `Set-PSFConfig -FullName AutomatedLab.ProxmoxSnapshotRollbackRetries -Value <YourValue> -PassThru | Register-PSFConfig`
+
+
+### ProxmoxSnapshotRollbackRetryDelaySeconds
+
+Seconds Restore-LabVMSnapshot waits before it rolls a Proxmox VM back again after a failed rollback task. A lock on the VM then gets at most this time once more to clear before the attempts end, because the Proxmox API cannot remove it.
+
+Data type: System.Int32  
+Hidden?: False  
+Default value: 20  
+
+Set with: `Set-PSFConfig -FullName AutomatedLab.ProxmoxSnapshotRollbackRetryDelaySeconds -Value <YourValue> -PassThru | Register-PSFConfig`
 
 
 ### ReportViewer2015

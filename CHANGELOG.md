@@ -16,6 +16,7 @@
   - `Get-LabProxmoxConnectionInfo` exposes the active Proxmox connection (host, port, auth type and, with `-IncludeCredential`, the stored credential) so the SFTP upload can reuse the session credential.
 - Add `Posh-SSH` as a dependency, used for the SFTP-based Proxmox ISO upload.
 - Add opt-in live tests for the Proxmox provider under `LiveTests\Proxmox`. `Invoke-ProxmoxLiveTest.ps1` asks for the host and the credentials, checks the host and its templates, and only then runs the suites against throwaway clones; `-WhatIf` and `-PreflightOnly` show the plan without creating anything. The normal build never runs them.
+- Document the Proxmox configuration items, `HypervMacAddressPrefix` and `HyperVUseNAT` in the settings reference (`Help\Wiki\Advanced\automatedlabconfig.md` and `about_AutomatedLabAdvanced`), which still listed `MacAddressPrefix`.
 
 ### Fixed
 
