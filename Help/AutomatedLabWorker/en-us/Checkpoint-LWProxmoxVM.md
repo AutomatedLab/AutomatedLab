@@ -1,40 +1,65 @@
 ---
 external help file: AutomatedLabWorker-help.xml
 Module Name: AutomatedLabWorker
-online version: https://automatedlab.org/en/latest/AutomatedLabWorker/en-us/Set-LWHypervVMDescription
+online version: https://automatedlab.org/en/latest/AutomatedLabWorker/en-us/Checkpoint-LWProxmoxVM
 schema: 2.0.0
 ---
 
-# Set-LWHypervVMDescription
+# Checkpoint-LWProxmoxVM
 
 ## SYNOPSIS
-Set the Notes field of a Hyper-V VM
+
+Create a checkpoint of a Proxmox VM
 
 ## SYNTAX
 
 ```
-Set-LWHypervVMDescription [-Hashtable] <Hashtable> [-ComputerName] <String> [<CommonParameters>]
+Checkpoint-LWProxmoxVM [-ComputerName] <String[]> [-SnapshotName] <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-Set the Notes field of a Hyper-V VM to store information about the VMs status.
+
+Creates a snapshot of one or more Proxmox virtual machines. The snapshot can be used later to restore the VM to this point in time.
 
 ## EXAMPLES
 
 ### Example 1
+
 ```powershell
-PS C:\> Set-LWHypervVMDescription -Hashtable @{
-    CreatedBy = 'JHP'
-    Purpose   = 'Compute'
-} -ComputerName HV01
+Checkpoint-LWProxmoxVM -ComputerName DC01 -SnapshotName BeforeSchemaUpdate
 ```
 
-Deserializes the hashtable with tags to the Notes field of the Hyper-V VM HV01
+Creates the snapshot BeforeSchemaUpdate for Proxmox VM DC01
+
+### Example 2
+
+```powershell
+Checkpoint-LWProxmoxVM -ComputerName DC01,SQL01 -SnapshotName BeforePatching
+```
+
+Creates the snapshot BeforePatching for multiple Proxmox VMs
 
 ## PARAMETERS
 
 ### -ComputerName
-The machine to set the notes field of
+
+The machines to snapshot
+
+```yaml
+Type: String[]
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 0
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -SnapshotName
+
+The name of the snapshot. Must not contain spaces.
 
 ```yaml
 Type: String
@@ -48,32 +73,18 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Hashtable
-A hashtable containing notes.
-Values will be converted to String
-
-```yaml
-Type: Hashtable
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: 0
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### CommonParameters
+
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
 ### None
+
 ## OUTPUTS
 
 ### System.Object
+
 ## NOTES
 
 ## RELATED LINKS
-

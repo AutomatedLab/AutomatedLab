@@ -52,7 +52,33 @@ if ($IsLinux -and -not $IsLocalBuild.IsPresent)
 
 $modpath = New-Item -ItemType Directory -Force -Path (Join-Path $buildFolder requiredmodules)
 Write-Host "Downloading required modules"
-Save-Module -Name powershell-yaml, Pester, AutomatedLab.Common, PSFramework, xPSDesiredStateConfiguration, xDscDiagnostics, xWebAdministration, PackageManagement, PowerShellGet, PlatyPS, Ships -Repository PSGallery -Path $modpath.FullName
+# Saving a module version that already exists deletes its folder first. When a running session has one of its files loaded, that
+# fails halfway and leaves a broken module behind, so only the versions that are missing are downloaded. A version counts as
+# present when its manifest is there, because an empty or half-deleted version folder is exactly that broken module.
+foreach ($moduleName in 'powershell-yaml', 'Pester', 'AutomatedLab.Common', 'PSFramework', 'Posh-SSH', 'xPSDesiredStateConfiguration', 'xDscDiagnostics', 'xWebAdministration', 'PackageManagement', 'PowerShellGet', 'PlatyPS', 'Ships')
+{
+  try
+  {
+    $latest = Find-Module -Name $moduleName -Repository PSGallery -ErrorAction Stop
+  }
+  catch
+  {
+    # A copy that was saved earlier still serves the build when the gallery cannot be reached; without one the build stops here.
+    $saved = Get-ChildItem -Path $modpath.FullName -Recurse -File -Filter '*.psd1' -ErrorAction SilentlyContinue | Where-Object { $_.Name -eq "$moduleName.psd1" }
+    if (-not $saved)
+    {
+      throw
+    }
+    Write-Warning -Message "Could not look up $moduleName in the PowerShell Gallery, so the saved copy is used. $($_.Exception.Message)"
+    continue
+  }
+
+  $manifestPath = Join-Path (Join-Path (Join-Path $modpath.FullName $latest.Name) ([string]$latest.Version)) "$($latest.Name).psd1"
+  if (-not (Test-Path -Path $manifestPath))
+  {
+    Save-Module -Name $moduleName -RequiredVersion $latest.Version -Repository PSGallery -Path $modpath.FullName
+  }
+}
 if (-not $env:PSModulePath.Contains($modpath.FullName))
 {
   $sep = [io.path]::PathSeparator

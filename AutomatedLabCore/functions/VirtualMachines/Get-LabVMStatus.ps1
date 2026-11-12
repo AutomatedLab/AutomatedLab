@@ -29,6 +29,9 @@
     $azureVMs = $vms | Where-Object HostType -eq 'Azure'
     if ($azureVMs) { $azureStatus = Get-LWAzureVMStatus -ComputerName $azureVMs.ResourceName }
 
+    $proxmoxVMs = $vms | Where-Object HostType -eq 'Proxmox'
+    if ($proxmoxVMs) { $proxmoxStatus = Get-LWProxmoxVMStatus -ComputerName $proxmoxVMs.ResourceName }
+
     $vmwareVMs = $vms | Where-Object HostType -eq 'VMWare'
     if ($vmwareVMs) { $vmwareStatus = Get-LWVMWareVMStatus -ComputerName $vmwareVMs.ResourceName }
 
@@ -36,6 +39,7 @@
     if ($hypervStatus) { $result = $result + $hypervStatus }
     if ($azureStatus) { $result = $result + $azureStatus }
     if ($vmwareStatus) { $result = $result + $vmwareStatus }
+    if ($proxmoxStatus) { $result = $result + $proxmoxStatus }
 
     if ($result.Count -eq 1 -and -not $AsHashTable)
     {

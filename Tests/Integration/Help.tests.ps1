@@ -27,6 +27,8 @@ BeforeDiscovery {
         'Get-LabPostInstallationActivity'
         'Get-LabPreInstallationActivity'
         'Disable-LabHostRemoting'
+        'Get-LWHypervVMDescription'
+        'Set-LWHypervVMDescription'
     )
 
     if (-not (Get-Module -List AutomatedLab.Common)) { Install-Module -Name AutomatedLab.Common -Force -SkipPublisherCheck -AllowClobber }

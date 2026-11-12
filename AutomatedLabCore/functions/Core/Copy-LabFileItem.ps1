@@ -47,7 +47,7 @@
             $cred = $Credential
         }
 
-        if ($machine.HostType -eq 'HyperV' -or
+        if ($machine.HostType -in 'HyperV', 'Proxmox' -or
             (-not $UseAzureLabSourcesOnAzureVm -and $machine.HostType -eq 'Azure') -or
             ($path -notlike "$labSources*" -and $machine.HostType -eq 'Azure')
         )

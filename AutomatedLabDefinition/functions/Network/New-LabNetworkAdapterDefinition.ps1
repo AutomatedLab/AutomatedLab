@@ -120,7 +120,7 @@
 
     if ((Get-LabDefinition).DefaultVirtualizationEngine -eq 'HyperV' -and -not $MacAddress)
     {
-        $macAddressPrefix = Get-LabConfigurationItem -Name MacAddressPrefix
+        $macAddressPrefix = Get-LabConfigurationItem -Name HypervMacAddressPrefix
         [string[]]$macAddressesInUse = (Get-LWHyperVVM | Get-VMNetworkAdapter).MacAddress
         $macAddressesInUse += (Get-LabMachineDefinition -All).NetworkAdapters.MacAddress
         if (-not $script:macIdx) { $script:macIdx = 0 }

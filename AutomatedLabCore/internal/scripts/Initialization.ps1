@@ -151,12 +151,33 @@ Set-PSFConfig -Module 'AutomatedLab' -Name VMConnectUseAllMonitors -Value $false
 Set-PSFConfig -Module 'AutomatedLab' -Name VMConnectRedirectedDrives -Value 'none' -Initialize -Validation string -Description "Drives to mount in a VMConnect session. Use '*' for all drives or a semicolon seperated list."
 
 #Hyper-V Network settings
-Set-PSFConfig -Module 'AutomatedLab' -Name MacAddressPrefix -Value '0017FB' -Initialize -Validation string -Description 'The MAC address prefix for Hyper-V labs' -Handler { if ($args[0].Length -eq 0 -or $args[0].Length -gt 11) { Write-PSFMessage -Level Error -Message "Invalid prefix length for MacAddressPrefix! $($args[0]) needs to be at least one character and at most 11 characters"; throw "Invalid prefix length for MacAddressPrefix! $($args[0]) needs to be at least one character and at most 11 characters" } }
+Set-PSFConfig -Module 'AutomatedLab' -Name HypervMacAddressPrefix -Value '0017FB' -Initialize -Validation string -Description 'The MAC address prefix for Hyper-V labs' -Handler { if ($args[0].Length -eq 0 -or $args[0].Length -gt 11) { Write-PSFMessage -Level Error -Message "Invalid prefix length for HypervMacAddressPrefix! $($args[0]) needs to be at least one character and at most 11 characters"; throw "Invalid prefix length for HypervMacAddressPrefix! $($args[0]) needs to be at least one character and at most 11 characters" } }
+# MacAddressPrefix was renamed; a value still registered under the old name applies while the new name has its default
+Update-LabRenamedConfigurationItem -OldName MacAddressPrefix -NewName HypervMacAddressPrefix -DefaultValue '0017FB'
 Set-PSFConfig -Module 'AutomatedLab' -Name DisableDeviceNaming -Value $false -Validation bool -Initialize -Description 'Disables Device Naming for VM NICs. Enabled by default for Hosts > 2016 and Gen 2 Guests > 2016'
 Set-PSFConfig -Module 'AutomatedLab' -Name HyperVUseNAT -Value $false -Validation bool -Initialize -Description 'Indicates if a NAT should be created for all lab environments'
 
 #Hyper-V Disk Settings
 Set-PSFConfig -Module 'AutomatedLab' -Name CreateOnlyReferencedDisks -Value $true -Initialize -Validation bool -Description 'Disks that are not references by a VM will not be created'
+
+#Proxmox Authentication settings
+Set-PSFConfig -Module 'AutomatedLab' -Name MaxAuthTicketLifetimeMinutes -Value 60 -Initialize -Validation integer -Description 'Maximum lifetime of the Proxmox authentication ticket in minutes'
+
+#Proxmox Network settings
+Set-PSFConfig -Module 'AutomatedLab' -Name ProxmoxMacAddressPrefix -Value BC2411 -Initialize -Validation string -Description 'The MAC address prefix for Proxmox labs' -Handler { if ($args[0].Length -eq 0 -or $args[0].Length -gt 11) { Write-PSFMessage -Level Error -Message "Invalid prefix length for ProxmoxMacAddressPrefix! $($args[0]) needs to be at least one character and at most 11 characters"; throw "Invalid prefix length for ProxmoxMacAddressPrefix! $($args[0]) needs to be at least one character and at most 11 characters" } }
+Set-PSFConfig -Module 'AutomatedLab' -Name ProxmoxRetryCount -Value 3 -Initialize -Validation integer -Description 'How many more times New-LWProxmoxVM clones a VM, each time with a higher VMID, when Proxmox refuses the VMID as taken'
+
+#Proxmox VM Settings
+Set-PSFConfig -Module 'AutomatedLab' -Name DefaultCpuType -Value x86-64-v3 -Initialize -Validation string -Description 'The default CPU type for Proxmox VMs'
+Set-PSFConfig -Module 'AutomatedLab' -Name ProxmoxAgentTimeout -Value 300 -Initialize -Validation integer -Description 'Timeout in seconds for the QEMU Guest Agent to become responsive during VM provisioning.'
+Set-PSFConfig -Module 'AutomatedLab' -Name ProxmoxAgentExecTimeout -Value 300 -Initialize -Validation integer -Description 'Timeout in seconds for the QEMU Guest Agent guest-exec subsystem to become ready (able to run commands) during VM provisioning.'
+Set-PSFConfig -Module 'AutomatedLab' -Name ProxmoxAgentStatusFailureTolerance -Value 120 -Initialize -Validation integerpositive -Description 'Seconds the status queries of a waited QEMU Guest Agent command may keep failing, for example while the agent is briefly unreachable, before the wait fails. A successful query resets the window and the command timeout still applies. 0 fails at the first failed query.'
+Set-PSFConfig -Module 'AutomatedLab' -Name ProxmoxAgentCleanupRetries -Value 2 -Initialize -Validation integerpositive -Description 'How many times the idempotent AppX cleanup of the Proxmox Sysprep preparation is run again when its result was lost together with the QEMU Guest Agent, for example after an agent restart or a guest reboot. 0 disables the re-run.'
+Set-PSFConfig -Module 'AutomatedLab' -Name ProxmoxSnapshotRollbackRetries -Value 2 -Initialize -Validation integerpositive -Description 'How many more times Restore-LabVMSnapshot rolls a Proxmox VM back to the snapshot when the rollback task failed, for example with an rbd error. Before each new attempt a running VM is stopped, and a lock on the VM must clear within ProxmoxSnapshotRollbackRetryDelaySeconds. 0 disables the retry.'
+Set-PSFConfig -Module 'AutomatedLab' -Name ProxmoxSnapshotRollbackRetryDelaySeconds -Value 20 -Initialize -Validation integerpositive -Description 'Seconds Restore-LabVMSnapshot waits before it rolls a Proxmox VM back again after a failed rollback task. A lock on the VM then gets at most this time once more to clear before the attempts end, because the Proxmox API cannot remove it.'
+Set-PSFConfig -Module 'AutomatedLab' -Name ProxmoxAgentStabilizationSeconds -Value 10 -Initialize -Validation integer -Description 'Seconds to wait after QEMU Guest Agent responds to ping before sending files. Allows the agent to fully initialize file-operation handlers on slower templates.'
+Set-PSFConfig -Module 'AutomatedLab' -Name ProxmoxDelayBetweenComputers -Value 60 -Initialize -Validation integer -Description 'Seconds to wait after provisioning a Proxmox VM before creating the next one, to stagger the boot/OOBE load on the Proxmox hosts. Set to 0 to disable the delay.'
+Set-PSFConfig -Module 'AutomatedLab' -Name ProxmoxImageStateCompleteTimeout -Value 1800 -Initialize -Validation integer -Description 'Timeout in seconds to wait for a cloned Proxmox VM to reach Windows IMAGE_STATE_COMPLETE (its own first-boot specialize) before injecting the answer file and running Sysprep. Allows generalized (sysprepped) templates to be used, not only specialized golden images.'
 
 #Admin Center
 Set-PSFConfig -Module 'AutomatedLab' -Name WacDownloadUrl -Value 'http://aka.ms/WACDownload' -Validation string -Initialize -Description 'Windows Admin Center Download URL'
@@ -403,9 +424,9 @@ Set-PSFConfig -Module AutomatedLab -Name SqlSmo2016 -Value "https://download.mic
 Set-PSFConfig -Module AutomatedLab -Name Dynamics365Uri -Value 'https://download.microsoft.com/download/B/D/0/BD0FA814-9885-422A-BA0E-54CBB98C8A33/CRM9.0-Server-ENU-amd64.exe' -Initialize -Validation String -Description 'Dynamics 365 Download URI, defaults to CRM9.0'
 
 # Exchange Server
-Set-PSFConfig -Module AutomatedLab -Name Exchange2013DownloadUrl -Value 'https://download.microsoft.com/download/7/F/D/7FDCC96C-26C0-4D49-B5DB-5A8B36935903/Exchange2013-x64-cu23.exe' -Initialize -Description 'Download url for Exchange Server 2013 exe'
+Set-PSFConfig -Module AutomatedLab -Name Exchange2013DownloadUrl -Value $null -Initialize -Validation string -Description 'Download url for the Exchange Server 2013 setup exe. There is no default because Microsoft no longer publishes the download. An existing ISO image passed with the role property IsoPath takes precedence over the url. Without an ISO image and without a url the Exchange2013 role uses Exchange2013-x64-cu23.exe from LabSources\SoftwarePackages'
 Set-PSFConfig -Module AutomatedLab -Name Exchange2016DownloadUrl -Value 'https://download.microsoft.com/download/8/d/2/8d2d01b4-5bbb-4726-87da-0e331bc2b76f/ExchangeServer2016-x64-CU23.ISO' -Initialize -Description 'Download url for Exchange Server 2016 ISO'
-Set-PSFConfig -Module AutomatedLab -Name Exchange2019DownloadUrl -Value 'https://download.microsoft.com/download/b/c/7/bc766694-8398-4258-8e1e-ce4ddb9b3f7d/ExchangeServer2019-x64-CU12.ISO' -Initialize -Description 'Download url for Exchange Server 2019 ISO'
+Set-PSFConfig -Module AutomatedLab -Name Exchange2019DownloadUrl -Value 'https://download.microsoft.com/download/7/0/a/70a4d908-eacb-426e-ad9f-e7768e27f873/ExchangeServer2019-x64-cu15.iso' -Initialize -Description 'Download url for Exchange Server 2019 ISO'
 
 # ConfigMgr
 Set-PSFConfig -Module AutomatedLab -Name ConfigurationManagerWmiExplorer -Value 'https://github.com/vinaypamnani/wmie2/releases/download/v2.0.0.2/WmiExplorer_2.0.0.2.zip' -Description 'Link to WMI explorer' -Validation string

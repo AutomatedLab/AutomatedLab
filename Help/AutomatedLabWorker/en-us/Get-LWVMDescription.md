@@ -1,11 +1,11 @@
 ---
 external help file: AutomatedLabWorker-help.xml
 Module Name: AutomatedLabWorker
-online version: https://automatedlab.org/en/latest/AutomatedLabWorker/en-us/Get-LWHypervVMDescription
+online version: https://automatedlab.org/en/latest/AutomatedLabWorker/en-us/Get-LWVMDescription
 schema: 2.0.0
 ---
 
-# Get-LWHypervVMDescription
+# Get-LWVMDescription
 
 ## SYNOPSIS
 Return the serialized notes field of a Hyper-V VM
@@ -13,7 +13,7 @@ Return the serialized notes field of a Hyper-V VM
 ## SYNTAX
 
 ```
-Get-LWHypervVMDescription [-ComputerName] <String> [<CommonParameters>]
+Get-LWVMDescription [-ComputerName] <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -24,7 +24,7 @@ The Notes are used to store a bunch of information on the status that AutomatedL
 
 ### Example 1
 ```powershell
-PS C:\> Get-LWHypervVMDescription -ComputerName POSHDC1
+PS C:\> Get-LWVMDescription -ComputerName POSHDC1
 ```
 
 Deserializes the Notes field of the VM POSHDC1

@@ -117,12 +117,36 @@
         {
             $result
         }
-        
+
         foreach ($machine in ($result | Where-Object HostType -eq 'HyperV'))
         {
             if ($machine.Disks.Count -gt 1)
             {
                 $machine.Disks = Get-LabVHDX -Name $machine.Disks.Name -ErrorAction SilentlyContinue
+            }
+        }
+
+        # Populate missing VmId in ProxmoxProperties for Proxmox VMs
+        $proxmoxVmsWithoutVmId = @($result | Where-Object { $_.HostType -eq 'Proxmox' -and -not $_.SkipDeployment -and -not $_.ProxmoxProperties['VmId'] })
+        if ($proxmoxVmsWithoutVmId.Count -gt 0 -and (Test-LabProxmoxConnection))
+        {
+            $proxmoxVmData = Get-LWProxmoxVM -ComputerName $proxmoxVmsWithoutVmId.ResourceName -NoError -NoStatusCurrent
+            $labChanged = $false
+            foreach ($pvm in $proxmoxVmsWithoutVmId)
+            {
+                $match = $proxmoxVmData | Where-Object { $_.Name -eq $pvm.ResourceName }
+                if ($match)
+                {
+                    $proxProps = $pvm.ProxmoxProperties
+                    $proxProps['VmId'] = $match.vmid.ToString()
+                    $pvm.ProxmoxProperties = $proxProps
+                    Write-PSFMessage "Backfilled VmId '$($match.vmid)' for VM '$($pvm.Name)'"
+                    $labChanged = $true
+                }
+            }
+            if ($labChanged)
+            {
+                Export-Lab
             }
         }
 

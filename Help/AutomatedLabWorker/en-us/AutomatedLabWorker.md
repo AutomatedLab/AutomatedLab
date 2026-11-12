@@ -197,7 +197,7 @@ Set the DNS servers of an Azure virtual network
 ### [Set-LWHypervNetworkSwitchDescription](Set-LWHypervNetworkSwitchDescription.md)
 Set the Notes field of a Hyper-V Virtual Network
 
-### [Set-LWHypervVMDescription](Set-LWHypervVMDescription.md)
+### [Set-LWVMDescription](Set-LWVMDescription.md)
 Set the Notes field of a Hyper-V VM
 
 ### [Start-LWAzureVM](Start-LWAzureVM.md)

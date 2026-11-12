@@ -37,7 +37,7 @@ Start-LabVM [-All] [-Wait] [-DoNotUseCredSsp] [-NoNewline] [-DelayBetweenCompute
 ```
 
 ## DESCRIPTION
-Starts one or more lab machines
+Starts one or more lab machines. The ComputerName parameter supports wildcard characters, making it possible to start multiple machines matching a pattern.
 
 ## EXAMPLES
 
@@ -47,6 +47,20 @@ PS C:\> Start-LabVm -All -Wait
 ```
 
 Start all VMs in a lab and wait for them to respond to WSMAN requests
+
+### Example 2
+```powershell
+PS C:\> Start-LabVM -ComputerName DC* -Wait
+```
+
+Start all VMs whose name starts with 'DC' and wait for them to respond to WSMAN requests
+
+### Example 3
+```powershell
+PS C:\> Start-LabVM -ComputerName SQL01, Web*
+```
+
+Start the VM named SQL01 and all VMs whose name starts with 'Web'
 
 ## PARAMETERS
 
@@ -66,7 +80,7 @@ Accept wildcard characters: False
 ```
 
 ### -ComputerName
-The machines to start
+The machines to start. Supports wildcard characters (e.g. DC*, *SQL*, Web??)
 
 ```yaml
 Type: String[]
@@ -77,7 +91,7 @@ Required: False
 Position: 0
 Default value: None
 Accept pipeline input: True (ByPropertyName, ByValue)
-Accept wildcard characters: False
+Accept wildcard characters: True
 ```
 
 ### -DelayBetweenComputers

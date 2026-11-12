@@ -192,12 +192,26 @@
             $machinesToStart += Get-LabVM | Where-Object DomainName -in $domains
         }
 
+        # On Proxmox, VMs are created in stages (rootDC first, then firstChildDC, then others).
+        # Filter out machines that haven't been created on the hypervisor yet to avoid errors
+        # when Start-LabVM is called for non-existent VMs.
+        if ($lab.DefaultVirtualizationEngine -eq 'Proxmox')
+        {
+            $existingProxmoxVMs = (Get-LWProxmoxVM -NoCache -NoError).Name
+            $machinesToStart = @($machinesToStart | Where-Object { $_.ResourceName -in $existingProxmoxVMs })
+        }
+
         # Creating sessions from a Linux host requires the correct user name.
         # By setting HasDomainJoined to $true we ensure that not the local, but the domain admin cred is returned
         foreach ($machine in $machines)
         {
             $machine.HasDomainJoined = $true
         }
+
+        # NOTE: Do NOT call Remove-LabPSSession here! The child DC promotion job
+        # (Invoke-LabCommand -AsJob) is still running on the cached PSSession.
+        # Removing the session would kill the job immediately (same issue as RootDC).
+        # Session cleanup is handled inside Wait-LWProxmoxRestartVM after the job completes.
 
         if ($lab.DefaultVirtualizationEngine -ne 'Azure')
         {
@@ -253,7 +267,7 @@
             $jobs += Sync-LabActiveDirectory -ComputerName $dc -ProgressIndicator 20 -AsJob -Passthru
         }
         Wait-LWLabJob -Job $jobs -ProgressIndicator 20 -NoDisplay -NoNewLine
-        
+
         foreach ($machine in $machines)
         {
             Reset-LabAdPassword -DomainName $machine.DomainName

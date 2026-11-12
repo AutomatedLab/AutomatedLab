@@ -21,7 +21,7 @@
             return
         }
 
-        $machines = [System.Collections.Generic.List[AutomatedLab.Machine]]::new()
+        $machines = [System.Collections.Generic.List[object]]::new()
 
         if ($PSCmdlet.ParameterSetName -eq 'All')
         {
@@ -66,6 +66,7 @@
                 continue
             }
 
+            $proxmoxRemoval = $null
             if ($machine.HostType -eq 'HyperV')
             {
                 Remove-LWHypervVM -Name $machine.ResourceName
@@ -78,6 +79,15 @@
             {
                 Remove-LWVMWareVM -Name $machine.ResourceName
             }
+            elseif ($machine.HostType -eq 'Proxmox')
+            {
+                # The lab stores the VMID as text; a value that is not a number counts as unknown
+                $vmId = 0
+                $null = [int]::TryParse($machine.ProxmoxProperties['VmId'], [ref]$vmId)
+                $proxmoxRemoval = Remove-LWProxmoxVM -Name $machine.ResourceName -VmId $vmId
+            }
+
+            UnInstall-LabSshKnownHost -ComputerName $machine
 
             UnInstall-LabSshKnownHost -ComputerName $machine
 
@@ -86,7 +96,14 @@
                 Remove-HostEntry -Section (Get-Lab).Name.ToLower() -HostName $machine
             }
 
-            Write-ScreenInfo -Message "Lab VM '$machine' has been removed"
+            if ($machine.HostType -eq 'Proxmox' -and $proxmoxRemoval.Outcome -ne 'Removed')
+            {
+                Write-ScreenInfo -Message "Lab VM '$machine' was not found, nothing to remove"
+            }
+            else
+            {
+                Write-ScreenInfo -Message "Lab VM '$machine' has been removed"
+            }
         }
     }
 }

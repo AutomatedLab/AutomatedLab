@@ -34,7 +34,7 @@
             $param.Add('ComputerName', $m.AzureConnectionInfo.DnsName)
             $param.Add('Port', $m.AzureConnectionInfo.Port)
         }
-        elseif ($m.HostType -eq 'HyperV' -or $m.HostType -eq 'VMWare')
+        elseif ($m.HostType -in 'HyperV', 'VMWare', 'Proxmox')
         {
             if (Get-LabConfigurationItem -Name DoNotUseGetHostEntryInNewLabPSSession)
             {

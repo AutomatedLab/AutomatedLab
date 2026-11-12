@@ -31,12 +31,16 @@ function BuildModule
     # Prepare publish folder
     $version = if ($env:APPVEYOR_BUILD_VERSION) { $env:APPVEYOR_BUILD_VERSION } else { (Import-PowerShellDataFile -Path (Join-Path $WorkingDirectory "$Name.psd1")).ModuleVersion }
 
-    $intermediaryDir = Join-Path $publishDir.FullName $Name
     $moduleDir = Join-Path $publishDir.FullName "$Name/$version"
-    Copy-Item -Recurse -Path $WorkingDirectory -Destination $intermediaryDir -Force
+    $null = New-Item -ItemType Directory -Path $moduleDir -Force
+
+    # A compiled module replaces its function and script folders with a single psm1 file, so those folders are never copied.
+    # Moving or deleting folders full of freshly copied files fails while an editor or a scanner still has one of them open.
+    $compiledFolders = if ($SkipStringBuilder) { @() } else { @('internal', 'functions') }
+    Get-ChildItem -Path $WorkingDirectory -Force | Where-Object { $_.Name -notin $compiledFolders } | Copy-Item -Destination $moduleDir -Recurse -Force
 
     $para = @{
-        Path          = Join-Path $intermediaryDir "$Name.psd1"
+        Path          = Join-Path $moduleDir "$Name.psd1"
         ModuleVersion = $version
     }
     if ($env:APPVEYOR_REPO_BRANCH -ne "master")
@@ -45,8 +49,6 @@ function BuildModule
     }
 
     Update-ModuleManifest @para
-    $null = New-Item -ItemType Directory -Path $moduleDir -Force
-    Get-ChildItem -Path "$intermediaryDir" -Exclude $version | Move-Item -Destination $moduleDir -Force
 
     if ($SkipStringBuilder) { return }
 
@@ -54,23 +56,21 @@ function BuildModule
     $text = @()
 
     # Gather commands
-    Get-ChildItem -Path (Join-Path $moduleDir "internal\functions\") -Recurse -File -Filter "*.ps1" | ForEach-Object {
+    Get-ChildItem -Path (Join-Path $WorkingDirectory "internal\functions\") -Recurse -File -Filter "*.ps1" | ForEach-Object {
         $text += [System.IO.File]::ReadAllText($_.FullName)
     }
-    Get-ChildItem -Path (Join-Path $moduleDir "functions\") -Recurse -File -Filter "*.ps1" | ForEach-Object {
+    Get-ChildItem -Path (Join-Path $WorkingDirectory "functions\") -Recurse -File -Filter "*.ps1" | ForEach-Object {
         $text += [System.IO.File]::ReadAllText($_.FullName)
     }
 
     # Gather scripts
-    Get-ChildItem -Path (Join-Path $moduleDir "internal\scripts\") -Recurse -File -Filter "*.ps1" | ForEach-Object {
+    Get-ChildItem -Path (Join-Path $WorkingDirectory "internal\scripts\") -Recurse -File -Filter "*.ps1" | ForEach-Object {
         $text += [System.IO.File]::ReadAllText($_.FullName)
     }
 
-    #region Update the psm1 file & Cleanup
+    #region Update the psm1 file
     [System.IO.File]::WriteAllText((Join-Path $moduleDir "\$Name.psm1"), ($text -join "`n`n"), [System.Text.Encoding]::UTF8)
-    Remove-Item -Path (Join-Path $moduleDir "internal") -Recurse -Force
-    Remove-Item -Path (Join-Path $moduleDir "functions\") -Recurse -Force
-    #endregion Update the psm1 file & Cleanup
+    #endregion Update the psm1 file
 }
 
 $buildFolder = if ($env:APPVEYOR_BUILD_FOLDER) { $env:APPVEYOR_BUILD_FOLDER } else { (Resolve-Path "$PSScriptRoot/..").Path }
@@ -102,11 +102,28 @@ foreach ($module in $modules)
 }
 
 $versionedDir = Get-ChildItem -Directory -Path (Join-Path -Path $buildFolder 'publish/AutomatedLabCore')
-$null = dotnet publish $projPath -f net6.0 -o (Join-Path -Path $versionedDir.FullName 'lib/core')
+
+# A failed restore or compilation used to pass unnoticed and only showed up later, as modules that cannot load their assembly.
+function Invoke-DotNet
+{
+    param
+    (
+        [string[]]
+        $Argument
+    )
+
+    $output = dotnet @Argument
+    if ($LASTEXITCODE -ne 0)
+    {
+        throw "dotnet $($Argument -join ' ') failed with exit code $LASTEXITCODE.$([System.Environment]::NewLine)$($output -join [System.Environment]::NewLine)"
+    }
+}
+
+Invoke-DotNet -Argument 'publish', $projPath, '-f', 'net6.0', '-o', (Join-Path -Path $versionedDir.FullName 'lib/core')
 if (-not $IsLinux)
 {
-    $null = dotnet restore $projPath
-    $null = dotnet publish $projPath -f net462 -o (Join-Path -Path $versionedDir.FullName 'lib/full') 
+    Invoke-DotNet -Argument 'restore', $projPath
+    Invoke-DotNet -Argument 'publish', $projPath, '-f', 'net462', '-o', (Join-Path -Path $versionedDir.FullName 'lib/full')
 }
 
 Copy-Item -Path (Join-Path -Path $buildFolder 'Assets/ProductKeys.xml') -Destination (Join-Path -Path $versionedDir.FullName 'ProductKeys.xml')
@@ -166,14 +183,17 @@ foreach ($helpfile in $helpFiles)
     $rolename = $helpFile.BaseName
 
     $roleContent -f $rolename | Set-Content -Path (Join-Path $buildFolder -ChildPath Help/AutomatedLabCore/en-us/about_AutomatedLab_$rolename.md)
-    foreach ($line in ($helpFile | Get-Content))
+    # A topic is appended with one Add-Content call. Appending line by line opened the file thousands of times, and Windows
+    # PowerShell lost lines whenever an editor read the file at the same moment.
+    $topicContent = foreach ($line in ($helpFile | Get-Content))
     {
         if ($line.StartsWith('#'))
         {
             $line = $line.Insert(0, '#')
         }
-        $line | Add-Content -Path (Join-Path $buildFolder -ChildPath Help/AutomatedLabCore/en-us/about_AutomatedLab_$rolename.md)
+        $line
     }
+    $topicContent | Add-Content -Path (Join-Path $buildFolder -ChildPath Help/AutomatedLabCore/en-us/about_AutomatedLab_$rolename.md)
 }
 
 @'
@@ -188,14 +208,15 @@ Generic help about the basics of AutomatedLab
 '@ | Set-Content -Path (Join-Path $buildFolder -ChildPath Help/AutomatedLabCore/en-us/about_AutomatedLabBasics.md)
 [System.Collections.Generic.List[System.IO.FileInfo]]$helpFiles = Get-Item -Path (Join-Path $buildFolder -ChildPath Help/Wiki/Basic/gettingstarted.md)
 $helpFiles.AddRange([IO.FileInfo[]](Get-ChildItem -Path (Join-Path $buildFolder -ChildPath Help/Wiki/Basic)))
-foreach ($line in ($helpFiles | Get-Content))
+$topicContent = foreach ($line in ($helpFiles | Get-Content))
 {
     if ($line.StartsWith('#'))
     {
         $line = $line.Insert(0, '#')
     }
-    $line | Add-Content -Path (Join-Path $buildFolder -ChildPath Help/AutomatedLabCore/en-us/about_AutomatedLabBasics.md)
+    $line
 }
+$topicContent | Add-Content -Path (Join-Path $buildFolder -ChildPath Help/AutomatedLabCore/en-us/about_AutomatedLabBasics.md)
 
 @'
 # AutomatedLab Advanced
@@ -208,14 +229,15 @@ Generic help about the advanced mechanics of AutomatedLab
 
 '@ | Set-Content -Path (Join-Path $buildFolder -ChildPath Help/AutomatedLabCore/en-us/about_AutomatedLabAdvanced.md)
 $advHelp = Get-ChildItem -Path (Join-Path $buildFolder -ChildPath Help/Wiki/Advanced)
-foreach ($line in ($advHelp | Get-Content))
+$topicContent = foreach ($line in ($advHelp | Get-Content))
 {
     if ($line.StartsWith('#'))
     {
         $line = $line.Insert(0, '#')
     }
-    $line | Add-Content -Path (Join-Path $buildFolder -ChildPath Help/AutomatedLabCore/en-us/about_AutomatedLabAdvanced.md)
+    $line
 }
+$topicContent | Add-Content -Path (Join-Path $buildFolder -ChildPath Help/AutomatedLabCore/en-us/about_AutomatedLabAdvanced.md)
 
 foreach ($moduleName in (Get-ChildItem -Path $buildFolder/Help -Directory -Exclude Wiki))
 {

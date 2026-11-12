@@ -3,8 +3,11 @@
     [CmdletBinding()]
     param ( )
 
+    $labSourcesLocation = Get-LabSourcesLocation -Local
+    if (-not $labSourcesLocation) { return }
+
     # Register all sample scripts
-    $location = Join-Path -Path (Get-LabSourcesLocation -Local) -ChildPath 'SampleScripts'
+    $location = Join-Path -Path $labSourcesLocation -ChildPath 'SampleScripts'
     if (-not (Test-Path -Path $location)) { return }
     foreach ($samplescript in (Get-ChildItem -Recurse -Path $location -File -Filter *.ps1))
     {
@@ -31,7 +34,7 @@
     }
 
     # Register all custom roles
-    $location = Join-Path -Path (Get-LabSourcesLocation -Local) -ChildPath 'CustomRoles'
+    $location = Join-Path -Path $labSourcesLocation -ChildPath 'CustomRoles'
     if (-not (Test-Path -Path $location)) { return }
     foreach ($customrole in (Get-ChildItem -Path $location -Directory))
     {

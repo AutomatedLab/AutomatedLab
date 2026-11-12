@@ -22,7 +22,11 @@
     }
 
     $virtualNetworks = $Script:data.VirtualNetworks | Where-Object { $_.HostType -eq 'HyperV' -and $_.Name -ne 'Default Switch' }
-    $virtualNetworks = Get-LabVirtualNetwork -Name $virtualNetworks.Name -ErrorAction SilentlyContinue
+    if ($virtualNetworks)
+    {
+        $virtualNetworks = Get-LabVirtualNetwork -Name $virtualNetworks.Name -ErrorAction SilentlyContinue
+    }
+    
     foreach ($virtualNetwork in $virtualNetworks)
     {
         Write-PSFMessage "Removing Hyper-V network switch '$($virtualNetwork.ResourceName)'..."
