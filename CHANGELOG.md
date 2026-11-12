@@ -4,8 +4,8 @@
 
 ### Changed
 
-- **Breaking Change**: rename the configuration item `MacAddressPrefix` to `HypervMacAddressPrefix`, because Proxmox labs use their own `ProxmoxMacAddressPrefix` (#1829). A value registered for `AutomatedLab.MacAddressPrefix` is no longer read; register it again under the new name.
-- **Breaking Change**: rename the worker functions `Get-LWHypervVMDescription` and `Set-LWHypervVMDescription` to `Get-LWVMDescription` and `Set-LWVMDescription`, because Proxmox machines use them too (#1829). The old names are no longer exported.
+- Rename the configuration item `MacAddressPrefix` to `HypervMacAddressPrefix`, because Proxmox labs use their own `ProxmoxMacAddressPrefix` (#1829). A value of the old name that is registered, or set before AutomatedLab is imported, is used with a warning while `HypervMacAddressPrefix` has its default; a value set for the old name later in the session is not read.
+- Rename the worker functions `Get-LWHypervVMDescription` and `Set-LWHypervVMDescription` to `Get-LWVMDescription` and `Set-LWVMDescription`, because Proxmox machines use them too (#1829). The old names remain as aliases.
 
 ### Added
 
@@ -17,6 +17,10 @@
 - Add `Posh-SSH` as a dependency, used for the SFTP-based Proxmox ISO upload.
 - Add opt-in live tests for the Proxmox provider under `LiveTests\Proxmox`. `Invoke-ProxmoxLiveTest.ps1` asks for the host and the credentials, checks the host and its templates, and only then runs the suites against throwaway clones; `-WhatIf` and `-PreflightOnly` show the plan without creating anything. The normal build never runs them.
 - Document the Proxmox configuration items, `HypervMacAddressPrefix` and `HyperVUseNAT` in the settings reference (`Help\Wiki\Advanced\automatedlabconfig.md` and `about_AutomatedLabAdvanced`), which still listed `MacAddressPrefix`.
+
+### Deprecated
+
+- Deprecate the configuration item `MacAddressPrefix` and the function names `Get-LWHypervVMDescription` and `Set-LWHypervVMDescription`; use `HypervMacAddressPrefix`, `Get-LWVMDescription` and `Set-LWVMDescription` (#1829).
 
 ### Fixed
 

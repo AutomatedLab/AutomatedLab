@@ -123,6 +123,11 @@
         'Wait-LWVMWareRestartVM'
     )
 
+    AliasesToExport        = @(
+        'Get-LWHypervVMDescription',
+        'Set-LWHypervVMDescription'
+    )
+
     RequiredModules        = @( )
 
     NestedModules          = @( )

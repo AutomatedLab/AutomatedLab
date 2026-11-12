@@ -152,6 +152,8 @@ Set-PSFConfig -Module 'AutomatedLab' -Name VMConnectRedirectedDrives -Value 'non
 
 #Hyper-V Network settings
 Set-PSFConfig -Module 'AutomatedLab' -Name HypervMacAddressPrefix -Value '0017FB' -Initialize -Validation string -Description 'The MAC address prefix for Hyper-V labs' -Handler { if ($args[0].Length -eq 0 -or $args[0].Length -gt 11) { Write-PSFMessage -Level Error -Message "Invalid prefix length for HypervMacAddressPrefix! $($args[0]) needs to be at least one character and at most 11 characters"; throw "Invalid prefix length for HypervMacAddressPrefix! $($args[0]) needs to be at least one character and at most 11 characters" } }
+# MacAddressPrefix was renamed; a value still registered under the old name applies while the new name has its default
+Update-LabRenamedConfigurationItem -OldName MacAddressPrefix -NewName HypervMacAddressPrefix -DefaultValue '0017FB'
 Set-PSFConfig -Module 'AutomatedLab' -Name DisableDeviceNaming -Value $false -Validation bool -Initialize -Description 'Disables Device Naming for VM NICs. Enabled by default for Hosts > 2016 and Gen 2 Guests > 2016'
 Set-PSFConfig -Module 'AutomatedLab' -Name HyperVUseNAT -Value $false -Validation bool -Initialize -Description 'Indicates if a NAT should be created for all lab environments'
 

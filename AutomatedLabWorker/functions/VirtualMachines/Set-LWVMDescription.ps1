@@ -2,6 +2,7 @@
 {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     [CmdletBinding()]
+    [Alias('Set-LWHypervVMDescription')]
     param (
         [Parameter(Mandatory)]
         [hashtable]$Hashtable,
