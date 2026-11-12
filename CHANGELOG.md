@@ -26,6 +26,7 @@
 - Fixed `New-LWReferenceVHDX` silently producing unbootable base images when `bcdboot` fails (#1662, #1805)
 - DSC Pull Server lab validator (`DscSqlServerPresent`) now accepts SQL Server 2022 and 2025 in addition to 2016/2017/2019 as the backend database engine, and the validation error message has been clarified accordingly (#1844).
 - Fix `Restore-LabVMSnapshot` on Proxmox labs for machines with a `FriendlyName`: they were neither stopped before nor started after the rollback, because the running machines were looked up by their resource names. The warning for a VM that no node lists now names the VM. `Remove-LabVMSnapshot` now names the snapshot in its messages and, when Proxmox refuses to remove one, reports it and goes on with the next snapshot instead of stopping with `Cannot bind argument to parameter 'Upid' because it is null`.
+- Fix the Dynamics role tests of `AutomatedLabTest` (`DynamicsAdmin`, `DynamicsBackend`, `DynamicsFrontend` and `DynamicsFull`), which failed during discovery under Pester 6 on every lab without Dynamics machines, because Pester 6 refuses an empty `-TestCases` list, so `Invoke-LabPester` reported four failed test files. They now add one URL test per Dynamics machine, like the other role tests, and none when the lab has no Dynamics machine.
 
 ## [5.61.0] - 2026-05-12
 
