@@ -129,7 +129,8 @@ function New-LWProxmoxVM
         $triedVmIds.Add($nextVmId)
         $param.Newid = $nextVmId
 
-        $result = Invoke-LWProxmoxCallWithRetry -ActivityName "Clone VM '$($Machine.ResourceName)'" -ScriptBlock { New-PveNodesQemuClone @param }
+        # Sent once: after a lost answer, Proxmox would refuse a resend as taken by the clone the first request started
+        $result = Invoke-LWProxmoxCallWithRetry -ActivityName "Clone VM '$($Machine.ResourceName)'" -ScriptBlock { New-PveNodesQemuClone @param } -MaxRetries 1
         if ($result.StatusCode -eq 200)
         {
             Write-Verbose "Waiting for VM '$($Machine.ResourceName)' to be created..."
@@ -154,22 +155,34 @@ function New-LWProxmoxVM
             }
             $refusal = $taskText
         }
-        elseif ($result.ReasonPhrase -match 'already exists')
+        elseif ($result.StatusCode -gt 0 -and $result.ReasonPhrase -match 'already exists')
         {
             $refusal = $result.ReasonPhrase
         }
         else
         {
-            Write-Error "Failed to create VM '$($Machine.ResourceName)': $($result.ReasonPhrase)"
+            $failure = "Failed to create VM '$($Machine.ResourceName)' as VMID $nextVmId from template '$($template.Name)' (VMID $($template.VMID)) on node '$($template.node)': $($result.ReasonPhrase)"
+            if ($result.StatusCode -le 0)
+            {
+                $failure += " The clone request got no answer, so VMID $nextVmId may exist now. Check it before the machine is deployed again."
+            }
+            Write-Error $failure
             return
         }
 
-        # A VM with this name may be the clone of an earlier attempt whose answer got lost, or the same machine
-        # deployed by another host. Another clone would duplicate it.
-        $sameNameVm = @(Get-LWProxmoxVM -ComputerName $Machine.ResourceName -NoCache -NoError | Where-Object Name -eq $Machine.ResourceName)
+        # A VM with this name may be the same machine, deployed by another host at the same time; another clone would
+        # duplicate it. The cluster-wide list also shows the guests of nodes that do not answer. A clone that is still
+        # running may not carry its name yet, so this check cannot catch every duplicate.
+        $guests = Invoke-LWProxmoxCallWithRetry -ActivityName 'Retrieve the guests of the cluster' -ScriptBlock { Get-PveClusterResources -Type vm }
+        if ($guests.StatusCode -ne 200)
+        {
+            Write-Error "Failed to create VM '$($Machine.ResourceName)': Proxmox refused VMID $nextVmId as taken ('$refusal'), and the guests of the cluster could not be read to check for a VM named '$($Machine.ResourceName)': $($guests.ReasonPhrase)"
+            return
+        }
+        $sameNameVm = @($guests.Response.data | Where-Object name -eq $Machine.ResourceName)
         if ($sameNameVm.Count -gt 0)
         {
-            Write-Error "Failed to create VM '$($Machine.ResourceName)': Proxmox refused VMID $nextVmId as taken ('$refusal'), and a VM named '$($Machine.ResourceName)' exists now (VMID $($sameNameVm.vmid -join ', ')). Another AutomatedLab host may deploy the same machine, or an earlier attempt created it, so it is not cloned again."
+            Write-Error "Failed to create VM '$($Machine.ResourceName)': Proxmox refused VMID $nextVmId as taken ('$refusal'), and a VM named '$($Machine.ResourceName)' exists now (VMID $($sameNameVm.vmid -join ', ')). Another AutomatedLab host may deploy the same machine, so it is not cloned again."
             return
         }
         Write-PSFMessage -Level Warning -Message "Proxmox refused VMID $nextVmId for VM '$($Machine.ResourceName)' as taken ('$refusal')."

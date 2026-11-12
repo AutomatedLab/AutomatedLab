@@ -12,7 +12,7 @@ Describe 'New-LWProxmoxVM' {
                 # One result per clone task, the last one repeats. __NEWID__ stands for the VMID of the clone.
                 [string[]]$WaitResult = @('OK'),
 
-                # One answer per clone request, 'OK' or the reason Proxmox refuses it with. The last one repeats.
+                # One answer per clone request: 'OK', 'NOANSWER' or the reason Proxmox refuses it with. The last one repeats.
                 [string[]]$CloneAnswer = @('OK'),
 
                 # The guests that /cluster/resources lists
@@ -22,7 +22,10 @@ Describe 'New-LWProxmoxVM' {
                 [string]$RetryCount = '',
 
                 # From the first refused clone on, a VM with the name of the machine exists
-                [switch]$SameNameVmAfterRefusal
+                [switch]$SameNameVmAfterRefusal,
+
+                # From the first refused clone on, the guests of the cluster cannot be listed
+                [switch]$ClusterListFailsAfterRefusal
             )
 
             $workerPath = Join-Path $PSScriptRoot '..\..\..\AutomatedLabWorker\functions'
@@ -33,6 +36,7 @@ Describe 'New-LWProxmoxVM' {
                 ClusterGuest           = $ClusterGuest
                 RetryCount             = $RetryCount
                 SameNameVmAfterRefusal = $SameNameVmAfterRefusal.IsPresent
+                ClusterListFailsAfterRefusal = $ClusterListFailsAfterRefusal.IsPresent
             }
             $settingsJson = ConvertTo-Json -InputObject $settings -Depth 4 -Compress
 
@@ -78,7 +82,6 @@ function Get-LWProxmoxVM
 {
     param ([Alias('Name')][string[]]$ComputerName, [object[]]$Node, [switch]$NoError, [switch]$IncludeTemplates, [switch]$NoCache)
     [pscustomobject]@{ Name = 'Template'; vmid = 9000; node = 'pve1'; template = 1 }
-    if ($script:sameNameVmExists) { [pscustomobject]@{ Name = 'VM1'; vmid = 9001; node = 'pve1'; template = 0 } }
 }
 function Get-LWProxmoxVmTemplate
 {
@@ -88,7 +91,13 @@ function Get-LWProxmoxVmTemplate
 function Get-PveClusterResources
 {
     param ($Type)
-    [pscustomobject]@{ StatusCode = 200; Response = [pscustomobject]@{ data = @($settings.ClusterGuest) } }
+    if ($settings.ClusterListFailsAfterRefusal -and $script:refused)
+    {
+        return [pscustomobject]@{ StatusCode = 500; ReasonPhrase = 'cluster list unavailable' }
+    }
+    $guests = @($settings.ClusterGuest)
+    if ($script:sameNameVmExists) { $guests += [pscustomobject]@{ vmid = 9001; name = 'VM1'; type = 'qemu'; node = 'pve1' } }
+    [pscustomobject]@{ StatusCode = 200; Response = [pscustomobject]@{ data = $guests } }
 }
 function New-PveNodesQemuClone
 {
@@ -100,6 +109,11 @@ function New-PveNodesQemuClone
     {
         return [pscustomobject]@{ StatusCode = 200; Response = [pscustomobject]@{ data = 'UPID:clone' } }
     }
+    if ($answer -eq 'NOANSWER')
+    {
+        return [pscustomobject]@{ StatusCode = -1; ReasonPhrase = 'The operation has timed out.' }
+    }
+    $script:refused = $true
     if ($settings.SameNameVmAfterRefusal) { $script:sameNameVmExists = $true }
     [pscustomobject]@{ StatusCode = 500; ReasonPhrase = $answer.Replace('__NEWID__', [string]$Newid) }
 }
@@ -112,15 +126,21 @@ function Wait-LWProxmoxTasksStatus
 }
 function Invoke-LWProxmoxCallWithRetry
 {
-    param ([scriptblock]$ScriptBlock, [string]$ActivityName, [int]$RetryDelaySeconds)
+    param ([scriptblock]$ScriptBlock, [string]$ActivityName, [int]$MaxRetries = 3, [int]$RetryDelaySeconds)
     if ($ActivityName -like 'Retrieve storage*')
     {
         return [pscustomobject]@{ StatusCode = 200; Response = [pscustomobject]@{ data = @([pscustomobject]@{ storage = 'local-lvm'; type = 'lvm' }) } }
     }
-    # The clone and the VMID lookup run as written, against the stubs above
+    # The clone and the cluster list run against the stubs above and are sent again, like the real function does,
+    # after any answer other than 200
     if ("$ScriptBlock" -match 'New-PveNodesQemuClone|Get-PveClusterResources')
     {
-        return & $ScriptBlock
+        for ($attempt = 1; $attempt -le $MaxRetries; $attempt++)
+        {
+            $result = & $ScriptBlock
+            if ($result.StatusCode -eq 200) { break }
+        }
+        return $result
     }
     # The first call after the clone fails, so the function returns before it needs more stubs
     [pscustomobject]@{ StatusCode = 500; ReasonPhrase = 'Not part of this test' }
@@ -130,6 +150,7 @@ $script:proxmoxVmCache = @{ pve1 = @(); pve2 = @() }
 $script:cloneNewIds = [System.Collections.Generic.List[int]]::new()
 $script:taskWaits = 0
 $script:sameNameVmExists = $false
+$script:refused = $false
 $proxmoxProperties = @{}
 if ($settings.TargetNode) { $proxmoxProperties.TargetNode = $settings.TargetNode }
 $machine = [AutomatedLab.Machine]@{ Name = 'VM1'; ResourceName = 'VM1'; OperatingSystem = 'Windows Server 2022'; Processors = 2; Memory = 4GB; ProxmoxProperties = $proxmoxProperties }
@@ -223,6 +244,26 @@ foreach ($cloneError in $cloneErrors) { 'CLONE-ERROR=' + $cloneError.Exception.M
         $errorLines = @($output | Where-Object { $_ -like 'CLONE-ERROR=*' })
         $errorLines.Count | Should -Be 1 -Because ($output -join [Environment]::NewLine)
         $errorLines[0] | Should -Match "named 'VM1' exists now \(VMID 9001\)"
+    }
+
+    It 'sends the clone request once and stops with the VMID when it gets no answer' {
+        # A second request for the VMID would be refused as taken by the clone that the first one may have started
+        $output = Invoke-CloneInChildProcess -CloneAnswer 'NOANSWER', "VM __NEWID__ already exists on node 'pve1'", 'OK'
+
+        $output | Should -Contain 'CLONE-NEWIDS=9001' -Because ($output -join [Environment]::NewLine)
+        $output | Should -Contain 'STORED-VMID='
+        $errorLines = @($output | Where-Object { $_ -like 'CLONE-ERROR=*' })
+        $errorLines.Count | Should -Be 1 -Because ($output -join [Environment]::NewLine)
+        $errorLines[0] | Should -Match 'VMID 9001 may exist now'
+    }
+
+    It 'does not clone again when the guests of the cluster cannot be listed after a refusal' {
+        $output = Invoke-CloneInChildProcess -CloneAnswer "VM __NEWID__ already exists on node 'pve1'", 'OK' -ClusterListFailsAfterRefusal
+
+        $output | Should -Contain 'CLONE-NEWIDS=9001' -Because ($output -join [Environment]::NewLine)
+        $errorLines = @($output | Where-Object { $_ -like 'CLONE-ERROR=*' })
+        $errorLines.Count | Should -Be 1 -Because ($output -join [Environment]::NewLine)
+        $errorLines[0] | Should -Match 'cluster list unavailable'
     }
 
     It 'does not clone again when Proxmox refuses the clone for another reason' {
