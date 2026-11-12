@@ -48,12 +48,13 @@ function Remove-LWProxmoxVMSnapshot
 
         foreach ($snapshot in $snapshots)
         {
-            Write-PSFMessage -Message "Removing snapshot '$($snapshot.Name)' for VM '$($vm.Name)'" -Level Verbose
+            Write-PSFMessage -Message "Removing snapshot '$($snapshot.SnapshotName)' for VM '$($vm.Name)'" -Level Verbose
             $vmSnapshotName = '{0}_{1}' -f $vm.Name, $snapshot.SnapshotName
-            $result = Invoke-LWProxmoxCallWithRetry -ActivityName "Remove snapshot '$($snapshot.Name)' for VM '$($vm.Name)'" -ScriptBlock { Remove-PveNodesQemuSnapshot -Node $vm.node -Vmid $vm.VmId -Snapname $vmSnapshotName }
+            $result = Invoke-LWProxmoxCallWithRetry -ActivityName "Remove snapshot '$($snapshot.SnapshotName)' for VM '$($vm.Name)'" -ScriptBlock { Remove-PveNodesQemuSnapshot -Node $vm.node -Vmid $vm.VmId -Snapname $vmSnapshotName }
             if ($result.StatusCode -ne 200)
             {
-                Write-Error "Could not remove snapshot '$($snapshot.Name)' for Proxmox machine '$($vm.Name)': The error was '$($result.StatusCode)'"
+                Write-Error "Could not remove snapshot '$($snapshot.SnapshotName)' for Proxmox machine '$($vm.Name)': The error was '$($result.StatusCode)'"
+                continue
             }
 
             $values = @{
@@ -63,7 +64,7 @@ function Remove-LWProxmoxVMSnapshot
 
             if ($taskResult -ne 'OK')
             {
-                Write-Error -Message "Failed to remove snapshot '$($snapshot.Name)' for Proxmox machine '$($vm.Name)'. Task did not complete successfully with the error '$taskResult'." -TargetObject $snapshot
+                Write-Error -Message "Failed to remove snapshot '$($snapshot.SnapshotName)' for Proxmox machine '$($vm.Name)'. Task did not complete successfully with the error '$taskResult'." -TargetObject $snapshot
             }
         }
     }

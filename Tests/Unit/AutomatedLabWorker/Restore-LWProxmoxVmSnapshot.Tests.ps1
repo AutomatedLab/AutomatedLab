@@ -85,13 +85,15 @@ Describe 'Restore-LWProxmoxVmSnapshot' {
         {
             param
             (
-                [string]$Name
+                [string]$Name,
+
+                [string]$ResourceName = $Name
             )
 
             # Machine.ToString() returns the name, so a lab machine binds to [string[]] as its name.
             [pscustomobject]@{
                 Name         = $Name
-                ResourceName = $Name
+                ResourceName = $ResourceName
             } | Add-Member -MemberType ScriptMethod -Name ToString -Value { $this.Name } -Force -PassThru
         }
         function Invoke-Restore
@@ -162,6 +164,7 @@ Describe 'Restore-LWProxmoxVmSnapshot' {
 
         Mock -CommandName Test-LabProxmoxConnection -MockWith { $true }
         Mock -CommandName Get-Lab -MockWith { [pscustomobject]@{ Name = 'TestLab' } }
+        Mock -CommandName Get-LabVM -MockWith { $script:labVms }
         Mock -CommandName Get-LabVM -ParameterFilter { $IsRunning.IsPresent } -MockWith {
             $script:labVms | Where-Object { $_.Name -in $ComputerName -and $_.Name -in $script:runningBefore }
         }
@@ -257,6 +260,28 @@ Describe 'Restore-LWProxmoxVmSnapshot' {
                 ($ComputerName -join ',') -eq 'DJSRV2022R005,DJRDS2011R005'
             }
             Should -Invoke -CommandName Start-Sleep -Times 0 -Exactly
+        }
+
+        It 'stops and starts again a running machine that has a FriendlyName' {
+            $script:proxmoxVms += [pscustomobject]@{
+                Name   = 'LAB-DC1'
+                vmid   = 7059
+                node   = 'pve1'
+                status = 'stopped'
+            }
+            $script:labVms += New-TestMachine -Name 'DC1' -ResourceName 'LAB-DC1'
+            $script:runningBefore += 'DC1'
+
+            $outcome = Invoke-Restore -ComputerName 'LAB-DC1'
+
+            $outcome.Thrown | Should -BeNullOrEmpty
+            $script:rollbackCalls[7059] | Should -Be 1
+            Should -Invoke -CommandName Stop-LabVM -Times 1 -Exactly -ParameterFilter {
+                ($ComputerName -join ',') -eq 'DC1'
+            }
+            Should -Invoke -CommandName Start-LabVM -Times 1 -Exactly -ParameterFilter {
+                ($ComputerName -join ',') -eq 'DC1'
+            }
         }
     }
 
@@ -445,6 +470,16 @@ Describe 'Restore-LWProxmoxVmSnapshot' {
             Should -Invoke -CommandName Start-LabVM -Times 1 -Exactly -ParameterFilter {
                 ($ComputerName -join ',') -eq 'DJSRV2022R005,DJRDS2011R005'
             }
+        }
+
+        It 'skips a VM that no node lists with a warning that names it' {
+            $outcome = Invoke-Restore -ComputerName 'GHOST', 'DJRDS2011R005'
+
+            $outcome.Thrown | Should -BeNullOrEmpty
+            Should -Invoke -CommandName Write-ScreenInfo -Times 1 -Exactly -ParameterFilter {
+                $Type -eq 'Warning' -and $Message -eq "Proxmox VM 'GHOST' could not be found. Skipping restore."
+            }
+            $script:rollbackCalls[7056] | Should -Be 1
         }
     }
 }

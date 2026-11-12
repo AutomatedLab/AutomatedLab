@@ -106,7 +106,14 @@ function Restore-LWProxmoxVmSnapshot
         }
     }
 
-    $runningMachines = Get-LabVM -IsRunning -ComputerName $ComputerName -IncludeLinux
+    # The worker gets resource names, but Get-LabVM -ComputerName matches the Name, which differs for a FriendlyName.
+    $labMachineNames = @(Get-LabVM -IncludeLinux | Where-Object { $_.ResourceName -in $ComputerName } | ForEach-Object { $_.Name })
+    $runningMachines = $null
+    if ($labMachineNames.Count -gt 0)
+    {
+        $runningMachines = Get-LabVM -IsRunning -ComputerName $labMachineNames -IncludeLinux
+    }
+
     if ($runningMachines)
     {
         Stop-LabVM -ComputerName $runningMachines -Wait
@@ -121,7 +128,7 @@ function Restore-LWProxmoxVmSnapshot
         $vmSnapshotName = '{0}_{1}' -f $machine, $SnapshotName
         if (-not $vm)
         {
-            Write-ScreenInfo -Message "$machine could not be found in $($resourceGroupName). Skipping snapshot." -type Warning
+            Write-ScreenInfo -Message "Proxmox VM '$machine' could not be found. Skipping restore." -Type Warning
             continue
         }
 
