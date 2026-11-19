@@ -6,6 +6,7 @@
 
 - Fixed `New-LWReferenceVHDX` silently producing unbootable base images when `bcdboot` fails (#1662, #1805)
 - DSC Pull Server lab validator (`DscSqlServerPresent`) now accepts SQL Server 2022 and 2025 in addition to 2016/2017/2019 as the backend database engine, and the validation error message has been clarified accordingly (#1844).
+- Fixed the `restorecon` calls for the SSH key on Linux machines missing `/home` (and, for domain-joined kickstart machines, pointing at the domain admin instead of the installation user), so `authorized_keys` was not relabeled (#1854).
 
 ## [5.61.0] - 2026-05-12
 

@@ -373,7 +373,7 @@ chmod 700 /home/$($Machine.InstallationUser.UserName)/.ssh && chmod 600 /home/$(
 sed -i 's|[#]*GSSAPIAuthentication yes|GSSAPIAuthentication yes|g' /etc/ssh/sshd_config
 sed -i 's|[#]*PasswordAuthentication yes|PasswordAuthentication no|g' /etc/ssh/sshd_config
 sed -i 's|[#]*PubkeyAuthentication yes|PubkeyAuthentication yes|g' /etc/ssh/sshd_config
-restorecon -R /$($Machine.InstallationUser.UserName)/.ssh/
+restorecon -R /home/$($Machine.InstallationUser.UserName)/.ssh/
 restorecon -R /root/.ssh/
 "@
         Add-UnattendedSynchronousCommand -Command $command -Description 'SSH'
@@ -435,7 +435,7 @@ mkdir -p /home/$($Machine.InstallationUser.UserName.ToLower())@$($Machine.Domain
 chown -R "$($Machine.InstallationUser.UserName)@$($Machine.DomainName):domain users@$($Machine.DomainName)" /home/$($Machine.InstallationUser.UserName.ToLower())@$($Machine.DomainName.ToLower())/.ssh
 chmod 700 /home/$($Machine.InstallationUser.UserName.ToLower())@$($Machine.DomainName.ToLower())/.ssh && chmod 600 /home/$($Machine.InstallationUser.UserName.ToLower())@$($Machine.DomainName.ToLower())/.ssh/authorized_keys
 echo "$($Machine.SshPublicKey)" > /home/$($Machine.InstallationUser.UserName.ToLower())@$($Machine.DomainName.ToLower())/.ssh/authorized_keys
-restorecon -R /$($domain.Administrator.UserName)@$($Machine.DomainName)/.ssh/
+restorecon -R /home/$($Machine.InstallationUser.UserName.ToLower())@$($Machine.DomainName.ToLower())/.ssh/
 "@
                     Add-UnattendedSynchronousCommand -Command $command -Description 'SSH'
                 }

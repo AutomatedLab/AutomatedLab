@@ -65,7 +65,7 @@
                 $null = echo "$($SshPublicKey -replace '\s*$')" | sudo tee --append /home/$($UserName)@$($DomainName)/.ssh/authorized_keys
                 $null = sudo chmod 700 /home/$($UserName)@$($DomainName)/.ssh
                 $null = sudo chmod 600 /home/$($UserName)@$($DomainName)/.ssh/authorized_keys 2>$null                
-                $null = sudo restorecon -R /$($UserName)@$($DomainName)/.ssh 2>$null
+                $null = sudo restorecon -R /home/$($UserName)@$($DomainName)/.ssh 2>$null
             }
 
             return $true
