@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Enhancements
+
+- Rocky Linux and AlmaLinux ISOs are detected as RedHat-family Linux instead of `Unknown` (#1855)
+
 ### Fixed
 
 - Fixed `New-LWReferenceVHDX` silently producing unbootable base images when `bcdboot` fails (#1662, #1805)
